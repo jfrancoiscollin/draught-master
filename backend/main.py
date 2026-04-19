@@ -178,7 +178,12 @@ async def analyze(game_id: str, req: AnalyzeRequest) -> AnalysisResponse:
     if game_id not in game_store:
         raise HTTPException(status_code=404, detail="Partie introuvable")
     state: GameState = game_store[game_id]["state"]
-    result = await analyze_position(state, state.move_history, req.question)
+    try:
+        result = await analyze_position(state, state.move_history, req.question)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur analyse: {type(e).__name__}: {e}")
     return AnalysisResponse(**result)
 
 

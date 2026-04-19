@@ -149,8 +149,10 @@ export default function App() {
       const result = await analyzePosition(gameState.game_id, question)
       setAnalysis(result)
       return result
-    } catch {
-      showToast("Erreur lors de l'analyse. Vérifiez votre clé API Anthropic.")
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } }
+      const detail = err?.response?.data?.detail || "Erreur inconnue"
+      showToast(`Erreur analyse: ${detail}`)
       return null
     } finally {
       setAnalysisLoading(false)
