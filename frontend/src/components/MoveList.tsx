@@ -1,0 +1,75 @@
+import React, { useEffect, useRef } from 'react'
+import type { MoveData } from '../types'
+
+function moveToPdn(move: MoveData): string {
+  if (move.captures.length > 0) {
+    return move.path.join('x')
+  }
+  return move.path.join('-')
+}
+
+interface MoveListProps {
+  moves: MoveData[]
+  currentMoveIndex?: number
+}
+
+export default function MoveList({ moves, currentMoveIndex }: MoveListProps) {
+  const endRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (endRef.current) {
+      endRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [moves.length])
+
+  const pairs: Array<{ white?: MoveData; black?: MoveData; index: number }> = []
+  for (let i = 0; i < moves.length; i += 2) {
+    pairs.push({
+      white: moves[i],
+      black: moves[i + 1],
+      index: i,
+    })
+  }
+
+  return (
+    <div className="panel flex flex-col gap-2">
+      <h3 className="text-lg font-bold text-green-400">Coups joués</h3>
+      <div className="max-h-40 overflow-y-auto font-mono text-sm">
+        {pairs.length === 0 ? (
+          <p className="text-gray-500 italic text-xs">Aucun coup joué.</p>
+        ) : (
+          <table className="w-full border-collapse">
+            <tbody>
+              {pairs.map(pair => (
+                <tr key={pair.index} className="border-b border-gray-700">
+                  <td className="text-gray-500 pr-2 py-0.5 text-right w-8 text-xs">
+                    {pair.index / 2 + 1}.
+                  </td>
+                  <td
+                    className={`px-1 py-0.5 rounded ${
+                      currentMoveIndex === pair.index
+                        ? 'bg-green-800 text-white'
+                        : 'text-gray-200'
+                    }`}
+                  >
+                    {pair.white ? moveToPdn(pair.white) : ''}
+                  </td>
+                  <td
+                    className={`px-1 py-0.5 rounded ${
+                      currentMoveIndex === pair.index + 1
+                        ? 'bg-green-800 text-white'
+                        : 'text-gray-400'
+                    }`}
+                  >
+                    {pair.black ? moveToPdn(pair.black) : ''}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <div ref={endRef} />
+      </div>
+    </div>
+  )
+}

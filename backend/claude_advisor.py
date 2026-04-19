@@ -3,7 +3,7 @@ import os
 from typing import Optional
 import anthropic
 from game_engine import (
-    GameState, Move, get_legal_moves, evaluate as _eval_exists,
+    GameState, Move, get_legal_moves,
     sq_to_rc, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING, EMPTY,
     board_to_fen, move_to_pdn,
 )

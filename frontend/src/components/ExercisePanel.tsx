@@ -1,0 +1,214 @@
+import React, { useState, useEffect } from 'react'
+import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
+import { getExercises, checkExercise } from '../api/client'
+
+interface ExercisePanelProps {
+  onExerciseLoad: (fen: string, exerciseId: number) => void
+  currentExerciseId: number | null
+  onMoveSubmit: (moves: string[]) => Promise<ExerciseCheckResponse | null>
+}
+
+function Stars({ count }: { count: number }) {
+  return (
+    <span>
+      {Array.from({ length: 5 }, (_, i) => (
+        <span key={i} className={i < count ? 'star-filled' : 'star-empty'}>
+          ★
+        </span>
+      ))}
+    </span>
+  )
+}
+
+const CATEGORIES: Record<string, string> = {
+  captures: 'Prises',
+  promotion: 'Promotion',
+  endgame: 'Finale',
+  opening: 'Ouverture',
+  strategy: 'Stratégie',
+  tactics: 'Tactique',
+  general: 'Général',
+}
+
+export default function ExercisePanel({
+  onExerciseLoad,
+  currentExerciseId,
+  onMoveSubmit,
+}: ExercisePanelProps) {
+  const [exercises, setExercises] = useState<ExerciseResponse[]>([])
+  const [selected, setSelected] = useState<ExerciseResponse | null>(null)
+  const [showHint, setShowHint] = useState(false)
+  const [moveInput, setMoveInput] = useState('')
+  const [feedback, setFeedback] = useState<ExerciseCheckResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [filterCategory, setFilterCategory] = useState<string>('')
+  const [filterDifficulty, setFilterDifficulty] = useState<number | undefined>()
+
+  useEffect(() => {
+    loadExercises()
+  }, [filterCategory, filterDifficulty])
+
+  const loadExercises = async () => {
+    const data = await getExercises({
+      category: filterCategory || undefined,
+      difficulty: filterDifficulty,
+    })
+    setExercises(data)
+  }
+
+  const handleSelect = (ex: ExerciseResponse) => {
+    setSelected(ex)
+    setShowHint(false)
+    setFeedback(null)
+    setMoveInput('')
+    onExerciseLoad(ex.initial_fen, ex.id)
+  }
+
+  const handleCheck = async () => {
+    if (!selected || !moveInput.trim()) return
+    setLoading(true)
+    const moves = moveInput.trim().split(/\s+/)
+    const result = await onMoveSubmit(moves)
+    setFeedback(result)
+    setLoading(false)
+  }
+
+  const handleNext = () => {
+    if (!selected) return
+    const idx = exercises.findIndex(e => e.id === selected.id)
+    if (idx < exercises.length - 1) {
+      handleSelect(exercises[idx + 1])
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3 h-full">
+      <div className="panel">
+        <h3 className="text-lg font-bold text-green-400 mb-3">Exercices</h3>
+
+        <div className="flex gap-2 mb-3 flex-wrap">
+          <select
+            value={filterCategory}
+            onChange={e => setFilterCategory(e.target.value)}
+            className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+          >
+            <option value="">Toutes catégories</option>
+            {Object.entries(CATEGORIES).map(([key, label]) => (
+              <option key={key} value={key}>{label}</option>
+            ))}
+          </select>
+
+          <select
+            value={filterDifficulty ?? ''}
+            onChange={e => setFilterDifficulty(e.target.value ? Number(e.target.value) : undefined)}
+            className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+          >
+            <option value="">Tous niveaux</option>
+            {[1, 2, 3, 4, 5].map(d => (
+              <option key={d} value={d}>{d} étoile{d > 1 ? 's' : ''}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="max-h-48 overflow-y-auto flex flex-col gap-1">
+          {exercises.map(ex => (
+            <button
+              key={ex.id}
+              onClick={() => handleSelect(ex)}
+              className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                currentExerciseId === ex.id
+                  ? 'bg-green-800 text-white'
+                  : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+              }`}
+            >
+              <div className="flex justify-between items-start">
+                <span className="font-medium">{ex.name}</span>
+                <Stars count={ex.difficulty} />
+              </div>
+              <div className="text-xs text-gray-400 mt-0.5">
+                {CATEGORIES[ex.category] || ex.category}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {selected && (
+        <div className="panel flex flex-col gap-3">
+          <div>
+            <h4 className="font-bold text-white">{selected.name}</h4>
+            <div className="flex items-center gap-2 mt-1">
+              <Stars count={selected.difficulty} />
+              <span className="text-xs text-gray-400">
+                {CATEGORIES[selected.category] || selected.category}
+              </span>
+            </div>
+          </div>
+
+          {selected.description && (
+            <p className="text-gray-300 text-sm">{selected.description}</p>
+          )}
+
+          {showHint && selected.hint && (
+            <div className="bg-yellow-900 border border-yellow-700 rounded-lg px-3 py-2 text-sm text-yellow-200">
+              <span className="font-semibold">Indice :</span> {selected.hint}
+            </div>
+          )}
+
+          {feedback && (
+            <div
+              className={`rounded-lg px-3 py-2 text-sm ${
+                feedback.correct
+                  ? 'bg-green-900 border border-green-600 text-green-200'
+                  : 'bg-red-900 border border-red-600 text-red-200'
+              }`}
+            >
+              <p className="font-semibold">{feedback.correct ? '✓ ' : '✗ '}{feedback.message}</p>
+              {feedback.solution && (
+                <p className="mt-1 text-xs">
+                  Solution : {feedback.solution.join(', ')}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={moveInput}
+              onChange={e => setMoveInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !loading && handleCheck()}
+              placeholder="Ex: 33-28 ou 33x24"
+              className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:outline-none focus:border-green-500 font-mono"
+            />
+            <button
+              onClick={handleCheck}
+              disabled={loading || !moveInput.trim()}
+              className="btn-primary text-sm"
+            >
+              {loading ? '...' : 'Vérifier'}
+            </button>
+          </div>
+
+          <div className="flex gap-2">
+            {selected.hint && (
+              <button
+                onClick={() => setShowHint(!showHint)}
+                className="btn-secondary text-sm flex-1"
+              >
+                {showHint ? 'Masquer indice' : 'Indice'}
+              </button>
+            )}
+            <button
+              onClick={handleNext}
+              disabled={exercises.findIndex(e => e.id === selected.id) >= exercises.length - 1}
+              className="btn-secondary text-sm flex-1"
+            >
+              Suivant →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
