@@ -113,6 +113,7 @@ export default function Board({
       const sq = isDark ? rcToSq(row, col) : null
       const isSelected = sq !== null && sq === selectedSquare
       const isLegalTarget = sq !== null && targets.has(sq)
+      const isMoveable = sq !== null && legalFromSquares().has(sq)
       const isLastMove = sq !== null && lastMovePath.has(sq)
       const isHighlighted = sq !== null && highlightSquares.includes(sq)
       const piece = sq !== null ? board[sq] : EMPTY
@@ -152,6 +153,8 @@ export default function Board({
                     justifyContent: 'center',
                     position: 'relative',
                     zIndex: 1,
+                    borderRadius: '50%',
+                    outline: isMoveable && !isSelected ? '2px solid rgba(100,220,100,0.5)' : 'none',
                   }}
                 >
                   <PieceIcon piece={piece} />

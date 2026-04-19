@@ -92,23 +92,21 @@ export default function App() {
     startNewGame()
   }, [])
 
-  const handleSelectSquare = useCallback(async (sq: number | null) => {
-    if (!gameState || gameState.result) return
-    if (gameState.turn !== 'white') return
-
-    setSelectedSquare(sq)
-
-    if (sq === null) {
+  // Pre-fetch all legal moves whenever it becomes white's turn
+  useEffect(() => {
+    if (!gameState?.game_id || gameState.result || gameState.turn !== 'white') {
       setLegalMoves([])
       return
     }
+    getLegalMoves(gameState.game_id)
+      .then(data => setLegalMoves(data.moves))
+      .catch(() => setLegalMoves([]))
+  }, [gameState?.game_id, gameState?.turn, gameState?.move_count])
 
-    try {
-      const data = await getLegalMoves(gameState.game_id, sq)
-      setLegalMoves(data.moves)
-    } catch {
-      setLegalMoves([])
-    }
+  const handleSelectSquare = useCallback((sq: number | null) => {
+    if (!gameState || gameState.result) return
+    if (gameState.turn !== 'white') return
+    setSelectedSquare(sq)
   }, [gameState])
 
   const handleMove = useCallback(async (move: MoveData) => {
