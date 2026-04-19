@@ -67,9 +67,9 @@ def format_move_history(moves: list[Move]) -> str:
     return ' '.join(parts)
 
 
-def _get_client() -> anthropic.Anthropic:
+def _get_client() -> anthropic.AsyncAnthropic:
     api_key = os.getenv('ANTHROPIC_API_KEY')
-    return anthropic.Anthropic(api_key=api_key)
+    return anthropic.AsyncAnthropic(api_key=api_key)
 
 
 async def analyze_position(
@@ -115,7 +115,7 @@ Meilleur coup suggéré : {best_move_str}
     else:
         prompt += "\nFournis une analyse complète de la position incluant les menaces, les idées stratégiques et le plan recommandé.\n"
 
-    message = client.messages.create(
+    message = await client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=1024,
         system=SYSTEM_PROMPT,
@@ -166,7 +166,7 @@ Pour chaque exercice, indique :
 4. Les thèmes tactiques travaillés
 """
 
-    message = client.messages.create(
+    message = await client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=800,
         system=SYSTEM_PROMPT,
