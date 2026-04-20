@@ -280,6 +280,14 @@ export default function App() {
             </div>
 
             <div className="flex-1 flex flex-col gap-4 min-w-64">
+              <AnalysisPanel
+                gameId={gameState?.game_id || null}
+                onAnalyze={handleAnalyze}
+                analysis={analysis}
+                loading={analysisLoading}
+                onHighlightSquare={setSpokenSquares}
+              />
+
               <GameControls
                 result={gameState?.result || null}
                 turn={gameState?.turn || 'white'}
@@ -293,14 +301,6 @@ export default function App() {
               <MoveList
                 moves={moveHistory}
                 currentMoveIndex={moveHistory.length - 1}
-              />
-
-              <AnalysisPanel
-                gameId={gameState?.game_id || null}
-                onAnalyze={handleAnalyze}
-                analysis={analysis}
-                loading={analysisLoading}
-                onHighlightSquare={setSpokenSquares}
               />
             </div>
           </div>
