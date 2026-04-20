@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import type { AnalysisResponse } from '../types'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface AnalysisPanelProps {
   gameId: string | null
@@ -14,6 +15,7 @@ export default function AnalysisPanel({
   analysis,
   loading,
 }: AnalysisPanelProps) {
+  const { t } = useLanguage()
   const [question, setQuestion] = useState('')
 
   const handleAnalyze = async () => {
@@ -23,7 +25,7 @@ export default function AnalysisPanel({
 
   return (
     <div className="panel flex flex-col gap-3">
-      <h3 className="text-lg font-bold text-green-400">Analyse Claude</h3>
+      <h3 className="text-lg font-bold text-green-400">{t('claudeAnalysis')}</h3>
 
       <div className="flex gap-2">
         <input
@@ -31,7 +33,7 @@ export default function AnalysisPanel({
           value={question}
           onChange={e => setQuestion(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !loading && gameId && handleAnalyze()}
-          placeholder="Posez une question..."
+          placeholder={t('yourQuestion')}
           disabled={!gameId || loading}
           className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:outline-none focus:border-green-500 disabled:opacity-50"
         />
@@ -43,10 +45,10 @@ export default function AnalysisPanel({
           {loading ? (
             <span className="flex items-center gap-2">
               <div className="spinner" style={{ width: 16, height: 16 }} />
-              Analyse...
+              {t('analyzing')}
             </span>
           ) : (
-            'Analyser'
+            t('analyze')
           )}
         </button>
       </div>
@@ -56,7 +58,7 @@ export default function AnalysisPanel({
           {analysis.best_moves.length > 0 && (
             <div>
               <div className="text-xs text-gray-400 uppercase font-semibold mb-1">
-                Meilleurs coups
+                {t('bestMoves')}
               </div>
               <div className="flex flex-wrap gap-1">
                 {analysis.best_moves.map((m, i) => (
@@ -74,7 +76,7 @@ export default function AnalysisPanel({
           {analysis.strategic_advice && (
             <div>
               <div className="text-xs text-gray-400 uppercase font-semibold mb-1">
-                Conseil stratégique
+                {t('strategicAdvice')}
               </div>
               <p className="text-gray-200 leading-relaxed">{analysis.strategic_advice}</p>
             </div>
@@ -82,7 +84,7 @@ export default function AnalysisPanel({
 
           <div>
             <div className="text-xs text-gray-400 uppercase font-semibold mb-1">
-              Analyse complète
+              {t('fullAnalysis')}
             </div>
             <div className="bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto text-xs">
               {analysis.analysis}
@@ -92,7 +94,7 @@ export default function AnalysisPanel({
           {analysis.key_squares.length > 0 && (
             <div>
               <div className="text-xs text-gray-400 uppercase font-semibold mb-1">
-                Cases clés
+                {t('keySquares')}
               </div>
               <div className="flex flex-wrap gap-1">
                 {analysis.key_squares.map(sq => (
@@ -111,7 +113,7 @@ export default function AnalysisPanel({
 
       {!analysis && !loading && (
         <p className="text-gray-500 text-sm italic">
-          Cliquez sur "Analyser" pour obtenir une analyse de la position par Claude.
+          {t('clickToAnalyze')}
         </p>
       )}
     </div>

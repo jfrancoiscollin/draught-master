@@ -6,6 +6,7 @@ import MoveList from './components/MoveList'
 import ExercisePanel from './components/ExercisePanel'
 import GameHistory from './components/GameHistory'
 import Toast from './components/Toast'
+import LanguageSelector from './components/LanguageSelector'
 import {
   newGame,
   getLegalMoves,
@@ -15,7 +16,7 @@ import {
 } from './api/client'
 import {
   EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
-  sqToRowCol, resultLabel,
+  sqToRowCol,
 } from './types'
 import type {
   GameStateResponse,
@@ -25,6 +26,7 @@ import type {
   ExerciseCheckResponse,
   GameDetailResponse,
 } from './types'
+import { useLanguage } from './i18n/LanguageContext'
 
 function fenToBoard(fen: string): number[] {
   const board = new Array(51).fill(EMPTY)
@@ -48,6 +50,7 @@ function fenToBoard(fen: string): number[] {
 type Tab = 'play' | 'exercises' | 'history'
 
 export default function App() {
+  const { t, language } = useLanguage()
   const [tab, setTab] = useState<Tab>('play')
 
   const [gameState, setGameState] = useState<GameStateResponse | null>(null)
@@ -82,11 +85,11 @@ export default function App() {
       setMoveHistory([])
       setAnalysis(null)
     } catch (e) {
-      showToast('Erreur lors de la création de la partie.')
+      showToast(t('errorCreatingGame'))
     } finally {
       setIsAiThinking(false)
     }
-  }, [aiDepth])
+  }, [aiDepth, t])
 
   useEffect(() => {
     startNewGame()
@@ -146,18 +149,18 @@ export default function App() {
     if (!gameState) return null
     setAnalysisLoading(true)
     try {
-      const result = await analyzePosition(gameState.game_id, question)
+      const result = await analyzePosition(gameState.game_id, question, language)
       setAnalysis(result)
       return result
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } } }
       const detail = err?.response?.data?.detail || "Erreur inconnue"
-      showToast(`Erreur analyse: ${detail}`)
+      showToast(`${t('errorAnalysis')}${detail}`)
       return null
     } finally {
       setAnalysisLoading(false)
     }
-  }, [gameState])
+  }, [gameState, language, t])
 
   const handleExerciseLoad = useCallback((fen: string, exerciseId: number) => {
     const board = fenToBoard(fen)
@@ -169,10 +172,10 @@ export default function App() {
     try {
       return await checkExercise(exerciseGameState.exerciseId, moves)
     } catch {
-      showToast("Erreur lors de la vérification.")
+      showToast(t('errorVerification'))
       return null
     }
-  }, [exerciseGameState])
+  }, [exerciseGameState, t])
 
   const handleReplay = useCallback((detail: GameDetailResponse) => {
     setReplayDetail(detail)
@@ -189,9 +192,22 @@ export default function App() {
     setReplayBoard(fenToBoard(replayDetail.fen_positions[newIdx]))
   }
 
+  const getResultLabel = (result: string | null): string => {
+    if (result === 'white') return t('resultWhiteWins')
+    if (result === 'black') return t('resultBlackWins')
+    if (result === 'draw') return t('resultDraw')
+    return ''
+  }
+
   const currentBoard = gameState?.board || new Array(51).fill(EMPTY)
   const isWhiteTurn = gameState?.turn === 'white'
   const boardDisabled = !gameState || !!gameState.result || !isWhiteTurn || isAiThinking
+
+  const tabs: [Tab, string][] = [
+    ['play', t('tabPlay')],
+    ['exercises', t('tabExercises')],
+    ['history', t('tabHistory')],
+  ]
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
@@ -205,37 +221,38 @@ export default function App() {
             <h1 className="text-2xl font-bold text-green-400">
               ♟ AI-Draught
             </h1>
-            <p className="text-xs text-gray-400">Entraînement au jeu de dames international (100 cases)</p>
+            <p className="text-xs text-gray-400">{t('appSubtitle')}</p>
           </div>
-          {gameState && (
-            <div className="text-sm text-gray-400">
-              {isAiThinking && (
-                <span className="flex items-center gap-2 text-yellow-400">
-                  <div className="spinner" style={{ width: 16, height: 16 }} />
-                  L'IA réfléchit...
-                </span>
-              )}
-              {!isAiThinking && gameState.result && (
-                <span className="text-yellow-300 font-semibold">{resultLabel(gameState.result)}</span>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {gameState && (
+              <div className="text-sm text-gray-400">
+                {isAiThinking && (
+                  <span className="flex items-center gap-2 text-yellow-400">
+                    <div className="spinner" style={{ width: 16, height: 16 }} />
+                    {t('aiThinking')}
+                  </span>
+                )}
+                {!isAiThinking && gameState.result && (
+                  <span className="text-yellow-300 font-semibold">{getResultLabel(gameState.result)}</span>
+                )}
+              </div>
+            )}
+            <LanguageSelector />
+          </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 pt-4">
         <div className="flex gap-0 border-b border-gray-700">
-          {([['play', 'Jouer'], ['exercises', 'Exercices'], ['history', 'Historique']] as [Tab, string][]).map(
-            ([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                className={`tab-btn ${tab === key ? 'tab-active' : 'tab-inactive'}`}
-              >
-                {label}
-              </button>
-            )
-          )}
+          {tabs.map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`tab-btn ${tab === key ? 'tab-active' : 'tab-inactive'}`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -254,7 +271,7 @@ export default function App() {
               />
               {gameState && (
                 <div className="mt-2 flex justify-between text-xs text-gray-500 px-1">
-                  <span>Blancs (vous) : bas du plateau</span>
+                  <span>{t('whitePerspective')}</span>
                   <span>FEN: {gameState.fen.substring(0, 30)}...</span>
                 </div>
               )}
@@ -298,7 +315,7 @@ export default function App() {
                 disabled={true}
               />
               <p className="mt-2 text-xs text-gray-500 text-center">
-                Plateau de l'exercice (lecture seule)
+                {t('exerciseReadOnly')}
               </p>
             </div>
 
@@ -332,7 +349,7 @@ export default function App() {
                         disabled={replayFenIndex === 0}
                         className="btn-secondary text-sm"
                       >
-                        ← Précédent
+                        {t('previous')}
                       </button>
                       <span className="text-gray-400 text-sm">
                         {replayFenIndex + 1} / {replayDetail.fen_positions.length}
@@ -342,7 +359,7 @@ export default function App() {
                         disabled={replayFenIndex >= (replayDetail.fen_positions.length - 1)}
                         className="btn-secondary text-sm"
                       >
-                        Suivant →
+                        {t('next')}
                       </button>
                     </div>
                   )}
@@ -360,7 +377,7 @@ export default function App() {
                     border: '1px dashed #374151',
                   }}
                 >
-                  <p className="text-gray-600 text-sm">Sélectionnez une partie pour la rejouer</p>
+                  <p className="text-gray-600 text-sm">{t('selectGame')}</p>
                 </div>
               )}
             </div>

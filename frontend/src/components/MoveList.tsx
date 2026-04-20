@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import type { MoveData } from '../types'
+import { useLanguage } from '../i18n/LanguageContext'
 
 function moveToPdn(move: MoveData): string {
   if (move.captures.length > 0) {
@@ -14,6 +15,7 @@ interface MoveListProps {
 }
 
 export default function MoveList({ moves, currentMoveIndex }: MoveListProps) {
+  const { t } = useLanguage()
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -33,10 +35,10 @@ export default function MoveList({ moves, currentMoveIndex }: MoveListProps) {
 
   return (
     <div className="panel flex flex-col gap-2">
-      <h3 className="text-lg font-bold text-green-400">Coups joués</h3>
+      <h3 className="text-lg font-bold text-green-400">{t('moveList')}</h3>
       <div className="max-h-40 overflow-y-auto font-mono text-sm">
         {pairs.length === 0 ? (
-          <p className="text-gray-500 italic text-xs">Aucun coup joué.</p>
+          <p className="text-gray-500 italic text-xs">{t('noMoves')}</p>
         ) : (
           <table className="w-full border-collapse">
             <tbody>

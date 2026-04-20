@@ -1,5 +1,5 @@
 import React from 'react'
-import { resultLabel } from '../types'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface GameControlsProps {
   result: string | null
@@ -20,31 +20,40 @@ export default function GameControls({
   onAiDepthChange,
   disabled = false,
 }: GameControlsProps) {
+  const { t } = useLanguage()
+
+  const getResultLabel = (res: string | null): string => {
+    if (res === 'white') return t('resultWhiteWins')
+    if (res === 'black') return t('resultBlackWins')
+    if (res === 'draw') return t('resultDraw')
+    return ''
+  }
+
   return (
     <div className="panel flex flex-col gap-3">
-      <h3 className="text-lg font-bold text-green-400">Contrôles</h3>
+      <h3 className="text-lg font-bold text-green-400">{t('controls')}</h3>
 
       <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-400">Trait :</span>
+        <span className="text-gray-400">{t('turn')}</span>
         <span className={`font-semibold px-2 py-0.5 rounded ${turn === 'white' ? 'bg-gray-200 text-gray-900' : 'bg-gray-800 text-gray-200 border border-gray-600'}`}>
-          {turn === 'white' ? '⚪ Blancs' : '⚫ Noirs'}
+          {turn === 'white' ? `⚪ ${t('white')}` : `⚫ ${t('black')}`}
         </span>
       </div>
 
       <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-400">Coups joués :</span>
+        <span className="text-gray-400">{t('movesPlayed')}</span>
         <span className="text-gray-200 font-mono">{moveCount}</span>
       </div>
 
       {result && (
         <div className="bg-yellow-900 border border-yellow-600 rounded-lg px-3 py-2 text-center">
-          <span className="text-yellow-300 font-bold">{resultLabel(result)}</span>
+          <span className="text-yellow-300 font-bold">{getResultLabel(result)}</span>
         </div>
       )}
 
       <div className="flex flex-col gap-1">
         <label className="text-sm text-gray-400">
-          Niveau IA (profondeur) : <span className="text-white font-semibold">{aiDepth}</span>
+          {t('aiLevel')} <span className="text-white font-semibold">{aiDepth}</span>
         </label>
         <input
           type="range"
@@ -55,8 +64,8 @@ export default function GameControls({
           className="w-full accent-green-500"
         />
         <div className="flex justify-between text-xs text-gray-500">
-          <span>Facile</span>
-          <span>Expert</span>
+          <span>{t('easy')}</span>
+          <span>{t('expert')}</span>
         </div>
       </div>
 
@@ -65,7 +74,7 @@ export default function GameControls({
         disabled={disabled}
         className="btn-primary w-full"
       >
-        Nouvelle partie
+        {t('newGame')}
       </button>
     </div>
   )

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
-import { getExercises, checkExercise } from '../api/client'
+import { getExercises } from '../api/client'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface ExercisePanelProps {
   onExerciseLoad: (fen: string, exerciseId: number) => void
@@ -20,7 +21,7 @@ function Stars({ count }: { count: number }) {
   )
 }
 
-const CATEGORIES: Record<string, string> = {
+const CATEGORIES_FR: Record<string, string> = {
   captures: 'Prises',
   promotion: 'Promotion',
   endgame: 'Finale',
@@ -30,11 +31,24 @@ const CATEGORIES: Record<string, string> = {
   general: 'Général',
 }
 
+const CATEGORIES_EN: Record<string, string> = {
+  captures: 'Captures',
+  promotion: 'Promotion',
+  endgame: 'Endgame',
+  opening: 'Opening',
+  strategy: 'Strategy',
+  tactics: 'Tactics',
+  general: 'General',
+}
+
 export default function ExercisePanel({
   onExerciseLoad,
   currentExerciseId,
   onMoveSubmit,
 }: ExercisePanelProps) {
+  const { t, language } = useLanguage()
+  const CATEGORIES = language === 'en' ? CATEGORIES_EN : CATEGORIES_FR
+
   const [exercises, setExercises] = useState<ExerciseResponse[]>([])
   const [selected, setSelected] = useState<ExerciseResponse | null>(null)
   const [showHint, setShowHint] = useState(false)
@@ -84,7 +98,7 @@ export default function ExercisePanel({
   return (
     <div className="flex flex-col gap-3 h-full">
       <div className="panel">
-        <h3 className="text-lg font-bold text-green-400 mb-3">Exercices</h3>
+        <h3 className="text-lg font-bold text-green-400 mb-3">{t('exercises')}</h3>
 
         <div className="flex gap-2 mb-3 flex-wrap">
           <select
@@ -92,7 +106,7 @@ export default function ExercisePanel({
             onChange={e => setFilterCategory(e.target.value)}
             className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
           >
-            <option value="">Toutes catégories</option>
+            <option value="">{t('category')}: {t('all')}</option>
             {Object.entries(CATEGORIES).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
             ))}
@@ -103,9 +117,9 @@ export default function ExercisePanel({
             onChange={e => setFilterDifficulty(e.target.value ? Number(e.target.value) : undefined)}
             className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
           >
-            <option value="">Tous niveaux</option>
+            <option value="">{t('difficulty')}: {t('all')}</option>
             {[1, 2, 3, 4, 5].map(d => (
-              <option key={d} value={d}>{d} étoile{d > 1 ? 's' : ''}</option>
+              <option key={d} value={d}>{d} ★</option>
             ))}
           </select>
         </div>
@@ -151,7 +165,7 @@ export default function ExercisePanel({
 
           {showHint && selected.hint && (
             <div className="bg-yellow-900 border border-yellow-700 rounded-lg px-3 py-2 text-sm text-yellow-200">
-              <span className="font-semibold">Indice :</span> {selected.hint}
+              <span className="font-semibold">{t('hint')} :</span> {selected.hint}
             </div>
           )}
 
@@ -178,7 +192,7 @@ export default function ExercisePanel({
               value={moveInput}
               onChange={e => setMoveInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !loading && handleCheck()}
-              placeholder="Ex: 33-28 ou 33x24"
+              placeholder={t('enterMoves')}
               className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:outline-none focus:border-green-500 font-mono"
             />
             <button
@@ -186,7 +200,7 @@ export default function ExercisePanel({
               disabled={loading || !moveInput.trim()}
               className="btn-primary text-sm"
             >
-              {loading ? '...' : 'Vérifier'}
+              {loading ? '...' : t('verify')}
             </button>
           </div>
 
@@ -196,7 +210,7 @@ export default function ExercisePanel({
                 onClick={() => setShowHint(!showHint)}
                 className="btn-secondary text-sm flex-1"
               >
-                {showHint ? 'Masquer indice' : 'Indice'}
+                {showHint ? t('hideHint') : t('hint')}
               </button>
             )}
             <button
@@ -204,7 +218,7 @@ export default function ExercisePanel({
               disabled={exercises.findIndex(e => e.id === selected.id) >= exercises.length - 1}
               className="btn-secondary text-sm flex-1"
             >
-              Suivant →
+              {t('next')}
             </button>
           </div>
         </div>

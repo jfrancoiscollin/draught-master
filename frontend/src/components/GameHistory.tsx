@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import type { HistoryItem, GameDetailResponse } from '../types'
 import { getHistory, getGameDetail } from '../api/client'
-import { resultLabel } from '../types'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface GameHistoryProps {
   onReplay: (detail: GameDetailResponse) => void
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, language: string): string {
   try {
+    const locale = language === 'en' ? 'en-GB' : 'fr-FR'
     const d = new Date(iso)
-    return d.toLocaleDateString('fr-FR', {
+    return d.toLocaleDateString(locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -23,6 +24,7 @@ function formatDate(iso: string): string {
 }
 
 export default function GameHistory({ onReplay }: GameHistoryProps) {
+  const { t, language } = useLanguage()
   const [games, setGames] = useState<HistoryItem[]>([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -48,8 +50,15 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
     onReplay(detail)
   }
 
+  const getResultLabel = (result: string | null): string => {
+    if (result === 'white') return t('resultWhiteWins')
+    if (result === 'black') return t('resultBlackWins')
+    if (result === 'draw') return t('resultDraw')
+    return t('inProgress')
+  }
+
   const resultBadge = (result: string | null) => {
-    if (!result) return <span className="text-gray-500 text-xs">En cours</span>
+    if (!result) return <span className="text-gray-500 text-xs">{t('inProgress')}</span>
     const colors: Record<string, string> = {
       white: 'bg-gray-200 text-gray-900',
       black: 'bg-gray-800 text-gray-200 border border-gray-600',
@@ -57,7 +66,7 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
     }
     return (
       <span className={`text-xs px-2 py-0.5 rounded ${colors[result] || 'bg-gray-700 text-gray-300'}`}>
-        {resultLabel(result)}
+        {getResultLabel(result)}
       </span>
     )
   }
@@ -65,14 +74,14 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="panel">
-        <h3 className="text-lg font-bold text-green-400 mb-3">Historique des parties</h3>
+        <h3 className="text-lg font-bold text-green-400 mb-3">{t('gameHistory')}</h3>
 
         {loading ? (
           <div className="flex justify-center py-4">
             <div className="spinner" />
           </div>
         ) : games.length === 0 ? (
-          <p className="text-gray-500 italic text-sm">Aucune partie enregistrée.</p>
+          <p className="text-gray-500 italic text-sm">{t('noGames')}</p>
         ) : (
           <div className="flex flex-col gap-2">
             {games.map(game => (
@@ -91,7 +100,7 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
                       {game.white_player} vs {game.black_player}
                     </span>
                     <div className="text-xs text-gray-400 mt-0.5">
-                      {formatDate(game.date)} · {game.move_count} coups
+                      {formatDate(game.date, language)} · {game.move_count} {t('moves')}
                     </div>
                   </div>
                   {resultBadge(game.result)}
@@ -107,7 +116,7 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
             disabled={page === 1}
             className="btn-secondary text-sm"
           >
-            ← Précédent
+            {t('previous')}
           </button>
           <span className="text-gray-400 text-sm self-center">Page {page}</span>
           <button
@@ -115,7 +124,7 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
             disabled={games.length < 10}
             className="btn-secondary text-sm"
           >
-            Suivant →
+            {t('next')}
           </button>
         </div>
       </div>
@@ -127,7 +136,7 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
           </h4>
           <div className="flex gap-2 items-center mb-2">
             {resultBadge(selected.result)}
-            <span className="text-xs text-gray-400">{selected.move_count} coups</span>
+            <span className="text-xs text-gray-400">{selected.move_count} {t('moves')}</span>
           </div>
           {selected.pdn && (
             <div className="bg-gray-900 rounded p-2 font-mono text-xs text-gray-300 max-h-32 overflow-y-auto">
