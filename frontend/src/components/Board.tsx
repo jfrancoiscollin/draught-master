@@ -11,6 +11,7 @@ interface BoardProps {
   disabled?: boolean
   lastMove?: MoveData | null
   highlightSquares?: number[]
+  spokenSquare?: number | null
 }
 
 function PieceIcon({ piece }: { piece: number }) {
@@ -54,6 +55,7 @@ export default function Board({
   disabled = false,
   lastMove = null,
   highlightSquares = [],
+  spokenSquare = null,
 }: BoardProps) {
   const legalTargets = useCallback((): Set<number> => {
     if (selectedSquare === null) return new Set()
@@ -114,6 +116,7 @@ export default function Board({
       const isSelected = sq !== null && sq === selectedSquare
       const isLegalTarget = sq !== null && targets.has(sq)
       const isMoveable = sq !== null && legalFromSquares().has(sq)
+      const isSpoken = sq !== null && sq === spokenSquare
       const isLastMove = sq !== null && lastMovePath.has(sq)
       const isHighlighted = sq !== null && highlightSquares.includes(sq)
       const piece = sq !== null ? board[sq] : EMPTY
@@ -130,6 +133,7 @@ export default function Board({
         <div
           key={`${row}-${col}`}
           onClick={() => sq !== null && isDark && handleCellClick(sq)}
+          className={isSpoken ? 'spoken-square' : undefined}
           style={{
             backgroundColor: bgColor,
             aspectRatio: '1',

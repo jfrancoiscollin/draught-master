@@ -7,9 +7,10 @@ interface AnalysisPanelProps {
   onAnalyze: (question?: string) => Promise<AnalysisResponse | null>
   analysis: AnalysisResponse | null
   loading: boolean
+  onHighlightSquare: (sq: number | null) => void
 }
 
-function useSpeech(language: string) {
+function useSpeech(language: string, onSquare: (sq: number | null) => void) {
   const [speaking, setSpeaking] = useState(false)
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
@@ -23,10 +24,23 @@ function useSpeech(language: string) {
 
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.lang = language === 'en' ? 'en-GB' : 'fr-FR'
-    utterance.rate = 0.95
+    utterance.rate = 0.9
+
+    utterance.onboundary = (event) => {
+      if (event.name !== 'word') return
+      const rest = text.slice(event.charIndex)
+      const word = rest.match(/^\d+/)?.[0]
+      if (word) {
+        const num = parseInt(word, 10)
+        onSquare(num >= 1 && num <= 50 ? num : null)
+      } else {
+        onSquare(null)
+      }
+    }
+
     utterance.onstart = () => setSpeaking(true)
-    utterance.onend = () => setSpeaking(false)
-    utterance.onerror = () => setSpeaking(false)
+    utterance.onend = () => { setSpeaking(false); onSquare(null) }
+    utterance.onerror = () => { setSpeaking(false); onSquare(null) }
 
     utteranceRef.current = utterance
     window.speechSynthesis.speak(utterance)
@@ -35,6 +49,7 @@ function useSpeech(language: string) {
   const stop = () => {
     window.speechSynthesis?.cancel()
     setSpeaking(false)
+    onSquare(null)
   }
 
   return { speak, stop, speaking }
@@ -45,10 +60,11 @@ export default function AnalysisPanel({
   onAnalyze,
   analysis,
   loading,
+  onHighlightSquare,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
   const [question, setQuestion] = useState('')
-  const { speak, stop, speaking } = useSpeech(language)
+  const { speak, stop, speaking } = useSpeech(language, onHighlightSquare)
 
   const handleAnalyze = async () => {
     stop()

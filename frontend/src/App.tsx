@@ -62,6 +62,7 @@ export default function App() {
   const [analysisLoading, setAnalysisLoading] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [isAiThinking, setIsAiThinking] = useState(false)
+  const [spokenSquare, setSpokenSquare] = useState<number | null>(null)
 
   const [exerciseGameState, setExerciseGameState] = useState<{
     board: number[]
@@ -268,6 +269,7 @@ export default function App() {
                 onSelectSquare={handleSelectSquare}
                 disabled={boardDisabled}
                 lastMove={gameState?.last_move}
+                spokenSquare={spokenSquare}
               />
               {gameState && (
                 <div className="mt-2 flex justify-between text-xs text-gray-500 px-1">
@@ -298,6 +300,7 @@ export default function App() {
                 onAnalyze={handleAnalyze}
                 analysis={analysis}
                 loading={analysisLoading}
+                onHighlightSquare={setSpokenSquare}
               />
             </div>
           </div>

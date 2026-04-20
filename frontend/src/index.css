@@ -115,3 +115,12 @@
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+@keyframes squarePulse {
+  0%, 100% { box-shadow: inset 0 0 0 3px #facc15, 0 0 8px 2px rgba(250,204,21,0.6); }
+  50%       { box-shadow: inset 0 0 0 3px #fde68a, 0 0 18px 6px rgba(250,204,21,0.9); }
+}
+
+.spoken-square {
+  animation: squarePulse 0.8s ease-in-out infinite;
+}
