@@ -17,6 +17,7 @@ class MoveRequest(BaseModel):
 
 class AnalyzeRequest(BaseModel):
     question: Optional[str] = None
+    language: str = 'fr'
 
 
 class BoardPiece(BaseModel):

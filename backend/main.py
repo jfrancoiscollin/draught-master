@@ -179,7 +179,7 @@ async def analyze(game_id: str, req: AnalyzeRequest) -> AnalysisResponse:
         raise HTTPException(status_code=404, detail="Partie introuvable")
     state: GameState = game_store[game_id]["state"]
     try:
-        result = await analyze_position(state, state.move_history, req.question)
+        result = await analyze_position(state, state.move_history, req.question, req.language)
     except Exception as e:
         import traceback
         traceback.print_exc()

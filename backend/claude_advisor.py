@@ -76,6 +76,7 @@ async def analyze_position(
     state: GameState,
     move_history: list[Move],
     user_question: Optional[str] = None,
+    language: str = 'fr',
 ) -> dict:
     client = _get_client()
     board_repr = format_board_for_claude(state)
@@ -83,6 +84,7 @@ async def analyze_position(
     fen = board_to_fen(state)
     score = evaluate(state)
     turn_fr = "Blancs" if state.turn == 'white' else "Noirs"
+    lang_instruction = "Respond in English." if language == 'en' else "Réponds en français."
 
     legal_moves = get_legal_moves(state)
     best = get_best_move(state, depth=4)
@@ -114,6 +116,8 @@ Meilleur coup suggéré : {best_move_str}
         prompt += f"\nQuestion du joueur : {user_question}\n"
     else:
         prompt += "\nFournis une analyse complète de la position incluant les menaces, les idées stratégiques et le plan recommandé.\n"
+
+    prompt += f"\n{lang_instruction}"
 
     message = await client.messages.create(
         model="claude-sonnet-4-6",

@@ -56,10 +56,12 @@ export async function getAiMove(gameId: string, depth: number = 4): Promise<Move
 
 export async function analyzePosition(
   gameId: string,
-  question?: string
+  question?: string,
+  language: string = 'fr'
 ): Promise<AnalysisResponse> {
   const res = await api.post<AnalysisResponse>(`/game/${gameId}/analyze`, {
     question: question || null,
+    language,
   })
   return res.data
 }
