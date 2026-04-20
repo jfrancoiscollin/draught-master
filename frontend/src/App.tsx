@@ -205,7 +205,7 @@ export default function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+    <div className="bg-gray-900 text-gray-100 flex flex-col h-full">
       {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
       {/* Header — compact on mobile */}
@@ -247,7 +247,7 @@ export default function App() {
       </div>
 
       {/* Main content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-2 lg:px-4 py-3 pb-24 lg:pb-6 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto overscroll-contain max-w-7xl mx-auto w-full px-2 lg:px-4 py-3 pb-24 lg:pb-6">
 
         {/* PLAY TAB */}
         {tab === 'play' && (
