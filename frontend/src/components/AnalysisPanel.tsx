@@ -7,10 +7,37 @@ interface AnalysisPanelProps {
   onAnalyze: (question?: string) => Promise<AnalysisResponse | null>
   analysis: AnalysisResponse | null
   loading: boolean
-  onHighlightSquare: (sq: number | null) => void
+  onHighlightSquare: (squares: number[]) => void
 }
 
-function useSpeech(language: string, onSquare: (sq: number | null) => void) {
+function extractMoveSquares(text: string, charIndex: number): number[] {
+  const rest = text.slice(charIndex)
+  const numMatch = rest.match(/^(\d+)/)
+  if (!numMatch) return []
+
+  const num1 = parseInt(numMatch[1], 10)
+  if (num1 < 1 || num1 > 50) return []
+
+  // Look forward: "32-27" or "32x27" or "32×27"
+  const afterNum = rest.slice(numMatch[1].length)
+  const forwardMatch = afterNum.match(/^[-x×](\d+)/)
+  if (forwardMatch) {
+    const num2 = parseInt(forwardMatch[1], 10)
+    if (num2 >= 1 && num2 <= 50) return [num1, num2]
+  }
+
+  // Look backward: "32-" or "32x" already read, now reading "27"
+  const before = text.slice(Math.max(0, charIndex - 4), charIndex)
+  const backMatch = before.match(/(\d+)[-x×]$/)
+  if (backMatch) {
+    const num2 = parseInt(backMatch[1], 10)
+    if (num2 >= 1 && num2 <= 50) return [num2, num1]
+  }
+
+  return [num1]
+}
+
+function useSpeech(language: string, onSquares: (squares: number[]) => void) {
   const [speaking, setSpeaking] = useState(false)
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
@@ -28,19 +55,12 @@ function useSpeech(language: string, onSquare: (sq: number | null) => void) {
 
     utterance.onboundary = (event) => {
       if (event.name !== 'word') return
-      const rest = text.slice(event.charIndex)
-      const word = rest.match(/^\d+/)?.[0]
-      if (word) {
-        const num = parseInt(word, 10)
-        onSquare(num >= 1 && num <= 50 ? num : null)
-      } else {
-        onSquare(null)
-      }
+      onSquares(extractMoveSquares(text, event.charIndex))
     }
 
     utterance.onstart = () => setSpeaking(true)
-    utterance.onend = () => { setSpeaking(false); onSquare(null) }
-    utterance.onerror = () => { setSpeaking(false); onSquare(null) }
+    utterance.onend = () => { setSpeaking(false); onSquares([]) }
+    utterance.onerror = () => { setSpeaking(false); onSquares([]) }
 
     utteranceRef.current = utterance
     window.speechSynthesis.speak(utterance)
@@ -65,6 +85,7 @@ export default function AnalysisPanel({
   const { t, language } = useLanguage()
   const [question, setQuestion] = useState('')
   const { speak, stop, speaking } = useSpeech(language, onHighlightSquare)
+
 
   const handleAnalyze = async () => {
     stop()

@@ -11,7 +11,7 @@ interface BoardProps {
   disabled?: boolean
   lastMove?: MoveData | null
   highlightSquares?: number[]
-  spokenSquare?: number | null
+  spokenSquares?: number[]
 }
 
 function PieceIcon({ piece }: { piece: number }) {
@@ -55,7 +55,7 @@ export default function Board({
   disabled = false,
   lastMove = null,
   highlightSquares = [],
-  spokenSquare = null,
+  spokenSquares = [],
 }: BoardProps) {
   const legalTargets = useCallback((): Set<number> => {
     if (selectedSquare === null) return new Set()
@@ -116,7 +116,7 @@ export default function Board({
       const isSelected = sq !== null && sq === selectedSquare
       const isLegalTarget = sq !== null && targets.has(sq)
       const isMoveable = sq !== null && legalFromSquares().has(sq)
-      const isSpoken = sq !== null && sq === spokenSquare
+      const isSpoken = sq !== null && spokenSquares.includes(sq)
       const isLastMove = sq !== null && lastMovePath.has(sq)
       const isHighlighted = sq !== null && highlightSquares.includes(sq)
       const piece = sq !== null ? board[sq] : EMPTY
