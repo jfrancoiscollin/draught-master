@@ -16,12 +16,10 @@ import {
 } from './api/client'
 import {
   EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
-  sqToRowCol,
 } from './types'
 import type {
   GameStateResponse,
   MoveData,
-  LegalMovesResponse,
   AnalysisResponse,
   ExerciseCheckResponse,
   GameDetailResponse,
@@ -48,6 +46,12 @@ function fenToBoard(fen: string): number[] {
 }
 
 type Tab = 'play' | 'exercises' | 'history'
+
+const TAB_ICONS: Record<Tab, string> = {
+  play: '♟',
+  exercises: '✏️',
+  history: '📋',
+}
 
 export default function App() {
   const { t, language } = useLanguage()
@@ -85,18 +89,15 @@ export default function App() {
       setLegalMoves([])
       setMoveHistory([])
       setAnalysis(null)
-    } catch (e) {
+    } catch {
       showToast(t('errorCreatingGame'))
     } finally {
       setIsAiThinking(false)
     }
   }, [aiDepth, t])
 
-  useEffect(() => {
-    startNewGame()
-  }, [])
+  useEffect(() => { startNewGame() }, [])
 
-  // Pre-fetch all legal moves whenever it becomes white's turn
   useEffect(() => {
     if (!gameState?.game_id || gameState.result || gameState.turn !== 'white') {
       setLegalMoves([])
@@ -115,14 +116,12 @@ export default function App() {
 
   const handleMove = useCallback(async (move: MoveData) => {
     if (!gameState || gameState.result || isAiThinking) return
-
     setSelectedSquare(null)
     setLegalMoves([])
     setIsAiThinking(true)
-
     try {
       const response = await makeMove(gameState.game_id, move, aiDepth)
-      const newState: GameStateResponse = {
+      setGameState({
         game_id: response.game_id,
         board: response.board,
         turn: response.turn,
@@ -131,8 +130,7 @@ export default function App() {
         result: response.result,
         fen: response.fen,
         last_move: response.ai_move || response.player_move,
-      }
-      setGameState(newState)
+      })
       setMoveHistory(prev => {
         const updated = [...prev, response.player_move]
         if (response.ai_move) updated.push(response.ai_move)
@@ -155,8 +153,7 @@ export default function App() {
       return result
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } } }
-      const detail = err?.response?.data?.detail || "Erreur inconnue"
-      showToast(`${t('errorAnalysis')}${detail}`)
+      showToast(`${t('errorAnalysis')}${err?.response?.data?.detail || 'Erreur inconnue'}`)
       return null
     } finally {
       setAnalysisLoading(false)
@@ -164,8 +161,7 @@ export default function App() {
   }, [gameState, language, t])
 
   const handleExerciseLoad = useCallback((fen: string, exerciseId: number) => {
-    const board = fenToBoard(fen)
-    setExerciseGameState({ board, fen, exerciseId })
+    setExerciseGameState({ board: fenToBoard(fen), fen, exerciseId })
   }, [])
 
   const handleExerciseMoveSubmit = useCallback(async (moves: string[]): Promise<ExerciseCheckResponse | null> => {
@@ -181,9 +177,7 @@ export default function App() {
   const handleReplay = useCallback((detail: GameDetailResponse) => {
     setReplayDetail(detail)
     setReplayFenIndex(0)
-    if (detail.fen_positions.length > 0) {
-      setReplayBoard(fenToBoard(detail.fen_positions[0]))
-    }
+    if (detail.fen_positions.length > 0) setReplayBoard(fenToBoard(detail.fen_positions[0]))
   }, [])
 
   const replayStep = (delta: number) => {
@@ -193,7 +187,7 @@ export default function App() {
     setReplayBoard(fenToBoard(replayDetail.fen_positions[newIdx]))
   }
 
-  const getResultLabel = (result: string | null): string => {
+  const getResultLabel = (result: string | null) => {
     if (result === 'white') return t('resultWhiteWins')
     if (result === 'black') return t('resultBlackWins')
     if (result === 'draw') return t('resultDraw')
@@ -211,40 +205,35 @@ export default function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
-      {toastMsg && (
-        <Toast message={toastMsg} onClose={() => setToastMsg(null)} />
-      )}
+    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+      {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+      {/* Header — compact on mobile */}
+      <header className="bg-gray-800 border-b border-gray-700 px-4 py-3 flex-shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-green-400">
-              ♟ AI-Draught
-            </h1>
-            <p className="text-xs text-gray-400">{t('appSubtitle')}</p>
-          </div>
-          <div className="flex items-center gap-4">
-            {gameState && (
-              <div className="text-sm text-gray-400">
-                {isAiThinking && (
-                  <span className="flex items-center gap-2 text-yellow-400">
-                    <div className="spinner" style={{ width: 16, height: 16 }} />
-                    {t('aiThinking')}
-                  </span>
-                )}
-                {!isAiThinking && gameState.result && (
-                  <span className="text-yellow-300 font-semibold">{getResultLabel(gameState.result)}</span>
-                )}
-              </div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold text-green-400">♟ AI-Draught</h1>
+            {isAiThinking && (
+              <span className="flex items-center gap-1 text-yellow-400 text-xs">
+                <div className="spinner" style={{ width: 12, height: 12 }} />
+                <span className="hidden sm:inline">{t('aiThinking')}</span>
+              </span>
             )}
+            {!isAiThinking && gameState?.result && (
+              <span className="text-yellow-300 font-semibold text-sm">
+                {getResultLabel(gameState.result)}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
             <LanguageSelector />
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 pt-4">
-        <div className="flex gap-0 border-b border-gray-700">
+      {/* Top tabs — desktop only */}
+      <div className="hidden lg:block bg-gray-800 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 flex gap-0">
           {tabs.map(([key, label]) => (
             <button
               key={key}
@@ -257,10 +246,15 @@ export default function App() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      {/* Main content */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-2 lg:px-4 py-3 pb-24 lg:pb-6 overflow-y-auto">
+
+        {/* PLAY TAB */}
         {tab === 'play' && (
-          <div className="flex gap-6 flex-wrap lg:flex-nowrap">
-            <div className="flex-shrink-0">
+          <div className="flex flex-col lg:flex-row gap-4">
+
+            {/* Board — full width on mobile */}
+            <div className="w-full lg:flex-shrink-0 lg:w-auto flex flex-col items-center">
               <Board
                 board={currentBoard}
                 legalMoves={legalMoves}
@@ -272,14 +266,14 @@ export default function App() {
                 spokenSquares={spokenSquares}
               />
               {gameState && (
-                <div className="mt-2 flex justify-between text-xs text-gray-500 px-1">
-                  <span>{t('whitePerspective')}</span>
-                  <span>FEN: {gameState.fen.substring(0, 30)}...</span>
-                </div>
+                <p className="mt-1 text-xs text-gray-500 self-start px-1">
+                  {t('whitePerspective')}
+                </p>
               )}
             </div>
 
-            <div className="flex-1 flex flex-col gap-4 min-w-64">
+            {/* Side panels */}
+            <div className="flex-1 flex flex-col gap-3 min-w-0">
               <AnalysisPanel
                 gameId={gameState?.game_id || null}
                 onAnalyze={handleAnalyze}
@@ -287,7 +281,6 @@ export default function App() {
                 loading={analysisLoading}
                 onHighlightSquare={setSpokenSquares}
               />
-
               <GameControls
                 result={gameState?.result || null}
                 turn={gameState?.turn || 'white'}
@@ -297,7 +290,6 @@ export default function App() {
                 onAiDepthChange={setAiDepth}
                 disabled={isAiThinking}
               />
-
               <MoveList
                 moves={moveHistory}
                 currentMoveIndex={moveHistory.length - 1}
@@ -306,9 +298,10 @@ export default function App() {
           </div>
         )}
 
+        {/* EXERCISES TAB */}
         {tab === 'exercises' && (
-          <div className="flex gap-6 flex-wrap lg:flex-nowrap">
-            <div className="flex-shrink-0">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="w-full lg:flex-shrink-0 lg:w-auto flex flex-col items-center">
               <Board
                 board={exerciseGameState?.board || new Array(51).fill(EMPTY)}
                 legalMoves={[]}
@@ -317,12 +310,9 @@ export default function App() {
                 onSelectSquare={() => {}}
                 disabled={true}
               />
-              <p className="mt-2 text-xs text-gray-500 text-center">
-                {t('exerciseReadOnly')}
-              </p>
+              <p className="mt-1 text-xs text-gray-500">{t('exerciseReadOnly')}</p>
             </div>
-
-            <div className="flex-1 min-w-64">
+            <div className="flex-1 min-w-0">
               <ExercisePanel
                 onExerciseLoad={handleExerciseLoad}
                 currentExerciseId={exerciseGameState?.exerciseId || null}
@@ -332,9 +322,10 @@ export default function App() {
           </div>
         )}
 
+        {/* HISTORY TAB */}
         {tab === 'history' && (
-          <div className="flex gap-6 flex-wrap lg:flex-nowrap">
-            <div className="flex-shrink-0">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="w-full lg:flex-shrink-0 lg:w-auto flex flex-col items-center">
               {replayBoard ? (
                 <>
                   <Board
@@ -346,51 +337,52 @@ export default function App() {
                     disabled={true}
                   />
                   {replayDetail && (
-                    <div className="mt-2 flex items-center justify-center gap-3">
-                      <button
-                        onClick={() => replayStep(-1)}
-                        disabled={replayFenIndex === 0}
-                        className="btn-secondary text-sm"
-                      >
+                    <div className="mt-2 flex items-center justify-center gap-3 w-full">
+                      <button onClick={() => replayStep(-1)} disabled={replayFenIndex === 0} className="btn-secondary text-sm flex-1">
                         {t('previous')}
                       </button>
-                      <span className="text-gray-400 text-sm">
+                      <span className="text-gray-400 text-sm whitespace-nowrap">
                         {replayFenIndex + 1} / {replayDetail.fen_positions.length}
                       </span>
-                      <button
-                        onClick={() => replayStep(1)}
-                        disabled={replayFenIndex >= (replayDetail.fen_positions.length - 1)}
-                        className="btn-secondary text-sm"
-                      >
+                      <button onClick={() => replayStep(1)} disabled={replayFenIndex >= replayDetail.fen_positions.length - 1} className="btn-secondary text-sm flex-1">
                         {t('next')}
                       </button>
                     </div>
                   )}
                 </>
               ) : (
-                <div
-                  style={{
-                    width: 560,
-                    height: 560,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: '#1f2937',
-                    borderRadius: 8,
-                    border: '1px dashed #374151',
-                  }}
-                >
-                  <p className="text-gray-600 text-sm">{t('selectGame')}</p>
+                <div className="w-full aspect-square max-w-sm flex items-center justify-center bg-gray-800 rounded-lg border border-dashed border-gray-700">
+                  <p className="text-gray-600 text-sm text-center px-4">{t('selectGame')}</p>
                 </div>
               )}
             </div>
-
-            <div className="flex-1 min-w-64">
+            <div className="flex-1 min-w-0">
               <GameHistory onReplay={handleReplay} />
             </div>
           </div>
         )}
       </main>
+
+      {/* Bottom navigation — mobile only */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-40">
+        <div className="flex">
+          {tabs.map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex-1 flex flex-col items-center justify-center py-3 gap-0.5 transition-colors ${
+                tab === key ? 'text-green-400' : 'text-gray-400 active:text-gray-200'
+              }`}
+            >
+              <span className="text-xl leading-none">{TAB_ICONS[key]}</span>
+              <span className="text-xs font-medium">{label}</span>
+              {tab === key && (
+                <span className="absolute bottom-0 w-1/3 h-0.5 bg-green-400 rounded-t" />
+              )}
+            </button>
+          ))}
+        </div>
+      </nav>
     </div>
   )
 }
