@@ -246,15 +246,15 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto overscroll-contain max-w-7xl mx-auto w-full px-2 lg:px-4 py-3 pb-24 lg:pb-6">
+      {/* Main content — overflow:hidden on mobile so only panels scroll, not the page */}
+      <main className="flex-1 overflow-hidden lg:overflow-y-auto">
 
         {/* PLAY TAB */}
         {tab === 'play' && (
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
 
-            {/* Board — full width on mobile */}
-            <div className="w-full lg:flex-shrink-0 lg:w-auto flex flex-col items-center">
+            {/* Board — never scrolls, stays locked at top on mobile */}
+            <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0">
               <Board
                 board={currentBoard}
                 legalMoves={legalMoves}
@@ -266,42 +266,42 @@ export default function App() {
                 spokenSquares={spokenSquares}
               />
               {gameState && (
-                <p className="mt-1 text-xs text-gray-500 self-start px-1">
-                  {t('whitePerspective')}
-                </p>
+                <p className="mt-1 text-xs text-gray-500 self-start">{t('whitePerspective')}</p>
               )}
             </div>
 
-            {/* Side panels */}
-            <div className="flex-1 flex flex-col gap-3 min-w-0">
-              <AnalysisPanel
-                gameId={gameState?.game_id || null}
-                onAnalyze={handleAnalyze}
-                analysis={analysis}
-                loading={analysisLoading}
-                onHighlightSquare={setSpokenSquares}
-              />
-              <GameControls
-                result={gameState?.result || null}
-                turn={gameState?.turn || 'white'}
-                moveCount={gameState?.move_count || 0}
-                aiDepth={aiDepth}
-                onNewGame={startNewGame}
-                onAiDepthChange={setAiDepth}
-                disabled={isAiThinking}
-              />
-              <MoveList
-                moves={moveHistory}
-                currentMoveIndex={moveHistory.length - 1}
-              />
+            {/* Panels — scrollable zone on mobile */}
+            <div className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0">
+              <div className="flex flex-col gap-3 px-2 py-3 lg:px-0">
+                <AnalysisPanel
+                  gameId={gameState?.game_id || null}
+                  onAnalyze={handleAnalyze}
+                  analysis={analysis}
+                  loading={analysisLoading}
+                  onHighlightSquare={setSpokenSquares}
+                />
+                <GameControls
+                  result={gameState?.result || null}
+                  turn={gameState?.turn || 'white'}
+                  moveCount={gameState?.move_count || 0}
+                  aiDepth={aiDepth}
+                  onNewGame={startNewGame}
+                  onAiDepthChange={setAiDepth}
+                  disabled={isAiThinking}
+                />
+                <MoveList
+                  moves={moveHistory}
+                  currentMoveIndex={moveHistory.length - 1}
+                />
+              </div>
             </div>
           </div>
         )}
 
         {/* EXERCISES TAB */}
         {tab === 'exercises' && (
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="w-full lg:flex-shrink-0 lg:w-auto flex flex-col items-center">
+          <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
+            <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0">
               <Board
                 board={exerciseGameState?.board || new Array(51).fill(EMPTY)}
                 legalMoves={[]}
@@ -312,20 +312,22 @@ export default function App() {
               />
               <p className="mt-1 text-xs text-gray-500">{t('exerciseReadOnly')}</p>
             </div>
-            <div className="flex-1 min-w-0">
-              <ExercisePanel
-                onExerciseLoad={handleExerciseLoad}
-                currentExerciseId={exerciseGameState?.exerciseId || null}
-                onMoveSubmit={handleExerciseMoveSubmit}
-              />
+            <div className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0">
+              <div className="px-2 py-3 lg:px-0">
+                <ExercisePanel
+                  onExerciseLoad={handleExerciseLoad}
+                  currentExerciseId={exerciseGameState?.exerciseId || null}
+                  onMoveSubmit={handleExerciseMoveSubmit}
+                />
+              </div>
             </div>
           </div>
         )}
 
         {/* HISTORY TAB */}
         {tab === 'history' && (
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="w-full lg:flex-shrink-0 lg:w-auto flex flex-col items-center">
+          <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
+            <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0">
               {replayBoard ? (
                 <>
                   <Board
@@ -337,7 +339,7 @@ export default function App() {
                     disabled={true}
                   />
                   {replayDetail && (
-                    <div className="mt-2 flex items-center justify-center gap-3 w-full">
+                    <div className="mt-2 flex items-center gap-3 w-full">
                       <button onClick={() => replayStep(-1)} disabled={replayFenIndex === 0} className="btn-secondary text-sm flex-1">
                         {t('previous')}
                       </button>
@@ -356,8 +358,10 @@ export default function App() {
                 </div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <GameHistory onReplay={handleReplay} />
+            <div className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0">
+              <div className="px-2 py-3 lg:px-0">
+                <GameHistory onReplay={handleReplay} />
+              </div>
             </div>
           </div>
         )}
