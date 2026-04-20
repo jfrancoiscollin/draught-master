@@ -69,7 +69,7 @@ function useSpeech(language: string, onSquares: (squares: number[]) => void) {
   const stop = () => {
     window.speechSynthesis?.cancel()
     setSpeaking(false)
-    onSquare(null)
+    onSquares([])
   }
 
   return { speak, stop, speaking }
