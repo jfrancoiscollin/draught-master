@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import type { AnalysisResponse } from '../types'
 import { useLanguage } from '../i18n/LanguageContext'
 
@@ -9,18 +9,54 @@ interface AnalysisPanelProps {
   loading: boolean
 }
 
+function useSpeech(language: string) {
+  const [speaking, setSpeaking] = useState(false)
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
+
+  useEffect(() => {
+    return () => { window.speechSynthesis?.cancel() }
+  }, [])
+
+  const speak = (text: string) => {
+    if (!window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = language === 'en' ? 'en-GB' : 'fr-FR'
+    utterance.rate = 0.95
+    utterance.onstart = () => setSpeaking(true)
+    utterance.onend = () => setSpeaking(false)
+    utterance.onerror = () => setSpeaking(false)
+
+    utteranceRef.current = utterance
+    window.speechSynthesis.speak(utterance)
+  }
+
+  const stop = () => {
+    window.speechSynthesis?.cancel()
+    setSpeaking(false)
+  }
+
+  return { speak, stop, speaking }
+}
+
 export default function AnalysisPanel({
   gameId,
   onAnalyze,
   analysis,
   loading,
 }: AnalysisPanelProps) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [question, setQuestion] = useState('')
+  const { speak, stop, speaking } = useSpeech(language)
 
   const handleAnalyze = async () => {
-    await onAnalyze(question || undefined)
+    stop()
+    const result = await onAnalyze(question || undefined)
     setQuestion('')
+    if (result?.analysis) {
+      speak(result.analysis)
+    }
   }
 
   return (
@@ -83,8 +119,22 @@ export default function AnalysisPanel({
           )}
 
           <div>
-            <div className="text-xs text-gray-400 uppercase font-semibold mb-1">
-              {t('fullAnalysis')}
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-xs text-gray-400 uppercase font-semibold">
+                {t('fullAnalysis')}
+              </div>
+              <button
+                onClick={speaking ? stop : () => speak(analysis.analysis)}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
+                  speaking
+                    ? 'bg-red-700 hover:bg-red-600 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                }`}
+                title={speaking ? t('stopReading') : t('readAloud')}
+              >
+                <span>{speaking ? '⏹' : '🔊'}</span>
+                <span>{speaking ? t('stopReading') : t('readAloud')}</span>
+              </button>
             </div>
             <div className="bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto text-xs">
               {analysis.analysis}
