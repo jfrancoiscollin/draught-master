@@ -26,6 +26,7 @@ import type {
   GameDetailResponse,
 } from './types'
 import { useLanguage } from './i18n/LanguageContext'
+import { playMoveSound } from './utils/sound'
 
 function applyMoveLocally(board: number[], move: MoveData): number[] {
   const newBoard = [...board]
@@ -135,11 +136,13 @@ export default function App() {
     setIsAiThinking(true)
 
     // Optimistic update: show player's move immediately, no waiting for server
+    playMoveSound()
     const optimisticBoard = applyMoveLocally(gameState.board, move)
     setGameState(prev => prev ? { ...prev, board: optimisticBoard, turn: 'black', last_move: move } : prev)
 
     try {
       const response = await makeMove(gameState.game_id, move, aiDepth)
+      if (response.ai_move) playMoveSound()
       setGameState({
         game_id: response.game_id,
         board: response.board,
