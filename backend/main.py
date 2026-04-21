@@ -1,8 +1,12 @@
 from __future__ import annotations
+import asyncio
+import logging
 import os
 import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional, List
+
+logging.basicConfig(level=logging.INFO)
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +19,7 @@ from game_engine import (
     game_result, board_to_fen, fen_to_board, move_to_pdn,
 )
 from ai_engine import get_best_move
+from scan_engine import get_scan_move
 from claude_advisor import analyze_position, suggest_exercises
 from database import init_db, save_game, get_games, get_game, get_exercises, get_exercise, record_progress
 from models import (
@@ -126,7 +131,15 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
 
     if result is None and state.turn == "black":
         depth = req.ai_depth
-        ai_move = get_best_move(state, depth=depth)
+        loop = asyncio.get_event_loop()
+
+        def _pick_move(s: GameState, d: int) -> Optional[Move]:
+            move = get_scan_move(s, d)
+            if move is None:
+                move = get_best_move(s, depth=d)
+            return move
+
+        ai_move = await loop.run_in_executor(None, _pick_move, state, depth)
         if ai_move:
             state = apply_move(state, ai_move)
             entry["state"] = state
