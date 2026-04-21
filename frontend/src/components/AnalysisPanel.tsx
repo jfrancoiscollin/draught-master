@@ -83,14 +83,20 @@ export default function AnalysisPanel({
   onHighlightSquare,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
+  const [mode, setMode] = useState<'bestmove' | 'full' | null>(null)
   const { speak, stop, speaking } = useSpeech(language, onHighlightSquare)
 
-  const handleAnalyze = async (question?: string) => {
+  const handleBestMove = async () => {
     stop()
-    const result = await onAnalyze(question)
-    if (result?.analysis) {
-      speak(result.analysis)
-    }
+    setMode('bestmove')
+    await onAnalyze()
+  }
+
+  const handleFullAnalyze = async () => {
+    stop()
+    setMode('full')
+    const result = await onAnalyze()
+    if (result?.analysis) speak(result.analysis)
   }
 
   return (
@@ -99,41 +105,55 @@ export default function AnalysisPanel({
 
       <div className="flex gap-2">
         <button
-          onClick={() => handleAnalyze(t('bestMoveQuestion'))}
+          onClick={handleBestMove}
           disabled={!gameId || loading}
           className="btn-secondary text-sm flex-1"
         >
-          {t('bestMove')}
+          {loading && mode === 'bestmove' ? (
+            <span className="flex items-center gap-2 justify-center">
+              <div className="spinner" style={{ width: 16, height: 16 }} />
+            </span>
+          ) : t('bestMove')}
         </button>
         <button
-          onClick={() => handleAnalyze()}
+          onClick={handleFullAnalyze}
           disabled={!gameId || loading}
           className="btn-primary text-sm flex-1"
         >
-          {loading ? (
+          {loading && mode === 'full' ? (
             <span className="flex items-center gap-2 justify-center">
               <div className="spinner" style={{ width: 16, height: 16 }} />
               {t('analyzing')}
             </span>
-          ) : (
-            t('analyze')
-          )}
+          ) : t('analyze')}
         </button>
       </div>
 
-      {analysis && (
+      {analysis && mode === 'bestmove' && (
+        <div className="flex flex-wrap gap-1">
+          {analysis.best_moves.length > 0 ? (
+            analysis.best_moves.map((m, i) => (
+              <span
+                key={i}
+                className="bg-gray-700 text-amber-400 px-2 py-1 rounded font-mono text-sm font-semibold"
+              >
+                {m}
+              </span>
+            ))
+          ) : (
+            <p className="text-gray-500 text-sm italic">{t('noMoves')}</p>
+          )}
+        </div>
+      )}
+
+      {analysis && mode === 'full' && (
         <div className="flex flex-col gap-3 text-sm">
           {analysis.best_moves.length > 0 && (
             <div>
-              <div className="text-xs text-gray-400 uppercase font-semibold mb-1">
-                {t('bestMoves')}
-              </div>
+              <div className="text-xs text-gray-400 uppercase font-semibold mb-1">{t('bestMoves')}</div>
               <div className="flex flex-wrap gap-1">
                 {analysis.best_moves.map((m, i) => (
-                  <span
-                    key={i}
-                    className="bg-gray-700 text-amber-400 px-2 py-0.5 rounded font-mono text-xs"
-                  >
+                  <span key={i} className="bg-gray-700 text-amber-400 px-2 py-0.5 rounded font-mono text-xs">
                     {m}
                   </span>
                 ))}
@@ -143,26 +163,19 @@ export default function AnalysisPanel({
 
           {analysis.strategic_advice && (
             <div>
-              <div className="text-xs text-gray-400 uppercase font-semibold mb-1">
-                {t('strategicAdvice')}
-              </div>
+              <div className="text-xs text-gray-400 uppercase font-semibold mb-1">{t('strategicAdvice')}</div>
               <p className="text-gray-200 leading-relaxed">{analysis.strategic_advice}</p>
             </div>
           )}
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <div className="text-xs text-gray-400 uppercase font-semibold">
-                {t('fullAnalysis')}
-              </div>
+              <div className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</div>
               <button
                 onClick={speaking ? stop : () => speak(analysis.analysis)}
                 className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
-                  speaking
-                    ? 'bg-red-700 hover:bg-red-600 text-white'
-                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                  speaking ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                 }`}
-                title={speaking ? t('stopReading') : t('readAloud')}
               >
                 <span>{speaking ? '⏹' : '🔊'}</span>
                 <span>{speaking ? t('stopReading') : t('readAloud')}</span>
@@ -175,15 +188,10 @@ export default function AnalysisPanel({
 
           {analysis.key_squares.length > 0 && (
             <div>
-              <div className="text-xs text-gray-400 uppercase font-semibold mb-1">
-                {t('keySquares')}
-              </div>
+              <div className="text-xs text-gray-400 uppercase font-semibold mb-1">{t('keySquares')}</div>
               <div className="flex flex-wrap gap-1">
                 {analysis.key_squares.map(sq => (
-                  <span
-                    key={sq}
-                    className="bg-yellow-800 text-yellow-200 px-2 py-0.5 rounded text-xs font-mono"
-                  >
+                  <span key={sq} className="bg-yellow-800 text-yellow-200 px-2 py-0.5 rounded text-xs font-mono">
                     {sq}
                   </span>
                 ))}
@@ -194,9 +202,7 @@ export default function AnalysisPanel({
       )}
 
       {!analysis && !loading && (
-        <p className="text-gray-500 text-sm italic">
-          {t('clickToAnalyze')}
-        </p>
+        <p className="text-gray-500 text-sm italic">{t('clickToAnalyze')}</p>
       )}
     </div>
   )
