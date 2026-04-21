@@ -134,6 +134,11 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
         loop = asyncio.get_event_loop()
 
         def _pick_move(s: GameState, d: int) -> Optional[Move]:
+            legal = get_legal_moves(s)
+            if not legal:
+                return None
+            if len(legal) == 1:
+                return legal[0]
             move = get_scan_move(s, d)
             if move is None:
                 move = get_best_move(s, depth=d)
