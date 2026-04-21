@@ -1,4 +1,5 @@
 from __future__ import annotations
+import time
 from typing import Optional
 from game_engine import (
     GameState, Move, get_legal_moves, apply_move, game_result,
@@ -12,10 +13,17 @@ BLACK_BACK_ROW = {1, 2, 3, 4, 5}
 
 MATERIAL = {
     WHITE_MAN: 100,
-    WHITE_KING: 250,
+    WHITE_KING: 280,
     BLACK_MAN: -100,
-    BLACK_KING: -250,
+    BLACK_KING: -280,
 }
+
+# Time budget per level (seconds). Iterative deepening uses this as a hard cap.
+TIME_LIMITS = {1: 0.3, 2: 0.6, 3: 1.2, 4: 2.0, 5: 3.5, 6: 5.5, 7: 8.0, 8: 10.0}
+
+
+class _Timeout(Exception):
+    pass
 
 
 def _sq_row(sq: int) -> int:
@@ -44,14 +52,13 @@ def evaluate(state: GameState) -> float:
         if piece == WHITE_MAN:
             white_pieces += 1
             row = _sq_row(sq)
-            advancement = (9 - row) / 9.0 * 20
-            score += advancement
+            score += (9 - row) / 9.0 * 20  # advancement bonus
             if sq in CENTER_SQUARES:
                 score += 15
             elif sq in NEAR_CENTER:
                 score += 7
             if sq in WHITE_BACK_ROW:
-                score += 10
+                score += 8
 
         elif piece == WHITE_KING:
             white_pieces += 1
@@ -63,14 +70,13 @@ def evaluate(state: GameState) -> float:
         elif piece == BLACK_MAN:
             black_pieces += 1
             row = _sq_row(sq)
-            advancement = row / 9.0 * 20
-            score -= advancement
+            score -= row / 9.0 * 20
             if sq in CENTER_SQUARES:
                 score -= 15
             elif sq in NEAR_CENTER:
                 score -= 7
             if sq in BLACK_BACK_ROW:
-                score -= 10
+                score -= 8
 
         elif piece == BLACK_KING:
             black_pieces += 1
@@ -87,13 +93,24 @@ def evaluate(state: GameState) -> float:
     return score
 
 
-def minimax(
+def _order_moves(moves: list[Move]) -> list[Move]:
+    """Captures first — dramatically improves alpha-beta pruning."""
+    captures = [m for m in moves if m.captures]
+    quiet = [m for m in moves if not m.captures]
+    return captures + quiet
+
+
+def _minimax(
     state: GameState,
     depth: int,
     alpha: float,
     beta: float,
     maximizing: bool,
+    deadline: float,
 ) -> float:
+    if time.monotonic() > deadline:
+        raise _Timeout()
+
     result = game_result(state)
     if result is not None:
         if result == 'white':
@@ -105,27 +122,29 @@ def minimax(
     if depth == 0:
         return evaluate(state)
 
-    moves = get_legal_moves(state)
+    moves = _order_moves(get_legal_moves(state))
     if not moves:
         return evaluate(state)
 
     if maximizing:
         best = float('-inf')
         for move in moves:
-            new_state = apply_move(state, move)
-            val = minimax(new_state, depth - 1, alpha, beta, False)
-            best = max(best, val)
-            alpha = max(alpha, val)
+            val = _minimax(apply_move(state, move), depth - 1, alpha, beta, False, deadline)
+            if val > best:
+                best = val
+            if val > alpha:
+                alpha = val
             if beta <= alpha:
                 break
         return best
     else:
         best = float('inf')
         for move in moves:
-            new_state = apply_move(state, move)
-            val = minimax(new_state, depth - 1, alpha, beta, True)
-            best = min(best, val)
-            beta = min(beta, val)
+            val = _minimax(apply_move(state, move), depth - 1, alpha, beta, True, deadline)
+            if val < best:
+                best = val
+            if val < beta:
+                beta = val
             if beta <= alpha:
                 break
         return best
@@ -135,23 +154,49 @@ def get_best_move(state: GameState, depth: int = 6) -> Optional[Move]:
     moves = get_legal_moves(state)
     if not moves:
         return None
+    if len(moves) == 1:
+        return moves[0]
 
-    best_move = None
-    if state.turn == 'white':
-        best_val = float('-inf')
-        for move in moves:
-            new_state = apply_move(state, move)
-            val = minimax(new_state, depth - 1, float('-inf'), float('inf'), False)
-            if val > best_val:
-                best_val = val
-                best_move = move
-    else:
-        best_val = float('inf')
-        for move in moves:
-            new_state = apply_move(state, move)
-            val = minimax(new_state, depth - 1, float('-inf'), float('inf'), True)
-            if val < best_val:
-                best_val = val
-                best_move = move
+    time_limit = TIME_LIMITS.get(depth, 5.0)
+    deadline = time.monotonic() + time_limit
+    maximizing = (state.turn == 'white')
+
+    # Start with the first capture available, or first move — safe fallback
+    ordered = _order_moves(moves)
+    best_move = ordered[0]
+
+    # Iterative deepening: search d=1,2,3,... until time runs out
+    for d in range(1, depth + 1):
+        if time.monotonic() >= deadline:
+            break
+
+        iteration_best: Optional[Move] = None
+        iteration_best_val = float('-inf') if maximizing else float('inf')
+
+        try:
+            for move in ordered:
+                val = _minimax(
+                    apply_move(state, move),
+                    d - 1,
+                    float('-inf'),
+                    float('inf'),
+                    not maximizing,
+                    deadline,
+                )
+                if maximizing and val > iteration_best_val:
+                    iteration_best_val = val
+                    iteration_best = move
+                elif not maximizing and val < iteration_best_val:
+                    iteration_best_val = val
+                    iteration_best = move
+
+            # Full iteration completed — update best move and re-order (best-first)
+            if iteration_best is not None:
+                best_move = iteration_best
+                ordered = [best_move] + [m for m in ordered if m is not best_move]
+
+        except _Timeout:
+            # Time ran out mid-search — keep result from last completed iteration
+            break
 
     return best_move
