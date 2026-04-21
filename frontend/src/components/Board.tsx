@@ -16,30 +16,22 @@ interface BoardProps {
 
 function PieceIcon({ piece }: { piece: number }) {
   if (piece === WHITE_MAN) {
-    return (
-      <div className="piece piece-white w-full h-full flex items-center justify-center">
-        <div style={{ fontSize: '60%', lineHeight: 1 }}>●</div>
-      </div>
-    )
+    return <div className="piece piece-white w-full h-full" />
   }
   if (piece === WHITE_KING) {
     return (
-      <div className="piece piece-white-king w-full h-full flex items-center justify-center">
-        <div style={{ fontSize: '70%', lineHeight: 1 }}>♔</div>
+      <div className="piece piece-white w-full h-full flex items-center justify-center">
+        <span style={{ fontSize: '65%', lineHeight: 1, color: '#8B4513' }}>♛</span>
       </div>
     )
   }
   if (piece === BLACK_MAN) {
-    return (
-      <div className="piece piece-black w-full h-full flex items-center justify-center">
-        <div style={{ fontSize: '60%', lineHeight: 1, color: '#888' }}>●</div>
-      </div>
-    )
+    return <div className="piece piece-black w-full h-full" />
   }
   if (piece === BLACK_KING) {
     return (
-      <div className="piece piece-black-king w-full h-full flex items-center justify-center">
-        <div style={{ fontSize: '70%', lineHeight: 1 }}>♚</div>
+      <div className="piece piece-black w-full h-full flex items-center justify-center">
+        <span style={{ fontSize: '65%', lineHeight: 1, color: '#D4A017' }}>♛</span>
       </div>
     )
   }
@@ -86,10 +78,7 @@ export default function Board({
       const possibleMoves = legalMoves.filter(
         m => m.path[0] === selectedSquare && m.path[m.path.length - 1] === sq
       )
-      if (possibleMoves.length === 1) {
-        onMove(possibleMoves[0])
-        onSelectSquare(null)
-      } else if (possibleMoves.length > 1) {
+      if (possibleMoves.length >= 1) {
         onMove(possibleMoves[0])
         onSelectSquare(null)
       }
@@ -121,12 +110,12 @@ export default function Board({
       const isHighlighted = sq !== null && highlightSquares.includes(sq)
       const piece = sq !== null ? board[sq] : EMPTY
 
-      let bgColor = isDark ? '#2d5a1b' : '#f0d9b5'
+      let bgColor = isDark ? '#8B4513' : '#FFFFFF'
       if (isDark) {
-        if (isSelected) bgColor = '#c8b400'
-        else if (isLastMove) bgColor = '#4a7a28'
-        else if (isHighlighted) bgColor = '#1a6b3a'
-        else bgColor = '#2d5a1b'
+        if (isSelected) bgColor = '#D4A017'
+        else if (isLastMove) bgColor = '#A0522D'
+        else if (isHighlighted) bgColor = '#6B3410'
+        else bgColor = '#8B4513'
       }
 
       cells.push(
@@ -158,7 +147,7 @@ export default function Board({
                     position: 'relative',
                     zIndex: 1,
                     borderRadius: '50%',
-                    outline: isMoveable && !isSelected ? '2px solid rgba(100,220,100,0.5)' : 'none',
+                    outline: isMoveable && !isSelected ? '2px solid rgba(212,160,23,0.6)' : 'none',
                   }}
                 >
                   <PieceIcon piece={piece} />
@@ -170,7 +159,7 @@ export default function Board({
                     width: '30%',
                     height: '30%',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(100, 220, 100, 0.8)',
+                    backgroundColor: 'rgba(212, 160, 23, 0.85)',
                     position: 'absolute',
                     zIndex: 2,
                   }}
@@ -181,8 +170,7 @@ export default function Board({
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    borderRadius: 0,
-                    border: '3px solid rgba(100, 220, 100, 0.8)',
+                    border: '3px solid rgba(212, 160, 23, 0.85)',
                     zIndex: 3,
                     pointerEvents: 'none',
                   }}
@@ -194,7 +182,7 @@ export default function Board({
                   bottom: 1,
                   right: 2,
                   fontSize: '8px',
-                  color: 'rgba(255,255,255,0.3)',
+                  color: 'rgba(255,255,255,0.35)',
                   lineHeight: 1,
                   userSelect: 'none',
                 }}
@@ -215,7 +203,7 @@ export default function Board({
         gridTemplateColumns: 'repeat(10, 1fr)',
         width: '100%',
         maxWidth: '560px',
-        border: '3px solid #555',
+        border: '3px solid #5a3010',
         borderRadius: '4px',
         overflow: 'hidden',
         boxShadow: '0 8px 32px rgba(0,0,0,0.5)',

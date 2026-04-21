@@ -36,7 +36,7 @@ export default function MoveList({ moves, currentMoveIndex }: MoveListProps) {
         onClick={() => setOpen(v => !v)}
         className="flex items-center justify-between w-full text-left"
       >
-        <h3 className="text-lg font-bold text-green-400">{t('moveList')}</h3>
+        <h3 className="text-lg font-bold text-amber-600">{t('moveList')}</h3>
         <span className="text-gray-400 text-sm flex items-center gap-1">
           {moves.length > 0 && (
             <span className="bg-gray-700 text-gray-300 text-xs px-1.5 py-0.5 rounded-full">
@@ -62,7 +62,7 @@ export default function MoveList({ moves, currentMoveIndex }: MoveListProps) {
                     <td
                       className={`px-1 py-0.5 rounded ${
                         currentMoveIndex === pair.index
-                          ? 'bg-green-800 text-white'
+                          ? 'bg-amber-900 text-white'
                           : 'text-gray-200'
                       }`}
                     >
@@ -71,7 +71,7 @@ export default function MoveList({ moves, currentMoveIndex }: MoveListProps) {
                     <td
                       className={`px-1 py-0.5 rounded ${
                         currentMoveIndex === pair.index + 1
-                          ? 'bg-green-800 text-white'
+                          ? 'bg-amber-900 text-white'
                           : 'text-gray-400'
                       }`}
                     >

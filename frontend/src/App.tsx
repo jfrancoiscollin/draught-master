@@ -236,7 +236,7 @@ export default function App() {
       <header className="bg-gray-800 border-b border-gray-700 px-4 py-3 flex-shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-green-400">♟ AI-Draught</h1>
+            <h1 className="text-xl font-bold text-amber-600">♟ AI-Draught</h1>
             {isAiThinking && (
               <span className="flex items-center gap-1 text-yellow-400 text-xs">
                 <div className="spinner" style={{ width: 12, height: 12 }} />
@@ -426,13 +426,13 @@ export default function App() {
               key={key}
               onClick={() => setTab(key)}
               className={`flex-1 flex flex-col items-center justify-center py-3 gap-0.5 transition-colors ${
-                tab === key ? 'text-green-400' : 'text-gray-400 active:text-gray-200'
+                tab === key ? 'text-amber-600' : 'text-gray-400 active:text-gray-200'
               }`}
             >
               <span className="text-xl leading-none">{TAB_ICONS[key]}</span>
               <span className="text-xs font-medium">{label}</span>
               {tab === key && (
-                <span className="absolute bottom-0 w-1/3 h-0.5 bg-green-400 rounded-t" />
+                <span className="absolute bottom-0 w-1/3 h-0.5 bg-amber-600 rounded-t" />
               )}
             </button>
           ))}

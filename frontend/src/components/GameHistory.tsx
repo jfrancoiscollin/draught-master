@@ -74,7 +74,7 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="panel">
-        <h3 className="text-lg font-bold text-green-400 mb-3">{t('gameHistory')}</h3>
+        <h3 className="text-lg font-bold text-amber-600 mb-3">{t('gameHistory')}</h3>
 
         {loading ? (
           <div className="flex justify-center py-4">
@@ -90,7 +90,7 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
                 onClick={() => handleSelect(game.id)}
                 className={`text-left p-3 rounded-lg transition-colors ${
                   selected?.id === game.id
-                    ? 'bg-green-800 border border-green-600'
+                    ? 'bg-amber-900 border border-amber-700'
                     : 'bg-gray-700 hover:bg-gray-600'
                 }`}
               >

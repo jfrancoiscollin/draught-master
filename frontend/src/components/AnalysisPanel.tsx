@@ -98,7 +98,7 @@ export default function AnalysisPanel({
 
   return (
     <div className="panel flex flex-col gap-3">
-      <h3 className="text-lg font-bold text-green-400">{t('claudeAnalysis')}</h3>
+      <h3 className="text-lg font-bold text-amber-600">{t('claudeAnalysis')}</h3>
 
       <div className="flex gap-2">
         <input
@@ -108,7 +108,7 @@ export default function AnalysisPanel({
           onKeyDown={e => e.key === 'Enter' && !loading && gameId && handleAnalyze()}
           placeholder={t('yourQuestion')}
           disabled={!gameId || loading}
-          className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:outline-none focus:border-green-500 disabled:opacity-50"
+          className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:outline-none focus:border-amber-600 disabled:opacity-50"
         />
         <button
           onClick={handleAnalyze}
@@ -137,7 +137,7 @@ export default function AnalysisPanel({
                 {analysis.best_moves.map((m, i) => (
                   <span
                     key={i}
-                    className="bg-gray-700 text-green-300 px-2 py-0.5 rounded font-mono text-xs"
+                    className="bg-gray-700 text-amber-400 px-2 py-0.5 rounded font-mono text-xs"
                   >
                     {m}
                   </span>

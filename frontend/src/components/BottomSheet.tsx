@@ -21,7 +21,7 @@ export default function BottomSheet({ open, onClose, title, children }: BottomSh
         style={{ animation: 'slideUp 0.25s ease-out' }}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-          <h2 className="text-base font-bold text-green-400">{title}</h2>
+          <h2 className="text-base font-bold text-amber-600">{title}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-white text-2xl leading-none w-10 h-10 flex items-center justify-center"

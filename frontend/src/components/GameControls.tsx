@@ -31,7 +31,7 @@ export default function GameControls({
 
   return (
     <div className="panel flex flex-col gap-3">
-      <h3 className="text-lg font-bold text-green-400">{t('controls')}</h3>
+      <h3 className="text-lg font-bold text-amber-600">{t('controls')}</h3>
 
       <div className="flex items-center justify-between text-sm">
         <span className="text-gray-400">{t('turn')}</span>
@@ -61,7 +61,7 @@ export default function GameControls({
           max={8}
           value={aiDepth}
           onChange={e => onAiDepthChange(Number(e.target.value))}
-          className="w-full accent-green-500"
+          className="w-full accent-amber-600"
         />
         <div className="flex justify-between text-xs text-gray-500">
           <span>{t('easy')}</span>

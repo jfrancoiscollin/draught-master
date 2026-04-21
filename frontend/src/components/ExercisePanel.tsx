@@ -98,7 +98,7 @@ export default function ExercisePanel({
   return (
     <div className="flex flex-col gap-3 h-full">
       <div className="panel">
-        <h3 className="text-lg font-bold text-green-400 mb-3">{t('exercises')}</h3>
+        <h3 className="text-lg font-bold text-amber-600 mb-3">{t('exercises')}</h3>
 
         <div className="flex gap-2 mb-3 flex-wrap">
           <select
@@ -131,7 +131,7 @@ export default function ExercisePanel({
               onClick={() => handleSelect(ex)}
               className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                 currentExerciseId === ex.id
-                  ? 'bg-green-800 text-white'
+                  ? 'bg-amber-900 text-white'
                   : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
               }`}
             >
@@ -173,7 +173,7 @@ export default function ExercisePanel({
             <div
               className={`rounded-lg px-3 py-2 text-sm ${
                 feedback.correct
-                  ? 'bg-green-900 border border-green-600 text-green-200'
+                  ? 'bg-amber-900 border border-amber-700 text-amber-100'
                   : 'bg-red-900 border border-red-600 text-red-200'
               }`}
             >
@@ -193,7 +193,7 @@ export default function ExercisePanel({
               onChange={e => setMoveInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !loading && handleCheck()}
               placeholder={t('enterMoves')}
-              className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:outline-none focus:border-green-500 font-mono"
+              className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:outline-none focus:border-amber-600 font-mono"
             />
             <button
               onClick={handleCheck}
