@@ -6,31 +6,39 @@ RUN npm install
 COPY frontend/ ./
 RUN npm run build
 
-# ── Stage 2: Compile Scan draughts engine ────────────────────────────────
-FROM ubuntu:22.04 AS scan-builder
+# ── Stage 2: Fetch Scan engine + eval weights ────────────────────────────
+# Using the pre-compiled Linux binary from rhalbersma/scan (mirror of
+# Fabien Letouzey's Scan 3.1 — the engine behind lidraughts).
+# No C++ compilation needed.
+FROM ubuntu:22.04 AS scan-fetcher
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git g++ cmake make ca-certificates \
+        curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth=1 https://github.com/rhalbersma/scan.git /scan
-WORKDIR /scan
-RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG" \
-    && cmake --build build --parallel $(nproc)
-# Find the compiled binary wherever CMake placed it
-RUN find /scan/build -maxdepth 5 -name "scan" -type f -perm /111 \
-        | head -1 \
-        | xargs -I{} cp {} /usr/local/bin/scan \
-    && chmod +x /usr/local/bin/scan \
-    && echo "Scan built: $(/usr/local/bin/scan --version 2>&1 || echo 'ok')"
+RUN curl -fsSL \
+    "https://raw.githubusercontent.com/rhalbersma/scan/master/scan_linux" \
+    -o /scan && chmod +x /scan
 
-# ── Stage 3: Python backend ───────────────────────────────────────────────
+# Evaluation weights (~8.5 MB) — required for strong play
+RUN mkdir -p /scan-data && \
+    curl -fsSL \
+    "https://raw.githubusercontent.com/rhalbersma/scan/master/data/eval" \
+    -o /scan-data/eval
+
+# ── Stage 3: Python runtime ───────────────────────────────────────────────
 FROM python:3.12-slim
 WORKDIR /app/backend
 
-# Copy Scan binary (falls back gracefully if missing — minimax takes over)
-COPY --from=scan-builder /usr/local/bin/scan /usr/local/bin/scan
+# Runtime libs the Scan binary may need
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libstdc++6 libgcc-s1 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Python dependencies
+# Scan binary + data directory (scan looks for data/ relative to its CWD)
+COPY --from=scan-fetcher /scan /usr/local/bin/scan
+COPY --from=scan-fetcher /scan-data /app/backend/data
+
+# Python deps
 COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 

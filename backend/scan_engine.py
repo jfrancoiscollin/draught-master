@@ -1,42 +1,62 @@
 """
-Wrapper around the Scan draughts engine (Hub protocol).
+Wrapper around the Scan draughts engine (Hub protocol v2).
 Falls back gracefully to None if the binary is not available.
-
-Hub protocol reference: https://github.com/rhalbersma/scan
 """
 from __future__ import annotations
 
 import logging
 import os
 import queue
+import re
 import threading
 import time
 from typing import Optional
 
-from game_engine import GameState, Move, board_to_fen, get_legal_moves
+from game_engine import (
+    GameState, Move, get_legal_moves,
+    EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
+)
 
 logger = logging.getLogger(__name__)
 
 SCAN_PATH = os.environ.get("SCAN_PATH", "/usr/local/bin/scan")
 
-# Thinking time per level (ms) — mirrors ai_engine TIME_LIMITS
-TIME_LIMITS_MS = {
-    1: 300, 2: 600, 3: 1200, 4: 2000,
-    5: 3500, 6: 5500, 7: 8000, 8: 10000,
+# Thinking time per level (seconds)
+TIME_LIMITS = {
+    1: 0.3, 2: 0.6, 3: 1.2, 4: 2.0,
+    5: 3.5, 6: 5.5, 7: 8.0, 8: 10.0,
+}
+
+_PIECE_CHAR = {
+    EMPTY: 'e',
+    WHITE_MAN: 'w',
+    WHITE_KING: 'W',
+    BLACK_MAN: 'b',
+    BLACK_KING: 'B',
 }
 
 
+def _build_pos(state: GameState) -> str:
+    """Build the 51-char Hub position string (turn + 50 square chars)."""
+    turn_char = 'W' if state.turn == 'white' else 'B'
+    return turn_char + ''.join(_PIECE_CHAR[state.board[sq]] for sq in range(1, 51))
+
+
 class ScanEngine:
-    """Long-running Scan subprocess communicating via Hub protocol."""
+    """Long-running Scan subprocess communicating via Hub protocol v2."""
 
     def __init__(self, path: str) -> None:
-        self._proc = __import__("subprocess").Popen(
+        import subprocess
+        # CWD must be the backend dir so Scan finds data/eval relative to itself
+        cwd = os.path.dirname(os.path.abspath(__file__))
+        self._proc = subprocess.Popen(
             [path, "hub"],
-            stdin=__import__("subprocess").PIPE,
-            stdout=__import__("subprocess").PIPE,
-            stderr=__import__("subprocess").DEVNULL,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
             text=True,
             bufsize=1,
+            cwd=cwd,
         )
         self._q: queue.Queue[str] = queue.Queue()
         self._lock = threading.Lock()
@@ -70,30 +90,39 @@ class ScanEngine:
                 pass
 
     def _init(self) -> None:
+        # Step 1: announce GUI type, engine replies with id/param lines then "wait"
+        self._send("hub")
+        result = self._wait_for("wait", timeout=10.0)
+        if result is None:
+            raise RuntimeError("Scan did not send 'wait' during handshake")
+        # Step 2: configure and initialise
+        self._send("set-param name=variant value=normal")
+        self._send("set-param name=book value=false")
+        self._send("set-param name=bb-size value=0")
         self._send("init")
-        self._wait_for("done", timeout=10.0)
-        # Disable book and endgame bitbases (not available on server)
-        self._send("setoption name variant value normal")
-        self._send("setoption name book value false")
-        self._send("setoption name bb-size value 0")
+        result = self._wait_for("ready", timeout=30.0)
+        if result is None:
+            raise RuntimeError("Scan did not send 'ready' after init")
 
-    def best_move(self, fen: str, movetime_ms: int) -> Optional[str]:
+    def best_move(self, pos: str, movetime_s: float) -> Optional[str]:
         with self._lock:
-            # Drain any stale output
+            # Drain any stale output from a previous search
             while True:
                 try:
                     self._q.get_nowait()
                 except queue.Empty:
                     break
 
-            self._send("newgame")
-            self._send(f"pos {fen}")
-            self._send(f"go movetime {movetime_ms}")
+            self._send(f"pos pos={pos}")
+            self._send(f"level move-time={movetime_s}")
+            self._send("go think")
 
-            resp = self._wait_for("move ", timeout=movetime_ms / 1000 + 5.0)
-            if resp and resp.startswith("move "):
-                return resp[5:].strip()
-            return None
+            resp = self._wait_for("done ", timeout=movetime_s + 10.0)
+            if resp:
+                m = re.search(r'move=(\S+)', resp)
+                if m:
+                    return m.group(1)
+        return None
 
     def alive(self) -> bool:
         return self._proc.poll() is None
@@ -108,6 +137,9 @@ _engine_lock = threading.Lock()
 def _get_engine() -> Optional[ScanEngine]:
     global _engine
     if not os.path.isfile(SCAN_PATH):
+        return None
+    # Reject stub/placeholder files (real binary is ~700 KB)
+    if os.path.getsize(SCAN_PATH) < 1000:
         return None
     with _engine_lock:
         if _engine is None or not _engine.alive():
@@ -126,9 +158,9 @@ def _parse_move(notation: str, state: GameState) -> Optional[Move]:
     """
     Convert Scan Hub notation to a Move object.
 
-    Scan can output:
-      quiet:    '37-32'
-      capture:  '26x17'  or  '26x17x8'  (full path or abbreviated)
+    Quiet:   '37-32'
+    Capture: '26x17' or '26x17x8' — x-separated values are the landing squares
+             (from, intermediate landings..., final landing).
     """
     legal = get_legal_moves(state)
 
@@ -140,12 +172,12 @@ def _parse_move(notation: str, state: GameState) -> Optional[Move]:
 
         start, end = squares[0], squares[-1]
 
-        # 1. Exact path match (full path notation)
+        # Exact path match (Scan outputs the full sequence of landing squares)
         for m in legal:
             if m.path == squares:
                 return m
 
-        # 2. Start + end match (abbreviated notation, e.g. '26x8')
+        # Abbreviated notation — match by start and end squares only
         candidates = [
             m for m in legal
             if m.path[0] == start and m.path[-1] == end and m.captures
@@ -176,11 +208,11 @@ def get_scan_move(state: GameState, depth: int) -> Optional[Move]:
     if engine is None:
         return None
 
-    movetime_ms = TIME_LIMITS_MS.get(depth, 5000)
-    fen = board_to_fen(state)
+    movetime_s = TIME_LIMITS.get(depth, 5.0)
+    pos = _build_pos(state)
 
     try:
-        notation = engine.best_move(fen, movetime_ms)
+        notation = engine.best_move(pos, movetime_s)
         if notation:
             move = _parse_move(notation, state)
             if move:
