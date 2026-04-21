@@ -83,14 +83,11 @@ export default function AnalysisPanel({
   onHighlightSquare,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
-  const [question, setQuestion] = useState('')
   const { speak, stop, speaking } = useSpeech(language, onHighlightSquare)
 
-
-  const handleAnalyze = async () => {
+  const handleAnalyze = async (question?: string) => {
     stop()
-    const result = await onAnalyze(question || undefined)
-    setQuestion('')
+    const result = await onAnalyze(question)
     if (result?.analysis) {
       speak(result.analysis)
     }
@@ -98,25 +95,23 @@ export default function AnalysisPanel({
 
   return (
     <div className="panel flex flex-col gap-3">
-      <h3 className="text-lg font-bold text-amber-600">{t('claudeAnalysis')}</h3>
+      <h3 className="text-lg font-bold text-amber-600">{t('analysis')}</h3>
 
       <div className="flex gap-2">
-        <input
-          type="text"
-          value={question}
-          onChange={e => setQuestion(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !loading && gameId && handleAnalyze()}
-          placeholder={t('yourQuestion')}
-          disabled={!gameId || loading}
-          className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:outline-none focus:border-amber-600 disabled:opacity-50"
-        />
         <button
-          onClick={handleAnalyze}
+          onClick={() => handleAnalyze(t('bestMoveQuestion'))}
           disabled={!gameId || loading}
-          className="btn-primary text-sm whitespace-nowrap"
+          className="btn-secondary text-sm flex-1"
+        >
+          {t('bestMove')}
+        </button>
+        <button
+          onClick={() => handleAnalyze()}
+          disabled={!gameId || loading}
+          className="btn-primary text-sm flex-1"
         >
           {loading ? (
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-2 justify-center">
               <div className="spinner" style={{ width: 16, height: 16 }} />
               {t('analyzing')}
             </span>
