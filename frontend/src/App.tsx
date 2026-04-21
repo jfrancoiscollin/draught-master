@@ -7,6 +7,7 @@ import ExercisePanel from './components/ExercisePanel'
 import GameHistory from './components/GameHistory'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
+import BottomSheet from './components/BottomSheet'
 import {
   newGame,
   getLegalMoves,
@@ -67,6 +68,7 @@ export default function App() {
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [isAiThinking, setIsAiThinking] = useState(false)
   const [spokenSquares, setSpokenSquares] = useState<number[]>([])
+  const [showControls, setShowControls] = useState(false)
 
   const [exerciseGameState, setExerciseGameState] = useState<{
     board: number[]
@@ -227,6 +229,13 @@ export default function App() {
           </div>
           <div className="flex items-center gap-2">
             <LanguageSelector />
+            <button
+              onClick={() => setShowControls(true)}
+              className="lg:hidden text-gray-400 hover:text-white text-xl w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-700"
+              title={t('controls')}
+            >
+              ⚙️
+            </button>
           </div>
         </div>
       </header>
@@ -280,15 +289,18 @@ export default function App() {
                   loading={analysisLoading}
                   onHighlightSquare={setSpokenSquares}
                 />
-                <GameControls
-                  result={gameState?.result || null}
-                  turn={gameState?.turn || 'white'}
-                  moveCount={gameState?.move_count || 0}
-                  aiDepth={aiDepth}
-                  onNewGame={startNewGame}
-                  onAiDepthChange={setAiDepth}
-                  disabled={isAiThinking}
-                />
+                {/* Controls: desktop inline, mobile via bottom sheet */}
+                <div className="hidden lg:block">
+                  <GameControls
+                    result={gameState?.result || null}
+                    turn={gameState?.turn || 'white'}
+                    moveCount={gameState?.move_count || 0}
+                    aiDepth={aiDepth}
+                    onNewGame={startNewGame}
+                    onAiDepthChange={setAiDepth}
+                    disabled={isAiThinking}
+                  />
+                </div>
                 <MoveList
                   moves={moveHistory}
                   currentMoveIndex={moveHistory.length - 1}
@@ -366,6 +378,23 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Controls bottom sheet — mobile only */}
+      <BottomSheet
+        open={showControls}
+        onClose={() => setShowControls(false)}
+        title={t('controls')}
+      >
+        <GameControls
+          result={gameState?.result || null}
+          turn={gameState?.turn || 'white'}
+          moveCount={gameState?.move_count || 0}
+          aiDepth={aiDepth}
+          onNewGame={() => { startNewGame(); setShowControls(false) }}
+          onAiDepthChange={setAiDepth}
+          disabled={isAiThinking}
+        />
+      </BottomSheet>
 
       {/* Bottom navigation — mobile only */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-40">
