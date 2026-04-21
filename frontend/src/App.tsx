@@ -27,6 +27,18 @@ import type {
 } from './types'
 import { useLanguage } from './i18n/LanguageContext'
 
+function applyMoveLocally(board: number[], move: MoveData): number[] {
+  const newBoard = [...board]
+  const piece = newBoard[move.path[0]]
+  newBoard[move.path[0]] = EMPTY
+  for (const cap of move.captures) newBoard[cap] = EMPTY
+  const dest = move.path[move.path.length - 1]
+  newBoard[dest] = piece
+  if (piece === WHITE_MAN && dest <= 5) newBoard[dest] = WHITE_KING
+  if (piece === BLACK_MAN && dest >= 46) newBoard[dest] = BLACK_KING
+  return newBoard
+}
+
 function fenToBoard(fen: string): number[] {
   const board = new Array(51).fill(EMPTY)
   const parts = fen.split(':')
@@ -121,6 +133,11 @@ export default function App() {
     setSelectedSquare(null)
     setLegalMoves([])
     setIsAiThinking(true)
+
+    // Optimistic update: show player's move immediately, no waiting for server
+    const optimisticBoard = applyMoveLocally(gameState.board, move)
+    setGameState(prev => prev ? { ...prev, board: optimisticBoard, turn: 'black', last_move: move } : prev)
+
     try {
       const response = await makeMove(gameState.game_id, move, aiDepth)
       setGameState({
@@ -141,6 +158,8 @@ export default function App() {
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } } }
       showToast(err?.response?.data?.detail || 'Coup illégal ou erreur serveur.')
+      // Revert to original state on error
+      setGameState(prev => prev ? { ...prev, board: gameState.board, turn: 'white', last_move: gameState.last_move } : prev)
     } finally {
       setIsAiThinking(false)
     }
