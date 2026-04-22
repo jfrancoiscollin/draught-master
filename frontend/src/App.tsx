@@ -302,14 +302,14 @@ export default function App() {
                 spokenSquares={spokenSquares}
               />
               {gameState && (
-                <div className="mt-2 flex items-center justify-between w-full">
+                <div className="mt-2 w-full flex flex-col gap-1">
                   <button
                     onClick={handleUndo}
                     disabled={isAiThinking || !moveHistory.length || !!gameState.result}
                     title={t('undoMove')}
-                    className="flex items-center gap-1.5 text-sm font-medium text-amber-500 hover:text-amber-300 disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg border border-amber-700 hover:border-amber-500 hover:bg-amber-900/20 transition-colors"
+                    className="self-start flex items-center gap-2 text-sm font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-4 py-2 rounded-lg transition-colors"
                   >
-                    <span className="text-base leading-none">←</span>
+                    <span>←</span>
                     <span>{t('undoMove')}</span>
                   </button>
                   <p className="text-xs text-gray-500">{t('whitePerspective')}</p>
