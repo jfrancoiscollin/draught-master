@@ -329,16 +329,20 @@ export default function App() {
 
         {/* PLAY TAB */}
         {tab === 'play' && (
-          <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
+          <div className={
+            analysisExpanded
+              ? 'h-full flex flex-col lg:block lg:overflow-auto lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
+              : 'h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
+          }>
 
-            {/* Board — never scrolls, stays locked at top on mobile */}
+            {/* Board — floats to top-right when analysis is expanded */}
             <div
-              className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0 mx-auto lg:mx-0"
-              style={{
-                width: '100%',
-                maxWidth: analysisExpanded ? '280px' : '560px',
-                transition: 'max-width 0.4s ease',
-              }}
+              className={
+                analysisExpanded
+                  ? 'flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0 mx-auto lg:mx-0 lg:float-right lg:ml-4 lg:mb-2'
+                  : 'flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0'
+              }
+              style={{ width: '100%', maxWidth: analysisExpanded ? '280px' : '560px' }}
             >
               <Board
                 board={currentBoard}
@@ -386,8 +390,12 @@ export default function App() {
               )}
             </div>
 
-            {/* Panels — scrollable zone on mobile */}
-            <div className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0">
+            {/* Panels — scrollable on mobile, flows around floated board on desktop */}
+            <div className={
+              analysisExpanded
+                ? 'overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0 lg:overflow-visible'
+                : 'flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0'
+            }>
               <div className="flex flex-col gap-3 px-2 py-3 lg:px-0">
                 <AnalysisPanel
                   gameId={gameState?.game_id || null}
