@@ -195,31 +195,29 @@ export default function AnalysisPanel({
             </div>
           )}
 
-          {/* Full analysis — clears the board float and spans full width when expanded */}
-          <div style={expanded ? { clear: 'both', marginTop: '8px' } : {}}>
-            <div className="flex items-center justify-between mb-1">
-              <div className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</div>
-              <button
-                onClick={speaking ? stop : () => speak(analysis.analysis)}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
-                  speaking ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                }`}
-              >
-                <span>{speaking ? '⏹' : '🔊'}</span>
-                <span>{speaking ? t('stopReading') : t('readAloud')}</span>
-              </button>
+          {/* Full analysis text — only shown here when NOT expanded (App.tsx renders it full-width below) */}
+          {!expanded && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</div>
+                <button
+                  onClick={speaking ? stop : () => speak(analysis.analysis)}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
+                    speaking ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                  }`}
+                >
+                  <span>{speaking ? '⏹' : '🔊'}</span>
+                  <span>{speaking ? t('stopReading') : t('readAloud')}</span>
+                </button>
+              </div>
+              <div className="bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed whitespace-pre-wrap overflow-y-auto text-xs max-h-48">
+                {analysis.analysis}
+              </div>
             </div>
-            <div
-              className={`bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed whitespace-pre-wrap overflow-y-auto ${
-                expanded ? 'text-sm max-h-none' : 'text-xs max-h-48'
-              }`}
-            >
-              {analysis.analysis}
-            </div>
-          </div>
+          )}
 
           {analysis.key_squares.length > 0 && (
-            <div style={expanded ? { clear: 'both' } : {}}>
+            <div>
               <div className="text-xs text-gray-400 uppercase font-semibold mb-1">{t('keySquares')}</div>
               <div className="flex flex-wrap gap-1">
                 {analysis.key_squares.map(sq => (

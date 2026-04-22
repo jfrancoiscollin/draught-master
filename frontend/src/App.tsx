@@ -84,6 +84,7 @@ export default function App() {
   const [spokenSquares, setSpokenSquares] = useState<number[]>([])
   const [showControls, setShowControls] = useState(false)
   const [analysisExpanded, setAnalysisExpanded] = useState(false)
+  const [fullSpeaking, setFullSpeaking] = useState(false)
 
   const [exerciseGameState, setExerciseGameState] = useState<{
     board: number[]
@@ -201,6 +202,23 @@ export default function App() {
       return null
     }
   }, [gameState, aiDepth])
+
+  const handleFullTextSpeak = useCallback(() => {
+    if (!analysis) return
+    if (fullSpeaking) {
+      window.speechSynthesis?.cancel()
+      setFullSpeaking(false)
+      return
+    }
+    window.speechSynthesis?.cancel()
+    const utt = new SpeechSynthesisUtterance(analysis.analysis)
+    utt.lang = language === 'en' ? 'en-GB' : 'fr-FR'
+    utt.rate = 0.9
+    utt.onend = () => setFullSpeaking(false)
+    utt.onerror = () => setFullSpeaking(false)
+    setFullSpeaking(true)
+    window.speechSynthesis?.speak(utt)
+  }, [analysis, language, fullSpeaking])
 
   const handleAnalyze = useCallback(async (question?: string): Promise<AnalysisResponse | null> => {
     if (!gameState) return null
@@ -428,6 +446,29 @@ export default function App() {
                 />
               </div>
             </div>
+
+            {/* Full analysis text — direct child of play-tab-container so clear:both clears the board float */}
+            {analysisExpanded && analysis && (
+              <div style={{ clear: 'both', marginTop: '8px' }} className="px-2 lg:px-0 pb-2">
+                <div className="panel">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</span>
+                    <button
+                      onClick={handleFullTextSpeak}
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
+                        fullSpeaking ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                      }`}
+                    >
+                      <span>{fullSpeaking ? '⏹' : '🔊'}</span>
+                      <span>{fullSpeaking ? t('stopReading') : t('readAloud')}</span>
+                    </button>
+                  </div>
+                  <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm">
+                    {analysis.analysis}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
