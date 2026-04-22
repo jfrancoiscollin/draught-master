@@ -195,7 +195,8 @@ export default function AnalysisPanel({
             </div>
           )}
 
-          <div>
+          {/* Full analysis — clears the board float and spans full width when expanded */}
+          <div style={expanded ? { clear: 'both', marginTop: '8px' } : {}}>
             <div className="flex items-center justify-between mb-1">
               <div className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</div>
               <button
@@ -209,8 +210,8 @@ export default function AnalysisPanel({
               </button>
             </div>
             <div
-              className={`bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed whitespace-pre-wrap overflow-y-auto text-xs ${
-                expanded ? 'max-h-[520px]' : 'max-h-48'
+              className={`bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed whitespace-pre-wrap overflow-y-auto ${
+                expanded ? 'text-sm max-h-none' : 'text-xs max-h-48'
               }`}
             >
               {analysis.analysis}
@@ -218,7 +219,7 @@ export default function AnalysisPanel({
           </div>
 
           {analysis.key_squares.length > 0 && (
-            <div>
+            <div style={expanded ? { clear: 'both' } : {}}>
               <div className="text-xs text-gray-400 uppercase font-semibold mb-1">{t('keySquares')}</div>
               <div className="flex flex-wrap gap-1">
                 {analysis.key_squares.map(sq => (
