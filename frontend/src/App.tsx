@@ -324,14 +324,14 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main content — overflow:hidden on mobile so only panels scroll, not the page */}
-      <main className="flex-1 overflow-hidden lg:overflow-y-auto">
+      {/* Main content */}
+      <main className={`flex-1 ${analysisExpanded ? 'overflow-y-auto' : 'overflow-hidden'} lg:overflow-y-auto`}>
 
         {/* PLAY TAB */}
         {tab === 'play' && (
           <div className={
             analysisExpanded
-              ? 'h-full flex flex-col lg:block lg:overflow-auto lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
+              ? 'block overflow-auto px-2 pt-2 pb-24 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4 lg:pb-6'
               : 'h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
           }>
 
@@ -339,10 +339,13 @@ export default function App() {
             <div
               className={
                 analysisExpanded
-                  ? 'flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0 mx-auto lg:mx-0 lg:float-right lg:ml-4 lg:mb-2'
+                  ? 'float-right ml-3 mb-2 flex flex-col items-center'
                   : 'flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0'
               }
-              style={{ width: '100%', maxWidth: analysisExpanded ? '280px' : '560px' }}
+              style={analysisExpanded
+                ? { width: '46%', maxWidth: '280px' }
+                : { width: '100%', maxWidth: '560px' }
+              }
             >
               <Board
                 board={currentBoard}
@@ -390,10 +393,10 @@ export default function App() {
               )}
             </div>
 
-            {/* Panels — scrollable on mobile, flows around floated board on desktop */}
+            {/* Panels — flows around floated board when expanded, main element handles scrolling */}
             <div className={
               analysisExpanded
-                ? 'overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0 lg:overflow-visible'
+                ? 'min-w-0'
                 : 'flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0'
             }>
               <div className="flex flex-col gap-3 px-2 py-3 lg:px-0">
