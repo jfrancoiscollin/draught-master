@@ -3,8 +3,8 @@ import os
 from typing import Optional
 import anthropic
 from game_engine import (
-    GameState, Move, get_legal_moves,
-    sq_to_rc, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING, EMPTY,
+    GameState, Move, get_legal_moves, apply_move,
+    WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING, EMPTY,
     board_to_fen, move_to_pdn,
 )
 from ai_engine import evaluate, get_best_move
@@ -20,26 +20,32 @@ PIECE_SYMBOLS = {
 SYSTEM_PROMPT = """Tu es un entraîneur expert en jeu de dames international (100 cases, règles FMJD).
 Tu analyses les positions de jeu de dames international (plateau 10x10) et fournis des conseils stratégiques détaillés.
 
-Règles importantes du jeu de dames international :
-- La prise est obligatoire
-- La prise maximale est obligatoire (on doit prendre le maximum de pions possible)
+Règles importantes :
+- La prise est obligatoire ; la prise maximale est obligatoire
 - Les dames se déplacent en diagonale sur toute la longueur du plateau
 - Les pièces capturées restent sur le plateau jusqu'à la fin de la séquence de prise
-- Promotion : un pion blanc atteignant les cases 1-5, un pion noir atteignant les cases 46-50
+- Promotion : pion blanc en cases 1-5, pion noir en cases 46-50
 
-Notation :
-- 'b' = pion blanc, 'B' = dame blanche
-- 'n' = pion noir, 'N' = dame noire
-- '.' = case vide
-- Les cases jouables sont les cases sombres numérotées de 1 à 50
+Notation : 'b'=pion blanc, 'B'=dame blanche, 'n'=pion noir, 'N'=dame noire, '.'=vide
 
-Fournis des analyses précises, concises et pédagogiques en français."""
+IMPORTANT : N'utilise JAMAIS de markdown (pas de #, *, **, _, etc.).
+Écris uniquement en texte brut avec des sauts de ligne simples."""
+
+
+def _rank_moves(state: GameState, n: int = 5) -> list[str]:
+    """Rank top N moves by a quick depth-1 evaluation."""
+    moves = get_legal_moves(state)
+    if not moves:
+        return []
+    maximizing = state.turn == 'white'
+    scored = [(evaluate(apply_move(state, m)), m) for m in moves]
+    scored.sort(key=lambda x: x[0], reverse=maximizing)
+    return [move_to_pdn(m) for _, m in scored[:n]]
 
 
 def format_board_for_claude(state: GameState) -> str:
-    lines = []
-    lines.append("Plateau (vue de dessus, les Blancs jouent vers le haut) :")
-    lines.append("   1  2  3  4  5  6  7  8  9  10")
+    lines = ["Plateau (Blancs jouent vers le haut) :",
+             "   1  2  3  4  5  6  7  8  9  10"]
     for row in range(10):
         row_str = f"{row + 1:2d} "
         for col in range(10):
@@ -47,9 +53,7 @@ def format_board_for_claude(state: GameState) -> str:
                 row_str += "   "
             else:
                 sq_idx = row * 5 + col // 2 + 1
-                piece = state.board[sq_idx]
-                sym = PIECE_SYMBOLS.get(piece, '?')
-                row_str += f" {sym} "
+                row_str += f" {PIECE_SYMBOLS.get(state.board[sq_idx], '?')} "
         lines.append(row_str)
     return '\n'.join(lines)
 
@@ -68,8 +72,7 @@ def format_move_history(moves: list[Move]) -> str:
 
 
 def _get_client() -> anthropic.AsyncAnthropic:
-    api_key = os.getenv('ANTHROPIC_API_KEY')
-    return anthropic.AsyncAnthropic(api_key=api_key)
+    return anthropic.AsyncAnthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 
 
 async def analyze_position(
@@ -83,14 +86,15 @@ async def analyze_position(
     history_repr = format_move_history(move_history)
     fen = board_to_fen(state)
     score = evaluate(state)
-    turn_fr = "Blancs" if state.turn == 'white' else "Noirs"
-    lang_instruction = "Respond in English." if language == 'en' else "Réponds en français."
+    turn_label = "Blancs" if state.turn == 'white' else "Noirs"
+    lang_instruction = "Respond in English. No markdown." if language == 'en' \
+        else "Réponds en français. Pas de markdown."
 
     legal_moves = get_legal_moves(state)
-    best = get_best_move(state, depth=4)
+    best = get_best_move(state, depth=6)
     best_move_str = move_to_pdn(best) if best else "aucun"
+    top_moves = _rank_moves(state, 5)
 
-    eval_desc = "position équilibrée"
     if score > 200:
         eval_desc = "avantage blanc"
     elif score < -200:
@@ -99,23 +103,26 @@ async def analyze_position(
         eval_desc = "légère avantage blanc"
     elif score < -50:
         eval_desc = "légère avantage noir"
+    else:
+        eval_desc = "position équilibrée"
 
     prompt = f"""Analyse cette position de jeu de dames international :
 
 {board_repr}
 
 FEN : {fen}
-Trait : {turn_fr}
-Évaluation : {score:.0f} ({eval_desc})
-Historique des coups : {history_repr}
-Nombre de coups légaux : {len(legal_moves)}
-Meilleur coup suggéré : {best_move_str}
+Trait : {turn_label}
+Évaluation moteur : {score:.0f} ({eval_desc})
+Historique : {history_repr}
+Coups légaux : {len(legal_moves)}
+Meilleur coup (moteur) : {best_move_str}
+Autres coups intéressants : {', '.join(top_moves)}
 """
 
     if user_question:
         prompt += f"\nQuestion du joueur : {user_question}\n"
     else:
-        prompt += "\nFournis une analyse complète de la position incluant les menaces, les idées stratégiques et le plan recommandé.\n"
+        prompt += f"\nExplique pourquoi {best_move_str} est le meilleur coup. Décris les menaces, idées stratégiques et variantes principales.\n"
 
     prompt += f"\n{lang_instruction}"
 
@@ -128,22 +135,16 @@ Meilleur coup suggéré : {best_move_str}
 
     analysis_text = message.content[0].text
 
-    top_moves = [move_to_pdn(m) for m in legal_moves[:5]]
-
     return {
         "analysis": analysis_text,
         "best_moves": top_moves,
-        "key_squares": list(CENTER_SQUARES_LIST),
+        "key_squares": [23, 24, 27, 28],
         "strategic_advice": _extract_advice(analysis_text),
     }
 
 
-CENTER_SQUARES_LIST = [23, 24, 27, 28]
-
-
 def _extract_advice(text: str) -> str:
-    lines = text.strip().split('\n')
-    for line in lines:
+    for line in text.strip().split('\n'):
         if len(line) > 30:
             return line.strip()
     return text[:200].strip()
@@ -151,33 +152,19 @@ def _extract_advice(text: str) -> str:
 
 async def suggest_exercises(state: GameState) -> dict:
     client = _get_client()
-    board_repr = format_board_for_claude(state)
-    fen = board_to_fen(state)
-    score = evaluate(state)
+    prompt = f"""Analyse cette position de jeu de dames et suggère des exercices d'entraînement :
 
-    prompt = f"""Analyse cette position de jeu de dames et suggère des exercices d'entraînement adaptés :
+{format_board_for_claude(state)}
 
-{board_repr}
+FEN : {board_to_fen(state)}
+Évaluation : {evaluate(state):.0f}
 
-FEN : {fen}
-Évaluation : {score:.0f}
-
-Suggère 3 exercices pratiques pour améliorer les compétences du joueur basés sur cette position.
-Pour chaque exercice, indique :
-1. Le titre de l'exercice
-2. L'objectif pédagogique
-3. Le niveau de difficulté (1-5)
-4. Les thèmes tactiques travaillés
+Suggère 3 exercices pratiques. Pour chaque exercice : titre, objectif, difficulté (1-5), thèmes tactiques.
 """
-
     message = await client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=800,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}],
     )
-
-    return {
-        "suggestions": message.content[0].text,
-        "current_fen": fen,
-    }
+    return {"suggestions": message.content[0].text, "current_fen": board_to_fen(state)}
