@@ -93,3 +93,69 @@
 .spoken-square {
   animation: squarePulse 0.8s ease-in-out infinite;
 }
+
+/* Expanded analysis layout — responsive grid */
+.expanded-play-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) min(42vw, 200px);
+  padding: 0.5rem 0.5rem 6rem;
+}
+
+@media (min-width: 1024px) {
+  .expanded-play-grid {
+    gap: 0.75rem;
+    grid-template-columns: 1fr min(46%, 280px);
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 1rem 1rem 1.5rem;
+  }
+}
+
+/* Board: col 2, row 1 only on mobile (so text below spans full width) */
+.board-expanded {
+  grid-column: 2;
+  grid-row: 1;
+  width: min(42vw, 200px);
+}
+
+@media (min-width: 1024px) {
+  /* Board: col 2, spans all rows, sticky on desktop */
+  .board-expanded {
+    grid-row: 1 / span 10;
+    align-self: start;
+    position: sticky;
+    top: 0;
+    width: auto;
+  }
+}
+
+/* Full analysis text: full width (both cols) on mobile, left col only on desktop */
+.analysis-text-expanded {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+@media (min-width: 1024px) {
+  .analysis-text-expanded {
+    grid-column: 1;
+  }
+}
+
+/* Move list: full width on mobile, left col on desktop */
+.moves-expanded {
+  grid-column: 1 / -1;
+  grid-row: 3;
+}
+
+@media (min-width: 1024px) {
+  .moves-expanded {
+    grid-column: 1;
+  }
+}
+
+/* Game controls: col 1, row 4 on desktop */
+.controls-expanded {
+  grid-column: 1;
+  grid-row: 4;
+}

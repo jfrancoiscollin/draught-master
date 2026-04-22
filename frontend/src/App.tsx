@@ -349,22 +349,18 @@ export default function App() {
         {tab === 'play' && (
           <div
             className={analysisExpanded
-              ? 'flex flex-col gap-2 px-2 pt-2 pb-24 lg:grid lg:gap-3 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4 lg:pb-6'
+              ? 'expanded-play-grid'
               : 'h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
             }
-            style={analysisExpanded ? { gridTemplateColumns: '1fr min(46%, 280px)' } : {}}
           >
 
-            {/* Board — top of stack on mobile, sticky grid-col 2 on desktop */}
+            {/* Board — col 2 row 1 (mobile) / col 2 all rows sticky (desktop) */}
             <div
               className={analysisExpanded
-                ? 'flex flex-col items-center self-center lg:self-start lg:sticky lg:top-0'
+                ? 'board-expanded flex flex-col items-center'
                 : 'flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0'
               }
-              style={analysisExpanded
-                ? { width: 'min(50vw, 280px)', gridColumn: '2', gridRow: '1 / span 10' }
-                : { width: '100%', maxWidth: '560px' }
-              }
+              style={!analysisExpanded ? { width: '100%', maxWidth: '560px' } : undefined}
             >
               <Board
                 board={currentBoard}
@@ -377,26 +373,26 @@ export default function App() {
                 spokenSquares={spokenSquares}
               />
               {gameState && (
-                <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <button
                     onClick={handleUndo}
                     disabled={isAiThinking || !moveHistory.length || !!gameState.result}
                     title={t('undoMove')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                    className="text-sm font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: analysisExpanded ? 0 : '6px' }}
+                    className={`font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition-colors ${analysisExpanded ? 'text-base px-2 py-1' : 'text-sm px-3 py-1.5'}`}
                   >
                     <span>←</span>
-                    <span>{t('undoMove')}</span>
+                    {!analysisExpanded && <span>{t('undoMove')}</span>}
                   </button>
                   <button
                     onClick={handleResign}
                     disabled={isAiThinking || !!gameState.result}
                     title={t('resign')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                    className="text-sm font-semibold bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: analysisExpanded ? 0 : '6px' }}
+                    className={`font-semibold bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition-colors ${analysisExpanded ? 'text-base px-2 py-1' : 'text-sm px-3 py-1.5'}`}
                   >
                     <span>🏳️</span>
-                    <span>{t('resign')}</span>
+                    {!analysisExpanded && <span>{t('resign')}</span>}
                   </button>
                   {moveHistory.length > 0 && (
                     <span style={{ marginLeft: 'auto', fontWeight: 600, fontSize: '0.9rem' }}
@@ -412,7 +408,7 @@ export default function App() {
               )}
             </div>
 
-            {/* Compact panel — full width on mobile, grid-col 1 row 1 on desktop */}
+            {/* Compact panel — col 1, row 1 */}
             {analysisExpanded ? (
               <div className="min-w-0" style={{ gridColumn: '1', gridRow: '1' }}>
                 <AnalysisPanel
@@ -455,9 +451,9 @@ export default function App() {
               </div>
             )}
 
-            {/* Full analysis text — full width on mobile, grid-col 1 row 2 on desktop */}
+            {/* Full analysis text — full width on mobile (spans both cols), col 1 on desktop */}
             {analysisExpanded && analysis && (
-              <div className="min-w-0" style={{ gridColumn: '1', gridRow: '2' }}>
+              <div className="analysis-text-expanded min-w-0">
                 <div className="panel">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</span>
@@ -478,16 +474,16 @@ export default function App() {
               </div>
             )}
 
-            {/* Move list — full width on mobile, grid-col 1 row 3 on desktop */}
+            {/* Move list — full width on mobile (spans both cols), col 1 on desktop */}
             {analysisExpanded && (
-              <div className="min-w-0" style={{ gridColumn: '1', gridRow: '3' }}>
+              <div className="moves-expanded min-w-0">
                 <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
               </div>
             )}
 
-            {/* Game controls — desktop only, grid-col 1 row 4 when expanded */}
+            {/* Game controls — desktop only, col 1 row 4 */}
             {analysisExpanded && (
-              <div className="hidden lg:block min-w-0" style={{ gridColumn: '1', gridRow: '4' }}>
+              <div className="controls-expanded hidden lg:block min-w-0">
                 <GameControls
                   result={gameState?.result || null}
                   turn={gameState?.turn || 'white'}
