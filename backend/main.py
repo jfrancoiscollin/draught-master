@@ -51,6 +51,7 @@ async def startup_event() -> None:
 
 def _state_to_response(game_id: str, state: GameState, last_move: Optional[Move] = None) -> GameStateResponse:
     result = game_result(state)
+    legal = get_legal_moves(state) if result is None else []
     return GameStateResponse(
         game_id=game_id,
         board=state.board,
@@ -60,6 +61,7 @@ def _state_to_response(game_id: str, state: GameState, last_move: Optional[Move]
         result=result,
         fen=board_to_fen(state),
         last_move={"path": last_move.path, "captures": last_move.captures} if last_move else None,
+        legal_moves=[{"path": m.path, "captures": m.captures} for m in legal],
     )
 
 
@@ -165,6 +167,7 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
             move_count=len(state.move_history),
         )
 
+    final_legal = get_legal_moves(state) if result is None else []
     return MoveResponse(
         game_id=game_id,
         player_move={"path": player_move.path, "captures": player_move.captures},
@@ -175,6 +178,7 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
         move_count=len(state.move_history),
         result=result,
         fen=board_to_fen(state),
+        legal_moves=[{"path": m.path, "captures": m.captures} for m in final_legal],
     )
 
 

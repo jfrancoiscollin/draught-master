@@ -18,6 +18,7 @@ export interface GameStateResponse {
   result: string | null
   fen: string
   last_move: MoveData | null
+  legal_moves: MoveData[]
 }
 
 export interface MoveResponse {
@@ -30,6 +31,7 @@ export interface MoveResponse {
   move_count: number
   result: string | null
   fen: string
+  legal_moves: MoveData[]
 }
 
 export interface LegalMovesResponse {

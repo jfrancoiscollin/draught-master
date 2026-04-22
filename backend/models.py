@@ -34,6 +34,7 @@ class GameStateResponse(BaseModel):
     result: Optional[str] = None
     fen: str
     last_move: Optional[Dict[str, Any]] = None
+    legal_moves: List[Dict[str, Any]] = []
 
 
 class MoveResponse(BaseModel):
@@ -46,6 +47,7 @@ class MoveResponse(BaseModel):
     move_count: int
     result: Optional[str] = None
     fen: str
+    legal_moves: List[Dict[str, Any]] = []
 
 
 class LegalMovesResponse(BaseModel):

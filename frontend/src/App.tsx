@@ -10,7 +10,6 @@ import LanguageSelector from './components/LanguageSelector'
 import BottomSheet from './components/BottomSheet'
 import {
   newGame,
-  getLegalMoves,
   makeMove,
   analyzePosition,
   checkExercise,
@@ -73,7 +72,6 @@ export default function App() {
 
   const [gameState, setGameState] = useState<GameStateResponse | null>(null)
   const [selectedSquare, setSelectedSquare] = useState<number | null>(null)
-  const [legalMoves, setLegalMoves] = useState<MoveData[]>([])
   const [moveHistory, setMoveHistory] = useState<MoveData[]>([])
   const [aiDepth, setAiDepth] = useState(6)
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null)
@@ -101,7 +99,6 @@ export default function App() {
       const state = await newGame({ white_player: 'Joueur', black_player: 'IA', ai_depth: aiDepth })
       setGameState(state)
       setSelectedSquare(null)
-      setLegalMoves([])
       setMoveHistory([])
       setAnalysis(null)
     } catch {
@@ -113,16 +110,6 @@ export default function App() {
 
   useEffect(() => { startNewGame() }, [])
 
-  useEffect(() => {
-    if (!gameState?.game_id || gameState.result || gameState.turn !== 'white') {
-      setLegalMoves([])
-      return
-    }
-    getLegalMoves(gameState.game_id)
-      .then(data => setLegalMoves(data.moves))
-      .catch(() => setLegalMoves([]))
-  }, [gameState?.game_id, gameState?.turn, gameState?.move_count])
-
   const handleSelectSquare = useCallback((sq: number | null) => {
     if (!gameState || gameState.result) return
     if (gameState.turn !== 'white') return
@@ -132,13 +119,12 @@ export default function App() {
   const handleMove = useCallback(async (move: MoveData) => {
     if (!gameState || gameState.result || isAiThinking) return
     setSelectedSquare(null)
-    setLegalMoves([])
     setIsAiThinking(true)
 
-    // Optimistic update: show player's move immediately, no waiting for server
+    // Optimistic update: show player's move immediately
     playMoveSound()
     const optimisticBoard = applyMoveLocally(gameState.board, move)
-    setGameState(prev => prev ? { ...prev, board: optimisticBoard, turn: 'black', last_move: move } : prev)
+    setGameState(prev => prev ? { ...prev, board: optimisticBoard, turn: 'black', last_move: move, legal_moves: [] } : prev)
 
     try {
       const response = await makeMove(gameState.game_id, move, aiDepth)
@@ -152,6 +138,7 @@ export default function App() {
         result: response.result,
         fen: response.fen,
         last_move: response.ai_move || response.player_move,
+        legal_moves: response.legal_moves ?? [],
       })
       setMoveHistory(prev => {
         const updated = [...prev, response.player_move]
@@ -162,7 +149,7 @@ export default function App() {
       const err = e as { response?: { data?: { detail?: string } } }
       showToast(err?.response?.data?.detail || 'Coup illégal ou erreur serveur.')
       // Revert to original state on error
-      setGameState(prev => prev ? { ...prev, board: gameState.board, turn: 'white', last_move: gameState.last_move } : prev)
+      setGameState(prev => prev ? { ...prev, board: gameState.board, turn: 'white', last_move: gameState.last_move, legal_moves: gameState.legal_moves } : prev)
     } finally {
       setIsAiThinking(false)
     }
@@ -221,6 +208,7 @@ export default function App() {
   const currentBoard = gameState?.board || new Array(51).fill(EMPTY)
   const isWhiteTurn = gameState?.turn === 'white'
   const boardDisabled = !gameState || !!gameState.result || !isWhiteTurn || isAiThinking
+  const legalMoves = boardDisabled ? [] : (gameState?.legal_moves ?? [])
 
   const tabs: [Tab, string][] = [
     ['play', t('tabPlay')],
