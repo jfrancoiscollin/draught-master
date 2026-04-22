@@ -83,6 +83,7 @@ export default function App() {
   const [isAiThinking, setIsAiThinking] = useState(false)
   const [spokenSquares, setSpokenSquares] = useState<number[]>([])
   const [showControls, setShowControls] = useState(false)
+  const [analysisExpanded, setAnalysisExpanded] = useState(false)
 
   const [exerciseGameState, setExerciseGameState] = useState<{
     board: number[]
@@ -104,6 +105,7 @@ export default function App() {
       setSelectedSquare(null)
       setMoveHistory([])
       setAnalysis(null)
+      setAnalysisExpanded(false)
     } catch {
       showToast(t('errorCreatingGame'))
     } finally {
@@ -178,6 +180,7 @@ export default function App() {
       setMoveHistory(prev => prev.slice(0, state.move_count))
       setSelectedSquare(null)
       setAnalysis(null)
+      setAnalysisExpanded(false)
     } catch {
       showToast('Impossible d\'annuler le coup.')
     } finally {
@@ -205,6 +208,7 @@ export default function App() {
     try {
       const result = await analyzePosition(gameState.game_id, question, language)
       setAnalysis(result)
+      setAnalysisExpanded(true)
       return result
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } } }
@@ -328,7 +332,14 @@ export default function App() {
           <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
 
             {/* Board — never scrolls, stays locked at top on mobile */}
-            <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0">
+            <div
+              className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0 mx-auto lg:mx-0"
+              style={{
+                width: '100%',
+                maxWidth: analysisExpanded ? '280px' : '560px',
+                transition: 'max-width 0.4s ease',
+              }}
+            >
               <Board
                 board={currentBoard}
                 legalMoves={legalMoves}
@@ -385,6 +396,8 @@ export default function App() {
                   analysis={analysis}
                   loading={analysisLoading}
                   onHighlightSquare={setSpokenSquares}
+                  expanded={analysisExpanded}
+                  onCollapse={() => setAnalysisExpanded(false)}
                 />
                 {/* Controls: desktop inline, mobile via bottom sheet */}
                 <div className="hidden lg:block">

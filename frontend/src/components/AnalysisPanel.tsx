@@ -9,6 +9,8 @@ interface AnalysisPanelProps {
   analysis: AnalysisResponse | null
   loading: boolean
   onHighlightSquare: (squares: number[]) => void
+  expanded?: boolean
+  onCollapse?: () => void
 }
 
 function extractMoveSquares(text: string, charIndex: number): number[] {
@@ -83,6 +85,8 @@ export default function AnalysisPanel({
   analysis,
   loading,
   onHighlightSquare,
+  expanded = false,
+  onCollapse,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
   const [mode, setMode] = useState<'bestmove' | 'full' | null>(null)
@@ -113,7 +117,18 @@ export default function AnalysisPanel({
 
   return (
     <div className="panel flex flex-col gap-3">
-      <h3 className="text-lg font-bold text-amber-600">{t('analysis')}</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-bold text-amber-600">{t('analysis')}</h3>
+        {expanded && onCollapse && (
+          <button
+            onClick={onCollapse}
+            className="text-gray-400 hover:text-white text-base px-2 py-0.5 rounded hover:bg-gray-700 transition-colors"
+            title="Réduire"
+          >
+            ✕
+          </button>
+        )}
+      </div>
 
       <div className="flex gap-2">
         <button
@@ -193,7 +208,11 @@ export default function AnalysisPanel({
                 <span>{speaking ? t('stopReading') : t('readAloud')}</span>
               </button>
             </div>
-            <div className="bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto text-xs">
+            <div
+              className={`bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed whitespace-pre-wrap overflow-y-auto text-xs ${
+                expanded ? 'max-h-[520px]' : 'max-h-48'
+              }`}
+            >
               {analysis.analysis}
             </div>
           </div>
