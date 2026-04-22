@@ -302,19 +302,19 @@ export default function App() {
                 spokenSquares={spokenSquares}
               />
               {gameState && (
-                <div className="mt-2 w-full">
-                  <button
-                    onClick={handleUndo}
-                    disabled={isAiThinking || !moveHistory.length || !!gameState.result}
-                    title={t('undoMove')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                    className="text-sm font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-4 py-2 rounded-lg transition-colors"
-                  >
-                    <span>←</span>
-                    <span>{t('undoMove')}</span>
-                  </button>
-                  <p className="mt-1 text-xs text-gray-500">{t('whitePerspective')}</p>
-                </div>
+                <button
+                  onClick={handleUndo}
+                  disabled={isAiThinking || !moveHistory.length || !!gameState.result}
+                  title={t('undoMove')}
+                  style={{ alignSelf: 'flex-start', marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  className="text-sm font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-4 py-2 rounded-lg transition-colors"
+                >
+                  <span>←</span>
+                  <span>{t('undoMove')}</span>
+                </button>
+              )}
+              {gameState && (
+                <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">{t('whitePerspective')}</p>
               )}
             </div>
 
