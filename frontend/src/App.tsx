@@ -13,6 +13,7 @@ import {
   makeMove,
   analyzePosition,
   checkExercise,
+  undoMove,
 } from './api/client'
 import {
   EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
@@ -155,6 +156,22 @@ export default function App() {
     }
   }, [gameState, aiDepth, isAiThinking])
 
+  const handleUndo = useCallback(async () => {
+    if (!gameState || isAiThinking) return
+    try {
+      setIsAiThinking(true)
+      const state = await undoMove(gameState.game_id)
+      setGameState(state)
+      setMoveHistory(prev => prev.slice(0, state.move_count))
+      setSelectedSquare(null)
+      setAnalysis(null)
+    } catch {
+      showToast('Impossible d\'annuler le coup.')
+    } finally {
+      setIsAiThinking(false)
+    }
+  }, [gameState, isAiThinking])
+
   const handleAnalyze = useCallback(async (question?: string): Promise<AnalysisResponse | null> => {
     if (!gameState) return null
     setAnalysisLoading(true)
@@ -285,7 +302,18 @@ export default function App() {
                 spokenSquares={spokenSquares}
               />
               {gameState && (
-                <p className="mt-1 text-xs text-gray-500 self-start">{t('whitePerspective')}</p>
+                <div className="mt-1 flex items-center justify-between w-full">
+                  <p className="text-xs text-gray-500">{t('whitePerspective')}</p>
+                  <button
+                    onClick={handleUndo}
+                    disabled={isAiThinking || !moveHistory.length || !!gameState.result}
+                    title={t('undoMove')}
+                    className="flex items-center gap-1 text-xs text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed px-2 py-1 rounded hover:bg-gray-700 transition-colors"
+                  >
+                    <span className="text-base leading-none">←</span>
+                    <span className="hidden sm:inline">{t('undoMove')}</span>
+                  </button>
+                </div>
               )}
             </div>
 

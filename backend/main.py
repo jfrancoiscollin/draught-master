@@ -88,6 +88,7 @@ async def new_game(req: NewGameRequest) -> GameStateResponse:
         "ai_depth": req.ai_depth,
         "fen_positions": [board_to_fen(state)],
         "date": datetime.utcnow().isoformat(),
+        "state_history": [],   # list of (GameState, fen_positions_len) for undo
     }
     return _state_to_response(game_id, state)
 
@@ -123,6 +124,9 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
     move_key = (tuple(player_move.path), frozenset(player_move.captures))
     if move_key not in legal_set:
         raise HTTPException(status_code=400, detail="Coup illégal")
+
+    # Save snapshot before applying player move so undo can restore it
+    entry["state_history"].append((state, len(entry["fen_positions"])))
 
     state = apply_move(state, player_move)
     entry["state"] = state
@@ -180,6 +184,19 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
         fen=board_to_fen(state),
         legal_moves=[{"path": m.path, "captures": m.captures} for m in final_legal],
     )
+
+
+@app.post("/api/game/{game_id}/undo", response_model=GameStateResponse)
+async def undo_move(game_id: str) -> GameStateResponse:
+    if game_id not in game_store:
+        raise HTTPException(status_code=404, detail="Partie introuvable")
+    entry = game_store[game_id]
+    if not entry["state_history"]:
+        raise HTTPException(status_code=400, detail="Aucun coup à annuler")
+    state, fen_len = entry["state_history"].pop()
+    entry["state"] = state
+    entry["fen_positions"] = entry["fen_positions"][:fen_len]
+    return _state_to_response(game_id, state)
 
 
 @app.get("/api/game/{game_id}/ai-move")

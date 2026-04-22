@@ -87,6 +87,11 @@ export async function checkExercise(
   return res.data
 }
 
+export async function undoMove(gameId: string): Promise<GameStateResponse> {
+  const res = await api.post<GameStateResponse>(`/game/${gameId}/undo`)
+  return res.data
+}
+
 export async function getHistory(page: number = 1, pageSize: number = 10): Promise<HistoryResponse> {
   const res = await api.get<HistoryResponse>('/history', {
     params: { page, page_size: pageSize },
