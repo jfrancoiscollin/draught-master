@@ -347,21 +347,28 @@ export default function App() {
 
         {/* PLAY TAB */}
         {tab === 'play' && (
-          <div className={
-            analysisExpanded
-              ? 'block overflow-auto px-2 pt-2 pb-24 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4 lg:pb-6'
-              : 'h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
-          }>
+          <div
+            className={
+              analysisExpanded
+                ? 'px-2 pt-2 pb-24 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4 lg:pb-6'
+                : 'h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
+            }
+            style={analysisExpanded ? {
+              display: 'grid',
+              gridTemplateColumns: '1fr min(46%, 280px)',
+              gap: '8px',
+            } : {}}
+          >
 
-            {/* Board — floats to top-right when analysis is expanded */}
+            {/* Board — grid col 2 spanning all rows + sticky when expanded */}
             <div
               className={
                 analysisExpanded
-                  ? 'float-right ml-3 mb-2 flex flex-col items-center'
+                  ? 'flex flex-col items-center'
                   : 'flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0'
               }
               style={analysisExpanded
-                ? { width: '46%', maxWidth: '280px' }
+                ? { gridColumn: '2', gridRow: '1 / span 10', position: 'sticky', top: '0', alignSelf: 'start', width: '100%' }
                 : { width: '100%', maxWidth: '560px' }
               }
             >
@@ -411,13 +418,9 @@ export default function App() {
               )}
             </div>
 
-            {/* Panels — flows around floated board when expanded, main element handles scrolling */}
-            <div className={
-              analysisExpanded
-                ? 'min-w-0'
-                : 'flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0'
-            }>
-              <div className="flex flex-col gap-3 px-2 py-3 lg:px-0">
+            {/* Col 1 row 1: compact analysis panel (buttons + best moves) */}
+            {analysisExpanded ? (
+              <div style={{ gridColumn: '1', gridRow: '1' }} className="min-w-0">
                 <AnalysisPanel
                   gameId={gameState?.game_id || null}
                   onAnalyze={handleAnalyze}
@@ -428,28 +431,42 @@ export default function App() {
                   expanded={analysisExpanded}
                   onCollapse={() => setAnalysisExpanded(false)}
                 />
-                {/* Controls: desktop inline, mobile via bottom sheet */}
-                <div className="hidden lg:block">
-                  <GameControls
-                    result={gameState?.result || null}
-                    turn={gameState?.turn || 'white'}
-                    moveCount={gameState?.move_count || 0}
-                    aiDepth={aiDepth}
-                    onNewGame={startNewGame}
-                    onAiDepthChange={setAiDepth}
-                    disabled={isAiThinking}
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0">
+                <div className="flex flex-col gap-3 px-2 py-3 lg:px-0">
+                  <AnalysisPanel
+                    gameId={gameState?.game_id || null}
+                    onAnalyze={handleAnalyze}
+                    onBestMove={handleBestMoveQuick}
+                    analysis={analysis}
+                    loading={analysisLoading}
+                    onHighlightSquare={setSpokenSquares}
+                    expanded={false}
+                    onCollapse={() => setAnalysisExpanded(false)}
+                  />
+                  <div className="hidden lg:block">
+                    <GameControls
+                      result={gameState?.result || null}
+                      turn={gameState?.turn || 'white'}
+                      moveCount={gameState?.move_count || 0}
+                      aiDepth={aiDepth}
+                      onNewGame={startNewGame}
+                      onAiDepthChange={setAiDepth}
+                      disabled={isAiThinking}
+                    />
+                  </div>
+                  <MoveList
+                    moves={moveHistory}
+                    currentMoveIndex={moveHistory.length - 1}
                   />
                 </div>
-                <MoveList
-                  moves={moveHistory}
-                  currentMoveIndex={moveHistory.length - 1}
-                />
               </div>
-            </div>
+            )}
 
-            {/* Full analysis text — direct child of play-tab-container so clear:both clears the board float */}
+            {/* Col 1 row 2: full analysis text with scrollbar */}
             {analysisExpanded && analysis && (
-              <div style={{ clear: 'both', marginTop: '8px' }} className="px-2 lg:px-0 pb-2">
+              <div style={{ gridColumn: '1', gridRow: '2' }} className="min-w-0">
                 <div className="panel">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</span>
@@ -463,10 +480,38 @@ export default function App() {
                       <span>{fullSpeaking ? t('stopReading') : t('readAloud')}</span>
                     </button>
                   </div>
-                  <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm">
+                  <div
+                    style={{ maxHeight: '50vh', overflowY: 'auto' }}
+                    className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm pr-1"
+                  >
                     {analysis.analysis}
-                  </p>
+                  </div>
                 </div>
+              </div>
+            )}
+
+            {/* Col 1 row 3: move list (below analysis when expanded) */}
+            {analysisExpanded && (
+              <div style={{ gridColumn: '1', gridRow: '3' }} className="min-w-0">
+                <MoveList
+                  moves={moveHistory}
+                  currentMoveIndex={moveHistory.length - 1}
+                />
+              </div>
+            )}
+
+            {/* Col 1 row 4: game controls desktop (below move list when expanded) */}
+            {analysisExpanded && (
+              <div style={{ gridColumn: '1', gridRow: '4' }} className="hidden lg:block">
+                <GameControls
+                  result={gameState?.result || null}
+                  turn={gameState?.turn || 'white'}
+                  moveCount={gameState?.move_count || 0}
+                  aiDepth={aiDepth}
+                  onNewGame={startNewGame}
+                  onAiDepthChange={setAiDepth}
+                  disabled={isAiThinking}
+                />
               </div>
             )}
           </div>

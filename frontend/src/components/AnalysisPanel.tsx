@@ -130,11 +130,11 @@ export default function AnalysisPanel({
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className={`flex gap-2 ${expanded ? 'flex-col' : ''}`}>
         <button
           onClick={handleBestMove}
           disabled={!gameId || quickLoading}
-          className="btn-secondary text-sm flex-1"
+          className={`btn-secondary flex-1 ${expanded ? 'text-xs py-2' : 'text-sm'}`}
         >
           {quickLoading ? (
             <span className="flex items-center gap-2 justify-center">
@@ -145,7 +145,7 @@ export default function AnalysisPanel({
         <button
           onClick={handleFullAnalyze}
           disabled={!gameId || loading}
-          className="btn-primary text-sm flex-1"
+          className={`btn-primary flex-1 ${expanded ? 'text-xs py-2' : 'text-sm'}`}
         >
           {loading && mode === 'full' ? (
             <span className="flex items-center gap-2 justify-center">
@@ -188,14 +188,15 @@ export default function AnalysisPanel({
             </div>
           )}
 
-          {analysis.strategic_advice && (
+          {/* Strategic advice only in non-expanded mode */}
+          {!expanded && analysis.strategic_advice && (
             <div>
               <div className="text-xs text-gray-400 uppercase font-semibold mb-1">{t('strategicAdvice')}</div>
               <p className="text-gray-200 leading-relaxed">{analysis.strategic_advice}</p>
             </div>
           )}
 
-          {/* Full analysis text — only shown here when NOT expanded (App.tsx renders it full-width below) */}
+          {/* Full analysis text — only shown here when NOT expanded (App.tsx renders it below) */}
           {!expanded && (
             <div>
               <div className="flex items-center justify-between mb-1">
