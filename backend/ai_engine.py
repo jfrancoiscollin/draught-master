@@ -11,20 +11,19 @@ CENTER_SQUARES = frozenset({23, 24, 27, 28})
 NEAR_CENTER    = frozenset({18, 19, 22, 23, 24, 25, 27, 28, 29, 32, 33})
 WHITE_BACK_ROW = frozenset({46, 47, 48, 49, 50})
 BLACK_BACK_ROW = frozenset({1, 2, 3, 4, 5})
-
-# Squares on the left/right edge: men here have halved mobility.
-# col 0 (odd rows, col_in_row=0): 6,16,26,36,46
-# col 9 (even rows, col_in_row=4): 5,15,25,35,45
-EDGE_SQUARES = frozenset({5, 6, 15, 16, 25, 26, 35, 36, 45, 46})
+# Men on edge columns have halved mobility (col 0: 6,16,26,36,46 / col 9: 5,15,25,35,45)
+EDGE_SQUARES   = frozenset({5, 6, 15, 16, 25, 26, 35, 36, 45, 46})
+# One row from promotion
+WHITE_PROMO_ROW = frozenset({6, 7, 8, 9, 10})   # row 1 → promote to row 0
+BLACK_PROMO_ROW = frozenset({41, 42, 43, 44, 45}) # row 8 → promote to row 9
 
 MATERIAL = {
     WHITE_MAN:  100,
-    WHITE_KING: 320,   # kings are very powerful in 10×10
+    WHITE_KING: 325,
     BLACK_MAN: -100,
-    BLACK_KING: -320,
+    BLACK_KING: -325,
 }
 
-# Time budget per level. With TT + quiescence the effective depth is much higher.
 TIME_LIMITS = {1: 0.05, 2: 0.15, 3: 0.35, 4: 0.6, 5: 1.0, 6: 1.5, 7: 2.5, 8: 4.0}
 
 # ── Zobrist hashing ──────────────────────────────────────────────────────────
@@ -51,13 +50,36 @@ def _hash_state(state: GameState) -> int:
 
 
 # ── Transposition table ──────────────────────────────────────────────────────
+# Entry: (depth, score, flag, best_move_path)
+# best_move_path: tuple(move.path) of the best move found at this node, or None.
+# Storing the best move allows ordering at internal nodes (hash-move ordering),
+# the single most effective alpha-beta improvement after captures-first.
 
-_TT: dict[int, tuple[int, float, str]] = {}
-_TT_MAX = 700_000
+_TT: dict[int, tuple[int, float, str, Optional[tuple[int, ...]]]] = {}
+_TT_MAX = 800_000
 
 
 def _tt_clear() -> None:
     _TT.clear()
+
+
+# ── Killer moves ─────────────────────────────────────────────────────────────
+# Two killer slots per depth: quiet moves that caused a beta cutoff.
+# Tried after TT move and captures, before the rest of quiet moves.
+
+_MAX_DEPTH = 60
+_killers: list[list[Optional[tuple[int, ...]]]] = [[None, None] for _ in range(_MAX_DEPTH)]
+
+
+def _killers_clear() -> None:
+    for slot in _killers:
+        slot[0] = slot[1] = None
+
+
+def _store_killer(depth: int, path: tuple[int, ...]) -> None:
+    if depth < _MAX_DEPTH and _killers[depth][0] != path:
+        _killers[depth][1] = _killers[depth][0]
+        _killers[depth][0] = path
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -68,6 +90,36 @@ class _Timeout(Exception):
 
 def _sq_row(sq: int) -> int:
     return (sq - 1) // 5
+
+
+# ── Move ordering ─────────────────────────────────────────────────────────────
+
+def _order_moves(
+    moves: list[Move],
+    tt_path: Optional[tuple[int, ...]],
+    depth: int,
+) -> list[Move]:
+    """TT move → captures → killers → rest."""
+    tt: list[Move] = []
+    captures: list[Move] = []
+    killers: list[Move] = []
+    rest: list[Move] = []
+
+    k1 = _killers[depth][0] if depth < _MAX_DEPTH else None
+    k2 = _killers[depth][1] if depth < _MAX_DEPTH else None
+
+    for m in moves:
+        mp = tuple(m.path)
+        if tt_path and mp == tt_path:
+            tt.append(m)
+        elif m.captures:
+            captures.append(m)
+        elif mp == k1 or mp == k2:
+            killers.append(m)
+        else:
+            rest.append(m)
+
+    return tt + captures + killers + rest
 
 
 # ── Evaluation ───────────────────────────────────────────────────────────────
@@ -94,15 +146,17 @@ def evaluate(state: GameState) -> float:
         if piece == WHITE_MAN:
             white_men += 1
             row = _sq_row(sq)
-            score += (9 - row) / 9.0 * 25   # advancement
+            score += (9 - row) / 9.0 * 25      # advancement
             if sq in CENTER_SQUARES:
                 score += 18
             elif sq in NEAR_CENTER:
                 score += 8
             if sq in WHITE_BACK_ROW:
-                score += 10  # anchor / back-rank guard
+                score += 10                      # anchor prevents easy opponent promotion
             if sq in EDGE_SQUARES:
-                score -= 12  # edge men are less mobile
+                score -= 12
+            if sq in WHITE_PROMO_ROW:
+                score += 20                      # one step from becoming a king
 
         elif piece == WHITE_KING:
             white_kings += 1
@@ -125,6 +179,8 @@ def evaluate(state: GameState) -> float:
                 score -= 10
             if sq in EDGE_SQUARES:
                 score += 12
+            if sq in BLACK_PROMO_ROW:
+                score -= 20
 
         elif piece == BLACK_KING:
             black_kings += 1
@@ -143,24 +199,21 @@ def evaluate(state: GameState) -> float:
     if total_b > 0 and total_w == 0:
         return -100000.0
 
-    # Endgame: kings become relatively more valuable and should centralise
+    # Endgame: kings centralise and grow in value relative to men
     total = total_w + total_b
     if total <= 14 and (white_kings or black_kings):
-        endgame_factor = (14 - total) / 14.0
-        score += (white_kings - black_kings) * 40 * endgame_factor
+        ef = (14 - total) / 14.0
+        score += (white_kings - black_kings) * 45 * ef
 
-    # Slight bonus for having the move (tempo)
-    if state.turn == 'white':
-        score += 5
-    else:
-        score -= 5
+    # Side-to-move tempo
+    score += 5 if state.turn == 'white' else -5
 
     return score
 
 
-# ── Quiescence search ────────────────────────────────────────────────────────
-# In draughts captures are MANDATORY, so depth-0 nodes with captures pending
-# are not quiet. We must follow all forced capture chains before evaluating.
+# ── Quiescence search ─────────────────────────────────────────────────────────
+# In draughts captures are mandatory — a depth-0 node with pending captures
+# is not quiet.  Follow all forced capture chains before calling evaluate().
 
 _MAX_QDEPTH = 14
 
@@ -184,7 +237,6 @@ def _quiescence(
     if not captures or qdepth >= _MAX_QDEPTH:
         return evaluate(state)
 
-    # Follow mandatory captures
     if maximizing:
         best = float('-inf')
         for move in captures:
@@ -213,13 +265,7 @@ def _quiescence(
         return best
 
 
-# ── Alpha-beta minimax with TT ───────────────────────────────────────────────
-
-def _order_moves(moves: list[Move]) -> list[Move]:
-    captures = [m for m in moves if m.captures]
-    quiet    = [m for m in moves if not m.captures]
-    return captures + quiet
-
+# ── Alpha-beta minimax with TT + killers ─────────────────────────────────────
 
 def _minimax(
     state: GameState,
@@ -235,10 +281,11 @@ def _minimax(
 
     alpha_orig = alpha
 
-    # TT lookup
+    # TT lookup — also extracts best move for ordering even when depth is insufficient
+    tt_path: Optional[tuple[int, ...]] = None
     tt_entry = _TT.get(zhash)
     if tt_entry is not None:
-        tt_depth, tt_score, tt_flag = tt_entry
+        tt_depth, tt_score, tt_flag, tt_path = tt_entry
         if tt_depth >= depth:
             if tt_flag == 'exact':
                 return tt_score
@@ -258,12 +305,15 @@ def _minimax(
         return 0.0
 
     if depth == 0:
-        # Use quiescence to resolve forced capture chains before evaluating
         return _quiescence(state, alpha, beta, maximizing, deadline, 0)
 
-    moves = _order_moves(get_legal_moves(state))
-    if not moves:
+    raw_moves = get_legal_moves(state)
+    if not raw_moves:
         return evaluate(state)
+
+    moves = _order_moves(raw_moves, tt_path, depth)
+
+    best_path: Optional[tuple[int, ...]] = None
 
     if maximizing:
         best = float('-inf')
@@ -273,9 +323,12 @@ def _minimax(
             val = _minimax(child, depth - 1, alpha, beta, False, deadline, child_hash)
             if val > best:
                 best = val
+                best_path = tuple(move.path)
             if val > alpha:
                 alpha = val
             if beta <= alpha:
+                if not move.captures:
+                    _store_killer(depth, tuple(move.path))
                 break
     else:
         best = float('inf')
@@ -285,12 +338,15 @@ def _minimax(
             val = _minimax(child, depth - 1, alpha, beta, True, deadline, child_hash)
             if val < best:
                 best = val
+                best_path = tuple(move.path)
             if val < beta:
                 beta = val
             if beta <= alpha:
+                if not move.captures:
+                    _store_killer(depth, tuple(move.path))
                 break
 
-    # TT store
+    # TT store — include best move for future ordering
     if len(_TT) < _TT_MAX:
         if best <= alpha_orig:
             flag = 'upper'
@@ -298,12 +354,12 @@ def _minimax(
             flag = 'lower'
         else:
             flag = 'exact'
-        _TT[zhash] = (depth, best, flag)
+        _TT[zhash] = (depth, best, flag, best_path)
 
     return best
 
 
-# ── Public API ───────────────────────────────────────────────────────────────
+# ── Public API ────────────────────────────────────────────────────────────────
 
 def get_best_move(state: GameState, depth: int = 6) -> Optional[Move]:
     moves = get_legal_moves(state)
@@ -313,12 +369,14 @@ def get_best_move(state: GameState, depth: int = 6) -> Optional[Move]:
         return moves[0]
 
     _tt_clear()
+    _killers_clear()
 
     time_limit = TIME_LIMITS.get(depth, 5.0)
     deadline = time.monotonic() + time_limit
     maximizing = (state.turn == 'white')
 
-    ordered = _order_moves(moves)
+    # Captures first at root too
+    ordered = sorted(moves, key=lambda m: (0 if m.captures else 1))
     best_move = ordered[0]
 
     for d in range(1, depth + 1):
