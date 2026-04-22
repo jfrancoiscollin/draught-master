@@ -88,12 +88,8 @@ def _piece_counts(state: GameState) -> tuple[int, int, int, int]:
 
 def _is_piece_capturable(state: GameState, sq: int) -> bool:
     """Check if the piece on sq can be captured by the opponent in the next move."""
-    opponent_state = GameState(
-        board=state.board,
-        turn='black' if state.turn == 'white' else 'white',
-        half_move_clock=0,
-        move_count=state.move_count,
-    )
+    opponent_state = state.copy()
+    opponent_state.turn = 'black' if state.turn == 'white' else 'white'
     for move in get_legal_moves(opponent_state):
         if sq in move.captures:
             return True
