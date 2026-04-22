@@ -367,6 +367,7 @@ export default function App() {
                         onHighlightSquare={setSpokenSquares}
                         expanded={true}
                         onCollapse={() => setAnalysisExpanded(false)}
+                        aiThinking={isAiThinking}
                       />
                     </div>
                     <div
@@ -469,6 +470,7 @@ export default function App() {
                         onHighlightSquare={setSpokenSquares}
                         expanded={false}
                         onCollapse={() => setAnalysisExpanded(false)}
+                        aiThinking={isAiThinking}
                       />
                       <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                     </div>
@@ -535,6 +537,7 @@ export default function App() {
                     onHighlightSquare={setSpokenSquares}
                     expanded={true}
                     onCollapse={() => setAnalysisExpanded(false)}
+                    aiThinking={isAiThinking}
                   />
                 </div>
               ) : (
@@ -549,6 +552,7 @@ export default function App() {
                       onHighlightSquare={setSpokenSquares}
                       expanded={false}
                       onCollapse={() => setAnalysisExpanded(false)}
+                      aiThinking={isAiThinking}
                     />
                     <GameControls
                       result={gameState?.result || null}

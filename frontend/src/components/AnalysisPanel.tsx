@@ -11,6 +11,7 @@ interface AnalysisPanelProps {
   onHighlightSquare: (squares: number[]) => void
   expanded?: boolean
   onCollapse?: () => void
+  aiThinking?: boolean
 }
 
 function extractMoveSquares(text: string, charIndex: number): number[] {
@@ -87,6 +88,7 @@ export default function AnalysisPanel({
   onHighlightSquare,
   expanded = false,
   onCollapse,
+  aiThinking = false,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
   const [mode, setMode] = useState<'bestmove' | 'full' | null>(null)
@@ -133,7 +135,7 @@ export default function AnalysisPanel({
       <div className="flex gap-2">
         <button
           onClick={handleBestMove}
-          disabled={!gameId || quickLoading}
+          disabled={!gameId || quickLoading || aiThinking}
           className="btn-secondary flex-1 text-sm"
         >
           {quickLoading ? (
@@ -144,7 +146,7 @@ export default function AnalysisPanel({
         </button>
         <button
           onClick={handleFullAnalyze}
-          disabled={!gameId || loading}
+          disabled={!gameId || loading || aiThinking}
           className="btn-primary flex-1 text-sm"
         >
           {loading && mode === 'full' ? (

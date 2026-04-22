@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 import os
 from typing import Optional
 import anthropic
@@ -104,8 +105,9 @@ async def analyze_position(
 ) -> dict:
     client = _get_client()
 
-    # Use proper deep search to rank moves (not depth-0 evaluation)
-    ranked = rank_moves(state, n=5, depth=5)
+    # Run CPU-bound search in thread pool to avoid blocking the event loop
+    loop = asyncio.get_event_loop()
+    ranked = await loop.run_in_executor(None, lambda: rank_moves(state, n=5, depth=5))
     top_moves_pdn = [move_to_pdn(m) for m, _ in ranked]
     top_scores = [score for _, score in ranked]
 
