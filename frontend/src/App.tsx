@@ -342,89 +342,190 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main content */}
-      <main className={`flex-1 ${analysisExpanded ? 'overflow-y-auto' : 'overflow-hidden'} lg:overflow-y-auto`}>
+      {/* Main content — mobile: no page scroll (each section scrolls itself); desktop: page scrolls */}
+      <main className="flex-1 overflow-hidden lg:overflow-y-auto">
 
         {/* PLAY TAB */}
         {tab === 'play' && (
-          <div
-            className={analysisExpanded
-              ? 'expanded-play-grid'
-              : 'h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
-            }
-          >
-
-            {/* Board — col 2 row 1 (mobile) / col 2 all rows sticky (desktop) */}
-            <div
-              className={analysisExpanded
-                ? 'board-expanded flex flex-col items-center'
-                : 'flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0'
-              }
-              style={!analysisExpanded ? { width: '100%', maxWidth: '560px' } : undefined}
-            >
-              <Board
-                board={currentBoard}
-                legalMoves={legalMoves}
-                onMove={handleMove}
-                selectedSquare={selectedSquare}
-                onSelectSquare={handleSelectSquare}
-                disabled={boardDisabled}
-                lastMove={gameState?.last_move}
-                spokenSquares={spokenSquares}
-              />
-              {gameState && (
-                <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <button
-                    onClick={handleUndo}
-                    disabled={isAiThinking || !moveHistory.length || !!gameState.result}
-                    title={t('undoMove')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: analysisExpanded ? 0 : '6px' }}
-                    className={`font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition-colors ${analysisExpanded ? 'text-base px-2 py-1' : 'text-sm px-3 py-1.5'}`}
+          <>
+            {/* ── MOBILE (hidden on lg+) ── */}
+            <div className="lg:hidden h-full flex flex-col">
+              {analysisExpanded ? (
+                <>
+                  {/* Top (fixed): small board right + compact panel left */}
+                  <div
+                    className="flex-shrink-0 grid gap-2 px-2 pt-2"
+                    style={{ gridTemplateColumns: 'minmax(0,1fr) min(42vw, 200px)' }}
                   >
-                    <span>←</span>
-                    {!analysisExpanded && <span>{t('undoMove')}</span>}
-                  </button>
-                  <button
-                    onClick={handleResign}
-                    disabled={isAiThinking || !!gameState.result}
-                    title={t('resign')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: analysisExpanded ? 0 : '6px' }}
-                    className={`font-semibold bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition-colors ${analysisExpanded ? 'text-base px-2 py-1' : 'text-sm px-3 py-1.5'}`}
-                  >
-                    <span>🏳️</span>
-                    {!analysisExpanded && <span>{t('resign')}</span>}
-                  </button>
-                  {moveHistory.length > 0 && (
-                    <span style={{ marginLeft: 'auto', fontWeight: 600, fontSize: '0.9rem' }}
-                      className={pieceDiff > 0 ? 'text-green-400' : pieceDiff < 0 ? 'text-red-400' : 'text-gray-400'}
+                    <div style={{ gridColumn: '1', gridRow: '1' }} className="min-w-0">
+                      <AnalysisPanel
+                        gameId={gameState?.game_id || null}
+                        onAnalyze={handleAnalyze}
+                        onBestMove={handleBestMoveQuick}
+                        analysis={analysis}
+                        loading={analysisLoading}
+                        onHighlightSquare={setSpokenSquares}
+                        expanded={true}
+                        onCollapse={() => setAnalysisExpanded(false)}
+                      />
+                    </div>
+                    <div
+                      style={{ gridColumn: '2', gridRow: '1', width: 'min(42vw, 200px)' }}
+                      className="flex flex-col items-center"
                     >
-                      {pieceDiff > 0 ? `+${pieceDiff}` : pieceDiff === 0 ? '=' : `${pieceDiff}`}
-                    </span>
-                  )}
-                </div>
-              )}
-              {gameState && (
-                <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">{t('whitePerspective')}</p>
+                      <Board
+                        board={currentBoard}
+                        legalMoves={legalMoves}
+                        onMove={handleMove}
+                        selectedSquare={selectedSquare}
+                        onSelectSquare={handleSelectSquare}
+                        disabled={boardDisabled}
+                        lastMove={gameState?.last_move}
+                        spokenSquares={spokenSquares}
+                      />
+                      {gameState && (
+                        <div style={{ alignSelf: 'stretch', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <button onClick={handleUndo} disabled={isAiThinking || !moveHistory.length || !!gameState.result}
+                            title={t('undoMove')}
+                            className="flex-1 font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-2 py-1 rounded-lg transition-colors text-base"
+                          >←</button>
+                          <button onClick={handleResign} disabled={isAiThinking || !!gameState.result}
+                            title={t('resign')}
+                            className="flex-1 font-semibold bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-2 py-1 rounded-lg transition-colors text-base"
+                          >🏳️</button>
+                          {moveHistory.length > 0 && (
+                            <span style={{ fontWeight: 600, fontSize: '0.8rem' }}
+                              className={pieceDiff > 0 ? 'text-green-400' : pieceDiff < 0 ? 'text-red-400' : 'text-gray-400'}>
+                              {pieceDiff > 0 ? `+${pieceDiff}` : pieceDiff === 0 ? '=' : `${pieceDiff}`}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {/* Bottom (scrollable): full analysis text + move list */}
+                  <div className="flex-1 overflow-y-auto overscroll-contain pb-20 px-2 pt-2 flex flex-col gap-2">
+                    {analysis && (
+                      <div className="panel">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</span>
+                          <button onClick={handleFullTextSpeak}
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${fullSpeaking ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+                            <span>{fullSpeaking ? '⏹' : '🔊'}</span>
+                            <span>{fullSpeaking ? t('stopReading') : t('readAloud')}</span>
+                          </button>
+                        </div>
+                        <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm">{analysis.analysis}</p>
+                      </div>
+                    )}
+                    <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Board full width */}
+                  <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2" style={{ width: '100%', maxWidth: '560px', alignSelf: 'center' }}>
+                    <Board
+                      board={currentBoard}
+                      legalMoves={legalMoves}
+                      onMove={handleMove}
+                      selectedSquare={selectedSquare}
+                      onSelectSquare={handleSelectSquare}
+                      disabled={boardDisabled}
+                      lastMove={gameState?.last_move}
+                      spokenSquares={spokenSquares}
+                    />
+                    {gameState && (
+                      <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button onClick={handleUndo} disabled={isAiThinking || !moveHistory.length || !!gameState.result}
+                          title={t('undoMove')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                          className="text-sm font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors">
+                          <span>←</span><span>{t('undoMove')}</span>
+                        </button>
+                        <button onClick={handleResign} disabled={isAiThinking || !!gameState.result}
+                          title={t('resign')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                          className="text-sm font-semibold bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors">
+                          <span>🏳️</span><span>{t('resign')}</span>
+                        </button>
+                        {moveHistory.length > 0 && (
+                          <span style={{ marginLeft: 'auto', fontWeight: 600, fontSize: '0.9rem' }}
+                            className={pieceDiff > 0 ? 'text-green-400' : pieceDiff < 0 ? 'text-red-400' : 'text-gray-400'}>
+                            {pieceDiff > 0 ? `+${pieceDiff}` : pieceDiff === 0 ? '=' : `${pieceDiff}`}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {gameState && <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">{t('whitePerspective')}</p>}
+                  </div>
+                  {/* Scrollable right panel */}
+                  <div className="flex-1 overflow-y-auto overscroll-contain pb-20 min-w-0">
+                    <div className="flex flex-col gap-3 px-2 py-3">
+                      <AnalysisPanel
+                        gameId={gameState?.game_id || null}
+                        onAnalyze={handleAnalyze}
+                        onBestMove={handleBestMoveQuick}
+                        analysis={analysis}
+                        loading={analysisLoading}
+                        onHighlightSquare={setSpokenSquares}
+                        expanded={false}
+                        onCollapse={() => setAnalysisExpanded(false)}
+                      />
+                      <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
+                    </div>
+                  </div>
+                </>
               )}
             </div>
 
-            {/* Compact panel — col 1, row 1 */}
-            {analysisExpanded ? (
-              <div className="min-w-0" style={{ gridColumn: '1', gridRow: '1' }}>
-                <AnalysisPanel
-                  gameId={gameState?.game_id || null}
-                  onAnalyze={handleAnalyze}
-                  onBestMove={handleBestMoveQuick}
-                  analysis={analysis}
-                  loading={analysisLoading}
-                  onHighlightSquare={setSpokenSquares}
-                  expanded={analysisExpanded}
-                  onCollapse={() => setAnalysisExpanded(false)}
+            {/* ── DESKTOP (hidden below lg) ── */}
+            <div
+              className={analysisExpanded
+                ? 'hidden lg:grid gap-3 max-w-7xl mx-auto px-4 py-4 pb-6'
+                : 'hidden lg:flex lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
+              }
+              style={analysisExpanded ? { gridTemplateColumns: '1fr min(46%, 280px)' } : {}}
+            >
+              {/* Board */}
+              <div
+                className={analysisExpanded ? 'self-start sticky top-0 flex flex-col items-center' : 'flex-shrink-0 flex flex-col items-center'}
+                style={analysisExpanded ? { gridColumn: '2', gridRow: '1 / span 10' } : { width: '100%', maxWidth: '560px' }}
+              >
+                <Board
+                  board={currentBoard}
+                  legalMoves={legalMoves}
+                  onMove={handleMove}
+                  selectedSquare={selectedSquare}
+                  onSelectSquare={handleSelectSquare}
+                  disabled={boardDisabled}
+                  lastMove={gameState?.last_move}
+                  spokenSquares={spokenSquares}
                 />
+                {gameState && (
+                  <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button onClick={handleUndo} disabled={isAiThinking || !moveHistory.length || !!gameState.result}
+                      title={t('undoMove')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      className="text-sm font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors">
+                      <span>←</span><span>{t('undoMove')}</span>
+                    </button>
+                    <button onClick={handleResign} disabled={isAiThinking || !!gameState.result}
+                      title={t('resign')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      className="text-sm font-semibold bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors">
+                      <span>🏳️</span><span>{t('resign')}</span>
+                    </button>
+                    {moveHistory.length > 0 && (
+                      <span style={{ marginLeft: 'auto', fontWeight: 600, fontSize: '0.9rem' }}
+                        className={pieceDiff > 0 ? 'text-green-400' : pieceDiff < 0 ? 'text-red-400' : 'text-gray-400'}>
+                        {pieceDiff > 0 ? `+${pieceDiff}` : pieceDiff === 0 ? '=' : `${pieceDiff}`}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {gameState && <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">{t('whitePerspective')}</p>}
               </div>
-            ) : (
-              <div className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0">
-                <div className="flex flex-col gap-3 px-2 py-3 lg:px-0">
+
+              {/* Analysis panel */}
+              {analysisExpanded ? (
+                <div style={{ gridColumn: '1', gridRow: '1' }} className="min-w-0">
                   <AnalysisPanel
                     gameId={gameState?.game_id || null}
                     onAnalyze={handleAnalyze}
@@ -432,10 +533,23 @@ export default function App() {
                     analysis={analysis}
                     loading={analysisLoading}
                     onHighlightSquare={setSpokenSquares}
-                    expanded={false}
+                    expanded={true}
                     onCollapse={() => setAnalysisExpanded(false)}
                   />
-                  <div className="hidden lg:block">
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
+                  <div className="flex flex-col gap-3">
+                    <AnalysisPanel
+                      gameId={gameState?.game_id || null}
+                      onAnalyze={handleAnalyze}
+                      onBestMove={handleBestMoveQuick}
+                      analysis={analysis}
+                      loading={analysisLoading}
+                      onHighlightSquare={setSpokenSquares}
+                      expanded={false}
+                      onCollapse={() => setAnalysisExpanded(false)}
+                    />
                     <GameControls
                       result={gameState?.result || null}
                       turn={gameState?.turn || 'white'}
@@ -445,57 +559,51 @@ export default function App() {
                       onAiDepthChange={setAiDepth}
                       disabled={isAiThinking}
                     />
+                    <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                   </div>
+                </div>
+              )}
+
+              {/* Full analysis text (expanded only) */}
+              {analysisExpanded && analysis && (
+                <div style={{ gridColumn: '1', gridRow: '2' }} className="min-w-0">
+                  <div className="panel">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</span>
+                      <button onClick={handleFullTextSpeak}
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${fullSpeaking ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+                        <span>{fullSpeaking ? '⏹' : '🔊'}</span>
+                        <span>{fullSpeaking ? t('stopReading') : t('readAloud')}</span>
+                      </button>
+                    </div>
+                    <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm">{analysis.analysis}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Move list */}
+              {analysisExpanded && (
+                <div style={{ gridColumn: '1', gridRow: '3' }} className="min-w-0">
                   <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Full analysis text — full width on mobile (spans both cols), col 1 on desktop */}
-            {analysisExpanded && analysis && (
-              <div className="analysis-text-expanded min-w-0">
-                <div className="panel">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</span>
-                    <button
-                      onClick={handleFullTextSpeak}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
-                        fullSpeaking ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                      }`}
-                    >
-                      <span>{fullSpeaking ? '⏹' : '🔊'}</span>
-                      <span>{fullSpeaking ? t('stopReading') : t('readAloud')}</span>
-                    </button>
-                  </div>
-                  <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm">
-                    {analysis.analysis}
-                  </p>
+              {/* Game controls (expanded only) */}
+              {analysisExpanded && (
+                <div style={{ gridColumn: '1', gridRow: '4' }} className="min-w-0">
+                  <GameControls
+                    result={gameState?.result || null}
+                    turn={gameState?.turn || 'white'}
+                    moveCount={gameState?.move_count || 0}
+                    aiDepth={aiDepth}
+                    onNewGame={startNewGame}
+                    onAiDepthChange={setAiDepth}
+                    disabled={isAiThinking}
+                  />
                 </div>
-              </div>
-            )}
-
-            {/* Move list — full width on mobile (spans both cols), col 1 on desktop */}
-            {analysisExpanded && (
-              <div className="moves-expanded min-w-0">
-                <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
-              </div>
-            )}
-
-            {/* Game controls — desktop only, col 1 row 4 */}
-            {analysisExpanded && (
-              <div className="controls-expanded hidden lg:block min-w-0">
-                <GameControls
-                  result={gameState?.result || null}
-                  turn={gameState?.turn || 'white'}
-                  moveCount={gameState?.move_count || 0}
-                  aiDepth={aiDepth}
-                  onNewGame={startNewGame}
-                  onAiDepthChange={setAiDepth}
-                  disabled={isAiThinking}
-                />
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </>
         )}
 
         {/* EXERCISES TAB */}
