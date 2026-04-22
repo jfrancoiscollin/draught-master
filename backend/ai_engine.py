@@ -1,4 +1,5 @@
 from __future__ import annotations
+import random
 import time
 from typing import Optional
 from game_engine import (
@@ -18,9 +19,44 @@ MATERIAL = {
     BLACK_KING: -280,
 }
 
-# Time budget per level (seconds). Iterative deepening uses this as a hard cap.
-TIME_LIMITS = {1: 0.1, 2: 0.3, 3: 0.6, 4: 1.0, 5: 1.5, 6: 2.5, 7: 4.0, 8: 6.0}
+# Time budget per level (seconds). With transposition table, shorter times = same strength.
+TIME_LIMITS = {1: 0.05, 2: 0.15, 3: 0.35, 4: 0.6, 5: 1.0, 6: 1.5, 7: 2.5, 8: 4.0}
 
+# ── Zobrist hashing ──────────────────────────────────────────────────────────
+
+_rng = random.Random(0xDEADBEEF_CAFEBABE)
+_PIECES = [WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING]
+_ZOBRIST: dict[tuple[int, int], int] = {
+    (piece, sq): _rng.getrandbits(64)
+    for piece in _PIECES
+    for sq in range(1, 51)
+}
+_ZOBRIST_BLACK_TURN = _rng.getrandbits(64)
+
+
+def _hash_state(state: GameState) -> int:
+    h = 0
+    for sq in range(1, 51):
+        piece = state.board[sq]
+        if piece != EMPTY:
+            h ^= _ZOBRIST[(piece, sq)]
+    if state.turn == 'black':
+        h ^= _ZOBRIST_BLACK_TURN
+    return h
+
+
+# ── Transposition table ──────────────────────────────────────────────────────
+# Entry: (depth, score, flag)  flag ∈ {'exact', 'lower', 'upper'}
+
+_TT: dict[int, tuple[int, float, str]] = {}
+_TT_MAX = 600_000
+
+
+def _tt_clear() -> None:
+    _TT.clear()
+
+
+# ── Misc helpers ─────────────────────────────────────────────────────────────
 
 class _Timeout(Exception):
     pass
@@ -52,7 +88,7 @@ def evaluate(state: GameState) -> float:
         if piece == WHITE_MAN:
             white_pieces += 1
             row = _sq_row(sq)
-            score += (9 - row) / 9.0 * 20  # advancement bonus
+            score += (9 - row) / 9.0 * 20
             if sq in CENTER_SQUARES:
                 score += 15
             elif sq in NEAR_CENTER:
@@ -107,9 +143,26 @@ def _minimax(
     beta: float,
     maximizing: bool,
     deadline: float,
+    zhash: int,
 ) -> float:
     if time.monotonic() > deadline:
         raise _Timeout()
+
+    alpha_orig = alpha
+
+    # Transposition table lookup
+    tt_entry = _TT.get(zhash)
+    if tt_entry is not None:
+        tt_depth, tt_score, tt_flag = tt_entry
+        if tt_depth >= depth:
+            if tt_flag == 'exact':
+                return tt_score
+            if tt_flag == 'lower':
+                alpha = max(alpha, tt_score)
+            elif tt_flag == 'upper':
+                beta = min(beta, tt_score)
+            if beta <= alpha:
+                return tt_score
 
     result = game_result(state)
     if result is not None:
@@ -129,25 +182,39 @@ def _minimax(
     if maximizing:
         best = float('-inf')
         for move in moves:
-            val = _minimax(apply_move(state, move), depth - 1, alpha, beta, False, deadline)
+            child = apply_move(state, move)
+            child_hash = _hash_state(child)
+            val = _minimax(child, depth - 1, alpha, beta, False, deadline, child_hash)
             if val > best:
                 best = val
             if val > alpha:
                 alpha = val
             if beta <= alpha:
                 break
-        return best
     else:
         best = float('inf')
         for move in moves:
-            val = _minimax(apply_move(state, move), depth - 1, alpha, beta, True, deadline)
+            child = apply_move(state, move)
+            child_hash = _hash_state(child)
+            val = _minimax(child, depth - 1, alpha, beta, True, deadline, child_hash)
             if val < best:
                 best = val
             if val < beta:
                 beta = val
             if beta <= alpha:
                 break
-        return best
+
+    # Store in TT
+    if len(_TT) < _TT_MAX:
+        if best <= alpha_orig:
+            flag = 'upper'
+        elif best >= beta:
+            flag = 'lower'
+        else:
+            flag = 'exact'
+        _TT[zhash] = (depth, best, flag)
+
+    return best
 
 
 def get_best_move(state: GameState, depth: int = 6) -> Optional[Move]:
@@ -157,15 +224,15 @@ def get_best_move(state: GameState, depth: int = 6) -> Optional[Move]:
     if len(moves) == 1:
         return moves[0]
 
+    _tt_clear()
+
     time_limit = TIME_LIMITS.get(depth, 5.0)
     deadline = time.monotonic() + time_limit
     maximizing = (state.turn == 'white')
 
-    # Start with the first capture available, or first move — safe fallback
     ordered = _order_moves(moves)
     best_move = ordered[0]
 
-    # Iterative deepening: search d=1,2,3,... until time runs out
     for d in range(1, depth + 1):
         if time.monotonic() >= deadline:
             break
@@ -175,13 +242,16 @@ def get_best_move(state: GameState, depth: int = 6) -> Optional[Move]:
 
         try:
             for move in ordered:
+                child = apply_move(state, move)
+                child_hash = _hash_state(child)
                 val = _minimax(
-                    apply_move(state, move),
+                    child,
                     d - 1,
                     float('-inf'),
                     float('inf'),
                     not maximizing,
                     deadline,
+                    child_hash,
                 )
                 if maximizing and val > iteration_best_val:
                     iteration_best_val = val
@@ -190,13 +260,11 @@ def get_best_move(state: GameState, depth: int = 6) -> Optional[Move]:
                     iteration_best_val = val
                     iteration_best = move
 
-            # Full iteration completed — update best move and re-order (best-first)
             if iteration_best is not None:
                 best_move = iteration_best
                 ordered = [best_move] + [m for m in ordered if m is not best_move]
 
         except _Timeout:
-            # Time ran out mid-search — keep result from last completed iteration
             break
 
     return best_move
