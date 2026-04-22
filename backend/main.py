@@ -152,6 +152,8 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
 
         ai_move = await loop.run_in_executor(None, _pick_move, state, depth)
         if ai_move:
+            # Save snapshot before AI move so undo can remove it independently
+            entry["state_history"].append((state, len(entry["fen_positions"])))
             state = apply_move(state, ai_move)
             entry["state"] = state
             entry["fen_positions"].append(board_to_fen(state))
