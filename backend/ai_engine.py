@@ -427,3 +427,34 @@ def get_best_move(state: GameState, depth: int = 6) -> Optional[Move]:
             break
 
     return best_move
+
+
+def rank_moves(state: GameState, n: int = 5, depth: int = 5) -> list[tuple[Move, float]]:
+    """Score all legal moves with proper alpha-beta search and return the top N."""
+    moves = get_legal_moves(state)
+    if not moves:
+        return []
+
+    _tt_clear()
+    _killers_clear()
+    _history_age()
+
+    maximizing = state.turn == 'white'
+    deadline = time.monotonic() + TIME_LIMITS.get(depth, 1.5)
+
+    scored: list[tuple[float, Move]] = []
+    for m in moves:
+        child = apply_move(state, m)
+        ch = _hash_state(child)
+        try:
+            val = _minimax(
+                child, depth - 1,
+                float('-inf'), float('inf'),
+                not maximizing, deadline, ch,
+            )
+        except (_Timeout, Exception):
+            val = evaluate(child)
+        scored.append((val, m))
+
+    scored.sort(key=lambda x: x[0], reverse=maximizing)
+    return [(m, val) for val, m in scored[:n]]
