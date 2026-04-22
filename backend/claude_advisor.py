@@ -91,9 +91,8 @@ async def analyze_position(
         else "Réponds en français. Pas de markdown."
 
     legal_moves = get_legal_moves(state)
-    best = get_best_move(state, depth=6)
-    best_move_str = move_to_pdn(best) if best else "aucun"
     top_moves = _rank_moves(state, 5)
+    best_move_str = top_moves[0] if top_moves else "aucun"
 
     if score > 200:
         eval_desc = "avantage blanc"
