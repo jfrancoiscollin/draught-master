@@ -90,12 +90,11 @@ class ScanEngine:
                 pass
 
     def _init(self) -> None:
-        # Step 1: announce GUI type, engine replies with id/param lines then "wait"
-        self._send("hub")
-        result = self._wait_for("wait", timeout=10.0)
+        # Launched as "scan hub" so engine auto-sends id/param/wait immediately.
+        # Do NOT send "hub" via stdin — that would confuse the engine.
+        result = self._wait_for("wait", timeout=15.0)
         if result is None:
             raise RuntimeError("Scan did not send 'wait' during handshake")
-        # Step 2: configure and initialise
         self._send("set-param name=variant value=normal")
         self._send("set-param name=book value=false")
         self._send("set-param name=bb-size value=0")
