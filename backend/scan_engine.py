@@ -21,10 +21,10 @@ logger = logging.getLogger(__name__)
 
 SCAN_PATH = os.environ.get("SCAN_PATH", "/usr/local/bin/scan")
 
-# Thinking time per level (seconds)
+# Thinking time per level (seconds) — Scan is very strong even at short times
 TIME_LIMITS = {
-    1: 0.3, 2: 0.6, 3: 1.2, 4: 2.0,
-    5: 3.5, 6: 5.5, 7: 8.0, 8: 10.0,
+    1: 0.05, 2: 0.1, 3: 0.2, 4: 0.4,
+    5: 0.6,  6: 0.8, 7: 1.2, 8: 2.0,
 }
 
 _PIECE_CHAR = {
