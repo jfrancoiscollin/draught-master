@@ -19,7 +19,7 @@ from game_engine import (
     game_result, board_to_fen, fen_to_board, move_to_pdn,
 )
 from ai_engine import get_best_move
-from scan_engine import get_scan_move
+from scan_engine import get_scan_move, _get_engine as _get_scan_engine
 from claude_advisor import analyze_position, suggest_exercises
 from database import init_db, save_game, get_games, get_game, get_exercises, get_exercise, record_progress
 from models import (
@@ -47,6 +47,9 @@ game_store: Dict[str, Dict[str, Any]] = {}
 @app.on_event("startup")
 async def startup_event() -> None:
     await init_db()
+    # Pre-warm Scan in background so first move is not slow
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, _get_scan_engine)
 
 
 def _state_to_response(game_id: str, state: GameState, last_move: Optional[Move] = None) -> GameStateResponse:

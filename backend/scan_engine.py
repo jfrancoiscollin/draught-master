@@ -21,10 +21,10 @@ logger = logging.getLogger(__name__)
 
 SCAN_PATH = os.environ.get("SCAN_PATH", "/usr/local/bin/scan")
 
-# Thinking time per level (seconds) — Scan is very strong even at short times
+# Thinking time per level (seconds) — Scan at 500 ms is already master-level
 TIME_LIMITS = {
-    1: 0.05, 2: 0.1, 3: 0.2, 4: 0.4,
-    5: 0.6,  6: 0.8, 7: 1.2, 8: 2.0,
+    1: 0.02, 2: 0.05, 3: 0.1, 4: 0.15,
+    5: 0.2,  6: 0.3,  7: 0.4, 8: 0.5,
 }
 
 _PIECE_CHAR = {
@@ -83,7 +83,7 @@ class ScanEngine:
             if remaining <= 0:
                 return None
             try:
-                line = self._q.get(timeout=min(0.15, remaining))
+                line = self._q.get(timeout=min(0.02, remaining))
                 if line.startswith(prefix):
                     return line
             except queue.Empty:

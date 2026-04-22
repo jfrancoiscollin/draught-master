@@ -19,7 +19,7 @@ MATERIAL = {
 }
 
 # Time budget per level (seconds). Iterative deepening uses this as a hard cap.
-TIME_LIMITS = {1: 0.05, 2: 0.1, 3: 0.2, 4: 0.4, 5: 0.6, 6: 0.8, 7: 1.2, 8: 2.0}
+TIME_LIMITS = {1: 0.05, 2: 0.1, 3: 0.15, 4: 0.2, 5: 0.3, 6: 0.4, 7: 0.6, 8: 1.0}
 
 
 class _Timeout(Exception):
