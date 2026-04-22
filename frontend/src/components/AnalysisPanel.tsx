@@ -5,6 +5,7 @@ import { useLanguage } from '../i18n/LanguageContext'
 interface AnalysisPanelProps {
   gameId: string | null
   onAnalyze: (question?: string) => Promise<AnalysisResponse | null>
+  onBestMove: () => Promise<string[] | null>
   analysis: AnalysisResponse | null
   loading: boolean
   onHighlightSquare: (squares: number[]) => void
@@ -78,18 +79,29 @@ function useSpeech(language: string, onSquares: (squares: number[]) => void) {
 export default function AnalysisPanel({
   gameId,
   onAnalyze,
+  onBestMove,
   analysis,
   loading,
   onHighlightSquare,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
   const [mode, setMode] = useState<'bestmove' | 'full' | null>(null)
+  const [quickMoves, setQuickMoves] = useState<string[] | null>(null)
+  const [quickLoading, setQuickLoading] = useState(false)
   const { speak, stop, speaking } = useSpeech(language, onHighlightSquare)
 
   const handleBestMove = async () => {
+    if (!gameId) return
     stop()
     setMode('bestmove')
-    await onAnalyze()
+    setQuickMoves(null)
+    setQuickLoading(true)
+    try {
+      const moves = await onBestMove()
+      setQuickMoves(moves ?? [])
+    } finally {
+      setQuickLoading(false)
+    }
   }
 
   const handleFullAnalyze = async () => {
@@ -106,10 +118,10 @@ export default function AnalysisPanel({
       <div className="flex gap-2">
         <button
           onClick={handleBestMove}
-          disabled={!gameId || loading}
+          disabled={!gameId || quickLoading}
           className="btn-secondary text-sm flex-1"
         >
-          {loading && mode === 'bestmove' ? (
+          {quickLoading ? (
             <span className="flex items-center gap-2 justify-center">
               <div className="spinner" style={{ width: 16, height: 16 }} />
             </span>
@@ -129,10 +141,10 @@ export default function AnalysisPanel({
         </button>
       </div>
 
-      {analysis && mode === 'bestmove' && (
+      {mode === 'bestmove' && quickMoves !== null && (
         <div className="flex flex-wrap gap-1">
-          {analysis.best_moves.length > 0 ? (
-            analysis.best_moves.map((m, i) => (
+          {quickMoves.length > 0 ? (
+            quickMoves.map((m, i) => (
               <span
                 key={i}
                 className="bg-gray-700 text-amber-400 px-2 py-1 rounded font-mono text-sm font-semibold"

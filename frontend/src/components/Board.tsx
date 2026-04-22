@@ -15,8 +15,8 @@ interface BoardProps {
 }
 
 const PIECE_WHITE: React.CSSProperties = {
-  width: '88%',
-  height: '88%',
+  width: '76%',
+  height: '76%',
   borderRadius: '50%',
   background: 'radial-gradient(circle at 38% 32%, #ffffff 0%, #f2f2f2 28%, #d6d6d6 58%, #bbb 82%, #aaa 100%)',
   border: '2px solid #999',
@@ -26,8 +26,8 @@ const PIECE_WHITE: React.CSSProperties = {
 }
 
 const PIECE_BLACK: React.CSSProperties = {
-  width: '88%',
-  height: '88%',
+  width: '76%',
+  height: '76%',
   borderRadius: '50%',
   background: 'radial-gradient(circle at 38% 32%, #505050 0%, #1e1e1e 32%, #0a0a0a 65%, #000 100%)',
   border: '2px solid #050505',

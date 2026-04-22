@@ -15,6 +15,7 @@ import {
   checkExercise,
   undoMove,
   resignGame,
+  getAiMove,
 } from './api/client'
 import {
   EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
@@ -183,6 +184,20 @@ export default function App() {
       setIsAiThinking(false)
     }
   }, [gameState, isAiThinking])
+
+  const handleBestMoveQuick = useCallback(async (): Promise<string[] | null> => {
+    if (!gameState) return null
+    try {
+      const move = await getAiMove(gameState.game_id, aiDepth)
+      if (!move) return []
+      const notation = move.captures.length > 0
+        ? move.path.join('x')
+        : `${move.path[0]}-${move.path[move.path.length - 1]}`
+      return [notation]
+    } catch {
+      return null
+    }
+  }, [gameState, aiDepth])
 
   const handleAnalyze = useCallback(async (question?: string): Promise<AnalysisResponse | null> => {
     if (!gameState) return null
@@ -366,6 +381,7 @@ export default function App() {
                 <AnalysisPanel
                   gameId={gameState?.game_id || null}
                   onAnalyze={handleAnalyze}
+                  onBestMove={handleBestMoveQuick}
                   analysis={analysis}
                   loading={analysisLoading}
                   onHighlightSquare={setSpokenSquares}
