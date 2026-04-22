@@ -348,27 +348,21 @@ export default function App() {
         {/* PLAY TAB */}
         {tab === 'play' && (
           <div
-            className={
-              analysisExpanded
-                ? 'px-2 pt-2 pb-24 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4 lg:pb-6'
-                : 'h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
+            className={analysisExpanded
+              ? 'flex flex-col gap-2 px-2 pt-2 pb-24 lg:grid lg:gap-3 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4 lg:pb-6'
+              : 'h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4'
             }
-            style={analysisExpanded ? {
-              display: 'grid',
-              gridTemplateColumns: '1fr min(46%, 280px)',
-              gap: '8px',
-            } : {}}
+            style={analysisExpanded ? { gridTemplateColumns: '1fr min(46%, 280px)' } : {}}
           >
 
-            {/* Board — grid col 2 spanning all rows + sticky when expanded */}
+            {/* Board — top of stack on mobile, sticky grid-col 2 on desktop */}
             <div
-              className={
-                analysisExpanded
-                  ? 'flex flex-col items-center'
-                  : 'flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0'
+              className={analysisExpanded
+                ? 'flex flex-col items-center self-center lg:self-start lg:sticky lg:top-0'
+                : 'flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0'
               }
               style={analysisExpanded
-                ? { gridColumn: '2', gridRow: '1 / span 10', position: 'sticky', top: '0', alignSelf: 'start', width: '100%' }
+                ? { width: 'min(50vw, 280px)', gridColumn: '2', gridRow: '1 / span 10' }
                 : { width: '100%', maxWidth: '560px' }
               }
             >
@@ -418,9 +412,9 @@ export default function App() {
               )}
             </div>
 
-            {/* Col 1 row 1: compact analysis panel (buttons + best moves) */}
+            {/* Compact panel — full width on mobile, grid-col 1 row 1 on desktop */}
             {analysisExpanded ? (
-              <div style={{ gridColumn: '1', gridRow: '1' }} className="min-w-0">
+              <div className="min-w-0" style={{ gridColumn: '1', gridRow: '1' }}>
                 <AnalysisPanel
                   gameId={gameState?.game_id || null}
                   onAnalyze={handleAnalyze}
@@ -456,17 +450,14 @@ export default function App() {
                       disabled={isAiThinking}
                     />
                   </div>
-                  <MoveList
-                    moves={moveHistory}
-                    currentMoveIndex={moveHistory.length - 1}
-                  />
+                  <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                 </div>
               </div>
             )}
 
-            {/* Col 1 row 2: full analysis text with scrollbar */}
+            {/* Full analysis text — full width on mobile, grid-col 1 row 2 on desktop */}
             {analysisExpanded && analysis && (
-              <div style={{ gridColumn: '1', gridRow: '2' }} className="min-w-0">
+              <div className="min-w-0" style={{ gridColumn: '1', gridRow: '2' }}>
                 <div className="panel">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-gray-400 uppercase font-semibold">{t('fullAnalysis')}</span>
@@ -480,29 +471,23 @@ export default function App() {
                       <span>{fullSpeaking ? t('stopReading') : t('readAloud')}</span>
                     </button>
                   </div>
-                  <div
-                    style={{ maxHeight: '50vh', overflowY: 'auto' }}
-                    className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm pr-1"
-                  >
+                  <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm">
                     {analysis.analysis}
-                  </div>
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* Col 1 row 3: move list (below analysis when expanded) */}
+            {/* Move list — full width on mobile, grid-col 1 row 3 on desktop */}
             {analysisExpanded && (
-              <div style={{ gridColumn: '1', gridRow: '3' }} className="min-w-0">
-                <MoveList
-                  moves={moveHistory}
-                  currentMoveIndex={moveHistory.length - 1}
-                />
+              <div className="min-w-0" style={{ gridColumn: '1', gridRow: '3' }}>
+                <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
               </div>
             )}
 
-            {/* Col 1 row 4: game controls desktop (below move list when expanded) */}
+            {/* Game controls — desktop only, grid-col 1 row 4 when expanded */}
             {analysisExpanded && (
-              <div style={{ gridColumn: '1', gridRow: '4' }} className="hidden lg:block">
+              <div className="hidden lg:block min-w-0" style={{ gridColumn: '1', gridRow: '4' }}>
                 <GameControls
                   result={gameState?.result || null}
                   turn={gameState?.turn || 'white'}

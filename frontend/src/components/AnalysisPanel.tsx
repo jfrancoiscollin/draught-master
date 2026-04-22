@@ -130,11 +130,11 @@ export default function AnalysisPanel({
         )}
       </div>
 
-      <div className={`flex gap-2 ${expanded ? 'flex-col' : ''}`}>
+      <div className="flex gap-2">
         <button
           onClick={handleBestMove}
           disabled={!gameId || quickLoading}
-          className={`btn-secondary flex-1 ${expanded ? 'text-xs py-2' : 'text-sm'}`}
+          className="btn-secondary flex-1 text-sm"
         >
           {quickLoading ? (
             <span className="flex items-center gap-2 justify-center">
@@ -145,7 +145,7 @@ export default function AnalysisPanel({
         <button
           onClick={handleFullAnalyze}
           disabled={!gameId || loading}
-          className={`btn-primary flex-1 ${expanded ? 'text-xs py-2' : 'text-sm'}`}
+          className="btn-primary flex-1 text-sm"
         >
           {loading && mode === 'full' ? (
             <span className="flex items-center gap-2 justify-center">
