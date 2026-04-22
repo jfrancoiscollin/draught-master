@@ -90,16 +90,19 @@ class ScanEngine:
                 pass
 
     def _init(self) -> None:
-        # Launched as "scan hub" so engine auto-sends id/param/wait immediately.
-        # Do NOT send "hub" via stdin — that would confuse the engine.
-        result = self._wait_for("wait", timeout=15.0)
+        self._send("hub")
+        # Quick crash detection — if the binary is broken it exits immediately
+        time.sleep(0.3)
+        if self._proc.poll() is not None:
+            raise RuntimeError(f"Scan process exited (code {self._proc.returncode})")
+        result = self._wait_for("wait", timeout=5.0)
         if result is None:
             raise RuntimeError("Scan did not send 'wait' during handshake")
         self._send("set-param name=variant value=normal")
         self._send("set-param name=book value=false")
         self._send("set-param name=bb-size value=0")
         self._send("init")
-        result = self._wait_for("ready", timeout=30.0)
+        result = self._wait_for("ready", timeout=10.0)
         if result is None:
             raise RuntimeError("Scan did not send 'ready' after init")
 
@@ -130,15 +133,15 @@ class ScanEngine:
 # ── Singleton ──────────────────────────────────────────────────────────────
 
 _engine: Optional[ScanEngine] = None
+_engine_unavailable = False  # set after first failure to avoid retrying every move
 _engine_lock = threading.Lock()
 
 
 def _get_engine() -> Optional[ScanEngine]:
-    global _engine
-    if not os.path.isfile(SCAN_PATH):
+    global _engine, _engine_unavailable
+    if _engine_unavailable:
         return None
-    # Reject stub/placeholder files (real binary is ~700 KB)
-    if os.path.getsize(SCAN_PATH) < 1000:
+    if not os.path.isfile(SCAN_PATH) or os.path.getsize(SCAN_PATH) < 1000:
         return None
     with _engine_lock:
         if _engine is None or not _engine.alive():
@@ -148,6 +151,7 @@ def _get_engine() -> Optional[ScanEngine]:
             except Exception as exc:
                 logger.warning("Could not start Scan engine: %s", exc)
                 _engine = None
+                _engine_unavailable = True  # don't block future moves with retries
         return _engine
 
 
