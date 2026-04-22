@@ -14,6 +14,7 @@ import {
   analyzePosition,
   checkExercise,
   undoMove,
+  resignGame,
 } from './api/client'
 import {
   EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
@@ -156,6 +157,17 @@ export default function App() {
     }
   }, [gameState, aiDepth, isAiThinking])
 
+  const handleResign = useCallback(async () => {
+    if (!gameState || isAiThinking || gameState.result) return
+    if (!window.confirm(t('resignConfirm'))) return
+    try {
+      await resignGame(gameState.game_id)
+      setGameState(prev => prev ? { ...prev, result: 'black' } : prev)
+    } catch {
+      showToast('Erreur lors de l\'abandon.')
+    }
+  }, [gameState, isAiThinking, t])
+
   const handleUndo = useCallback(async () => {
     if (!gameState || isAiThinking) return
     try {
@@ -226,6 +238,17 @@ export default function App() {
   const isWhiteTurn = gameState?.turn === 'white'
   const boardDisabled = !gameState || !!gameState.result || !isWhiteTurn || isAiThinking
   const legalMoves = boardDisabled ? [] : (gameState?.legal_moves ?? [])
+
+  const pieceDiff = (() => {
+    if (!gameState) return 0
+    let w = 0, b = 0
+    for (let sq = 1; sq <= 50; sq++) {
+      const p = gameState.board[sq]
+      if (p === WHITE_MAN || p === WHITE_KING) w++
+      else if (p === BLACK_MAN || p === BLACK_KING) b++
+    }
+    return w - b
+  })()
 
   const tabs: [Tab, string][] = [
     ['play', t('tabPlay')],
@@ -302,16 +325,35 @@ export default function App() {
                 spokenSquares={spokenSquares}
               />
               {gameState && (
-                <button
-                  onClick={handleUndo}
-                  disabled={isAiThinking || !moveHistory.length || !!gameState.result}
-                  title={t('undoMove')}
-                  style={{ alignSelf: 'flex-start', marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                  className="text-sm font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-4 py-2 rounded-lg transition-colors"
-                >
-                  <span>←</span>
-                  <span>{t('undoMove')}</span>
-                </button>
+                <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    onClick={handleUndo}
+                    disabled={isAiThinking || !moveHistory.length || !!gameState.result}
+                    title={t('undoMove')}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    className="text-sm font-semibold bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <span>←</span>
+                    <span>{t('undoMove')}</span>
+                  </button>
+                  <button
+                    onClick={handleResign}
+                    disabled={isAiThinking || !!gameState.result}
+                    title={t('resign')}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    className="text-sm font-semibold bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <span>🏳️</span>
+                    <span>{t('resign')}</span>
+                  </button>
+                  {moveHistory.length > 0 && (
+                    <span style={{ marginLeft: 'auto', fontWeight: 600, fontSize: '0.9rem' }}
+                      className={pieceDiff > 0 ? 'text-green-400' : pieceDiff < 0 ? 'text-red-400' : 'text-gray-400'}
+                    >
+                      {pieceDiff > 0 ? `+${pieceDiff}` : pieceDiff === 0 ? '=' : `${pieceDiff}`}
+                    </span>
+                  )}
+                </div>
               )}
               {gameState && (
                 <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">{t('whitePerspective')}</p>

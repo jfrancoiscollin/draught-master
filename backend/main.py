@@ -188,6 +188,28 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
     )
 
 
+@app.post("/api/game/{game_id}/resign")
+async def resign_game(game_id: str) -> Dict[str, Any]:
+    if game_id not in game_store:
+        raise HTTPException(status_code=404, detail="Partie introuvable")
+    entry = game_store[game_id]
+    state: GameState = entry["state"]
+    if game_result(state) is not None:
+        raise HTTPException(status_code=400, detail="La partie est déjà terminée")
+    pdn = _build_pdn(state.move_history)
+    await save_game(
+        game_id=game_id,
+        date=entry["date"],
+        white_player=entry["white_player"],
+        black_player=entry["black_player"],
+        result="black",
+        pdn=pdn,
+        fen_positions=entry["fen_positions"],
+        move_count=len(state.move_history),
+    )
+    return {"result": "black"}
+
+
 @app.post("/api/game/{game_id}/undo", response_model=GameStateResponse)
 async def undo_move(game_id: str) -> GameStateResponse:
     if game_id not in game_store:
