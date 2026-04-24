@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback } from 'react'
 import Board from './components/Board'
 import AnalysisPanel from './components/AnalysisPanel'
 import GameControls from './components/GameControls'
@@ -61,9 +61,10 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'play' | 'exercises' | 'history'
+type Tab = 'home' | 'play' | 'exercises' | 'history'
+type NavTab = Exclude<Tab, 'home'>
 
-const TAB_ICONS: Record<Tab, string> = {
+const TAB_ICONS: Record<NavTab, string> = {
   play: '♟',
   exercises: '✏️',
   history: '📋',
@@ -71,7 +72,7 @@ const TAB_ICONS: Record<Tab, string> = {
 
 export default function App() {
   const { t, language } = useLanguage()
-  const [tab, setTab] = useState<Tab>('play')
+  const [tab, setTab] = useState<Tab>('home')
 
   const [gameState, setGameState] = useState<GameStateResponse | null>(null)
   const [selectedSquare, setSelectedSquare] = useState<number | null>(null)
@@ -114,7 +115,10 @@ export default function App() {
     }
   }, [aiDepth, t])
 
-  useEffect(() => { startNewGame() }, [])
+  const handleGoToPlay = useCallback(() => {
+    setTab('play')
+    if (!gameState) startNewGame()
+  }, [gameState, startNewGame])
 
   const handleSelectSquare = useCallback((sq: number | null) => {
     if (!gameState || gameState.result) return
@@ -287,7 +291,7 @@ export default function App() {
     return w - b
   })()
 
-  const tabs: [Tab, string][] = [
+  const navTabs: [NavTab, string][] = [
     ['play', t('tabPlay')],
     ['exercises', t('tabExercises')],
     ['history', t('tabHistory')],
@@ -302,6 +306,15 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-bold text-amber-600">♟ AI-Draught</h1>
+            {tab !== 'home' && (
+              <button
+                onClick={() => setTab('home')}
+                className="text-gray-400 hover:text-amber-500 text-lg w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors"
+                title={t('home')}
+              >
+                🏠
+              </button>
+            )}
             {isAiThinking && (
               <span className="flex items-center gap-1 text-yellow-400 text-xs">
                 <div className="spinner" style={{ width: 12, height: 12 }} />
@@ -327,23 +340,61 @@ export default function App() {
         </div>
       </header>
 
-      {/* Top tabs — desktop only */}
-      <div className="hidden lg:block bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 flex gap-0">
-          {tabs.map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`tab-btn ${tab === key ? 'tab-active' : 'tab-inactive'}`}
-            >
-              {label}
-            </button>
-          ))}
+      {/* Top tabs — desktop only, hidden on home screen */}
+      {tab !== 'home' && (
+        <div className="hidden lg:block bg-gray-800 border-b border-gray-700">
+          <div className="max-w-7xl mx-auto px-4 flex gap-0">
+            {navTabs.map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => key === 'play' ? handleGoToPlay() : setTab(key)}
+                className={`tab-btn ${tab === key ? 'tab-active' : 'tab-inactive'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main content — mobile: no page scroll (each section scrolls itself); desktop: page scrolls */}
       <main className="flex-1 overflow-hidden lg:overflow-y-auto">
+
+        {/* HOME SCREEN */}
+        {tab === 'home' && (
+          <div className="h-full flex flex-col items-center justify-center px-4 py-8 overflow-y-auto">
+            <p className="text-gray-400 text-sm mb-10 text-center">{t('appSubtitle')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
+              {/* Play */}
+              <button
+                onClick={handleGoToPlay}
+                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+              >
+                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">♟</span>
+                <span className="text-lg font-bold text-white">{t('tabPlay')}</span>
+                <span className="text-sm text-gray-400 text-center">{t('playDesc')}</span>
+              </button>
+              {/* Exercises */}
+              <button
+                onClick={() => setTab('exercises')}
+                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+              >
+                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">✏️</span>
+                <span className="text-lg font-bold text-white">{t('tabExercises')}</span>
+                <span className="text-sm text-gray-400 text-center">{t('exercisesDesc')}</span>
+              </button>
+              {/* History */}
+              <button
+                onClick={() => setTab('history')}
+                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+              >
+                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">📋</span>
+                <span className="text-lg font-bold text-white">{t('tabHistory')}</span>
+                <span className="text-sm text-gray-400 text-center">{t('historyDesc')}</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* PLAY TAB */}
         {tab === 'play' && (
@@ -696,26 +747,28 @@ export default function App() {
         />
       </BottomSheet>
 
-      {/* Bottom navigation — mobile only */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-40">
-        <div className="flex">
-          {tabs.map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`flex-1 flex flex-col items-center justify-center py-3 gap-0.5 transition-colors ${
-                tab === key ? 'text-amber-600' : 'text-gray-400 active:text-gray-200'
-              }`}
-            >
-              <span className="text-xl leading-none">{TAB_ICONS[key]}</span>
-              <span className="text-xs font-medium">{label}</span>
-              {tab === key && (
-                <span className="absolute bottom-0 w-1/3 h-0.5 bg-amber-600 rounded-t" />
-              )}
-            </button>
-          ))}
-        </div>
-      </nav>
+      {/* Bottom navigation — mobile only, hidden on home screen */}
+      {tab !== 'home' && (
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-40">
+          <div className="flex">
+            {navTabs.map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => key === 'play' ? handleGoToPlay() : setTab(key)}
+                className={`flex-1 flex flex-col items-center justify-center py-3 gap-0.5 transition-colors ${
+                  tab === key ? 'text-amber-600' : 'text-gray-400 active:text-gray-200'
+                }`}
+              >
+                <span className="text-xl leading-none">{TAB_ICONS[key]}</span>
+                <span className="text-xs font-medium">{label}</span>
+                {tab === key && (
+                  <span className="absolute bottom-0 w-1/3 h-0.5 bg-amber-600 rounded-t" />
+                )}
+              </button>
+            ))}
+          </div>
+        </nav>
+      )}
     </div>
   )
 }

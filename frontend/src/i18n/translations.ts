@@ -3,6 +3,10 @@ export type Language = 'fr' | 'en'
 export const translations: Record<Language, Record<string, string>> = {
   fr: {
     appSubtitle: "Entraînement au jeu de dames international (100 cases)",
+    home: "Accueil",
+    playDesc: "Jouez contre l'IA Scan",
+    exercisesDesc: "Entraînez-vous tactiquement",
+    historyDesc: "Consultez vos parties",
     aiThinking: "L'IA réfléchit...",
     tabPlay: "Jouer",
     tabExercises: "Exercices",
@@ -70,6 +74,10 @@ export const translations: Record<Language, Record<string, string>> = {
   },
   en: {
     appSubtitle: "International draughts training (100 squares)",
+    home: "Home",
+    playDesc: "Play against Scan AI",
+    exercisesDesc: "Practise tactics",
+    historyDesc: "Browse your games",
     aiThinking: "AI is thinking...",
     tabPlay: "Play",
     tabExercises: "Exercises",
