@@ -274,16 +274,19 @@ async def explain_best_move_concise(
     state: GameState,
     move_history: list[Move],
     language: str = 'fr',
+    ai_depth: int = 6,
 ) -> dict:
     client = _get_client()
     loop = asyncio.get_event_loop()
-    ranked = await loop.run_in_executor(None, lambda: rank_moves(state, n=3, depth=5))
-
-    if not ranked:
+    # Use get_best_move at same depth as the game AI for consistency with Best move button
+    best_move = await loop.run_in_executor(None, lambda: get_best_move(state, depth=ai_depth))
+    if best_move is None:
         return {"analysis": "Aucun coup légal.", "best_moves": [], "key_squares": [], "strategic_advice": ""}
+    # Get candidates for context (same depth)
+    ranked = await loop.run_in_executor(None, lambda: rank_moves(state, n=3, depth=ai_depth))
 
-    best_move_pdn = move_to_pdn(ranked[0][0])
-    top_moves_pdn = [move_to_pdn(m) for m, _ in ranked]
+    best_move_pdn = move_to_pdn(best_move)
+    top_moves_pdn = [best_move_pdn] + [move_to_pdn(m) for m, _ in ranked if move_to_pdn(m) != best_move_pdn]
     candidates_str = "\n".join(
         f"  {move_to_pdn(m)} (score: {'+' if s >= 0 else ''}{s:.0f})"
         for m, s in ranked

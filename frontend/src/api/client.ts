@@ -58,12 +58,14 @@ export async function analyzePosition(
   gameId: string,
   question?: string,
   language: string = 'fr',
-  mode: string = 'position'
+  mode: string = 'position',
+  aiDepth: number = 6,
 ): Promise<AnalysisResponse> {
   const res = await api.post<AnalysisResponse>(`/game/${gameId}/analyze`, {
     question: question || null,
     language,
     mode,
+    ai_depth: aiDepth,
   }, { timeout: 90000 })
   return res.data
 }

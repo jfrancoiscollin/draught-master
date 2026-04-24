@@ -245,7 +245,7 @@ async def analyze(game_id: str, req: AnalyzeRequest) -> AnalysisResponse:
         if req.mode == 'full_game':
             result = await analyze_full_game(state, state.move_history, req.language)
         elif req.mode == 'best_move':
-            result = await explain_best_move_concise(state, state.move_history, req.language)
+            result = await explain_best_move_concise(state, state.move_history, req.language, req.ai_depth)
         else:
             result = await analyze_position(state, state.move_history, req.question, req.language)
     except Exception as e:

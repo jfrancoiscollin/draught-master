@@ -221,7 +221,7 @@ export default function App() {
     if (!gameState) return null
     setAnalysisLoading(true)
     try {
-      const result = await analyzePosition(gameState.game_id, question, language, mode || 'position')
+      const result = await analyzePosition(gameState.game_id, question, language, mode || 'position', aiDepth)
       setAnalysis(result)
       setAnalysisExpanded(true)
       return result
@@ -232,7 +232,7 @@ export default function App() {
     } finally {
       setAnalysisLoading(false)
     }
-  }, [gameState, language, t])
+  }, [gameState, language, aiDepth, t])
 
   const handleExerciseLoad = useCallback((fen: string, exerciseId: number) => {
     setExerciseGameState({ board: fenToBoard(fen), fen, exerciseId })

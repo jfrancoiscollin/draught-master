@@ -19,6 +19,7 @@ class AnalyzeRequest(BaseModel):
     question: Optional[str] = None
     language: str = 'fr'
     mode: str = 'position'  # 'position' | 'full_game' | 'best_move'
+    ai_depth: int = 6
 
 
 class BoardPiece(BaseModel):
