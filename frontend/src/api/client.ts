@@ -57,12 +57,14 @@ export async function getAiMove(gameId: string, depth: number = 4): Promise<Move
 export async function analyzePosition(
   gameId: string,
   question?: string,
-  language: string = 'fr'
+  language: string = 'fr',
+  mode: string = 'position'
 ): Promise<AnalysisResponse> {
   const res = await api.post<AnalysisResponse>(`/game/${gameId}/analyze`, {
     question: question || null,
     language,
-  })
+    mode,
+  }, { timeout: 90000 })
   return res.data
 }
 

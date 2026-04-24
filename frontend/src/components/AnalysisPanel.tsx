@@ -4,7 +4,7 @@ import { useLanguage } from '../i18n/LanguageContext'
 
 interface AnalysisPanelProps {
   gameId: string | null
-  onAnalyze: (question?: string) => Promise<AnalysisResponse | null>
+  onAnalyze: (question?: string, mode?: string) => Promise<AnalysisResponse | null>
   onBestMove: () => Promise<string[] | null>
   analysis: AnalysisResponse | null
   loading: boolean
@@ -91,7 +91,7 @@ export default function AnalysisPanel({
   aiThinking = false,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
-  const [mode, setMode] = useState<'bestmove' | 'full' | null>(null)
+  const [mode, setMode] = useState<'bestmove' | 'full' | 'fullgame' | 'bestmoveexplain' | null>(null)
   const [quickMoves, setQuickMoves] = useState<string[] | null>(null)
   const [quickLoading, setQuickLoading] = useState(false)
   const { speak, stop, speaking } = useSpeech(language, onHighlightSquare)
@@ -113,7 +113,21 @@ export default function AnalysisPanel({
   const handleFullAnalyze = async () => {
     stop()
     setMode('full')
-    const result = await onAnalyze()
+    const result = await onAnalyze(undefined, 'position')
+    if (result?.analysis) speak(result.analysis)
+  }
+
+  const handleFullGame = async () => {
+    stop()
+    setMode('fullgame')
+    const result = await onAnalyze(undefined, 'full_game')
+    if (result?.analysis) speak(result.analysis)
+  }
+
+  const handleExplainBestMove = async () => {
+    stop()
+    setMode('bestmoveexplain')
+    const result = await onAnalyze(undefined, 'best_move')
     if (result?.analysis) speak(result.analysis)
   }
 
@@ -132,29 +146,50 @@ export default function AnalysisPanel({
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <button
           onClick={handleBestMove}
           disabled={!gameId || quickLoading || aiThinking}
-          className="btn-secondary flex-1 text-sm"
+          className="btn-secondary text-sm"
         >
           {quickLoading ? (
             <span className="flex items-center gap-2 justify-center">
-              <div className="spinner" style={{ width: 16, height: 16 }} />
+              <div className="spinner" style={{ width: 14, height: 14 }} />
             </span>
           ) : t('bestMove')}
         </button>
         <button
           onClick={handleFullAnalyze}
           disabled={!gameId || loading || aiThinking}
-          className="btn-primary flex-1 text-sm"
+          className="btn-primary text-sm"
         >
           {loading && mode === 'full' ? (
             <span className="flex items-center gap-2 justify-center">
-              <div className="spinner" style={{ width: 16, height: 16 }} />
-              {t('analyzing')}
+              <div className="spinner" style={{ width: 14, height: 14 }} />
             </span>
           ) : t('analyze')}
+        </button>
+        <button
+          onClick={handleFullGame}
+          disabled={!gameId || loading || aiThinking}
+          className="btn-secondary text-sm col-span-1"
+        >
+          {loading && mode === 'fullgame' ? (
+            <span className="flex items-center gap-2 justify-center">
+              <div className="spinner" style={{ width: 14, height: 14 }} />
+            </span>
+          ) : t('analyzeGame')}
+        </button>
+        <button
+          onClick={handleExplainBestMove}
+          disabled={!gameId || loading || aiThinking}
+          className="btn-primary text-sm col-span-1"
+        >
+          {loading && mode === 'bestmoveexplain' ? (
+            <span className="flex items-center gap-2 justify-center">
+              <div className="spinner" style={{ width: 14, height: 14 }} />
+            </span>
+          ) : t('explainMove')}
         </button>
       </div>
 
@@ -175,7 +210,7 @@ export default function AnalysisPanel({
         </div>
       )}
 
-      {analysis && mode === 'full' && (
+      {analysis && (mode === 'full' || mode === 'fullgame' || mode === 'bestmoveexplain') && (
         <div className="flex flex-col gap-3 text-sm">
           {analysis.best_moves.length > 0 && (
             <div>

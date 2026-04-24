@@ -217,11 +217,11 @@ export default function App() {
     window.speechSynthesis?.speak(utt)
   }, [analysis, language, fullSpeaking])
 
-  const handleAnalyze = useCallback(async (question?: string): Promise<AnalysisResponse | null> => {
+  const handleAnalyze = useCallback(async (question?: string, mode?: string): Promise<AnalysisResponse | null> => {
     if (!gameState) return null
     setAnalysisLoading(true)
     try {
-      const result = await analyzePosition(gameState.game_id, question, language)
+      const result = await analyzePosition(gameState.game_id, question, language, mode || 'position')
       setAnalysis(result)
       setAnalysisExpanded(true)
       return result

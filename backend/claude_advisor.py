@@ -207,6 +207,130 @@ Analyse critique demandée :
     }
 
 
+async def analyze_full_game(
+    state: GameState,
+    move_history: list[Move],
+    language: str = 'fr',
+) -> dict:
+    client = _get_client()
+    history_repr = format_move_history(move_history)
+    board_repr = format_board_for_claude(state)
+    wm, wk, bm, bk = _piece_counts(state)
+    current_score = evaluate(state)
+    lang_instruction = "Respond in English. No markdown." if language == 'en' \
+        else "Réponds en français. Pas de markdown."
+
+    if language == 'en':
+        prompt = f"""Analyse this entire international draughts game from start to finish.
+
+Full game ({len(move_history)} moves):
+{history_repr}
+
+Final position:
+{board_repr}
+Material — White: {wm} men, {wk} kings | Black: {bm} men, {bk} kings
+Engine evaluation: {current_score:+.0f}
+
+Provide a complete game analysis:
+1. Opening phase: which moves were strong or weak? What strategy did each side adopt?
+2. Middlegame: identify the key strong and weak moves. Were there important tactical or strategic errors?
+3. Conclusion: what are the strengths and weaknesses of each side's strategy? Which side played better and why?
+
+{lang_instruction}"""
+    else:
+        prompt = f"""Analyse l'ensemble de cette partie de jeu de dames international depuis le début.
+
+Historique complet ({len(move_history)} coups) :
+{history_repr}
+
+Position finale :
+{board_repr}
+Matériel — Blancs : {wm} pions, {wk} dames | Noirs : {bm} pions, {bk} dames
+Évaluation moteur : {current_score:+.0f}
+
+Analyse complète de la partie :
+1. Phase d'ouverture : quels coups ont été forts ou faibles ? Quelle stratégie chaque camp a-t-il adoptée ?
+2. Milieu de jeu : identifie les coups forts et faibles des deux camps. Y a-t-il eu des erreurs importantes ?
+3. Conclusion : quelles sont les forces et faiblesses de la stratégie des Blancs et des Noirs ? Quel camp a joué le mieux et pourquoi ?
+
+{lang_instruction}"""
+
+    message = await client.messages.create(
+        model="claude-opus-4-7",
+        max_tokens=2000,
+        system=SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    analysis_text = message.content[0].text
+    return {
+        "analysis": analysis_text,
+        "best_moves": [],
+        "key_squares": [],
+        "strategic_advice": _extract_advice(analysis_text),
+    }
+
+
+async def explain_best_move_concise(
+    state: GameState,
+    move_history: list[Move],
+    language: str = 'fr',
+) -> dict:
+    client = _get_client()
+    loop = asyncio.get_event_loop()
+    ranked = await loop.run_in_executor(None, lambda: rank_moves(state, n=3, depth=5))
+
+    if not ranked:
+        return {"analysis": "Aucun coup légal.", "best_moves": [], "key_squares": [], "strategic_advice": ""}
+
+    best_move_pdn = move_to_pdn(ranked[0][0])
+    top_moves_pdn = [move_to_pdn(m) for m, _ in ranked]
+    candidates_str = "\n".join(
+        f"  {move_to_pdn(m)} (score: {'+' if s >= 0 else ''}{s:.0f})"
+        for m, s in ranked
+    )
+    turn_label = "Whites" if state.turn == 'white' else "Blacks"
+    if language != 'en':
+        turn_label = "Blancs" if state.turn == 'white' else "Noirs"
+    board_repr = format_board_for_claude(state)
+    lang_instruction = "Respond in English. No markdown." if language == 'en' \
+        else "Réponds en français. Pas de markdown."
+
+    if language == 'en':
+        prompt = f"""{turn_label} to play. Engine's best move: {best_move_pdn}
+Candidates:
+{candidates_str}
+
+{board_repr}
+
+In 2-3 sentences maximum, explain concisely WHY {best_move_pdn} is the best move. Focus only on the key tactical or strategic idea. No introduction, no general conclusion.
+
+{lang_instruction}"""
+    else:
+        prompt = f"""{turn_label} au trait. Meilleur coup du moteur : {best_move_pdn}
+Candidats :
+{candidates_str}
+
+{board_repr}
+
+En 2-3 phrases maximum, explique de façon très synthétique POURQUOI {best_move_pdn} est le meilleur coup. Concentre-toi uniquement sur l'idée tactique ou stratégique essentielle. Pas d'introduction, pas de conclusion générale.
+
+{lang_instruction}"""
+
+    message = await client.messages.create(
+        model="claude-opus-4-7",
+        max_tokens=400,
+        system=SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    analysis_text = message.content[0].text
+    return {
+        "analysis": analysis_text,
+        "best_moves": top_moves_pdn,
+        "key_squares": [],
+        "strategic_advice": analysis_text,
+    }
+
+
 def _extract_advice(text: str) -> str:
     for line in text.strip().split('\n'):
         if len(line) > 30:

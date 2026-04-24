@@ -20,7 +20,7 @@ from game_engine import (
 )
 from ai_engine import get_best_move
 from scan_engine import get_scan_move
-from claude_advisor import analyze_position, suggest_exercises
+from claude_advisor import analyze_position, suggest_exercises, analyze_full_game, explain_best_move_concise
 from database import init_db, save_game, get_games, get_game, get_exercises, get_exercise, record_progress
 from models import (
     NewGameRequest, MoveRequest, AnalyzeRequest,
@@ -242,7 +242,12 @@ async def analyze(game_id: str, req: AnalyzeRequest) -> AnalysisResponse:
         raise HTTPException(status_code=404, detail="Partie introuvable")
     state: GameState = game_store[game_id]["state"]
     try:
-        result = await analyze_position(state, state.move_history, req.question, req.language)
+        if req.mode == 'full_game':
+            result = await analyze_full_game(state, state.move_history, req.language)
+        elif req.mode == 'best_move':
+            result = await explain_best_move_concise(state, state.move_history, req.language)
+        else:
+            result = await analyze_position(state, state.move_history, req.question, req.language)
     except Exception as e:
         import traceback
         traceback.print_exc()

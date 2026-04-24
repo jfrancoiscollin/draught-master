@@ -18,6 +18,7 @@ class MoveRequest(BaseModel):
 class AnalyzeRequest(BaseModel):
     question: Optional[str] = None
     language: str = 'fr'
+    mode: str = 'position'  # 'position' | 'full_game' | 'best_move'
 
 
 class BoardPiece(BaseModel):
