@@ -62,13 +62,6 @@ function fenToBoard(fen: string): number[] {
 }
 
 type Tab = 'home' | 'play' | 'exercises' | 'history'
-type NavTab = Exclude<Tab, 'home'>
-
-const TAB_ICONS: Record<NavTab, string> = {
-  play: '♟',
-  exercises: '✏️',
-  history: '📋',
-}
 
 export default function App() {
   const { t, language } = useLanguage()
@@ -291,11 +284,7 @@ export default function App() {
     return w - b
   })()
 
-  const navTabs: [NavTab, string][] = [
-    ['play', t('tabPlay')],
-    ['exercises', t('tabExercises')],
-    ['history', t('tabHistory')],
-  ]
+
 
   return (
     <div className="bg-gray-900 text-gray-100 flex flex-col h-full">
@@ -340,22 +329,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* Top tabs — desktop only, hidden on home screen */}
-      {tab !== 'home' && (
-        <div className="hidden lg:block bg-gray-800 border-b border-gray-700">
-          <div className="max-w-7xl mx-auto px-4 flex gap-0">
-            {navTabs.map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => key === 'play' ? handleGoToPlay() : setTab(key)}
-                className={`tab-btn ${tab === key ? 'tab-active' : 'tab-inactive'}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Main content — mobile: no page scroll (each section scrolls itself); desktop: page scrolls */}
       <main className="flex-1 overflow-hidden lg:overflow-y-auto">
@@ -456,7 +429,7 @@ export default function App() {
                     </div>
                   </div>
                   {/* Bottom (scrollable): full analysis text + move list */}
-                  <div className="flex-1 overflow-y-auto overscroll-contain pb-20 px-2 pt-2 flex flex-col gap-2">
+                  <div className="flex-1 overflow-y-auto overscroll-contain pb-4 px-2 pt-2 flex flex-col gap-2">
                     {analysis && (
                       <div className="panel">
                         <div className="flex items-center justify-between mb-2">
@@ -510,7 +483,7 @@ export default function App() {
                     {gameState && <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">{t('whitePerspective')}</p>}
                   </div>
                   {/* Scrollable right panel */}
-                  <div className="flex-1 overflow-y-auto overscroll-contain pb-20 min-w-0">
+                  <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
                     <div className="flex flex-col gap-3 px-2 py-3">
                       <AnalysisPanel
                         gameId={gameState?.game_id || null}
@@ -675,7 +648,7 @@ export default function App() {
               />
               <p className="mt-1 text-xs text-gray-500">{t('exerciseReadOnly')}</p>
             </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0">
+            <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
               <div className="px-2 py-3 lg:px-0">
                 <ExercisePanel
                   onExerciseLoad={handleExerciseLoad}
@@ -721,7 +694,7 @@ export default function App() {
                 </div>
               )}
             </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-4 min-w-0">
+            <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
               <div className="px-2 py-3 lg:px-0">
                 <GameHistory onReplay={handleReplay} />
               </div>
@@ -747,28 +720,6 @@ export default function App() {
         />
       </BottomSheet>
 
-      {/* Bottom navigation — mobile only, hidden on home screen */}
-      {tab !== 'home' && (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-40">
-          <div className="flex">
-            {navTabs.map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => key === 'play' ? handleGoToPlay() : setTab(key)}
-                className={`flex-1 flex flex-col items-center justify-center py-3 gap-0.5 transition-colors ${
-                  tab === key ? 'text-amber-600' : 'text-gray-400 active:text-gray-200'
-                }`}
-              >
-                <span className="text-xl leading-none">{TAB_ICONS[key]}</span>
-                <span className="text-xs font-medium">{label}</span>
-                {tab === key && (
-                  <span className="absolute bottom-0 w-1/3 h-0.5 bg-amber-600 rounded-t" />
-                )}
-              </button>
-            ))}
-          </div>
-        </nav>
-      )}
     </div>
   )
 }
