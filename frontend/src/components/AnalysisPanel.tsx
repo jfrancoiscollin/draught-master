@@ -175,7 +175,7 @@ export default function AnalysisPanel({
         <button
           onClick={handleFullGame}
           disabled={!gameId || loading || aiThinking}
-          className="btn-secondary text-sm col-span-1"
+          className="btn-primary text-sm col-span-1"
         >
           {loading && mode === 'fullgame' ? (
             <span className="flex items-center gap-2 justify-center">
@@ -186,7 +186,7 @@ export default function AnalysisPanel({
         <button
           onClick={handleExplainBestMove}
           disabled={!gameId || loading || aiThinking}
-          className="btn-primary text-sm col-span-1"
+          className="btn-secondary text-sm col-span-1"
         >
           {loading && mode === 'bestmoveexplain' ? (
             <span className="flex items-center gap-2 justify-center">

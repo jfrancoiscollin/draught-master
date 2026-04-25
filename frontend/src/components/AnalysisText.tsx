@@ -56,11 +56,5 @@ export default function AnalysisText({ text, onMoveClick, className }: Props) {
     }
   }
 
-  // Diagnostic badge — remove once confirmed working
-  return (
-    <span className={className}>
-      <span className="text-xs text-amber-500 font-mono mr-1">[v4:{moveCount}]</span>
-      {nodes}
-    </span>
-  )
+  return <span className={className}>{nodes}</span>
 }
