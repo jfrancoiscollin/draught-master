@@ -813,6 +813,12 @@ export default function App() {
                   <span>{t('loading')}</span>
                 </div>
               )}
+              {/* Debug info — remove after diagnosis */}
+              {exerciseGameState && (
+                <div style={{ fontSize: 10, color: '#888', marginTop: 4, textAlign: 'left', width: '100%' }}>
+                  v1.0.7 | ex#{exerciseGameState.exerciseId} | legal:{exerciseLegalMoves.length} | free:{exerciseFreeSelectSquares?.size ?? 0} | dis:{String(exerciseSolved || !exerciseGameState || exerciseMovesLoading)}
+                </div>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
               <div className="px-2 py-3 lg:px-0">
