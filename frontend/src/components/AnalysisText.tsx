@@ -1,14 +1,13 @@
 import React from 'react'
 
-// Normalise all Unicode dash/minus variants → ASCII hyphen, × → x
-const DASH_VARIANTS = /[‐‑‒–—―−﹘﹣－]/g
+// Normalise Unicode dashes/minus → ASCII hyphen, × → x
+const DASH_VARIANTS = /[‐‑‒–—―−﹘﹣－­]/g
 function normalise(s: string): string {
   return s.replace(DASH_VARIANTS, '-').replace(/×/g, 'x')
 }
 
-// Match standard draughts PDN after normalisation: "34-30", "32x21", "32x21x10"
-// Uses negative lookaround instead of \b to avoid edge-cases with hyphens
-const MOVE_RE = /(?<!\d)(\d{1,2}(?:[-x]\d{1,2})+)(?!\d)/g
+// Split on potential move patterns — simplest possible, no lookbehind/\b
+const MOVE_SPLIT_RE = /(\d{1,2}(?:[-x]\d{1,2})+)/g
 
 function isValidMove(s: string): boolean {
   const parts = s.split(/[-x]/)
@@ -26,34 +25,39 @@ interface Props {
 
 export default function AnalysisText({ text, onMoveClick, className }: Props) {
   const norm = normalise(text)
+  // split() with a capturing group alternates: [plain, match, plain, match, ...]
+  const parts = norm.split(MOVE_SPLIT_RE)
 
   const nodes: React.ReactNode[] = []
-  let last = 0
-  let keyIdx = 0
-  const re = new RegExp(MOVE_RE.source, 'g')
-  let m: RegExpExecArray | null
-
-  while ((m = re.exec(norm)) !== null) {
-    const pdn = m[1] ?? m[0]
-    if (!isValidMove(pdn)) continue
-    if (m.index > last) nodes.push(text.slice(last, m.index))
-    nodes.push(
-      onMoveClick ? (
-        <button
-          key={keyIdx++}
-          type="button"
-          onClick={() => onMoveClick(pdn)}
-          className="text-amber-400 hover:text-amber-200 font-mono font-semibold underline decoration-dotted cursor-pointer bg-amber-950/30 rounded px-0.5"
-        >
-          {pdn}
-        </button>
-      ) : (
-        <span key={keyIdx++} className="font-mono font-semibold text-amber-400 bg-amber-950/30 rounded px-0.5">{pdn}</span>
+  let moveCount = 0
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i]
+    if (!part) continue
+    if (i % 2 === 1 && isValidMove(part)) {
+      moveCount++
+      nodes.push(
+        onMoveClick ? (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onMoveClick(part)}
+            className="text-amber-400 hover:text-amber-200 font-mono font-semibold underline decoration-dotted cursor-pointer bg-amber-950/30 rounded px-0.5"
+          >
+            {part}
+          </button>
+        ) : (
+          <span key={i} className="font-mono font-semibold text-amber-400 bg-amber-950/30 rounded px-0.5">
+            {part}
+          </span>
+        )
       )
-    )
-    last = m.index + pdn.length
+    } else {
+      nodes.push(part)
+    }
   }
-  if (last < text.length) nodes.push(text.slice(last))
+
+  // Diagnostic: visible in browser console — remove once confirmed working
+  console.log('[AnalysisText] len=%d moves=%d sample=%s', text.length, moveCount, norm.slice(0, 60))
 
   return <span className={className}>{nodes}</span>
 }
