@@ -172,26 +172,34 @@ async def init_db() -> None:
         """)
         await db.commit()
 
-        cursor = await db.execute("SELECT COUNT(*) FROM exercises")
-        row = await cursor.fetchone()
-        if row and row[0] == 0:
-            for ex in INITIAL_EXERCISES:
-                await db.execute(
-                    """
-                    INSERT INTO exercises (name, description, initial_fen, solution_moves, difficulty, category, hint)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        ex["name"],
-                        ex["description"],
-                        ex["initial_fen"],
-                        json.dumps(ex["solution_moves"]),
-                        ex["difficulty"],
-                        ex["category"],
-                        ex["hint"],
-                    ),
-                )
-            await db.commit()
+        # Always upsert exercises with fixed IDs so Railway's persistent DB
+        # picks up corrected FEN/solution data on each redeploy.
+        for idx, ex in enumerate(INITIAL_EXERCISES, start=1):
+            await db.execute(
+                """
+                INSERT INTO exercises (id, name, description, initial_fen, solution_moves, difficulty, category, hint)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    name=excluded.name,
+                    description=excluded.description,
+                    initial_fen=excluded.initial_fen,
+                    solution_moves=excluded.solution_moves,
+                    difficulty=excluded.difficulty,
+                    category=excluded.category,
+                    hint=excluded.hint
+                """,
+                (
+                    idx,
+                    ex["name"],
+                    ex["description"],
+                    ex["initial_fen"],
+                    json.dumps(ex["solution_moves"]),
+                    ex["difficulty"],
+                    ex["category"],
+                    ex["hint"],
+                ),
+            )
+        await db.commit()
 
 
 async def save_game(
