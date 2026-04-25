@@ -6,7 +6,7 @@ import { useLanguage } from '../i18n/LanguageContext'
 interface ExercisePanelProps {
   onExerciseLoad: (fen: string, exerciseId: number) => void
   currentExerciseId: number | null
-  onMoveSubmit: (moves: string[]) => Promise<ExerciseCheckResponse | null>
+  feedback: ExerciseCheckResponse | null
 }
 
 function Stars({ count }: { count: number }) {
@@ -44,7 +44,7 @@ const CATEGORIES_EN: Record<string, string> = {
 export default function ExercisePanel({
   onExerciseLoad,
   currentExerciseId,
-  onMoveSubmit,
+  feedback,
 }: ExercisePanelProps) {
   const { t, language } = useLanguage()
   const CATEGORIES = language === 'en' ? CATEGORIES_EN : CATEGORIES_FR
@@ -52,9 +52,6 @@ export default function ExercisePanel({
   const [exercises, setExercises] = useState<ExerciseResponse[]>([])
   const [selected, setSelected] = useState<ExerciseResponse | null>(null)
   const [showHint, setShowHint] = useState(false)
-  const [moveInput, setMoveInput] = useState('')
-  const [feedback, setFeedback] = useState<ExerciseCheckResponse | null>(null)
-  const [loading, setLoading] = useState(false)
   const [filterCategory, setFilterCategory] = useState<string>('')
   const [filterDifficulty, setFilterDifficulty] = useState<number | undefined>()
 
@@ -73,18 +70,7 @@ export default function ExercisePanel({
   const handleSelect = (ex: ExerciseResponse) => {
     setSelected(ex)
     setShowHint(false)
-    setFeedback(null)
-    setMoveInput('')
     onExerciseLoad(ex.initial_fen, ex.id)
-  }
-
-  const handleCheck = async () => {
-    if (!selected || !moveInput.trim()) return
-    setLoading(true)
-    const moves = moveInput.trim().split(/\s+/)
-    const result = await onMoveSubmit(moves)
-    setFeedback(result)
-    setLoading(false)
   }
 
   const handleNext = () => {
@@ -177,7 +163,9 @@ export default function ExercisePanel({
                   : 'bg-red-900 border border-red-600 text-red-200'
               }`}
             >
-              <p className="font-semibold">{feedback.correct ? '✓ ' : '✗ '}{feedback.message}</p>
+              <p className="font-semibold">
+                {feedback.correct ? `✓ ${t('wellDone')}` : `✗ ${t('tryAgain')}`}
+              </p>
               {feedback.solution && (
                 <p className="mt-1 text-xs">
                   Solution : {feedback.solution.join(', ')}
@@ -185,24 +173,6 @@ export default function ExercisePanel({
               )}
             </div>
           )}
-
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={moveInput}
-              onChange={e => setMoveInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !loading && handleCheck()}
-              placeholder={t('enterMoves')}
-              className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:outline-none focus:border-amber-600 font-mono"
-            />
-            <button
-              onClick={handleCheck}
-              disabled={loading || !moveInput.trim()}
-              className="btn-primary text-sm"
-            >
-              {loading ? '...' : t('verify')}
-            </button>
-          </div>
 
           <div className="flex gap-2">
             {selected.hint && (

@@ -272,6 +272,16 @@ async def get_exercise_detail(exercise_id: int) -> ExerciseResponse:
     return ExerciseResponse(**ex)
 
 
+@app.get("/api/exercises/{exercise_id}/legal-moves")
+async def exercise_legal_moves_endpoint(exercise_id: int) -> Dict[str, Any]:
+    ex = await get_exercise(exercise_id)
+    if ex is None:
+        raise HTTPException(status_code=404, detail="Exercice introuvable")
+    state = fen_to_board(ex["initial_fen"])
+    legal = get_legal_moves(state)
+    return {"moves": [{"path": m.path, "captures": m.captures} for m in legal]}
+
+
 @app.post("/api/exercises/{exercise_id}/check", response_model=ExerciseCheckResponse)
 async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> ExerciseCheckResponse:
     ex = await get_exercise(exercise_id)

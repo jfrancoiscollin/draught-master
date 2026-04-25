@@ -85,6 +85,11 @@ export async function getExercise(id: number): Promise<ExerciseResponse> {
   return res.data
 }
 
+export async function getExerciseLegalMoves(id: number): Promise<{ moves: MoveData[] }> {
+  const res = await api.get<{ moves: MoveData[] }>(`/exercises/${id}/legal-moves`)
+  return res.data
+}
+
 export async function checkExercise(
   id: number,
   moves: string[]

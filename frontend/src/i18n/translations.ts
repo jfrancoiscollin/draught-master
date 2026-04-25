@@ -75,6 +75,8 @@ export const translations: Record<Language, Record<string, string>> = {
     resultDraw: "Partie nulle !",
     playBothSides: "Jouer les deux côtés",
     playBothSidesDesc: "Jouez les deux camps, l'IA analyse à la demande",
+    wellDone: "Bien joué !",
+    tryAgain: "Essaie encore",
   },
   en: {
     appSubtitle: "International draughts training (100 squares)",
@@ -150,5 +152,7 @@ export const translations: Record<Language, Record<string, string>> = {
     resultDraw: "Draw!",
     playBothSides: "Play both sides",
     playBothSidesDesc: "Play both colors, AI analyses on request",
+    wellDone: "Well done!",
+    tryAgain: "Try again",
   },
 }

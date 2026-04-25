@@ -14,6 +14,7 @@ import {
   makeMove,
   analyzePosition,
   checkExercise,
+  getExerciseLegalMoves,
   undoMove,
   resignGame,
   getAiMove,
@@ -95,6 +96,10 @@ export default function App() {
     fen: string
     exerciseId: number | null
   } | null>(null)
+  const [exerciseLegalMoves, setExerciseLegalMoves] = useState<MoveData[]>([])
+  const [exerciseSelectedSquare, setExerciseSelectedSquare] = useState<number | null>(null)
+  const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseCheckResponse | null>(null)
+  const [exerciseSolved, setExerciseSolved] = useState(false)
 
   const [replayBoard, setReplayBoard] = useState<number[] | null>(null)
   const [replayFenIndex, setReplayFenIndex] = useState(0)
@@ -248,19 +253,42 @@ export default function App() {
     }
   }, [gameState, language, aiDepth, t])
 
-  const handleExerciseLoad = useCallback((fen: string, exerciseId: number) => {
+  const handleExerciseLoad = useCallback(async (fen: string, exerciseId: number) => {
     setExerciseGameState({ board: fenToBoard(fen), fen, exerciseId })
+    setExerciseLegalMoves([])
+    setExerciseSelectedSquare(null)
+    setExerciseFeedback(null)
+    setExerciseSolved(false)
+    try {
+      const { moves } = await getExerciseLegalMoves(exerciseId)
+      setExerciseLegalMoves(moves)
+    } catch {
+      // board stays non-interactive
+    }
   }, [])
 
-  const handleExerciseMoveSubmit = useCallback(async (moves: string[]): Promise<ExerciseCheckResponse | null> => {
-    if (!exerciseGameState?.exerciseId) return null
+  const handleExerciseMove = useCallback(async (move: MoveData) => {
+    if (!exerciseGameState?.exerciseId || exerciseSolved) return
+    setExerciseSelectedSquare(null)
+    const pdn = move.captures.length > 0
+      ? move.path.join('x')
+      : `${move.path[0]}-${move.path[move.path.length - 1]}`
     try {
-      return await checkExercise(exerciseGameState.exerciseId, moves)
+      const result = await checkExercise(exerciseGameState.exerciseId, [pdn])
+      setExerciseFeedback(result)
+      if (result.correct) {
+        setExerciseSolved(true)
+        setExerciseLegalMoves([])
+      }
     } catch {
       showToast(t('errorVerification'))
-      return null
     }
-  }, [exerciseGameState, t])
+  }, [exerciseGameState, exerciseSolved, t])
+
+  const handleExerciseSelectSquare = useCallback((sq: number | null) => {
+    if (exerciseSolved) return
+    setExerciseSelectedSquare(sq)
+  }, [exerciseSolved])
 
   const handleReplay = useCallback((detail: GameDetailResponse) => {
     setReplayDetail(detail)
@@ -721,20 +749,19 @@ export default function App() {
             <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0">
               <Board
                 board={exerciseGameState?.board || new Array(51).fill(EMPTY)}
-                legalMoves={[]}
-                onMove={() => {}}
-                selectedSquare={null}
-                onSelectSquare={() => {}}
-                disabled={true}
+                legalMoves={exerciseLegalMoves}
+                onMove={handleExerciseMove}
+                selectedSquare={exerciseSelectedSquare}
+                onSelectSquare={handleExerciseSelectSquare}
+                disabled={exerciseSolved || !exerciseGameState}
               />
-              <p className="mt-1 text-xs text-gray-500">{t('exerciseReadOnly')}</p>
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
               <div className="px-2 py-3 lg:px-0">
                 <ExercisePanel
                   onExerciseLoad={handleExerciseLoad}
                   currentExerciseId={exerciseGameState?.exerciseId || null}
-                  onMoveSubmit={handleExerciseMoveSubmit}
+                  feedback={exerciseFeedback}
                 />
               </div>
             </div>
