@@ -26,7 +26,7 @@ function extractMoveSquares(text: string, charIndex: number): number[] {
 
   // Look forward: "32-27" or "32x27" or "32×27"
   const afterNum = rest.slice(numMatch[1].length)
-  const forwardMatch = afterNum.match(/^[-x×](\d+)/)
+  const forwardMatch = afterNum.match(/^[-–x×](\d+)/)
   if (forwardMatch) {
     const num2 = parseInt(forwardMatch[1], 10)
     if (num2 >= 1 && num2 <= 50) return [num1, num2]
@@ -34,7 +34,7 @@ function extractMoveSquares(text: string, charIndex: number): number[] {
 
   // Look backward: "32-" or "32x" already read, now reading "27"
   const before = text.slice(Math.max(0, charIndex - 4), charIndex)
-  const backMatch = before.match(/(\d+)[-x×]$/)
+  const backMatch = before.match(/(\d+)[-–x×]$/)
   if (backMatch) {
     const num2 = parseInt(backMatch[1], 10)
     if (num2 >= 1 && num2 <= 50) return [num2, num1]

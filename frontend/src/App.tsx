@@ -490,7 +490,7 @@ export default function App() {
                         <AnalysisText
                           text={analysis.analysis}
                           onMoveClick={handleAnalysisMoveClick}
-                          className="text-gray-200 leading-relaxed text-sm"
+                          className="text-gray-200 leading-relaxed text-sm whitespace-pre-wrap"
                         />
                       </div>
                     )}
@@ -670,7 +670,7 @@ export default function App() {
                         <span>{fullSpeaking ? t('stopReading') : t('readAloud')}</span>
                       </button>
                     </div>
-                    <AnalysisText text={analysis.analysis} onMoveClick={handleAnalysisMoveClick} className="text-gray-200 leading-relaxed text-sm" />
+                    <AnalysisText text={analysis.analysis} onMoveClick={handleAnalysisMoveClick} className="text-gray-200 leading-relaxed text-sm whitespace-pre-wrap" />
                   </div>
                 </div>
               )}

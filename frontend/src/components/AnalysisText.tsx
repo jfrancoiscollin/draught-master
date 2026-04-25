@@ -1,10 +1,10 @@
 import React from 'react'
 
-// Matches draughts move notation: "34-30", "32x21", "32x21x10", "32×21"
-const MOVE_RE = /\b(\d{1,2}(?:[-x×]\d{1,2})+)\b/g
+// Matches draughts move notation: "34-30", "32x21", "32x21x10", "32×21", "34–30" (en-dash)
+const MOVE_RE = /\b(\d{1,2}(?:[-–x×]\d{1,2})+)\b/g
 
 function isValidMove(s: string): boolean {
-  return s.split(/[-x×]/).every(n => {
+  return s.split(/[-–x×]/).every(n => {
     const v = parseInt(n, 10)
     return v >= 1 && v <= 50
   })
