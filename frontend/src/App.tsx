@@ -797,7 +797,7 @@ export default function App() {
         {/* EXERCISES TAB */}
         {tab === 'exercises' && (
           <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
-            <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0">
+            <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0" style={{ width: '100%', maxWidth: '560px', alignSelf: 'center' }}>
               <Board
                 board={exerciseGameState?.board || new Array(51).fill(EMPTY)}
                 legalMoves={exerciseLegalMoves}
@@ -807,16 +807,43 @@ export default function App() {
                 disabled={exerciseSolved || !exerciseGameState}
                 freeSelectSquares={exerciseFreeSelectSquares}
               />
-              {exerciseMovesLoading && (
+              {/* Feedback banner — shown immediately under the board */}
+              {exerciseFeedback && exerciseGameState && (
+                <div
+                  className={`w-full mt-3 rounded-xl px-4 py-3 text-center ${
+                    exerciseFeedback.correct
+                      ? 'bg-amber-900 border border-amber-600 text-amber-100'
+                      : 'bg-red-900 border border-red-600 text-red-200'
+                  }`}
+                >
+                  <p className="text-lg font-bold">
+                    {exerciseFeedback.correct ? `✓ ${t('wellDone')}` : `✗ ${t('tryAgain')}`}
+                  </p>
+                  {exerciseFeedback.solution && (
+                    <p className="text-sm mt-1 opacity-80">
+                      Solution : {exerciseFeedback.solution.join(', ')}
+                    </p>
+                  )}
+                  {!exerciseFeedback.correct && (
+                    <button
+                      onClick={() => {
+                        if (exerciseGameState) {
+                          setExerciseFeedback(null)
+                          setExerciseSolved(false)
+                          setExerciseSelectedSquare(null)
+                        }
+                      }}
+                      className="mt-2 px-4 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
+                    >
+                      {t('tryAgain')}
+                    </button>
+                  )}
+                </div>
+              )}
+              {exerciseMovesLoading && !exerciseFeedback && (
                 <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
                   <div className="spinner" style={{ width: 12, height: 12 }} />
                   <span>{t('loading')}</span>
-                </div>
-              )}
-              {/* Debug info — remove after diagnosis */}
-              {exerciseGameState && (
-                <div style={{ fontSize: 10, color: '#888', marginTop: 4, textAlign: 'left', width: '100%' }}>
-                  v1.0.8 | ex#{exerciseGameState.exerciseId} | legal:{exerciseLegalMoves.length} | free:{exerciseFreeSelectSquares?.size ?? 0} | solved:{String(exerciseSolved)} | loading:{String(exerciseMovesLoading)} | b32:{exerciseGameState.board[32]} | fen:{exerciseGameState.fen.slice(0,3)}
                 </div>
               )}
             </div>
