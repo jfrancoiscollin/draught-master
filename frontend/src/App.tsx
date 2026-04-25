@@ -348,7 +348,7 @@ export default function App() {
               </button>
             )}
             {tab === 'play' && bothSides && (
-              <span className="text-xs bg-amber-900/50 text-amber-300 border border-amber-700/60 rounded px-2 py-0.5 font-semibold">⚔ {t('playBothSides')}</span>
+              <span className="text-lg" title={t('playBothSides')}>⚔</span>
             )}
             {isAiThinking && (
               <span className="flex items-center gap-1 text-yellow-400 text-xs">
