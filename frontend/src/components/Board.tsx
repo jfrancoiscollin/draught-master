@@ -12,6 +12,9 @@ interface BoardProps {
   lastMove?: MoveData | null
   highlightSquares?: number[]
   spokenSquares?: number[]
+  // When provided, these squares can be selected even if not in legalMoves,
+  // and any subsequent dark-square click triggers onMove (free-move mode).
+  freeSelectSquares?: Set<number>
 }
 
 const PIECE_WHITE: React.CSSProperties = {
@@ -90,6 +93,7 @@ export default function Board({
   lastMove = null,
   highlightSquares = [],
   spokenSquares = [],
+  freeSelectSquares,
 }: BoardProps) {
   const legalTargets = useCallback((): Set<number> => {
     if (selectedSquare === null) return new Set()
@@ -111,6 +115,27 @@ export default function Board({
     const piece = board[sq]
     const targets = legalTargets()
     const froms = legalFromSquares()
+
+    // Free-move mode: no server-provided legal moves, use freeSelectSquares
+    if (freeSelectSquares && freeSelectSquares.size > 0) {
+      if (selectedSquare !== null && sq !== selectedSquare) {
+        // Re-select another friendly piece without submitting
+        if (freeSelectSquares.has(sq) && piece !== EMPTY) {
+          onSelectSquare(sq)
+          return
+        }
+        // Otherwise treat as destination
+        onMove({ path: [selectedSquare, sq], captures: [] })
+        onSelectSquare(null)
+        return
+      }
+      if (freeSelectSquares.has(sq) && piece !== EMPTY) {
+        onSelectSquare(sq === selectedSquare ? null : sq)
+        return
+      }
+      onSelectSquare(null)
+      return
+    }
 
     if (targets.has(sq) && selectedSquare !== null) {
       const moves = legalMoves.filter(
@@ -142,7 +167,7 @@ export default function Board({
 
       const isSelected    = sq !== null && sq === selectedSquare
       const isLegalTarget = sq !== null && targets.has(sq)
-      const isMoveable    = sq !== null && froms.has(sq)
+      const isMoveable    = sq !== null && (froms.has(sq) || (freeSelectSquares ? freeSelectSquares.has(sq) : false))
       const isLastMove    = sq !== null && lastMovePath.has(sq)
       const isHighlighted = sq !== null && highlightSquares.includes(sq)
       const isSpoken      = sq !== null && spokenSquares.includes(sq)

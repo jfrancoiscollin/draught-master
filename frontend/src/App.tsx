@@ -21,6 +21,7 @@ import {
 } from './api/client'
 import {
   EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
+  sqToRowCol, rcToSq,
 } from './types'
 import type {
   GameStateResponse,
@@ -101,6 +102,22 @@ export default function App() {
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseCheckResponse | null>(null)
   const [exerciseSolved, setExerciseSolved] = useState(false)
   const [exerciseMovesLoading, setExerciseMovesLoading] = useState(false)
+
+  // When server doesn't provide legal moves, let the user click any piece of the
+  // current side and any dark square as destination (server validates on submit).
+  const exerciseFreeSelectSquares = useMemo((): Set<number> | undefined => {
+    if (!exerciseGameState || exerciseSolved || exerciseLegalMoves.length > 0) return undefined
+    const fen = exerciseGameState.fen
+    const isWhiteTurn = fen.startsWith('W:')
+    const board = exerciseGameState.board
+    const sels = new Set<number>()
+    for (let sq = 1; sq <= 50; sq++) {
+      const p = board[sq]
+      if (isWhiteTurn && (p === WHITE_MAN || p === WHITE_KING)) sels.add(sq)
+      if (!isWhiteTurn && (p === BLACK_MAN || p === BLACK_KING)) sels.add(sq)
+    }
+    return sels.size > 0 ? sels : undefined
+  }, [exerciseGameState, exerciseSolved, exerciseLegalMoves])
 
   const [replayBoard, setReplayBoard] = useState<number[] | null>(null)
   const [replayFenIndex, setReplayFenIndex] = useState(0)
@@ -275,9 +292,38 @@ export default function App() {
   const handleExerciseMove = useCallback(async (move: MoveData) => {
     if (!exerciseGameState?.exerciseId || exerciseSolved) return
     setExerciseSelectedSquare(null)
-    const pdn = move.captures.length > 0
-      ? move.path.join('x')
-      : `${move.path[0]}-${move.path[move.path.length - 1]}`
+
+    let pdn: string
+    if (move.captures.length > 0) {
+      // Legal move with captures from server
+      pdn = move.path.join('x')
+    } else if (move.path.length === 2) {
+      // Free-move mode: detect if this is a single capture by checking the
+      // intermediate square for an enemy piece.
+      const [from, to] = move.path
+      const [r1, c1] = sqToRowCol(from)
+      const [r2, c2] = sqToRowCol(to)
+      const dr = r2 - r1
+      const dc = c2 - c1
+      const board = exerciseGameState.board
+      const fen = exerciseGameState.fen
+      const isWhiteTurn = fen.startsWith('W:')
+      let isCapture = false
+      if (Math.abs(dr) === 2 && Math.abs(dc) === 2) {
+        const midSq = rcToSq(r1 + dr / 2, c1 + dc / 2)
+        if (midSq !== null) {
+          const mid = board[midSq]
+          const isEnemy = isWhiteTurn
+            ? (mid === BLACK_MAN || mid === BLACK_KING)
+            : (mid === WHITE_MAN || mid === WHITE_KING)
+          if (isEnemy) isCapture = true
+        }
+      }
+      pdn = isCapture ? `${from}x${to}` : `${from}-${to}`
+    } else {
+      pdn = move.path.join('x')
+    }
+
     try {
       const result = await checkExercise(exerciseGameState.exerciseId, [pdn])
       setExerciseFeedback(result)
@@ -759,6 +805,7 @@ export default function App() {
                 selectedSquare={exerciseSelectedSquare}
                 onSelectSquare={handleExerciseSelectSquare}
                 disabled={exerciseSolved || !exerciseGameState || exerciseMovesLoading}
+                freeSelectSquares={exerciseFreeSelectSquares}
               />
               {exerciseMovesLoading && (
                 <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
