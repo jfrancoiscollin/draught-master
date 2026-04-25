@@ -37,12 +37,14 @@ export async function getLegalMoves(
 export async function makeMove(
   gameId: string,
   move: MoveData,
-  aiDepth: number = 6
+  aiDepth: number = 6,
+  bothSides: boolean = false
 ): Promise<MoveResponse> {
   const res = await api.post<MoveResponse>(`/game/${gameId}/move`, {
     path: move.path,
     captures: move.captures,
     ai_depth: aiDepth,
+    both_sides: bothSides,
   })
   return res.data
 }

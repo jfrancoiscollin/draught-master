@@ -13,6 +13,7 @@ class MoveRequest(BaseModel):
     path: List[int]
     captures: List[int] = []
     ai_depth: int = 6
+    both_sides: bool = False
 
 
 class AnalyzeRequest(BaseModel):

@@ -83,6 +83,7 @@ export default function App() {
   const [analysisLoading, setAnalysisLoading] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [isAiThinking, setIsAiThinking] = useState(false)
+  const [bothSides, setBothSides] = useState(false)
   const [spokenSquares, setSpokenSquares] = useState<number[]>([])
   const [showControls, setShowControls] = useState(false)
   const [analysisExpanded, setAnalysisExpanded] = useState(false)
@@ -118,16 +119,17 @@ export default function App() {
     }
   }, [aiDepth, t])
 
-  const handleGoToPlay = useCallback(() => {
+  const handleGoToPlay = useCallback((bothSidesMode = false) => {
+    setBothSides(bothSidesMode)
     setTab('play')
-    if (!gameState) startNewGame()
-  }, [gameState, startNewGame])
+    startNewGame()
+  }, [startNewGame])
 
   const handleSelectSquare = useCallback((sq: number | null) => {
     if (!gameState || gameState.result) return
-    if (gameState.turn !== 'white') return
+    if (gameState.turn !== 'white' && !bothSides) return
     setSelectedSquare(sq)
-  }, [gameState])
+  }, [gameState, bothSides])
 
   const handleMove = useCallback(async (move: MoveData) => {
     if (!gameState || gameState.result || isAiThinking) return
@@ -137,10 +139,11 @@ export default function App() {
     // Optimistic update: show player's move immediately
     playMoveSound()
     const optimisticBoard = applyMoveLocally(gameState.board, move)
-    setGameState(prev => prev ? { ...prev, board: optimisticBoard, turn: 'black', last_move: move, legal_moves: [] } : prev)
+    const nextTurn = gameState.turn === 'white' ? 'black' : 'white'
+    setGameState(prev => prev ? { ...prev, board: optimisticBoard, turn: nextTurn, last_move: move, legal_moves: [] } : prev)
 
     try {
-      const response = await makeMove(gameState.game_id, move, aiDepth)
+      const response = await makeMove(gameState.game_id, move, aiDepth, bothSides)
       if (response.ai_move) playMoveSound()
       setGameState({
         game_id: response.game_id,
@@ -166,7 +169,7 @@ export default function App() {
     } finally {
       setIsAiThinking(false)
     }
-  }, [gameState, aiDepth, isAiThinking])
+  }, [gameState, aiDepth, isAiThinking, bothSides])
 
   const handleResign = useCallback(async () => {
     if (!gameState || isAiThinking || gameState.result) return
@@ -310,7 +313,7 @@ export default function App() {
   const currentBoard = gameState?.board || new Array(51).fill(EMPTY)
   const displayBoard = replayingPosition?.board ?? currentBoard
   const isWhiteTurn = gameState?.turn === 'white'
-  const boardDisabled = !!replayingPosition || !gameState || !!gameState.result || !isWhiteTurn || isAiThinking
+  const boardDisabled = !!replayingPosition || !gameState || !!gameState.result || isAiThinking || (!isWhiteTurn && !bothSides)
   const legalMoves = boardDisabled ? [] : (gameState?.legal_moves ?? [])
 
   const pieceDiff = (() => {
@@ -343,6 +346,9 @@ export default function App() {
               >
                 🏠
               </button>
+            )}
+            {tab === 'play' && bothSides && (
+              <span className="text-xs bg-amber-900/50 text-amber-300 border border-amber-700/60 rounded px-2 py-0.5 font-semibold">⚔ {t('playBothSides')}</span>
             )}
             {isAiThinking && (
               <span className="flex items-center gap-1 text-yellow-400 text-xs">
@@ -377,15 +383,24 @@ export default function App() {
         {tab === 'home' && (
           <div className="h-full flex flex-col items-center justify-center px-4 py-8 overflow-y-auto">
             <p className="text-gray-400 text-sm mb-10 text-center">{t('appSubtitle')}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
               {/* Play */}
               <button
-                onClick={handleGoToPlay}
+                onClick={() => handleGoToPlay(false)}
                 className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
               >
                 <span className="text-5xl group-hover:scale-110 transition-transform duration-200">♟</span>
                 <span className="text-lg font-bold text-white">{t('tabPlay')}</span>
                 <span className="text-sm text-gray-400 text-center">{t('playDesc')}</span>
+              </button>
+              {/* Play both sides */}
+              <button
+                onClick={() => handleGoToPlay(true)}
+                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+              >
+                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">⚔</span>
+                <span className="text-lg font-bold text-white">{t('playBothSides')}</span>
+                <span className="text-sm text-gray-400 text-center">{t('playBothSidesDesc')}</span>
               </button>
               {/* Exercises */}
               <button

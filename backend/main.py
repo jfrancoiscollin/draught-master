@@ -135,7 +135,7 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
     result = game_result(state)
     ai_move_data = None
 
-    if result is None and state.turn == "black":
+    if not req.both_sides and result is None and state.turn == "black":
         depth = req.ai_depth
         loop = asyncio.get_event_loop()
 

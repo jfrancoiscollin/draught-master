@@ -73,6 +73,8 @@ export const translations: Record<Language, Record<string, string>> = {
     resultWhiteWins: "Les Blancs gagnent !",
     resultBlackWins: "Les Noirs gagnent !",
     resultDraw: "Partie nulle !",
+    playBothSides: "Jouer les deux côtés",
+    playBothSidesDesc: "Jouez les deux camps, l'IA analyse à la demande",
   },
   en: {
     appSubtitle: "International draughts training (100 squares)",
@@ -146,5 +148,7 @@ export const translations: Record<Language, Record<string, string>> = {
     resultWhiteWins: "White wins!",
     resultBlackWins: "Black wins!",
     resultDraw: "Draw!",
+    playBothSides: "Play both sides",
+    playBothSidesDesc: "Play both colors, AI analyses on request",
   },
 }
