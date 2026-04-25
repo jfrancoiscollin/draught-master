@@ -804,7 +804,7 @@ export default function App() {
                 onMove={handleExerciseMove}
                 selectedSquare={exerciseSelectedSquare}
                 onSelectSquare={handleExerciseSelectSquare}
-                disabled={exerciseSolved || !exerciseGameState || exerciseMovesLoading}
+                disabled={exerciseSolved || !exerciseGameState}
                 freeSelectSquares={exerciseFreeSelectSquares}
               />
               {exerciseMovesLoading && (
@@ -816,7 +816,7 @@ export default function App() {
               {/* Debug info — remove after diagnosis */}
               {exerciseGameState && (
                 <div style={{ fontSize: 10, color: '#888', marginTop: 4, textAlign: 'left', width: '100%' }}>
-                  v1.0.7 | ex#{exerciseGameState.exerciseId} | legal:{exerciseLegalMoves.length} | free:{exerciseFreeSelectSquares?.size ?? 0} | dis:{String(exerciseSolved || !exerciseGameState || exerciseMovesLoading)}
+                  v1.0.8 | ex#{exerciseGameState.exerciseId} | legal:{exerciseLegalMoves.length} | free:{exerciseFreeSelectSquares?.size ?? 0} | solved:{String(exerciseSolved)} | loading:{String(exerciseMovesLoading)} | b32:{exerciseGameState.board[32]} | fen:{exerciseGameState.fen.slice(0,3)}
                 </div>
               )}
             </div>
