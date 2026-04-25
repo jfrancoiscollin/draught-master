@@ -14,7 +14,7 @@ import {
   makeMove,
   analyzePosition,
   checkExercise,
-  getExerciseLegalMoves,
+  getExercise,
   undoMove,
   resignGame,
   getAiMove,
@@ -262,8 +262,8 @@ export default function App() {
     setExerciseSolved(false)
     setExerciseMovesLoading(true)
     try {
-      const { moves } = await getExerciseLegalMoves(exerciseId)
-      setExerciseLegalMoves(moves)
+      const ex = await getExercise(exerciseId)
+      setExerciseLegalMoves(ex.legal_moves ?? [])
     } catch (e: unknown) {
       const err = e as { message?: string }
       setToastMsg(`Erreur chargement des coups: ${err?.message || 'inconnue'}`)

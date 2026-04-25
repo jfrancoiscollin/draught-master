@@ -269,7 +269,12 @@ async def get_exercise_detail(exercise_id: int) -> ExerciseResponse:
     ex = await get_exercise(exercise_id)
     if ex is None:
         raise HTTPException(status_code=404, detail="Exercice introuvable")
-    return ExerciseResponse(**ex)
+    state = fen_to_board(ex["initial_fen"])
+    legal = get_legal_moves(state)
+    return ExerciseResponse(
+        **ex,
+        legal_moves=[{"path": m.path, "captures": m.captures} for m in legal],
+    )
 
 
 @app.get("/api/exercises/{exercise_id}/legal-moves")
@@ -353,4 +358,7 @@ if os.path.isdir(_STATIC_DIR):
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str) -> FileResponse:
-        return FileResponse(os.path.join(_STATIC_DIR, "index.html"))
+        return FileResponse(
+            os.path.join(_STATIC_DIR, "index.html"),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+        )

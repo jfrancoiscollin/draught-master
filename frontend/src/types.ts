@@ -49,6 +49,7 @@ export interface ExerciseResponse {
   category: string
   hint: string | null
   solution_moves: string[]
+  legal_moves?: MoveData[]
 }
 
 export interface ExerciseCheckResponse {

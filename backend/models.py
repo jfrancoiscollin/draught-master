@@ -68,6 +68,7 @@ class ExerciseResponse(BaseModel):
     category: str
     hint: Optional[str]
     solution_moves: List[str]
+    legal_moves: List[Dict[str, Any]] = []
 
 
 class ExerciseCheckRequest(BaseModel):
