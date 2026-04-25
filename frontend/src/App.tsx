@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import Board from './components/Board'
 import AnalysisPanel from './components/AnalysisPanel'
+import AnalysisText from './components/AnalysisText'
 import GameControls from './components/GameControls'
 import MoveList from './components/MoveList'
 import ExercisePanel from './components/ExercisePanel'
@@ -29,6 +30,13 @@ import type {
 } from './types'
 import { useLanguage } from './i18n/LanguageContext'
 import { playMoveSound } from './utils/sound'
+
+function getInitialBoard(): number[] {
+  const board = new Array(51).fill(0) // EMPTY = 0
+  for (let sq = 1; sq <= 20; sq++) board[sq] = 3  // BLACK_MAN
+  for (let sq = 31; sq <= 50; sq++) board[sq] = 1  // WHITE_MAN
+  return board
+}
 
 function applyMoveLocally(board: number[], move: MoveData): number[] {
   const newBoard = [...board]
@@ -79,6 +87,7 @@ export default function App() {
   const [showControls, setShowControls] = useState(false)
   const [analysisExpanded, setAnalysisExpanded] = useState(false)
   const [fullSpeaking, setFullSpeaking] = useState(false)
+  const [replayingPosition, setReplayingPosition] = useState<{ board: number[], label: string } | null>(null)
 
   const [exerciseGameState, setExerciseGameState] = useState<{
     board: number[]
@@ -101,6 +110,7 @@ export default function App() {
       setMoveHistory([])
       setAnalysis(null)
       setAnalysisExpanded(false)
+      setReplayingPosition(null)
     } catch {
       showToast(t('errorCreatingGame'))
     } finally {
@@ -224,6 +234,7 @@ export default function App() {
       const result = await analyzePosition(gameState.game_id, question, language, mode || 'position', aiDepth)
       setAnalysis(result)
       setAnalysisExpanded(true)
+      setReplayingPosition(null)
       return result
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } } }
@@ -268,9 +279,38 @@ export default function App() {
     return ''
   }
 
+  // Reconstruct all board positions from move history for replay
+  const boardPositions = useMemo(() => {
+    const positions: number[][] = [getInitialBoard()]
+    for (const move of moveHistory) {
+      positions.push(applyMoveLocally(positions[positions.length - 1], move))
+    }
+    return positions
+  }, [moveHistory])
+
+  const moveMap = useMemo(() => {
+    const map = new Map<string, number>()
+    moveHistory.forEach((move, i) => {
+      const isCapture = move.captures.length > 0
+      const fullPdn = isCapture ? move.path.join('x') : `${move.path[0]}-${move.path[move.path.length - 1]}`
+      const shortPdn = `${move.path[0]}${isCapture ? 'x' : '-'}${move.path[move.path.length - 1]}`
+      if (!map.has(fullPdn)) map.set(fullPdn, i)
+      if (!map.has(shortPdn)) map.set(shortPdn, i)
+    })
+    return map
+  }, [moveHistory])
+
+  const handleAnalysisMoveClick = useCallback((pdn: string) => {
+    const idx = moveMap.get(pdn)
+    if (idx !== undefined) {
+      setReplayingPosition({ board: boardPositions[idx + 1], label: pdn })
+    }
+  }, [moveMap, boardPositions])
+
   const currentBoard = gameState?.board || new Array(51).fill(EMPTY)
+  const displayBoard = replayingPosition?.board ?? currentBoard
   const isWhiteTurn = gameState?.turn === 'white'
-  const boardDisabled = !gameState || !!gameState.result || !isWhiteTurn || isAiThinking
+  const boardDisabled = !!replayingPosition || !gameState || !!gameState.result || !isWhiteTurn || isAiThinking
   const legalMoves = boardDisabled ? [] : (gameState?.legal_moves ?? [])
 
   const pieceDiff = (() => {
@@ -392,6 +432,7 @@ export default function App() {
                         expanded={true}
                         onCollapse={() => setAnalysisExpanded(false)}
                         aiThinking={isAiThinking}
+                        onMoveClick={handleAnalysisMoveClick}
                       />
                     </div>
                     <div
@@ -399,7 +440,7 @@ export default function App() {
                       className="flex flex-col items-center"
                     >
                       <Board
-                        board={currentBoard}
+                        board={displayBoard}
                         legalMoves={legalMoves}
                         onMove={handleMove}
                         selectedSquare={selectedSquare}
@@ -426,6 +467,12 @@ export default function App() {
                           )}
                         </div>
                       )}
+                      {replayingPosition && (
+                        <div className="flex items-center gap-2 mt-1 bg-amber-900/40 border border-amber-700/60 rounded px-2 py-1 text-xs">
+                          <span className="text-amber-300 font-mono font-semibold">📍 {replayingPosition.label}</span>
+                          <button onClick={() => setReplayingPosition(null)} className="ml-auto text-gray-400 hover:text-white">✕</button>
+                        </div>
+                      )}
                     </div>
                   </div>
                   {/* Bottom (scrollable): full analysis text + move list */}
@@ -440,7 +487,11 @@ export default function App() {
                             <span>{fullSpeaking ? t('stopReading') : t('readAloud')}</span>
                           </button>
                         </div>
-                        <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm">{analysis.analysis}</p>
+                        <AnalysisText
+                          text={analysis.analysis}
+                          onMoveClick={handleAnalysisMoveClick}
+                          className="text-gray-200 leading-relaxed text-sm"
+                        />
                       </div>
                     )}
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
@@ -451,7 +502,7 @@ export default function App() {
                   {/* Board full width */}
                   <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2" style={{ width: '100%', maxWidth: '560px', alignSelf: 'center' }}>
                     <Board
-                      board={currentBoard}
+                      board={displayBoard}
                       legalMoves={legalMoves}
                       onMove={handleMove}
                       selectedSquare={selectedSquare}
@@ -481,6 +532,12 @@ export default function App() {
                       </div>
                     )}
                     {gameState && <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">{t('whitePerspective')}</p>}
+                    {replayingPosition && (
+                      <div className="flex items-center gap-2 mt-1 w-full bg-amber-900/40 border border-amber-700/60 rounded px-2 py-1 text-xs">
+                        <span className="text-amber-300 font-mono font-semibold">📍 {replayingPosition.label}</span>
+                        <button onClick={() => setReplayingPosition(null)} className="ml-auto text-gray-400 hover:text-white">✕</button>
+                      </div>
+                    )}
                   </div>
                   {/* Scrollable right panel */}
                   <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
@@ -495,6 +552,7 @@ export default function App() {
                         expanded={false}
                         onCollapse={() => setAnalysisExpanded(false)}
                         aiThinking={isAiThinking}
+                        onMoveClick={handleAnalysisMoveClick}
                       />
                       <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                     </div>
@@ -517,7 +575,7 @@ export default function App() {
                 style={analysisExpanded ? { gridColumn: '2', gridRow: '1 / span 10' } : { width: '100%', maxWidth: '560px' }}
               >
                 <Board
-                  board={currentBoard}
+                  board={displayBoard}
                   legalMoves={legalMoves}
                   onMove={handleMove}
                   selectedSquare={selectedSquare}
@@ -547,6 +605,12 @@ export default function App() {
                   </div>
                 )}
                 {gameState && <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">{t('whitePerspective')}</p>}
+                    {replayingPosition && (
+                      <div className="flex items-center gap-2 mt-1 w-full bg-amber-900/40 border border-amber-700/60 rounded px-2 py-1 text-xs">
+                        <span className="text-amber-300 font-mono font-semibold">📍 {replayingPosition.label}</span>
+                        <button onClick={() => setReplayingPosition(null)} className="ml-auto text-gray-400 hover:text-white">✕</button>
+                      </div>
+                    )}
               </div>
 
               {/* Analysis panel */}
@@ -562,6 +626,7 @@ export default function App() {
                     expanded={true}
                     onCollapse={() => setAnalysisExpanded(false)}
                     aiThinking={isAiThinking}
+                    onMoveClick={handleAnalysisMoveClick}
                   />
                 </div>
               ) : (
@@ -577,6 +642,7 @@ export default function App() {
                       expanded={false}
                       onCollapse={() => setAnalysisExpanded(false)}
                       aiThinking={isAiThinking}
+                      onMoveClick={handleAnalysisMoveClick}
                     />
                     <GameControls
                       result={gameState?.result || null}
@@ -604,7 +670,7 @@ export default function App() {
                         <span>{fullSpeaking ? t('stopReading') : t('readAloud')}</span>
                       </button>
                     </div>
-                    <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm">{analysis.analysis}</p>
+                    <AnalysisText text={analysis.analysis} onMoveClick={handleAnalysisMoveClick} className="text-gray-200 leading-relaxed text-sm" />
                   </div>
                 </div>
               )}

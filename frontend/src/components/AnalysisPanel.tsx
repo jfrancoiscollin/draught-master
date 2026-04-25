@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import type { AnalysisResponse } from '../types'
 import { useLanguage } from '../i18n/LanguageContext'
+import AnalysisText from './AnalysisText'
 
 interface AnalysisPanelProps {
   gameId: string | null
@@ -12,6 +13,7 @@ interface AnalysisPanelProps {
   expanded?: boolean
   onCollapse?: () => void
   aiThinking?: boolean
+  onMoveClick?: (pdn: string) => void
 }
 
 function extractMoveSquares(text: string, charIndex: number): number[] {
@@ -89,6 +91,7 @@ export default function AnalysisPanel({
   expanded = false,
   onCollapse,
   aiThinking = false,
+  onMoveClick,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
   const [mode, setMode] = useState<'bestmove' | 'full' | 'fullgame' | 'bestmoveexplain' | null>(null)
@@ -248,8 +251,8 @@ export default function AnalysisPanel({
                   <span>{speaking ? t('stopReading') : t('readAloud')}</span>
                 </button>
               </div>
-              <div className="bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed whitespace-pre-wrap overflow-y-auto text-xs max-h-48">
-                {analysis.analysis}
+              <div className="bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed overflow-y-auto text-xs max-h-48">
+                <AnalysisText text={analysis.analysis} onMoveClick={onMoveClick} className="whitespace-pre-wrap" />
               </div>
             </div>
           )}
