@@ -56,8 +56,11 @@ export default function AnalysisText({ text, onMoveClick, className }: Props) {
     }
   }
 
-  // Diagnostic: visible in browser console — remove once confirmed working
-  console.log('[AnalysisText] len=%d moves=%d sample=%s', text.length, moveCount, norm.slice(0, 60))
-
-  return <span className={className}>{nodes}</span>
+  // Diagnostic badge — remove once confirmed working
+  return (
+    <span className={className}>
+      <span className="text-xs text-amber-500 font-mono mr-1">[v4:{moveCount}]</span>
+      {nodes}
+    </span>
+  )
 }
