@@ -294,12 +294,14 @@ export default function App() {
     setExerciseSelectedSquare(null)
 
     let pdn: string
+    let fullMove: MoveData = move
+
     if (move.captures.length > 0) {
-      // Legal move with captures from server
+      // Normal mode — server provided full move with captures
       pdn = move.path.join('x')
+      fullMove = move
     } else if (move.path.length === 2) {
-      // Free-move mode: detect if this is a single capture by checking the
-      // intermediate square for an enemy piece.
+      // Free-move mode: detect single capture via intermediate square
       const [from, to] = move.path
       const [r1, c1] = sqToRowCol(from)
       const [r2, c2] = sqToRowCol(to)
@@ -308,7 +310,7 @@ export default function App() {
       const board = exerciseGameState.board
       const fen = exerciseGameState.fen
       const isWhiteTurn = fen.startsWith('W:')
-      let isCapture = false
+      let capturedSq: number | null = null
       if (Math.abs(dr) === 2 && Math.abs(dc) === 2) {
         const midSq = rcToSq(r1 + dr / 2, c1 + dc / 2)
         if (midSq !== null) {
@@ -316,10 +318,16 @@ export default function App() {
           const isEnemy = isWhiteTurn
             ? (mid === BLACK_MAN || mid === BLACK_KING)
             : (mid === WHITE_MAN || mid === WHITE_KING)
-          if (isEnemy) isCapture = true
+          if (isEnemy) capturedSq = midSq
         }
       }
-      pdn = isCapture ? `${from}x${to}` : `${from}-${to}`
+      if (capturedSq !== null) {
+        pdn = `${from}x${to}`
+        fullMove = { path: move.path, captures: [capturedSq] }
+      } else {
+        pdn = `${from}-${to}`
+        fullMove = move
+      }
     } else {
       pdn = move.path.join('x')
     }
@@ -330,6 +338,10 @@ export default function App() {
       if (result.correct) {
         setExerciseSolved(true)
         setExerciseLegalMoves([])
+        // Apply move visually so the piece appears on its destination
+        // and captured pieces disappear
+        const newBoard = applyMoveLocally(exerciseGameState.board, fullMove)
+        setExerciseGameState(prev => prev ? { ...prev, board: newBoard } : prev)
       }
     } catch {
       showToast(t('errorVerification'))
@@ -831,6 +843,10 @@ export default function App() {
                           setExerciseFeedback(null)
                           setExerciseSolved(false)
                           setExerciseSelectedSquare(null)
+                          // Reset board to initial FEN position
+                          setExerciseGameState(prev =>
+                            prev ? { ...prev, board: fenToBoard(prev.fen) } : prev
+                          )
                         }
                       }}
                       className="mt-2 px-4 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
