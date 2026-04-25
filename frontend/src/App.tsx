@@ -100,6 +100,7 @@ export default function App() {
   const [exerciseSelectedSquare, setExerciseSelectedSquare] = useState<number | null>(null)
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseCheckResponse | null>(null)
   const [exerciseSolved, setExerciseSolved] = useState(false)
+  const [exerciseMovesLoading, setExerciseMovesLoading] = useState(false)
 
   const [replayBoard, setReplayBoard] = useState<number[] | null>(null)
   const [replayFenIndex, setReplayFenIndex] = useState(0)
@@ -259,11 +260,15 @@ export default function App() {
     setExerciseSelectedSquare(null)
     setExerciseFeedback(null)
     setExerciseSolved(false)
+    setExerciseMovesLoading(true)
     try {
       const { moves } = await getExerciseLegalMoves(exerciseId)
       setExerciseLegalMoves(moves)
-    } catch {
-      // board stays non-interactive
+    } catch (e: unknown) {
+      const err = e as { message?: string }
+      setToastMsg(`Erreur chargement des coups: ${err?.message || 'inconnue'}`)
+    } finally {
+      setExerciseMovesLoading(false)
     }
   }, [])
 
@@ -753,8 +758,14 @@ export default function App() {
                 onMove={handleExerciseMove}
                 selectedSquare={exerciseSelectedSquare}
                 onSelectSquare={handleExerciseSelectSquare}
-                disabled={exerciseSolved || !exerciseGameState}
+                disabled={exerciseSolved || !exerciseGameState || exerciseMovesLoading}
               />
+              {exerciseMovesLoading && (
+                <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                  <div className="spinner" style={{ width: 12, height: 12 }} />
+                  <span>{t('loading')}</span>
+                </div>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
               <div className="px-2 py-3 lg:px-0">
