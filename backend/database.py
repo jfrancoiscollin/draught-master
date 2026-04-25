@@ -10,7 +10,8 @@ INITIAL_EXERCISES = [
     {
         "name": "Prise simple obligatoire",
         "description": "Les blancs doivent effectuer la prise obligatoire. Trouvez le coup unique.",
-        "initial_fen": "W:W32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,24",
+        # Black piece at 29 (between 33 and landing square 24)
+        "initial_fen": "W:W32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,29",
         "solution_moves": ["33x24"],
         "difficulty": 1,
         "category": "captures",
@@ -19,7 +20,8 @@ INITIAL_EXERCISES = [
     {
         "name": "Double prise en chaîne",
         "description": "Les blancs peuvent effectuer une double prise. Trouvez la séquence complète.",
-        "initial_fen": "W:W33,38,39,40,41,42,43,44,45,46,47,48,49,50:B14,23",
+        # Black at 29 (between 33→24) and 20 (between 24→15)
+        "initial_fen": "W:W33,40,41,42,43,44,45,46,47,48,49,50:B20,29",
         "solution_moves": ["33x24x15"],
         "difficulty": 2,
         "category": "captures",
@@ -37,8 +39,9 @@ INITIAL_EXERCISES = [
     {
         "name": "Finale dame contre pions",
         "description": "Les blancs ont une dame et doivent gagner contre les pions noirs. Trouvez le plan gagnant.",
-        "initial_fen": "W:WK28:B34,39,43",
-        "solution_moves": ["K28-23"],
+        # King at 28, black at 43 and 45 (not on any diagonal from 28)
+        "initial_fen": "W:WK28:B43,45",
+        "solution_moves": ["28-22"],
         "difficulty": 3,
         "category": "endgame",
         "hint": "La dame doit dominer les pions adverses en coupant leur avance.",
@@ -55,8 +58,9 @@ INITIAL_EXERCISES = [
     {
         "name": "Triple prise spectaculaire",
         "description": "Les blancs peuvent éliminer trois pions en un seul coup ! Trouvez la séquence.",
-        "initial_fen": "W:W33,40,41,42,43,44,45,46,47,48,49,50:B14,23,32",
-        "solution_moves": ["33x24x15x6"],
+        # 31x22x13x4: captures at 27 (between 31→22), 18 (between 22→13), 9 (between 13→4)
+        "initial_fen": "W:W31,40,41,42,43,44,45,46,47,48,49,50:B9,18,27",
+        "solution_moves": ["31x22x13x4"],
         "difficulty": 3,
         "category": "captures",
         "hint": "Cherchez le chemin qui permet de capturer le maximum de pièces.",
@@ -64,7 +68,8 @@ INITIAL_EXERCISES = [
     {
         "name": "Blocage stratégique",
         "description": "Les blancs doivent bloquer l'avance des pions noirs. Trouvez le coup défensif optimal.",
-        "initial_fen": "W:W30,37,38,40,41,43,46,47,48,49,50:B1,2,3,4,5,6,7,14,19,25",
+        # Removed black pawn at 25 so 30-25 is a legal move
+        "initial_fen": "W:W30,37,38,40,41,43,46,47,48,49,50:B1,2,3,4,5,6,7,14,19",
         "solution_moves": ["30-25"],
         "difficulty": 2,
         "category": "strategy",
@@ -73,8 +78,9 @@ INITIAL_EXERCISES = [
     {
         "name": "Combat de dames",
         "description": "Les deux camps ont des dames. Les blancs doivent trouver le coup gagnant.",
-        "initial_fen": "W:WK22,47:BK13,35",
-        "solution_moves": ["K22-17"],
+        # Black king at 35 (not on any diagonal from 22), sol without K prefix
+        "initial_fen": "W:WK22,47:BK35",
+        "solution_moves": ["22-17"],
         "difficulty": 4,
         "category": "endgame",
         "hint": "Positionnez votre dame pour dominer les diagonales importantes.",
@@ -91,8 +97,9 @@ INITIAL_EXERCISES = [
     {
         "name": "Finale deux contre un",
         "description": "Les blancs ont deux pions contre un pion noir avancé. Comment gagner ?",
-        "initial_fen": "W:W30,35:B26",
-        "solution_moves": ["35-31"],
+        # White at 28 and 34, black at 21 — 28-22 is a legal non-capture move
+        "initial_fen": "W:W28,34:B21",
+        "solution_moves": ["28-22"],
         "difficulty": 3,
         "category": "endgame",
         "hint": "Coordonnez vos pions pour bloquer et dépasser le pion adverse.",
@@ -119,7 +126,7 @@ INITIAL_EXERCISES = [
         "name": "Finale roi d'opposition",
         "description": "Les blancs avec une dame doivent forcer la victoire. Utilisez l'opposition.",
         "initial_fen": "W:WK1:B46,47",
-        "solution_moves": ["K1-6"],
+        "solution_moves": ["1-6"],
         "difficulty": 5,
         "category": "endgame",
         "hint": "La dame doit couper les pions de leur chemin vers la promotion.",

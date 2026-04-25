@@ -291,9 +291,12 @@ async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> Exercis
     solution: List[str] = ex["solution_moves"]
     submitted = req.moves
 
+    def _norm(m: str) -> str:
+        return m.strip().lstrip('K')
+
     correct = False
     if len(submitted) >= 1 and len(solution) >= 1:
-        correct = submitted[0].strip() == solution[0].strip()
+        correct = _norm(submitted[0]) == _norm(solution[0])
 
     await record_progress(exercise_id, correct)
 
