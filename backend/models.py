@@ -73,12 +73,15 @@ class ExerciseResponse(BaseModel):
 
 class ExerciseCheckRequest(BaseModel):
     moves: List[str]
+    step: int = 0  # 0-based index of the white move being checked
 
 
 class ExerciseCheckResponse(BaseModel):
     correct: bool
     message: str
     solution: Optional[List[str]] = None
+    in_progress: bool = False   # correct move but more user moves remain
+    auto_move: Optional[str] = None  # opponent's forced response to auto-apply
 
 
 class AnalysisResponse(BaseModel):

@@ -293,28 +293,58 @@ async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> Exercis
     if ex is None:
         raise HTTPException(status_code=404, detail="Exercice introuvable")
 
-    solution: List[str] = ex["solution_moves"]
+    solution: List[Optional[str]] = ex["solution_moves"]  # may contain None for ad-lib moves
+    step = req.step
     submitted = req.moves
 
     def _norm(m: str) -> str:
         return m.strip().lstrip('K')
 
-    correct = False
-    if len(submitted) >= 1 and len(solution) >= 1:
-        correct = _norm(submitted[0]) == _norm(solution[0])
+    user_move_idx = step * 2
+    if user_move_idx >= len(solution) or solution[user_move_idx] is None:
+        return ExerciseCheckResponse(correct=True, message="Exercice terminé.")
 
-    await record_progress(exercise_id, correct)
+    expected = solution[user_move_idx]
+    correct = len(submitted) >= 1 and _norm(submitted[0]) == _norm(expected)
 
     if correct:
-        msg = "Bravo ! Vous avez trouvé le bon coup."
-    else:
-        msg = f"Ce n'est pas le bon coup. Le premier coup attendu était : {solution[0]}"
+        next_opponent_idx = user_move_idx + 1
+        next_user_idx = user_move_idx + 2
 
-    return ExerciseCheckResponse(
-        correct=correct,
-        message=msg,
-        solution=solution if not correct else None,
-    )
+        auto_move: Optional[str] = None
+        if next_opponent_idx < len(solution) and solution[next_opponent_idx] is not None:
+            auto_move = solution[next_opponent_idx]
+
+        has_more = next_user_idx < len(solution) and any(
+            m is not None for m in solution[next_user_idx:]
+        )
+
+        if has_more:
+            return ExerciseCheckResponse(
+                correct=True,
+                in_progress=True,
+                message="Bon coup ! Continuez.",
+                auto_move=auto_move,
+            )
+        else:
+            await record_progress(exercise_id, True)
+            return ExerciseCheckResponse(
+                correct=True,
+                in_progress=False,
+                message="Bravo ! Vous avez trouvé la solution.",
+                auto_move=auto_move,
+            )
+    else:
+        if step == 0:
+            await record_progress(exercise_id, False)
+        first_move = next((m for m in solution if m is not None), None)
+        msg = f"Ce n'est pas le bon coup. Le premier coup attendu était : {first_move}"
+        visible = [m for m in solution if m is not None]
+        return ExerciseCheckResponse(
+            correct=False,
+            message=msg,
+            solution=visible,
+        )
 
 
 @app.get("/api/history", response_model=HistoryResponse)

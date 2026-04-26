@@ -52,6 +52,36 @@ function applyMoveLocally(board: number[], move: MoveData): number[] {
   return newBoard
 }
 
+function pdnToMoveData(pdn: string, board: number[]): MoveData | null {
+  if (pdn.includes('x')) {
+    const path = pdn.split('x').map(Number)
+    if (path.some(isNaN)) return null
+    const captures: number[] = []
+    for (let i = 0; i < path.length - 1; i++) {
+      const [r1, c1] = sqToRowCol(path[i])
+      const [r2, c2] = sqToRowCol(path[i + 1])
+      const dr = Math.sign(r2 - r1)
+      const dc = Math.sign(c2 - c1)
+      let r = r1 + dr, c = c1 + dc
+      while (r !== r2 || c !== c2) {
+        const sq = rcToSq(r, c)
+        if (sq !== null && board[sq] !== EMPTY) {
+          captures.push(sq)
+          break
+        }
+        r += dr
+        c += dc
+      }
+    }
+    return { path, captures }
+  } else if (pdn.includes('-')) {
+    const parts = pdn.split('-').map(Number)
+    if (parts.length !== 2 || parts.some(isNaN)) return null
+    return { path: parts, captures: [] }
+  }
+  return null
+}
+
 function fenToBoard(fen: string): number[] {
   const board = new Array(51).fill(EMPTY)
   const parts = fen.split(':')
@@ -101,20 +131,21 @@ export default function App() {
   const [exerciseSelectedSquare, setExerciseSelectedSquare] = useState<number | null>(null)
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseCheckResponse | null>(null)
   const [exerciseSolved, setExerciseSolved] = useState(false)
+  const [exerciseStep, setExerciseStep] = useState(0)
   const [exerciseMovesLoading, setExerciseMovesLoading] = useState(false)
 
   // When server doesn't provide legal moves, let the user click any piece of the
   // current side and any dark square as destination (server validates on submit).
+  // Always use the initial FEN turn indicator — the user always plays the same side.
   const exerciseFreeSelectSquares = useMemo((): Set<number> | undefined => {
     if (!exerciseGameState || exerciseSolved || exerciseLegalMoves.length > 0) return undefined
-    const fen = exerciseGameState.fen
-    const isWhiteTurn = fen.startsWith('W:')
+    const isUserWhite = exerciseGameState.fen.startsWith('W:')
     const board = exerciseGameState.board
     const sels = new Set<number>()
     for (let sq = 1; sq <= 50; sq++) {
       const p = board[sq]
-      if (isWhiteTurn && (p === WHITE_MAN || p === WHITE_KING)) sels.add(sq)
-      if (!isWhiteTurn && (p === BLACK_MAN || p === BLACK_KING)) sels.add(sq)
+      if (isUserWhite && (p === WHITE_MAN || p === WHITE_KING)) sels.add(sq)
+      if (!isUserWhite && (p === BLACK_MAN || p === BLACK_KING)) sels.add(sq)
     }
     return sels.size > 0 ? sels : undefined
   }, [exerciseGameState, exerciseSolved, exerciseLegalMoves])
@@ -277,6 +308,7 @@ export default function App() {
     setExerciseSelectedSquare(null)
     setExerciseFeedback(null)
     setExerciseSolved(false)
+    setExerciseStep(0)
     setExerciseMovesLoading(true)
     try {
       const ex = await getExercise(exerciseId)
@@ -297,11 +329,9 @@ export default function App() {
     let fullMove: MoveData = move
 
     if (move.captures.length > 0) {
-      // Normal mode — server provided full move with captures
       pdn = move.path.join('x')
       fullMove = move
     } else if (move.path.length === 2) {
-      // Free-move mode: detect single capture via intermediate square
       const [from, to] = move.path
       const [r1, c1] = sqToRowCol(from)
       const [r2, c2] = sqToRowCol(to)
@@ -309,13 +339,13 @@ export default function App() {
       const dc = c2 - c1
       const board = exerciseGameState.board
       const fen = exerciseGameState.fen
-      const isWhiteTurn = fen.startsWith('W:')
+      const isUserWhite = fen.startsWith('W:')
       let capturedSq: number | null = null
       if (Math.abs(dr) === 2 && Math.abs(dc) === 2) {
         const midSq = rcToSq(r1 + dr / 2, c1 + dc / 2)
         if (midSq !== null) {
           const mid = board[midSq]
-          const isEnemy = isWhiteTurn
+          const isEnemy = isUserWhite
             ? (mid === BLACK_MAN || mid === BLACK_KING)
             : (mid === WHITE_MAN || mid === WHITE_KING)
           if (isEnemy) capturedSq = midSq
@@ -333,20 +363,41 @@ export default function App() {
     }
 
     try {
-      const result = await checkExercise(exerciseGameState.exerciseId, [pdn])
-      setExerciseFeedback(result)
+      const result = await checkExercise(exerciseGameState.exerciseId, [pdn], exerciseStep)
+
       if (result.correct) {
-        setExerciseSolved(true)
-        setExerciseLegalMoves([])
-        // Apply move visually so the piece appears on its destination
-        // and captured pieces disappear
-        const newBoard = applyMoveLocally(exerciseGameState.board, fullMove)
-        setExerciseGameState(prev => prev ? { ...prev, board: newBoard } : prev)
+        // Apply user's move to board
+        const boardAfterUser = applyMoveLocally(exerciseGameState.board, fullMove)
+
+        // Apply opponent's auto-move if provided
+        let finalBoard = boardAfterUser
+        if (result.auto_move) {
+          const autoData = pdnToMoveData(result.auto_move, boardAfterUser)
+          if (autoData) {
+            finalBoard = applyMoveLocally(boardAfterUser, autoData)
+          }
+        }
+
+        setExerciseGameState(prev => prev ? { ...prev, board: finalBoard } : prev)
+
+        if (result.in_progress) {
+          // More user moves remain — advance step, clear feedback, keep playing
+          setExerciseStep(s => s + 1)
+          setExerciseFeedback(null)
+          setExerciseLegalMoves([])
+        } else {
+          // Exercise complete
+          setExerciseSolved(true)
+          setExerciseLegalMoves([])
+          setExerciseFeedback(result)
+        }
+      } else {
+        setExerciseFeedback(result)
       }
     } catch {
       showToast(t('errorVerification'))
     }
-  }, [exerciseGameState, exerciseSolved, t])
+  }, [exerciseGameState, exerciseSolved, exerciseStep, t])
 
   const handleExerciseSelectSquare = useCallback((sq: number | null) => {
     if (exerciseSolved) return
@@ -842,6 +893,7 @@ export default function App() {
                         if (exerciseGameState) {
                           setExerciseFeedback(null)
                           setExerciseSolved(false)
+                          setExerciseStep(0)
                           setExerciseSelectedSquare(null)
                           // Reset board to initial FEN position
                           setExerciseGameState(prev =>

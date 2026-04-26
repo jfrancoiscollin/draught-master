@@ -56,6 +56,8 @@ export interface ExerciseCheckResponse {
   correct: boolean
   message: string
   solution: string[] | null
+  in_progress?: boolean
+  auto_move?: string | null
 }
 
 export interface AnalysisResponse {

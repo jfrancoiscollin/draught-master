@@ -92,9 +92,10 @@ export async function getExerciseLegalMoves(id: number): Promise<{ moves: MoveDa
 
 export async function checkExercise(
   id: number,
-  moves: string[]
+  moves: string[],
+  step: number = 0
 ): Promise<ExerciseCheckResponse> {
-  const res = await api.post<ExerciseCheckResponse>(`/exercises/${id}/check`, { moves })
+  const res = await api.post<ExerciseCheckResponse>(`/exercises/${id}/check`, { moves, step })
   return res.data
 }
 
