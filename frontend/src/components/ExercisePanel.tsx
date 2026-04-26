@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
 import { getExercises } from '../api/client'
+import { useRef } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
 
 interface ExercisePanelProps {
@@ -74,6 +75,7 @@ export default function ExercisePanel({
   const [showHint, setShowHint] = useState(false)
   const [filterCategory, setFilterCategory] = useState<string>('')
   const [filterDifficulty, setFilterDifficulty] = useState<number | undefined>()
+  const knownCategoryKeys = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     loadExercises()
@@ -85,6 +87,10 @@ export default function ExercisePanel({
       difficulty: filterDifficulty,
     })
     setExercises(data)
+    // On the initial unfiltered load, record which categories actually have exercises
+    if (!filterCategory && filterDifficulty === undefined) {
+      data.forEach(ex => knownCategoryKeys.current.add(ex.category))
+    }
   }
 
   const handleSelect = (ex: ExerciseResponse) => {
@@ -101,6 +107,12 @@ export default function ExercisePanel({
     }
   }
 
+  const availableCategories = useMemo(() => {
+    const keys = knownCategoryKeys.current
+    if (keys.size === 0) return Object.entries(CATEGORIES)
+    return Object.entries(CATEGORIES).filter(([key]) => keys.has(key))
+  }, [CATEGORIES, exercises])
+
   return (
     <div className="flex flex-col gap-3 h-full">
       <div className="panel">
@@ -113,7 +125,7 @@ export default function ExercisePanel({
             className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
           >
             <option value="">{t('category')}: {t('all')}</option>
-            {Object.entries(CATEGORIES).map(([key, label]) => (
+            {availableCategories.map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
             ))}
           </select>
