@@ -29,6 +29,16 @@ const CATEGORIES_FR: Record<string, string> = {
   strategy: 'Stratégie',
   tactics: 'Tactique',
   general: 'Général',
+  combinaisons_2: 'Combinaisons 2 temps',
+  combinaisons_2_3: 'Combinaisons 2-3 temps',
+  combinaisons_3: 'Combinaisons 3 temps',
+  combinaisons_3_4: 'Combinaisons 3-4 temps',
+  combinaisons_4: 'Combinaisons 4 temps',
+  combinaisons_4_5: 'Combinaisons 4-5 temps',
+  combinaisons_5: 'Combinaisons 5 temps',
+  combinaisons_5_6: 'Combinaisons 5-6 temps',
+  combinaisons_6: 'Combinaisons 6 temps',
+  combinaisons: 'Combinaisons',
 }
 
 const CATEGORIES_EN: Record<string, string> = {
@@ -39,6 +49,16 @@ const CATEGORIES_EN: Record<string, string> = {
   strategy: 'Strategy',
   tactics: 'Tactics',
   general: 'General',
+  combinaisons_2: '2-move combinations',
+  combinaisons_2_3: '2-3 move combinations',
+  combinaisons_3: '3-move combinations',
+  combinaisons_3_4: '3-4 move combinations',
+  combinaisons_4: '4-move combinations',
+  combinaisons_4_5: '4-5 move combinations',
+  combinaisons_5: '5-move combinations',
+  combinaisons_5_6: '5-6 move combinations',
+  combinaisons_6: '6-move combinations',
+  combinaisons: 'Combinations',
 }
 
 export default function ExercisePanel({
