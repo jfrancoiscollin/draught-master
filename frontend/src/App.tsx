@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import Board from './components/Board'
 import AnalysisPanel from './components/AnalysisPanel'
 import AnalysisText from './components/AnalysisText'
@@ -137,6 +137,7 @@ export default function App() {
   const [exerciseSolved, setExerciseSolved] = useState(false)
   const [exerciseStep, setExerciseStep] = useState(0)
   const [exerciseMovesLoading, setExerciseMovesLoading] = useState(false)
+  const exerciseLoadGenRef = useRef(0)
 
   // When server doesn't provide legal moves, let the user click any piece of the
   // current side and any dark square as destination (server validates on submit).
@@ -159,6 +160,16 @@ export default function App() {
   const [replayDetail, setReplayDetail] = useState<GameDetailResponse | null>(null)
 
   const showToast = (msg: string) => setToastMsg(msg)
+
+  const resetExerciseState = useCallback(() => {
+    setExerciseGameState(null)
+    setExerciseSolved(false)
+    setExerciseFeedback(null)
+    setExerciseLegalMoves([])
+    setExerciseSelectedSquare(null)
+    setExerciseStep(0)
+    setExerciseMovesLoading(false)
+  }, [])
 
   const startNewGame = useCallback(async () => {
     try {
@@ -307,6 +318,7 @@ export default function App() {
   }, [gameState, language, aiDepth, t])
 
   const handleExerciseLoad = useCallback(async (fen: string, exerciseId: number) => {
+    const gen = ++exerciseLoadGenRef.current
     setExerciseGameState({ board: fenToBoard(fen), fen, exerciseId })
     setExerciseLegalMoves([])
     setExerciseSelectedSquare(null)
@@ -316,12 +328,14 @@ export default function App() {
     setExerciseMovesLoading(true)
     try {
       const ex = await getExercise(exerciseId)
+      if (exerciseLoadGenRef.current !== gen) return
       setExerciseLegalMoves(ex.legal_moves ?? [])
     } catch (e: unknown) {
+      if (exerciseLoadGenRef.current !== gen) return
       const err = e as { message?: string }
       setToastMsg(`Erreur chargement des coups: ${err?.message || 'inconnue'}`)
     } finally {
-      setExerciseMovesLoading(false)
+      if (exerciseLoadGenRef.current === gen) setExerciseMovesLoading(false)
     }
   }, [])
 
@@ -444,14 +458,16 @@ export default function App() {
 
   useEffect(() => {
     if (!exerciseSolved) return
+    const gen = exerciseLoadGenRef.current
     const timer = setTimeout(() => {
+      if (exerciseLoadGenRef.current !== gen) return
       setExerciseGameState(null)
       setExerciseSolved(false)
       setExerciseFeedback(null)
       setExerciseLegalMoves([])
       setExerciseSelectedSquare(null)
       setExerciseStep(0)
-    }, 1800)
+    }, 1500)
     return () => clearTimeout(timer)
   }, [exerciseSolved])
 
@@ -921,7 +937,7 @@ export default function App() {
         {/* EXERCISE LIBRARY TAB */}
         {tab === 'exercise-library' && (
           <ExerciseLibraryPage
-            onSelectBook={() => setTab('exercises')}
+            onSelectBook={() => { resetExerciseState(); setTab('exercises') }}
           />
         )}
 
@@ -942,48 +958,50 @@ export default function App() {
         {tab === 'exercises' && exerciseGameState && (
           <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
             <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0" style={{ width: '100%', maxWidth: '560px', alignSelf: 'center' }}>
-              <Board
-                board={exerciseGameState.board}
-                legalMoves={exerciseLegalMoves}
-                onMove={handleExerciseMove}
-                selectedSquare={exerciseSelectedSquare}
-                onSelectSquare={handleExerciseSelectSquare}
-                disabled={exerciseSolved}
-                freeSelectSquares={exerciseFreeSelectSquares}
-              />
-              {/* Feedback banner */}
-              {exerciseFeedback && (
-                <div
-                  className={`w-full mt-3 rounded-xl px-4 py-3 text-center ${
-                    exerciseFeedback.correct
-                      ? 'bg-amber-900 border border-amber-600 text-amber-100'
-                      : 'bg-red-900 border border-red-600 text-red-200'
-                  }`}
-                >
-                  <p className="text-lg font-bold">
-                    {exerciseFeedback.correct ? `✓ ${t('wellDone')}` : `✗ ${t('tryAgain')}`}
-                  </p>
+              {/* Board wrapper — overlay shown on success */}
+              <div className="relative w-full" style={{ maxWidth: '560px' }}>
+                <Board
+                  board={exerciseGameState.board}
+                  legalMoves={exerciseLegalMoves}
+                  onMove={handleExerciseMove}
+                  selectedSquare={exerciseSelectedSquare}
+                  onSelectSquare={handleExerciseSelectSquare}
+                  disabled={exerciseSolved}
+                  freeSelectSquares={exerciseFreeSelectSquares}
+                />
+                {exerciseSolved && (
+                  <div
+                    className="absolute inset-0 flex flex-col items-center justify-center rounded"
+                    style={{ background: 'rgba(0,0,0,0.55)', zIndex: 5 }}
+                  >
+                    <span style={{ fontSize: '5rem', lineHeight: 1 }} className="text-green-400">✓</span>
+                    <span className="text-white text-xl font-bold mt-2">{t('wellDone')}</span>
+                  </div>
+                )}
+              </div>
+              {/* Error feedback banner */}
+              {exerciseFeedback && !exerciseFeedback.correct && (
+                <div className="w-full mt-3 rounded-xl px-4 py-3 text-center bg-red-900 border border-red-600 text-red-200">
+                  <p className="text-lg font-bold">{`✗ ${t('tryAgain')}`}</p>
                   {exerciseFeedback.solution && (
                     <p className="text-sm mt-1 opacity-80">
                       Solution : {exerciseFeedback.solution.join(', ')}
                     </p>
                   )}
-                  {!exerciseFeedback.correct && (
-                    <button
-                      onClick={() => {
-                        setExerciseFeedback(null)
-                        setExerciseSolved(false)
-                        setExerciseStep(0)
-                        setExerciseSelectedSquare(null)
-                        setExerciseGameState(prev =>
-                          prev ? { ...prev, board: fenToBoard(prev.fen) } : prev
-                        )
-                      }}
-                      className="mt-2 px-4 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
-                    >
-                      {t('tryAgain')}
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      setExerciseFeedback(null)
+                      setExerciseSolved(false)
+                      setExerciseStep(0)
+                      setExerciseSelectedSquare(null)
+                      setExerciseGameState(prev =>
+                        prev ? { ...prev, board: fenToBoard(prev.fen) } : prev
+                      )
+                    }}
+                    className="mt-2 px-4 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
+                  >
+                    {t('tryAgain')}
+                  </button>
                 </div>
               )}
               {exerciseMovesLoading && !exerciseFeedback && (
