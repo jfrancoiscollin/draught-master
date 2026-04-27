@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
 import { getExercises } from '../api/client'
-import { useRef } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
 
 interface ExercisePanelProps {
@@ -23,13 +22,6 @@ function Stars({ count }: { count: number }) {
 }
 
 const CATEGORIES_FR: Record<string, string> = {
-  captures: 'Prises',
-  promotion: 'Promotion',
-  endgame: 'Finale',
-  opening: 'Ouverture',
-  strategy: 'Stratégie',
-  tactics: 'Tactique',
-  general: 'Général',
   combinaisons_2: 'Combinaisons 2 temps',
   combinaisons_2_3: 'Combinaisons 2-3 temps',
   combinaisons_3: 'Combinaisons 3 temps',
@@ -39,17 +31,9 @@ const CATEGORIES_FR: Record<string, string> = {
   combinaisons_5: 'Combinaisons 5 temps',
   combinaisons_5_6: 'Combinaisons 5-6 temps',
   combinaisons_6: 'Combinaisons 6 temps',
-  combinaisons: 'Combinaisons',
 }
 
 const CATEGORIES_EN: Record<string, string> = {
-  captures: 'Captures',
-  promotion: 'Promotion',
-  endgame: 'Endgame',
-  opening: 'Opening',
-  strategy: 'Strategy',
-  tactics: 'Tactics',
-  general: 'General',
   combinaisons_2: '2-move combinations',
   combinaisons_2_3: '2-3 move combinations',
   combinaisons_3: '3-move combinations',
@@ -59,7 +43,6 @@ const CATEGORIES_EN: Record<string, string> = {
   combinaisons_5: '5-move combinations',
   combinaisons_5_6: '5-6 move combinations',
   combinaisons_6: '6-move combinations',
-  combinaisons: 'Combinations',
 }
 
 export default function ExercisePanel({
@@ -75,7 +58,6 @@ export default function ExercisePanel({
   const [showHint, setShowHint] = useState(false)
   const [filterCategory, setFilterCategory] = useState<string>('')
   const [filterDifficulty, setFilterDifficulty] = useState<number | undefined>()
-  const knownCategoryKeys = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     loadExercises()
@@ -87,10 +69,6 @@ export default function ExercisePanel({
       difficulty: filterDifficulty,
     })
     setExercises(data)
-    // On the initial unfiltered load, record which categories actually have exercises
-    if (!filterCategory && filterDifficulty === undefined) {
-      data.forEach(ex => knownCategoryKeys.current.add(ex.category))
-    }
   }
 
   const handleSelect = (ex: ExerciseResponse) => {
@@ -107,12 +85,6 @@ export default function ExercisePanel({
     }
   }
 
-  const availableCategories = useMemo(() => {
-    const keys = knownCategoryKeys.current
-    if (keys.size === 0) return Object.entries(CATEGORIES)
-    return Object.entries(CATEGORIES).filter(([key]) => keys.has(key))
-  }, [CATEGORIES, exercises])
-
   return (
     <div className="flex flex-col gap-3 h-full">
       <div className="panel">
@@ -125,7 +97,7 @@ export default function ExercisePanel({
             className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
           >
             <option value="">{t('category')}: {t('all')}</option>
-            {availableCategories.map(([key, label]) => (
+            {Object.entries(CATEGORIES).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
             ))}
           </select>
