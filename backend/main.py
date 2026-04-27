@@ -287,6 +287,42 @@ async def exercise_legal_moves_endpoint(exercise_id: int) -> Dict[str, Any]:
     return {"moves": [{"path": m.path, "captures": m.captures} for m in legal]}
 
 
+def _find_move_by_pdn(pdn: str, legal_moves: List[Move]) -> Optional[Move]:
+    """Match a PDN string (full or short form start x end) to a legal move."""
+    pdn_norm = pdn.strip()
+    for move in legal_moves:
+        if move_to_pdn(move) == pdn_norm:
+            return move
+    try:
+        if 'x' in pdn_norm:
+            parts = [int(p) for p in pdn_norm.split('x') if p]
+        elif '-' in pdn_norm:
+            parts = [int(p) for p in pdn_norm.split('-') if p]
+        else:
+            return None
+        start, end = parts[0], parts[-1]
+    except (ValueError, IndexError):
+        return None
+    for move in legal_moves:
+        if move.path[0] == start and move.path[-1] == end:
+            return move
+    return None
+
+
+def _reconstruct_state(initial_fen: str, solution: List[Optional[str]], move_count: int) -> Optional[GameState]:
+    """Apply move_count moves from solution to reconstruct board state."""
+    state = fen_to_board(initial_fen)
+    for i in range(move_count):
+        if i >= len(solution) or solution[i] is None:
+            break
+        legal = get_legal_moves(state)
+        move = _find_move_by_pdn(solution[i], legal)
+        if move is None:
+            return None
+        state = apply_move(state, move)
+    return state
+
+
 @app.post("/api/exercises/{exercise_id}/check", response_model=ExerciseCheckResponse)
 async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> ExerciseCheckResponse:
     ex = await get_exercise(exercise_id)
@@ -312,8 +348,19 @@ async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> Exercis
         next_user_idx = user_move_idx + 2
 
         auto_move: Optional[str] = None
+        auto_move_path: Optional[List[int]] = None
+        auto_move_captures: Optional[List[int]] = None
+
         if next_opponent_idx < len(solution) and solution[next_opponent_idx] is not None:
             auto_move = solution[next_opponent_idx]
+            # Reconstruct board after user's move and find full auto_move data
+            state_after_user = _reconstruct_state(ex["initial_fen"], solution, user_move_idx + 1)
+            if state_after_user:
+                opponent_legal = get_legal_moves(state_after_user)
+                auto_move_obj = _find_move_by_pdn(auto_move, opponent_legal)
+                if auto_move_obj:
+                    auto_move_path = auto_move_obj.path
+                    auto_move_captures = auto_move_obj.captures
 
         has_more = next_user_idx < len(solution) and any(
             m is not None for m in solution[next_user_idx:]
@@ -325,6 +372,8 @@ async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> Exercis
                 in_progress=True,
                 message="Bon coup ! Continuez.",
                 auto_move=auto_move,
+                auto_move_path=auto_move_path,
+                auto_move_captures=auto_move_captures,
             )
         else:
             await record_progress(exercise_id, True)
@@ -333,6 +382,8 @@ async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> Exercis
                 in_progress=False,
                 message="Bravo ! Vous avez trouvé la solution.",
                 auto_move=auto_move,
+                auto_move_path=auto_move_path,
+                auto_move_captures=auto_move_captures,
             )
     else:
         if step == 0:

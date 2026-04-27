@@ -82,6 +82,8 @@ class ExerciseCheckResponse(BaseModel):
     solution: Optional[List[str]] = None
     in_progress: bool = False   # correct move but more user moves remain
     auto_move: Optional[str] = None  # opponent's forced response to auto-apply
+    auto_move_path: Optional[List[int]] = None
+    auto_move_captures: Optional[List[int]] = None
 
 
 class AnalysisResponse(BaseModel):

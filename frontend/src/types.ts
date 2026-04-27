@@ -58,6 +58,8 @@ export interface ExerciseCheckResponse {
   solution: string[] | null
   in_progress?: boolean
   auto_move?: string | null
+  auto_move_path?: number[] | null
+  auto_move_captures?: number[] | null
 }
 
 export interface AnalysisResponse {

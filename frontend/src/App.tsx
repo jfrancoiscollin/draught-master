@@ -371,7 +371,13 @@ export default function App() {
 
         // Apply opponent's auto-move if provided
         let finalBoard = boardAfterUser
-        if (result.auto_move) {
+        if (result.auto_move_path && result.auto_move_path.length > 0) {
+          const autoData: MoveData = {
+            path: result.auto_move_path,
+            captures: result.auto_move_captures ?? [],
+          }
+          finalBoard = applyMoveLocally(boardAfterUser, autoData)
+        } else if (result.auto_move) {
           const autoData = pdnToMoveData(result.auto_move, boardAfterUser)
           if (autoData) {
             finalBoard = applyMoveLocally(boardAfterUser, autoData)
