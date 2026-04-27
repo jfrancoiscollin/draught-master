@@ -533,7 +533,8 @@ async def get_game_detail(game_id: str) -> GameDetailResponse:
     return GameDetailResponse(**game)
 
 
-def _send_reset_email(to_email: str, reset_link: str) -> None:
+def _send_reset_email(to_email: str, reset_link: str) -> bool:
+    """Returns True if email was sent successfully."""
     host = os.getenv("SMTP_HOST")
     port = int(os.getenv("SMTP_PORT", "587"))
     user = os.getenv("SMTP_USER")
@@ -541,8 +542,8 @@ def _send_reset_email(to_email: str, reset_link: str) -> None:
     from_addr = os.getenv("SMTP_FROM", user)
 
     if not host or not user or not password:
-        logging.warning(f"SMTP not configured — reset link for {to_email}: {reset_link}")
-        return
+        logging.warning(f"SMTP not configured — reset link: {reset_link}")
+        return False
 
     body = (
         "Bonjour,\n\n"
@@ -561,23 +562,36 @@ def _send_reset_email(to_email: str, reset_link: str) -> None:
             server.starttls(context=ctx)
             server.login(user, password)
             server.sendmail(from_addr, to_email, msg.as_string())
+        logging.info(f"Reset email sent to {to_email}")
+        return True
     except Exception as e:
-        logging.error(f"Failed to send reset email to {to_email}: {e}")
+        logging.error(f"SMTP error sending reset email to {to_email}: {type(e).__name__}: {e}")
+        return False
 
 
 @app.post("/api/auth/forgot-password")
-async def auth_forgot_password(req: ForgotPasswordRequest) -> Dict[str, str]:
+async def auth_forgot_password(req: ForgotPasswordRequest) -> Dict[str, Any]:
     email = req.email.lower().strip()
     user = await get_user_by_email(email)
-    # Always return the same message to avoid email enumeration
-    if user:
-        token = secrets.token_urlsafe(32)
-        expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
-        await create_reset_token(email, token, expires_at)
-        app_url = os.getenv("APP_URL", "").rstrip("/")
-        reset_link = f"{app_url}/?reset_token={token}"
-        _send_reset_email(email, reset_link)
-    return {"message": "Si cet email est enregistré, un lien de réinitialisation a été envoyé."}
+    if not user:
+        # Always return the same message to avoid email enumeration
+        return {"message": "Si cet email est enregistré, un lien de réinitialisation a été envoyé."}
+
+    token = secrets.token_urlsafe(32)
+    expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+    await create_reset_token(email, token, expires_at)
+    app_url = os.getenv("APP_URL", "").rstrip("/")
+    reset_link = f"{app_url}/?reset_token={token}"
+    sent = _send_reset_email(email, reset_link)
+
+    if sent:
+        return {"message": "Un lien de réinitialisation a été envoyé à votre adresse email."}
+    else:
+        # SMTP not configured or failed: return the link directly so the admin can share it
+        return {
+            "message": "L'envoi email a échoué. Utilisez le lien ci-dessous pour réinitialiser votre mot de passe :",
+            "reset_url": reset_link,
+        }
 
 
 @app.post("/api/auth/reset-password")

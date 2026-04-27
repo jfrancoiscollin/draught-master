@@ -26,6 +26,7 @@ export default function LoginPage() {
   const [resetToken, setResetToken] = useState(getTokenFromUrl)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [resetUrl, setResetUrl] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const goTo = (v: View) => { setView(v); setError(null); setSuccess(null) }
@@ -56,12 +57,17 @@ export default function LoginPage() {
   const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setResetUrl(null)
     setSubmitting(true)
     try {
-      await axios.post('/api/auth/forgot-password', { email: email.trim() })
-      setSuccess(t('resetEmailSent'))
+      const res = await axios.post<{ message: string; reset_url?: string }>(
+        '/api/auth/forgot-password',
+        { email: email.trim() }
+      )
+      setSuccess(res.data.message)
+      if (res.data.reset_url) setResetUrl(res.data.reset_url)
     } catch {
-      setSuccess(t('resetEmailSent')) // same message to avoid enumeration
+      setSuccess(t('resetEmailSent'))
     } finally {
       setSubmitting(false)
     }
@@ -159,8 +165,18 @@ export default function LoginPage() {
               <p className="text-gray-400 text-sm mb-4">{t('forgotPasswordDesc')}</p>
 
               {success ? (
-                <div className="bg-green-900/40 border border-green-700/50 rounded-lg px-3 py-3 text-green-300 text-sm">
-                  {success}
+                <div className="flex flex-col gap-3">
+                  <div className="bg-green-900/40 border border-green-700/50 rounded-lg px-3 py-3 text-green-300 text-sm">
+                    {success}
+                  </div>
+                  {resetUrl && (
+                    <div className="bg-amber-900/40 border border-amber-700/50 rounded-lg px-3 py-3">
+                      <p className="text-amber-300 text-xs font-semibold mb-2">Lien de réinitialisation (email non envoyé) :</p>
+                      <a href={resetUrl} className="text-amber-400 text-xs break-all underline hover:text-amber-300">
+                        {resetUrl}
+                      </a>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <form onSubmit={handleForgotSubmit} className="flex flex-col gap-4">
