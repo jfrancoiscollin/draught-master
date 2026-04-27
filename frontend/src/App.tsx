@@ -107,18 +107,8 @@ type Tab = 'home' | 'play' | 'exercises' | 'history'
 
 export default function App() {
   const { t, language } = useLanguage()
-  const { user, logout, loading: authLoading } = useAuth()
+  const { user, logout } = useAuth()
   const [tab, setTab] = useState<Tab>('home')
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="spinner" style={{ width: 32, height: 32 }} />
-      </div>
-    )
-  }
-
-  if (!user) return <LoginPage />
 
   const [gameState, setGameState] = useState<GameStateResponse | null>(null)
   const [selectedSquare, setSelectedSquare] = useState<number | null>(null)
