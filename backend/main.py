@@ -261,7 +261,13 @@ async def list_exercises(
     difficulty: Optional[int] = Query(None),
 ) -> List[ExerciseResponse]:
     exercises = await get_exercises(category=category, difficulty=difficulty)
-    return [ExerciseResponse(**ex) for ex in exercises]
+    result = []
+    for ex in exercises:
+        try:
+            result.append(ExerciseResponse(**ex))
+        except Exception as e:
+            logging.error(f"Exercise {ex.get('id')} skipped: {e}")
+    return result
 
 
 @app.get("/api/exercises-categories")

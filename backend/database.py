@@ -3722,31 +3722,38 @@ async def init_db() -> None:
 
         # Always upsert exercises with fixed IDs so Railway's persistent DB
         # picks up corrected FEN/solution data on each redeploy.
+        import logging as _log
+        batch_size = 50
         for idx, ex in enumerate(INITIAL_EXERCISES, start=1):
-            await db.execute(
-                """
-                INSERT INTO exercises (id, name, description, initial_fen, solution_moves, difficulty, category, hint)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET
-                    name=excluded.name,
-                    description=excluded.description,
-                    initial_fen=excluded.initial_fen,
-                    solution_moves=excluded.solution_moves,
-                    difficulty=excluded.difficulty,
-                    category=excluded.category,
-                    hint=excluded.hint
-                """,
-                (
-                    idx,
-                    ex["name"],
-                    ex["description"],
-                    ex["initial_fen"],
-                    json.dumps(ex["solution_moves"]),
-                    ex["difficulty"],
-                    ex["category"],
-                    ex["hint"],
-                ),
-            )
+            try:
+                await db.execute(
+                    """
+                    INSERT INTO exercises (id, name, description, initial_fen, solution_moves, difficulty, category, hint)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET
+                        name=excluded.name,
+                        description=excluded.description,
+                        initial_fen=excluded.initial_fen,
+                        solution_moves=excluded.solution_moves,
+                        difficulty=excluded.difficulty,
+                        category=excluded.category,
+                        hint=excluded.hint
+                    """,
+                    (
+                        idx,
+                        ex.get("name", ""),
+                        ex.get("description"),
+                        ex.get("initial_fen", ""),
+                        json.dumps(ex.get("solution_moves", [])),
+                        ex.get("difficulty", 1),
+                        ex.get("category", "general"),
+                        ex.get("hint"),
+                    ),
+                )
+            except Exception as e:
+                _log.error(f"init_db: failed to upsert exercise {idx}: {e}")
+            if idx % batch_size == 0:
+                await db.commit()
         await db.commit()
 
 

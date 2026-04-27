@@ -60,16 +60,25 @@ export default function ExercisePanel({
   const [filterCategory, setFilterCategory] = useState<string>('')
   const [filterDifficulty, setFilterDifficulty] = useState<number | undefined>()
   const [availableCategoryKeys, setAvailableCategoryKeys] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
-    getExercises().then(data => {
-      setAllExercises(data)
-      const seen: Record<string, boolean> = {}
-      for (const ex of data) {
-        if (!seen[ex.category]) seen[ex.category] = true
-      }
-      setAvailableCategoryKeys(Object.keys(seen))
-    })
+    setLoading(true)
+    setLoadError(null)
+    getExercises()
+      .then(data => {
+        setAllExercises(data)
+        const seen: Record<string, boolean> = {}
+        for (const ex of data) {
+          if (!seen[ex.category]) seen[ex.category] = true
+        }
+        setAvailableCategoryKeys(Object.keys(seen))
+      })
+      .catch(err => {
+        setLoadError(String(err?.message ?? err))
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
@@ -127,6 +136,15 @@ export default function ExercisePanel({
         </div>
 
         <div className="max-h-48 overflow-y-auto flex flex-col gap-1">
+          {loading && (
+            <p className="text-gray-400 text-sm text-center py-2">Chargement...</p>
+          )}
+          {loadError && (
+            <p className="text-red-400 text-xs py-2">Erreur: {loadError}</p>
+          )}
+          {!loading && !loadError && exercises.length === 0 && (
+            <p className="text-gray-500 text-sm text-center py-2">Aucun exercice</p>
+          )}
           {exercises.map(ex => (
             <button
               key={ex.id}
