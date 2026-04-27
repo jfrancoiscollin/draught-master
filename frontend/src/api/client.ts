@@ -80,6 +80,11 @@ export async function getExercises(params?: {
   return res.data
 }
 
+export async function getExerciseCategories(): Promise<string[]> {
+  const res = await api.get<string[]>('/exercises-categories')
+  return res.data
+}
+
 export async function getExercise(id: number): Promise<ExerciseResponse> {
   const res = await api.get<ExerciseResponse>(`/exercises/${id}`)
   return res.data

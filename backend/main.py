@@ -264,6 +264,17 @@ async def list_exercises(
     return [ExerciseResponse(**ex) for ex in exercises]
 
 
+@app.get("/api/exercises-categories")
+async def list_exercise_categories() -> List[str]:
+    exercises = await get_exercises()
+    seen: dict = {}
+    for ex in exercises:
+        cat = ex["category"]
+        if cat not in seen:
+            seen[cat] = True
+    return list(seen.keys())
+
+
 @app.get("/api/exercises/{exercise_id}", response_model=ExerciseResponse)
 async def get_exercise_detail(exercise_id: int) -> ExerciseResponse:
     ex = await get_exercise(exercise_id)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
-import { getExercises } from '../api/client'
+import { getExercises, getExerciseCategories } from '../api/client'
 import { useLanguage } from '../i18n/LanguageContext'
 
 interface ExercisePanelProps {
@@ -58,6 +58,11 @@ export default function ExercisePanel({
   const [showHint, setShowHint] = useState(false)
   const [filterCategory, setFilterCategory] = useState<string>('')
   const [filterDifficulty, setFilterDifficulty] = useState<number | undefined>()
+  const [availableCategoryKeys, setAvailableCategoryKeys] = useState<string[]>([])
+
+  useEffect(() => {
+    getExerciseCategories().then(cats => setAvailableCategoryKeys(cats))
+  }, [])
 
   useEffect(() => {
     loadExercises()
@@ -97,8 +102,8 @@ export default function ExercisePanel({
             className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
           >
             <option value="">{t('category')}: {t('all')}</option>
-            {Object.entries(CATEGORIES).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
+            {availableCategoryKeys.map(key => (
+              <option key={key} value={key}>{CATEGORIES[key] ?? key}</option>
             ))}
           </select>
 
