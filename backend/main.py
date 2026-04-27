@@ -36,6 +36,7 @@ from database import (
     get_exercises, get_exercise, record_progress,
     create_user, get_user_by_email, get_user_by_id,
     create_reset_token, get_reset_token, consume_reset_token,
+    mark_exercise_solved, get_user_solved_exercise_ids,
 )
 from models import (
     NewGameRequest, MoveRequest, AnalyzeRequest,
@@ -402,8 +403,24 @@ def _reconstruct_state(initial_fen: str, solution: List[Optional[str]], move_cou
     return state
 
 
+async def _optional_auth(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
+) -> Optional[Dict[str, Any]]:
+    if not credentials:
+        return None
+    try:
+        data = _decode_token(credentials.credentials)
+        return {"id": int(data["sub"]), "email": data["email"]}
+    except Exception:
+        return None
+
+
 @app.post("/api/exercises/{exercise_id}/check", response_model=ExerciseCheckResponse)
-async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> ExerciseCheckResponse:
+async def check_exercise(
+    exercise_id: int,
+    req: ExerciseCheckRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(_optional_auth),
+) -> ExerciseCheckResponse:
     ex = await get_exercise(exercise_id)
     if ex is None:
         raise HTTPException(status_code=404, detail="Exercice introuvable")
@@ -483,6 +500,8 @@ async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> Exercis
             )
         else:
             await record_progress(exercise_id, True)
+            if current_user:
+                await mark_exercise_solved(current_user["id"], exercise_id)
             return ExerciseCheckResponse(
                 correct=True,
                 in_progress=False,
@@ -645,6 +664,12 @@ async def auth_login(req: LoginRequest) -> TokenResponse:
 @app.get("/api/auth/me", response_model=UserResponse)
 async def auth_me(current_user: Dict[str, Any] = Depends(_require_auth)) -> UserResponse:
     return UserResponse(id=current_user["id"], email=current_user["email"])
+
+
+@app.get("/api/auth/me/progress")
+async def auth_me_progress(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
+    solved_ids = await get_user_solved_exercise_ids(current_user["id"])
+    return {"solved_exercise_ids": solved_ids}
 
 
 @app.get("/api/health")

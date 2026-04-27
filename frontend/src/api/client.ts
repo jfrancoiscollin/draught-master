@@ -131,3 +131,8 @@ export async function getGameDetail(gameId: string): Promise<GameDetailResponse>
   const res = await api.get<GameDetailResponse>(`/history/${gameId}`)
   return res.data
 }
+
+export async function getUserProgress(): Promise<number[]> {
+  const res = await api.get<{ solved_exercise_ids: number[] }>('/auth/me/progress')
+  return res.data.solved_exercise_ids
+}

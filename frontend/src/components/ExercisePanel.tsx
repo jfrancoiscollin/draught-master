@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
-import { getExercises } from '../api/client'
+import { getExercises, getUserProgress } from '../api/client'
+import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
 
 interface ExercisePanelProps {
@@ -51,6 +52,7 @@ export default function ExercisePanel({
   feedback,
 }: ExercisePanelProps) {
   const { t, language } = useLanguage()
+  const { user } = useAuth()
   const CATEGORIES = language === 'en' ? CATEGORIES_EN : CATEGORIES_FR
 
   const [allExercises, setAllExercises] = useState<ExerciseResponse[]>([])
@@ -62,6 +64,7 @@ export default function ExercisePanel({
   const [availableCategoryKeys, setAvailableCategoryKeys] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [solvedIds, setSolvedIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     setLoading(true)
@@ -80,6 +83,19 @@ export default function ExercisePanel({
       })
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    if (!user) { setSolvedIds(new Set()); return }
+    getUserProgress()
+      .then(ids => setSolvedIds(new Set(ids)))
+      .catch(() => {})
+  }, [user])
+
+  useEffect(() => {
+    if (feedback?.correct && !feedback.in_progress && selected && user) {
+      setSolvedIds(prev => new Set([...prev, selected.id]))
+    }
+  }, [feedback, selected, user])
 
   useEffect(() => {
     let filtered = allExercises
@@ -156,7 +172,12 @@ export default function ExercisePanel({
               }`}
             >
               <div className="flex justify-between items-start">
-                <span className="font-medium">{ex.name}</span>
+                <span className="font-medium flex items-center gap-1.5">
+                  {solvedIds.has(ex.id) && (
+                    <span className="text-green-400 text-base leading-none">✓</span>
+                  )}
+                  {ex.name}
+                </span>
                 <Stars count={ex.difficulty} />
               </div>
               <div className="text-xs text-gray-400 mt-0.5">

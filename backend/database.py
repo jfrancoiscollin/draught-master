@@ -3741,6 +3741,16 @@ async def init_db() -> None:
                 used INTEGER DEFAULT 0
             )
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS user_exercise_solved (
+                user_id INTEGER NOT NULL,
+                exercise_id INTEGER NOT NULL,
+                solved_at TEXT NOT NULL,
+                PRIMARY KEY (user_id, exercise_id),
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (exercise_id) REFERENCES exercises(id)
+            )
+        """)
         await db.commit()
 
         # Always upsert exercises with fixed IDs so Railway's persistent DB
@@ -3973,3 +3983,25 @@ async def consume_reset_token(token: str, new_password_hash: str) -> bool:
         )
         await db.commit()
         return True
+
+
+async def mark_exercise_solved(user_id: int, exercise_id: int) -> None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            """
+            INSERT OR IGNORE INTO user_exercise_solved (user_id, exercise_id, solved_at)
+            VALUES (?, ?, ?)
+            """,
+            (user_id, exercise_id, datetime.utcnow().isoformat()),
+        )
+        await db.commit()
+
+
+async def get_user_solved_exercise_ids(user_id: int) -> List[int]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT exercise_id FROM user_exercise_solved WHERE user_id = ?",
+            (user_id,),
+        )
+        rows = await cursor.fetchall()
+        return [row[0] for row in rows]
