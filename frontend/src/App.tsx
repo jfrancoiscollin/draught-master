@@ -9,6 +9,8 @@ import GameHistory from './components/GameHistory'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
 import BottomSheet from './components/BottomSheet'
+import LoginPage from './components/LoginPage'
+import { useAuth } from './contexts/AuthContext'
 import {
   newGame,
   makeMove,
@@ -105,7 +107,18 @@ type Tab = 'home' | 'play' | 'exercises' | 'history'
 
 export default function App() {
   const { t, language } = useLanguage()
+  const { user, logout, loading: authLoading } = useAuth()
   const [tab, setTab] = useState<Tab>('home')
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="spinner" style={{ width: 32, height: 32 }} />
+      </div>
+    )
+  }
+
+  if (!user) return <LoginPage />
 
   const [gameState, setGameState] = useState<GameStateResponse | null>(null)
   const [selectedSquare, setSelectedSquare] = useState<number | null>(null)
@@ -547,6 +560,16 @@ export default function App() {
           </div>
           <div className="flex items-center gap-2">
             <LanguageSelector />
+            <span className="hidden sm:block text-xs text-gray-400 max-w-[120px] truncate" title={user.email}>
+              {user.email}
+            </span>
+            <button
+              onClick={logout}
+              className="text-gray-400 hover:text-red-400 text-sm px-2 py-1 rounded-lg hover:bg-gray-700 transition-colors"
+              title={t('logout')}
+            >
+              {t('logout')}
+            </button>
             <button
               onClick={() => setShowControls(true)}
               className="lg:hidden text-gray-400 hover:text-white text-xl w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-700"

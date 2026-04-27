@@ -119,3 +119,23 @@ class GameDetailResponse(BaseModel):
     pdn: str
     fen_positions: List[str]
     move_count: int
+
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+
+
+class TokenResponse(BaseModel):
+    token: str
+    user: UserResponse

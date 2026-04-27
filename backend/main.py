@@ -3,12 +3,18 @@ import asyncio
 import logging
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 
 logging.basicConfig(level=logging.INFO)
 
-from fastapi import FastAPI, HTTPException, Query
+import hmac
+import hashlib
+import base64
+import json as _json
+from passlib.context import CryptContext
+from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -21,15 +27,65 @@ from game_engine import (
 from ai_engine import get_best_move
 from scan_engine import get_scan_move
 from claude_advisor import analyze_position, suggest_exercises, analyze_full_game, explain_best_move_concise
-from database import init_db, save_game, get_games, get_game, get_exercises, get_exercise, record_progress
+from database import (
+    init_db, save_game, get_games, get_game,
+    get_exercises, get_exercise, record_progress,
+    create_user, get_user_by_email, get_user_by_id,
+)
 from models import (
     NewGameRequest, MoveRequest, AnalyzeRequest,
     GameStateResponse, MoveResponse, LegalMovesResponse,
     ExerciseResponse, ExerciseCheckRequest, ExerciseCheckResponse,
     AnalysisResponse, HistoryResponse, HistoryItem, GameDetailResponse,
+    RegisterRequest, LoginRequest, TokenResponse, UserResponse,
 )
 
 load_dotenv()
+
+_SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")
+_ALGORITHM = "HS256"
+_TOKEN_EXPIRE_DAYS = 30
+_pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+_bearer = HTTPBearer(auto_error=False)
+
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+def _create_token(user_id: int, email: str) -> str:
+    header = _b64url(_json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
+    exp = int((datetime.utcnow() + timedelta(days=_TOKEN_EXPIRE_DAYS)).timestamp())
+    payload = _b64url(_json.dumps({"sub": str(user_id), "email": email, "exp": exp}).encode())
+    sig = _b64url(
+        hmac.new(_SECRET_KEY.encode(), f"{header}.{payload}".encode(), hashlib.sha256).digest()
+    )
+    return f"{header}.{payload}.{sig}"
+
+
+def _decode_token(token: str) -> Dict[str, Any]:
+    try:
+        header, payload, sig = token.split(".")
+        expected = _b64url(
+            hmac.new(_SECRET_KEY.encode(), f"{header}.{payload}".encode(), hashlib.sha256).digest()
+        )
+        if not hmac.compare_digest(sig, expected):
+            raise ValueError("bad signature")
+        data = _json.loads(base64.urlsafe_b64decode(payload + "=="))
+        if data.get("exp", 0) < int(datetime.utcnow().timestamp()):
+            raise ValueError("expired")
+        return data
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail="Token invalide") from exc
+
+
+async def _require_auth(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
+) -> Dict[str, Any]:
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Non authentifié")
+    data = _decode_token(credentials.credentials)
+    return {"id": int(data["sub"]), "email": data["email"]}
 
 app = FastAPI(title="AI-Draught API", version="1.0.0")
 
@@ -469,6 +525,40 @@ async def get_game_detail(game_id: str) -> GameDetailResponse:
     if game is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
     return GameDetailResponse(**game)
+
+
+@app.post("/api/auth/register", response_model=TokenResponse)
+async def auth_register(req: RegisterRequest) -> TokenResponse:
+    email = req.email.lower().strip()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Email invalide")
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
+    if await get_user_by_email(email):
+        raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
+    password_hash = _pwd_context.hash(req.password)
+    user_id = await create_user(email, password_hash)
+    return TokenResponse(
+        token=_create_token(user_id, email),
+        user=UserResponse(id=user_id, email=email),
+    )
+
+
+@app.post("/api/auth/login", response_model=TokenResponse)
+async def auth_login(req: LoginRequest) -> TokenResponse:
+    email = req.email.lower().strip()
+    user = await get_user_by_email(email)
+    if not user or not _pwd_context.verify(req.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+    return TokenResponse(
+        token=_create_token(user["id"], user["email"]),
+        user=UserResponse(id=user["id"], email=user["email"]),
+    )
+
+
+@app.get("/api/auth/me", response_model=UserResponse)
+async def auth_me(current_user: Dict[str, Any] = Depends(_require_auth)) -> UserResponse:
+    return UserResponse(id=current_user["id"], email=current_user["email"])
 
 
 @app.get("/api/health")

@@ -16,6 +16,12 @@ const api = axios.create({
   timeout: 30000,
 })
 
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('auth_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
 export async function newGame(params: {
   white_player?: string
   black_player?: string

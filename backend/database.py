@@ -1,6 +1,7 @@
 from __future__ import annotations
 import json
 import aiosqlite
+from datetime import datetime
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 
@@ -3718,6 +3719,14 @@ async def init_db() -> None:
                 FOREIGN KEY (exercise_id) REFERENCES exercises(id)
             )
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
         await db.commit()
 
         # Always upsert exercises with fixed IDs so Railway's persistent DB
@@ -3883,3 +3892,29 @@ async def record_progress(exercise_id: int, solved: bool) -> None:
                 (exercise_id, 1 if solved else 0, date_solved),
             )
         await db.commit()
+
+
+async def create_user(email: str, password_hash: str) -> int:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "INSERT INTO users (email, password_hash, created_at) VALUES (?, ?, ?)",
+            (email, password_hash, datetime.utcnow().isoformat()),
+        )
+        await db.commit()
+        return cursor.lastrowid
+
+
+async def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT * FROM users WHERE email = ?", (email,))
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+
+async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT id, email, created_at FROM users WHERE id = ?", (user_id,))
+        row = await cursor.fetchone()
+        return dict(row) if row else None
