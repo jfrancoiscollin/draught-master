@@ -358,11 +358,18 @@ async def get_exercise_detail(exercise_id: int) -> ExerciseResponse:
 
 
 @app.get("/api/exercises/{exercise_id}/legal-moves")
-async def exercise_legal_moves_endpoint(exercise_id: int) -> Dict[str, Any]:
+async def exercise_legal_moves_endpoint(
+    exercise_id: int,
+    step: int = Query(0),
+) -> Dict[str, Any]:
     ex = await get_exercise(exercise_id)
     if ex is None:
         raise HTTPException(status_code=404, detail="Exercice introuvable")
-    state = fen_to_board(ex["initial_fen"])
+    solution: List[Optional[str]] = ex["solution_moves"]
+    # Reconstruct state after `step` user moves (each user move is followed by an opponent move)
+    state = _reconstruct_state(ex["initial_fen"], solution, step * 2)
+    if state is None:
+        state = fen_to_board(ex["initial_fen"])
     legal = get_legal_moves(state)
     return {"moves": [{"path": m.path, "captures": m.captures} for m in legal]}
 

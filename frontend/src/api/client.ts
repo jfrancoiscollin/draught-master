@@ -101,6 +101,11 @@ export async function getExerciseLegalMoves(id: number): Promise<{ moves: MoveDa
   return res.data
 }
 
+export async function getExerciseLegalMovesAtStep(id: number, step: number): Promise<{ moves: MoveData[] }> {
+  const res = await api.get<{ moves: MoveData[] }>(`/exercises/${id}/legal-moves`, { params: { step } })
+  return res.data
+}
+
 export async function checkExercise(
   id: number,
   moves: string[],

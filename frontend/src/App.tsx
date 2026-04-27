@@ -18,6 +18,7 @@ import {
   analyzePosition,
   checkExercise,
   getExercise,
+  getExerciseLegalMovesAtStep,
   undoMove,
   resignGame,
   getAiMove,
@@ -433,10 +434,19 @@ export default function App() {
         setExerciseGameState(prev => prev ? { ...prev, board: finalBoard } : prev)
 
         if (result.in_progress) {
-          // More user moves remain — advance step, load next legal moves
-          setExerciseStep(s => s + 1)
+          const nextStep = exerciseStep + 1
+          setExerciseStep(nextStep)
           setExerciseFeedback(null)
+          // Seed with what the server already computed; then fetch authoritative moves
           setExerciseLegalMoves(result.next_legal_moves ?? [])
+          if (exerciseGameState?.exerciseId) {
+            const currentGen = exerciseLoadGenRef.current
+            getExerciseLegalMovesAtStep(exerciseGameState.exerciseId, nextStep)
+              .then(({ moves }) => {
+                if (exerciseLoadGenRef.current === currentGen) setExerciseLegalMoves(moves)
+              })
+              .catch(() => {})
+          }
         } else {
           // Exercise complete
           setExerciseSolved(true)
