@@ -438,6 +438,13 @@ export default function App() {
     setExerciseSelectedSquare(sq)
   }, [exerciseSolved])
 
+  useEffect(() => {
+    if (exerciseFeedback?.correct) {
+      const timer = setTimeout(() => setExerciseFeedback(null), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [exerciseFeedback])
+
   const handleReplay = useCallback((detail: GameDetailResponse) => {
     setReplayDetail(detail)
     setReplayFenIndex(0)
