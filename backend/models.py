@@ -84,6 +84,7 @@ class ExerciseCheckResponse(BaseModel):
     auto_move: Optional[str] = None  # opponent's forced response to auto-apply
     auto_move_path: Optional[List[int]] = None
     auto_move_captures: Optional[List[int]] = None
+    next_legal_moves: List[Dict[str, Any]] = []  # legal moves for the next user step
 
 
 class AnalysisResponse(BaseModel):

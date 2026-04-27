@@ -60,6 +60,7 @@ export interface ExerciseCheckResponse {
   auto_move?: string | null
   auto_move_path?: number[] | null
   auto_move_captures?: number[] | null
+  next_legal_moves?: { path: number[]; captures: number[] }[]
 }
 
 export interface AnalysisResponse {

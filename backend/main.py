@@ -333,15 +333,34 @@ async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> Exercis
     step = req.step
     submitted = req.moves
 
-    def _norm(m: str) -> str:
-        return m.strip().lstrip('K')
+    def _parse_endpoints(pdn: str):
+        s = pdn.strip().lstrip('K')
+        try:
+            if 'x' in s:
+                parts = [int(p) for p in s.split('x') if p]
+            elif '-' in s:
+                parts = [int(p) for p in s.split('-') if p]
+            else:
+                return None, None
+            return parts[0], parts[-1]
+        except (ValueError, IndexError):
+            return None, None
+
+    def _moves_match(submitted: str, expected: str) -> bool:
+        s = submitted.strip().lstrip('K')
+        e = expected.strip().lstrip('K')
+        if s == e:
+            return True
+        s_start, s_end = _parse_endpoints(s)
+        e_start, e_end = _parse_endpoints(e)
+        return s_start is not None and s_start == e_start and s_end == e_end
 
     user_move_idx = step * 2
     if user_move_idx >= len(solution) or solution[user_move_idx] is None:
         return ExerciseCheckResponse(correct=True, message="Exercice terminé.")
 
     expected = solution[user_move_idx]
-    correct = len(submitted) >= 1 and _norm(submitted[0]) == _norm(expected)
+    correct = len(submitted) >= 1 and _moves_match(submitted[0], expected)
 
     if correct:
         next_opponent_idx = user_move_idx + 1
@@ -367,6 +386,13 @@ async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> Exercis
         )
 
         if has_more:
+            # Compute legal moves for the next user step (after auto_move applied)
+            next_legal_moves: List[Dict] = []
+            state_after_auto = _reconstruct_state(ex["initial_fen"], solution, user_move_idx + 2)
+            if state_after_auto:
+                next_legal = get_legal_moves(state_after_auto)
+                next_legal_moves = [{"path": m.path, "captures": m.captures} for m in next_legal]
+
             return ExerciseCheckResponse(
                 correct=True,
                 in_progress=True,
@@ -374,6 +400,7 @@ async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> Exercis
                 auto_move=auto_move,
                 auto_move_path=auto_move_path,
                 auto_move_captures=auto_move_captures,
+                next_legal_moves=next_legal_moves,
             )
         else:
             await record_progress(exercise_id, True)

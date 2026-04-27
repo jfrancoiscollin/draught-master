@@ -415,10 +415,10 @@ export default function App() {
         setExerciseGameState(prev => prev ? { ...prev, board: finalBoard } : prev)
 
         if (result.in_progress) {
-          // More user moves remain — advance step, clear feedback, keep playing
+          // More user moves remain — advance step, load next legal moves
           setExerciseStep(s => s + 1)
           setExerciseFeedback(null)
-          setExerciseLegalMoves([])
+          setExerciseLegalMoves(result.next_legal_moves ?? [])
         } else {
           // Exercise complete
           setExerciseSolved(true)
