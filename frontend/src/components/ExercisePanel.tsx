@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
-import { getExercises, getExerciseCategories } from '../api/client'
+import { getExercises } from '../api/client'
 import { useLanguage } from '../i18n/LanguageContext'
 
 interface ExercisePanelProps {
@@ -53,6 +53,7 @@ export default function ExercisePanel({
   const { t, language } = useLanguage()
   const CATEGORIES = language === 'en' ? CATEGORIES_EN : CATEGORIES_FR
 
+  const [allExercises, setAllExercises] = useState<ExerciseResponse[]>([])
   const [exercises, setExercises] = useState<ExerciseResponse[]>([])
   const [selected, setSelected] = useState<ExerciseResponse | null>(null)
   const [showHint, setShowHint] = useState(false)
@@ -61,20 +62,26 @@ export default function ExercisePanel({
   const [availableCategoryKeys, setAvailableCategoryKeys] = useState<string[]>([])
 
   useEffect(() => {
-    getExerciseCategories().then(cats => setAvailableCategoryKeys(cats))
+    getExercises().then(data => {
+      setAllExercises(data)
+      const seen: Record<string, boolean> = {}
+      for (const ex of data) {
+        if (!seen[ex.category]) seen[ex.category] = true
+      }
+      setAvailableCategoryKeys(Object.keys(seen))
+    })
   }, [])
 
   useEffect(() => {
-    loadExercises()
-  }, [filterCategory, filterDifficulty])
-
-  const loadExercises = async () => {
-    const data = await getExercises({
-      category: filterCategory || undefined,
-      difficulty: filterDifficulty,
-    })
-    setExercises(data)
-  }
+    let filtered = allExercises
+    if (filterCategory) {
+      filtered = filtered.filter(ex => ex.category === filterCategory)
+    }
+    if (filterDifficulty !== undefined) {
+      filtered = filtered.filter(ex => ex.difficulty === filterDifficulty)
+    }
+    setExercises(filtered)
+  }, [allExercises, filterCategory, filterDifficulty])
 
   const handleSelect = (ex: ExerciseResponse) => {
     setSelected(ex)

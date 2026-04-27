@@ -470,6 +470,21 @@ async def health() -> Dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/api/debug/db-stats")
+async def debug_db_stats() -> Dict[str, Any]:
+    import aiosqlite
+    from database import DB_PATH
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT category, COUNT(*) as cnt FROM exercises GROUP BY category ORDER BY category"
+        )
+        rows = await cursor.fetchall()
+        cats = {row[0]: row[1] for row in rows}
+        cursor2 = await db.execute("SELECT COUNT(*) FROM exercises")
+        total = (await cursor2.fetchone())[0]
+    return {"total": total, "by_category": cats}
+
+
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 
 if os.path.isdir(_STATIC_DIR):
