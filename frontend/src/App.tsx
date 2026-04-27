@@ -443,11 +443,17 @@ export default function App() {
   }, [exerciseSolved])
 
   useEffect(() => {
-    if (exerciseFeedback?.correct) {
-      const timer = setTimeout(() => setExerciseFeedback(null), 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [exerciseFeedback])
+    if (!exerciseSolved) return
+    const timer = setTimeout(() => {
+      setExerciseGameState(null)
+      setExerciseSolved(false)
+      setExerciseFeedback(null)
+      setExerciseLegalMoves([])
+      setExerciseSelectedSquare(null)
+      setExerciseStep(0)
+    }, 1800)
+    return () => clearTimeout(timer)
+  }, [exerciseSolved])
 
   const handleReplay = useCallback((detail: GameDetailResponse) => {
     setReplayDetail(detail)
@@ -919,21 +925,34 @@ export default function App() {
           />
         )}
 
-        {/* EXERCISES TAB */}
-        {tab === 'exercises' && (
+        {/* EXERCISES TAB — list only when no exercise active, board shown on selection */}
+        {tab === 'exercises' && !exerciseGameState && (
+          <div className="h-full overflow-y-auto">
+            <div className="max-w-2xl mx-auto px-4 py-6">
+              <ExercisePanel
+                onExerciseLoad={handleExerciseLoad}
+                currentExerciseId={null}
+                feedback={null}
+                compact={false}
+              />
+            </div>
+          </div>
+        )}
+
+        {tab === 'exercises' && exerciseGameState && (
           <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
             <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0" style={{ width: '100%', maxWidth: '560px', alignSelf: 'center' }}>
               <Board
-                board={exerciseGameState?.board || new Array(51).fill(EMPTY)}
+                board={exerciseGameState.board}
                 legalMoves={exerciseLegalMoves}
                 onMove={handleExerciseMove}
                 selectedSquare={exerciseSelectedSquare}
                 onSelectSquare={handleExerciseSelectSquare}
-                disabled={exerciseSolved || !exerciseGameState}
+                disabled={exerciseSolved}
                 freeSelectSquares={exerciseFreeSelectSquares}
               />
-              {/* Feedback banner — shown immediately under the board */}
-              {exerciseFeedback && exerciseGameState && (
+              {/* Feedback banner */}
+              {exerciseFeedback && (
                 <div
                   className={`w-full mt-3 rounded-xl px-4 py-3 text-center ${
                     exerciseFeedback.correct
@@ -952,16 +971,13 @@ export default function App() {
                   {!exerciseFeedback.correct && (
                     <button
                       onClick={() => {
-                        if (exerciseGameState) {
-                          setExerciseFeedback(null)
-                          setExerciseSolved(false)
-                          setExerciseStep(0)
-                          setExerciseSelectedSquare(null)
-                          // Reset board to initial FEN position
-                          setExerciseGameState(prev =>
-                            prev ? { ...prev, board: fenToBoard(prev.fen) } : prev
-                          )
-                        }
+                        setExerciseFeedback(null)
+                        setExerciseSolved(false)
+                        setExerciseStep(0)
+                        setExerciseSelectedSquare(null)
+                        setExerciseGameState(prev =>
+                          prev ? { ...prev, board: fenToBoard(prev.fen) } : prev
+                        )
                       }}
                       className="mt-2 px-4 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
                     >
@@ -981,8 +997,9 @@ export default function App() {
               <div className="px-2 py-3 lg:px-0">
                 <ExercisePanel
                   onExerciseLoad={handleExerciseLoad}
-                  currentExerciseId={exerciseGameState?.exerciseId || null}
+                  currentExerciseId={exerciseGameState.exerciseId}
                   feedback={exerciseFeedback}
+                  compact={true}
                 />
               </div>
             </div>

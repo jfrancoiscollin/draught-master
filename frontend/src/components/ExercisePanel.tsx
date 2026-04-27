@@ -8,6 +8,7 @@ interface ExercisePanelProps {
   onExerciseLoad: (fen: string, exerciseId: number) => void
   currentExerciseId: number | null
   feedback: ExerciseCheckResponse | null
+  compact?: boolean
 }
 
 function Stars({ count }: { count: number }) {
@@ -50,6 +51,7 @@ export default function ExercisePanel({
   onExerciseLoad,
   currentExerciseId,
   feedback,
+  compact = true,
 }: ExercisePanelProps) {
   const { t, language } = useLanguage()
   const { user } = useAuth()
@@ -151,7 +153,7 @@ export default function ExercisePanel({
           </select>
         </div>
 
-        <div className="max-h-48 overflow-y-auto flex flex-col gap-1">
+        <div className={`overflow-y-auto flex flex-col gap-1 ${compact ? 'max-h-48' : 'max-h-[60vh]'}`}>
           {loading && (
             <p className="text-gray-400 text-sm text-center py-2">Chargement...</p>
           )}
