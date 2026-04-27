@@ -340,9 +340,19 @@ export default function App() {
       const board = exerciseGameState.board
       const fen = exerciseGameState.fen
       const isUserWhite = fen.startsWith('W:')
-      let capturedSq: number | null = null
-      if (Math.abs(dr) === 2 && Math.abs(dc) === 2) {
+
+      // Not on the same diagonal → must be a complex capture (short PDN form)
+      if (Math.abs(dr) !== Math.abs(dc)) {
+        pdn = `${from}x${to}`
+        fullMove = move
+      } else if (Math.abs(dr) === 1) {
+        // Single diagonal step → simple non-capture move
+        pdn = `${from}-${to}`
+        fullMove = move
+      } else if (Math.abs(dr) === 2) {
+        // Man single-capture check
         const midSq = rcToSq(r1 + dr / 2, c1 + dc / 2)
+        let capturedSq: number | null = null
         if (midSq !== null) {
           const mid = board[midSq]
           const isEnemy = isUserWhite
@@ -350,12 +360,30 @@ export default function App() {
             : (mid === WHITE_MAN || mid === WHITE_KING)
           if (isEnemy) capturedSq = midSq
         }
-      }
-      if (capturedSq !== null) {
-        pdn = `${from}x${to}`
-        fullMove = { path: move.path, captures: [capturedSq] }
+        if (capturedSq !== null) {
+          pdn = `${from}x${to}`
+          fullMove = { path: move.path, captures: [capturedSq] }
+        } else {
+          pdn = `${from}-${to}`
+          fullMove = move
+        }
       } else {
-        pdn = `${from}-${to}`
+        // King long-range: check if any enemy lies along the diagonal
+        const dirR = Math.sign(dr), dirC = Math.sign(dc)
+        let r = r1 + dirR, c = c1 + dirC
+        let hasEnemy = false
+        while (r !== r2 || c !== c2) {
+          const sq = rcToSq(r, c)
+          if (sq !== null && board[sq] !== EMPTY) {
+            const p = board[sq]
+            const isEnemy = isUserWhite
+              ? (p === BLACK_MAN || p === BLACK_KING)
+              : (p === WHITE_MAN || p === WHITE_KING)
+            if (isEnemy) { hasEnemy = true; break }
+          }
+          r += dirR; c += dirC
+        }
+        pdn = hasEnemy ? `${from}x${to}` : `${from}-${to}`
         fullMove = move
       }
     } else {
