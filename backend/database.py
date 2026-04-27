@@ -3727,6 +3727,15 @@ async def init_db() -> None:
                 created_at TEXT NOT NULL
             )
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                token TEXT UNIQUE NOT NULL,
+                expires_at TEXT NOT NULL,
+                used INTEGER DEFAULT 0
+            )
+        """)
         await db.commit()
 
         # Always upsert exercises with fixed IDs so Railway's persistent DB
@@ -3918,3 +3927,44 @@ async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         cursor = await db.execute("SELECT id, email, created_at FROM users WHERE id = ?", (user_id,))
         row = await cursor.fetchone()
         return dict(row) if row else None
+
+
+async def create_reset_token(email: str, token: str, expires_at: str) -> None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "DELETE FROM password_reset_tokens WHERE email = ?", (email,)
+        )
+        await db.execute(
+            "INSERT INTO password_reset_tokens (email, token, expires_at) VALUES (?, ?, ?)",
+            (email, token, expires_at),
+        )
+        await db.commit()
+
+
+async def get_reset_token(token: str) -> Optional[Dict[str, Any]]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0", (token,)
+        )
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+
+async def consume_reset_token(token: str, new_password_hash: str) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT email FROM password_reset_tokens WHERE token = ? AND used = 0", (token,)
+        )
+        row = await cursor.fetchone()
+        if not row:
+            return False
+        email = row[0]
+        await db.execute(
+            "UPDATE users SET password_hash = ? WHERE email = ?", (new_password_hash, email)
+        )
+        await db.execute(
+            "UPDATE password_reset_tokens SET used = 1 WHERE token = ?", (token,)
+        )
+        await db.commit()
+        return True

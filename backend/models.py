@@ -139,3 +139,12 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     token: str
     user: UserResponse
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str

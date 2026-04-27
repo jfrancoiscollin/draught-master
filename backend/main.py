@@ -2,8 +2,12 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import secrets
+import smtplib
+import ssl
 import uuid
 from datetime import datetime, timedelta
+from email.mime.text import MIMEText
 from typing import Dict, Any, Optional, List
 
 logging.basicConfig(level=logging.INFO)
@@ -31,6 +35,7 @@ from database import (
     init_db, save_game, get_games, get_game,
     get_exercises, get_exercise, record_progress,
     create_user, get_user_by_email, get_user_by_id,
+    create_reset_token, get_reset_token, consume_reset_token,
 )
 from models import (
     NewGameRequest, MoveRequest, AnalyzeRequest,
@@ -38,6 +43,7 @@ from models import (
     ExerciseResponse, ExerciseCheckRequest, ExerciseCheckResponse,
     AnalysisResponse, HistoryResponse, HistoryItem, GameDetailResponse,
     RegisterRequest, LoginRequest, TokenResponse, UserResponse,
+    ForgotPasswordRequest, ResetPasswordRequest,
 )
 
 load_dotenv()
@@ -525,6 +531,70 @@ async def get_game_detail(game_id: str) -> GameDetailResponse:
     if game is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
     return GameDetailResponse(**game)
+
+
+def _send_reset_email(to_email: str, reset_link: str) -> None:
+    host = os.getenv("SMTP_HOST")
+    port = int(os.getenv("SMTP_PORT", "587"))
+    user = os.getenv("SMTP_USER")
+    password = os.getenv("SMTP_PASS")
+    from_addr = os.getenv("SMTP_FROM", user)
+
+    if not host or not user or not password:
+        logging.warning(f"SMTP not configured — reset link for {to_email}: {reset_link}")
+        return
+
+    body = (
+        "Bonjour,\n\n"
+        "Vous avez demandé la réinitialisation de votre mot de passe sur AI-Draught.\n\n"
+        f"Cliquez sur ce lien (valable 1 heure) :\n{reset_link}\n\n"
+        "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.\n\n"
+        "L'équipe AI-Draught"
+    )
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = "Réinitialisation de mot de passe — AI-Draught"
+    msg["From"] = from_addr
+    msg["To"] = to_email
+    try:
+        ctx = ssl.create_default_context()
+        with smtplib.SMTP(host, port) as server:
+            server.starttls(context=ctx)
+            server.login(user, password)
+            server.sendmail(from_addr, to_email, msg.as_string())
+    except Exception as e:
+        logging.error(f"Failed to send reset email to {to_email}: {e}")
+
+
+@app.post("/api/auth/forgot-password")
+async def auth_forgot_password(req: ForgotPasswordRequest) -> Dict[str, str]:
+    email = req.email.lower().strip()
+    user = await get_user_by_email(email)
+    # Always return the same message to avoid email enumeration
+    if user:
+        token = secrets.token_urlsafe(32)
+        expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+        await create_reset_token(email, token, expires_at)
+        app_url = os.getenv("APP_URL", "").rstrip("/")
+        reset_link = f"{app_url}/?reset_token={token}"
+        _send_reset_email(email, reset_link)
+    return {"message": "Si cet email est enregistré, un lien de réinitialisation a été envoyé."}
+
+
+@app.post("/api/auth/reset-password")
+async def auth_reset_password(req: ResetPasswordRequest) -> Dict[str, str]:
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
+    row = await get_reset_token(req.token)
+    if not row:
+        raise HTTPException(status_code=400, detail="Lien invalide ou expiré")
+    expires_at = datetime.fromisoformat(row["expires_at"])
+    if datetime.utcnow() > expires_at:
+        raise HTTPException(status_code=400, detail="Lien expiré")
+    new_hash = _pwd_context.hash(req.password)
+    ok = await consume_reset_token(req.token, new_hash)
+    if not ok:
+        raise HTTPException(status_code=400, detail="Lien invalide ou déjà utilisé")
+    return {"message": "Mot de passe mis à jour avec succès"}
 
 
 @app.post("/api/auth/register", response_model=TokenResponse)
