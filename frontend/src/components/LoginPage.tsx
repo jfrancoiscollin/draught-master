@@ -60,14 +60,18 @@ export default function LoginPage() {
     setResetUrl(null)
     setSubmitting(true)
     try {
-      const res = await axios.post<{ message: string; reset_url?: string }>(
+      const res = await axios.post<{ message: string; reset_url?: string; not_found?: boolean }>(
         '/api/auth/forgot-password',
         { email: email.trim() }
       )
-      setSuccess(res.data.message)
-      if (res.data.reset_url) setResetUrl(res.data.reset_url)
+      if (res.data.not_found) {
+        setError(res.data.message)
+      } else {
+        setSuccess(res.data.message)
+        if (res.data.reset_url) setResetUrl(res.data.reset_url)
+      }
     } catch {
-      setSuccess(t('resetEmailSent'))
+      setError(t('authError'))
     } finally {
       setSubmitting(false)
     }

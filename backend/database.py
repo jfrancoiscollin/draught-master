@@ -5,7 +5,12 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "draught.db"
+# On Railway, mount a persistent volume at /data and set DB_DIR=/data
+# so the SQLite file survives redeploys. Falls back to the backend dir.
+import os as _os
+_db_dir = Path(_os.getenv("DB_DIR", str(Path(__file__).parent)))
+_db_dir.mkdir(parents=True, exist_ok=True)
+DB_PATH = _db_dir / "draught.db"
 
 INITIAL_EXERCISES = [
     {

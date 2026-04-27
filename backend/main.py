@@ -574,8 +574,10 @@ async def auth_forgot_password(req: ForgotPasswordRequest) -> Dict[str, Any]:
     email = req.email.lower().strip()
     user = await get_user_by_email(email)
     if not user:
-        # Always return the same message to avoid email enumeration
-        return {"message": "Si cet email est enregistré, un lien de réinitialisation a été envoyé."}
+        return {
+            "message": "Aucun compte trouvé avec cet email. Veuillez vous inscrire.",
+            "not_found": True,
+        }
 
     token = secrets.token_urlsafe(32)
     expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
