@@ -97,6 +97,9 @@ export const translations: Record<Language, Record<string, string>> = {
     newPasswordDesc: "Choisissez un nouveau mot de passe pour votre compte.",
     updatePassword: "Mettre à jour",
     passwordUpdated: "Mot de passe mis à jour ! Redirection vers la connexion...",
+    chooseBook: "Choisissez un livre pour accéder à ses exercices",
+    comingSoon: "Bientôt",
+    exercisesAvailable: "Exercices disponibles",
   },
   en: {
     appSubtitle: "International draughts training (100 squares)",
@@ -194,5 +197,8 @@ export const translations: Record<Language, Record<string, string>> = {
     newPasswordDesc: "Choose a new password for your account.",
     updatePassword: "Update password",
     passwordUpdated: "Password updated! Redirecting to login...",
+    chooseBook: "Choose a book to access its exercises",
+    comingSoon: "Soon",
+    exercisesAvailable: "Exercises available",
   },
 }

@@ -5,6 +5,7 @@ import AnalysisText from './components/AnalysisText'
 import GameControls from './components/GameControls'
 import MoveList from './components/MoveList'
 import ExercisePanel from './components/ExercisePanel'
+import ExerciseLibraryPage from './components/ExerciseLibraryPage'
 import GameHistory from './components/GameHistory'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
@@ -103,7 +104,7 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'exercises' | 'history'
+type Tab = 'home' | 'play' | 'exercise-library' | 'exercises' | 'history'
 
 export default function App() {
   const { t, language } = useLanguage()
@@ -600,7 +601,7 @@ export default function App() {
               </button>
               {/* Exercises */}
               <button
-                onClick={() => setTab('exercises')}
+                onClick={() => setTab('exercise-library')}
                 className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
               >
                 <span className="text-5xl group-hover:scale-110 transition-transform duration-200">✏️</span>
@@ -909,6 +910,13 @@ export default function App() {
               )}
             </div>
           </>
+        )}
+
+        {/* EXERCISE LIBRARY TAB */}
+        {tab === 'exercise-library' && (
+          <ExerciseLibraryPage
+            onSelectBook={() => setTab('exercises')}
+          />
         )}
 
         {/* EXERCISES TAB */}
