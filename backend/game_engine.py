@@ -164,8 +164,6 @@ def _capture_sequences_man(
         land_sq = mid_nbrs[(dr, dc)]
         if board[land_sq] != EMPTY and land_sq != path[0]:
             continue
-        if land_sq in path[1:]:
-            continue
         new_captured = captured_so_far | {mid_sq}
         new_path = path + [land_sq]
         sub = _capture_sequences_man(land_sq, board, turn, new_captured, new_path)
@@ -201,8 +199,6 @@ def _capture_sequences_king(
                 enemy_sq = s
                 continue
             if enemy_found is not None and enemy_sq is not None:
-                if s in path[1:]:
-                    continue
                 new_captured = captured_so_far | {enemy_sq}
                 new_path = path + [s]
                 sub = _capture_sequences_king(s, board, turn, new_captured, new_path)
