@@ -125,10 +125,10 @@ INITIAL_EXERCISES = [
         "name": "COMBINAISONS EN 2 et 3 TEMPS – D3",
         "description": "Chapitre 2 – COMBINAISONS EN 2 et 3 TEMPS. Les blancs jouent et gagnent.",
         "initial_fen": "W:W29,30,33,38,39,40,48:B12,13,18,21,22,23,31",
-        "solution_moves": ["33-28", "22x42", "48x28"],
+        "solution_moves": ["33-28", "22x33x24x35x44", "39x50"],
         "difficulty": 2,
         "category": "combinaisons_2_3",
-        "hint": "La solution est basée sur le même principe que le diagramme précédent. Solution : 33-28   48x28",
+        "hint": "Le blanc sacrifie en 33-28, forçant une prise massive des noirs. Solution : 33-28   39x50",
     },
     {
         "name": "COMBINAISONS EN 2 et 3 TEMPS – D4",
