@@ -369,6 +369,10 @@ async def exercise_legal_moves_endpoint(
     # Reconstruct state after `step` user moves (each user move is followed by an opponent move)
     state = _reconstruct_state(ex["initial_fen"], solution, step * 2)
     if state is None:
+        # Reconstruction failed (e.g. abbreviated solution PDN): return empty so
+        # the frontend activates free-move mode rather than showing wrong moves.
+        if step > 0:
+            return {"moves": []}
         state = fen_to_board(ex["initial_fen"])
     legal = get_legal_moves(state)
     return {"moves": [{"path": m.path, "captures": m.captures} for m in legal]}
@@ -483,6 +487,20 @@ async def check_exercise(
                 if auto_move_obj:
                     auto_move_path = auto_move_obj.path
                     auto_move_captures = auto_move_obj.captures
+                elif 'x' in auto_move:
+                    # PDN is a capture but no exact/endpoint match found (abbreviated notation).
+                    # Fall back to first legal capture from the same starting square for display.
+                    try:
+                        start_sq = int(auto_move.split('x')[0])
+                        fallback_obj = next(
+                            (m for m in opponent_legal if m.path[0] == start_sq and m.captures),
+                            None,
+                        )
+                        if fallback_obj:
+                            auto_move_path = fallback_obj.path
+                            auto_move_captures = fallback_obj.captures
+                    except (ValueError, IndexError):
+                        pass
 
         has_more = next_user_idx < len(solution) and any(
             m is not None for m in solution[next_user_idx:]
