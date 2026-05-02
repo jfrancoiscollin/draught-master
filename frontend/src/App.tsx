@@ -583,15 +583,14 @@ export default function App() {
           </div>
           <div className="flex items-center gap-2">
             <LanguageSelector />
-            <span className="hidden sm:block text-xs text-gray-400 max-w-[120px] truncate" title={user.email}>
-              {user.email}
-            </span>
             <button
               onClick={logout}
-              className="text-gray-400 hover:text-red-400 text-sm px-2 py-1 rounded-lg hover:bg-gray-700 transition-colors"
-              title={t('logout')}
+              className="text-gray-400 hover:text-red-400 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors"
+              title={`${t('logout')} (${user.email})`}
             >
-              {t('logout')}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
             </button>
             <button
               onClick={() => setShowControls(true)}
