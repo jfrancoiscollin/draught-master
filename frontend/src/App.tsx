@@ -999,11 +999,6 @@ export default function App() {
             {exerciseFeedback && !exerciseFeedback.correct && (
               <div className="w-full mt-3 rounded-xl px-4 py-3 text-center bg-red-900 border border-red-600 text-red-200" style={{ maxWidth: '560px' }}>
                 <p className="text-lg font-bold">{`✗ ${t('tryAgain')}`}</p>
-                {exerciseFeedback.solution && (
-                  <p className="text-sm mt-1 opacity-80">
-                    Solution : {exerciseFeedback.solution.join(', ')}
-                  </p>
-                )}
                 <button
                   onClick={() => {
                     setExerciseFeedback(null)
