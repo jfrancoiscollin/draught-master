@@ -6,6 +6,7 @@ import { useLanguage } from '../i18n/LanguageContext'
 
 interface ExercisePanelProps {
   onExerciseLoad: (fen: string, exerciseId: number) => void
+  onLessonOpen?: (chapter: number, fen: string) => void
   currentExerciseId: number | null
   feedback: ExerciseCheckResponse | null
   compact?: boolean
@@ -49,6 +50,7 @@ const CATEGORIES_EN: Record<string, string> = {
 
 export default function ExercisePanel({
   onExerciseLoad,
+  onLessonOpen,
   currentExerciseId,
   feedback,
   compact = true,
@@ -164,28 +166,38 @@ export default function ExercisePanel({
             <p className="text-gray-500 text-sm text-center py-2">Aucun exercice</p>
           )}
           {exercises.map(ex => (
-            <button
-              key={ex.id}
-              onClick={() => handleSelect(ex)}
-              className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                currentExerciseId === ex.id
-                  ? 'bg-amber-900 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-              }`}
-            >
-              <div className="flex justify-between items-start">
-                <span className="font-medium flex items-center gap-1.5">
-                  {solvedIds.has(ex.id) && (
-                    <span className="text-green-400 text-base leading-none">✓</span>
-                  )}
-                  {ex.name}
-                </span>
-                <Stars count={ex.difficulty} />
-              </div>
-              <div className="text-xs text-gray-400 mt-0.5">
-                {CATEGORIES[ex.category] || ex.category}
-              </div>
-            </button>
+            <div key={ex.id} className="flex items-stretch gap-1">
+              <button
+                onClick={() => handleSelect(ex)}
+                className={`flex-1 text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                  currentExerciseId === ex.id
+                    ? 'bg-amber-900 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <span className="font-medium flex items-center gap-1.5">
+                    {solvedIds.has(ex.id) && (
+                      <span className="text-green-400 text-base leading-none">✓</span>
+                    )}
+                    {ex.name}
+                  </span>
+                  <Stars count={ex.difficulty} />
+                </div>
+                <div className="text-xs text-gray-400 mt-0.5">
+                  {CATEGORIES[ex.category] || ex.category}
+                </div>
+              </button>
+              {onLessonOpen && ex.chapter && (
+                <button
+                  onClick={e => { e.stopPropagation(); onLessonOpen(ex.chapter!, ex.initial_fen) }}
+                  className="flex-shrink-0 w-8 flex items-center justify-center rounded-lg bg-gray-700 hover:bg-amber-800 text-gray-400 hover:text-amber-300 transition-colors text-base"
+                  title={`Leçon – Chapitre ${ex.chapter}`}
+                >
+                  📖
+                </button>
+              )}
+            </div>
           ))}
         </div>
       </div>

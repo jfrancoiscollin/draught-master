@@ -6,6 +6,7 @@ import GameControls from './components/GameControls'
 import MoveList from './components/MoveList'
 import ExercisePanel from './components/ExercisePanel'
 import ExerciseLibraryPage from './components/ExerciseLibraryPage'
+import LessonPanel from './components/LessonPanel'
 import GameHistory from './components/GameHistory'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
@@ -155,6 +156,8 @@ export default function App() {
     }
     return sels.size > 0 ? sels : undefined
   }, [exerciseGameState, exerciseSolved, exerciseLegalMoves])
+
+  const [lessonOpen, setLessonOpen] = useState<{ chapter: number; fen: string } | null>(null)
 
   const [replayBoard, setReplayBoard] = useState<number[] | null>(null)
   const [replayFenIndex, setReplayFenIndex] = useState(0)
@@ -937,16 +940,27 @@ export default function App() {
         )}
 
         {/* EXERCISES TAB — list only when no exercise active, board shown on selection */}
-        {tab === 'exercises' && !exerciseGameState && (
+        {tab === 'exercises' && !exerciseGameState && !lessonOpen && (
           <div className="h-full overflow-y-auto">
             <div className="max-w-2xl mx-auto px-4 py-6">
               <ExercisePanel
                 onExerciseLoad={handleExerciseLoad}
+                onLessonOpen={(chapter, fen) => setLessonOpen({ chapter, fen })}
                 currentExerciseId={null}
                 feedback={null}
                 compact={false}
               />
             </div>
+          </div>
+        )}
+
+        {tab === 'exercises' && !exerciseGameState && lessonOpen && (
+          <div className="h-full">
+            <LessonPanel
+              chapter={lessonOpen.chapter}
+              exampleFen={lessonOpen.fen}
+              onClose={() => setLessonOpen(null)}
+            />
           </div>
         )}
 

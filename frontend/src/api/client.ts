@@ -141,3 +141,8 @@ export async function getUserProgress(): Promise<number[]> {
   const res = await api.get<{ solved_exercise_ids: number[] }>('/auth/me/progress')
   return res.data.solved_exercise_ids
 }
+
+export async function getLesson(chapter: number): Promise<{ title: string; text: string; category: string }> {
+  const res = await api.get(`/lessons/${chapter}`)
+  return res.data
+}

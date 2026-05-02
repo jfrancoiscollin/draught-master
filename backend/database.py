@@ -3856,8 +3856,15 @@ async def get_exercises(
         for row in rows:
             data = dict(row)
             data["solution_moves"] = json.loads(data["solution_moves"])
+            data["chapter"] = _extract_chapter(data.get("description", ""))
             result.append(data)
         return result
+
+
+def _extract_chapter(description: str) -> Optional[int]:
+    import re as _re
+    m = _re.search(r'Chapitre\s+(\d+)', description or "")
+    return int(m.group(1)) if m else None
 
 
 async def get_exercise(exercise_id: int) -> Optional[Dict[str, Any]]:
@@ -3868,6 +3875,7 @@ async def get_exercise(exercise_id: int) -> Optional[Dict[str, Any]]:
         if row:
             data = dict(row)
             data["solution_moves"] = json.loads(data["solution_moves"])
+            data["chapter"] = _extract_chapter(data.get("description", ""))
             return data
         return None
 

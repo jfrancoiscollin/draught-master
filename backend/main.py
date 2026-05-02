@@ -697,6 +697,21 @@ async def auth_me_progress(current_user: Dict[str, Any] = Depends(_require_auth)
     return {"solved_exercise_ids": solved_ids}
 
 
+@app.get("/api/lessons/{chapter}")
+async def get_lesson(chapter: int) -> Dict[str, Any]:
+    import json as _json_mod, os as _os
+    lessons_path = _os.path.join(_os.path.dirname(__file__), "lessons.json")
+    try:
+        with open(lessons_path, encoding="utf-8") as f:
+            lessons = _json_mod.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Lessons file not found")
+    lesson = lessons.get(str(chapter))
+    if not lesson:
+        raise HTTPException(status_code=404, detail=f"No lesson for chapter {chapter}")
+    return lesson
+
+
 @app.get("/api/health")
 async def health() -> Dict[str, str]:
     return {"status": "ok"}

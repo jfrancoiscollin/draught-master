@@ -69,6 +69,7 @@ class ExerciseResponse(BaseModel):
     hint: Optional[str]
     solution_moves: List[str]
     legal_moves: List[Dict[str, Any]] = []
+    chapter: Optional[int] = None
 
 
 class ExerciseCheckRequest(BaseModel):

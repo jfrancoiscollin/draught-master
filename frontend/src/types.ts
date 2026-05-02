@@ -50,6 +50,7 @@ export interface ExerciseResponse {
   hint: string | null
   solution_moves: string[]
   legal_moves?: MoveData[]
+  chapter?: number | null
 }
 
 export interface ExerciseCheckResponse {
