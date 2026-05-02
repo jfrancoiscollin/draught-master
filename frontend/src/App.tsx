@@ -466,20 +466,6 @@ export default function App() {
     setExerciseSelectedSquare(sq)
   }, [exerciseSolved])
 
-  useEffect(() => {
-    if (!exerciseSolved) return
-    const gen = exerciseLoadGenRef.current
-    const timer = setTimeout(() => {
-      if (exerciseLoadGenRef.current !== gen) return
-      setExerciseGameState(null)
-      setExerciseSolved(false)
-      setExerciseFeedback(null)
-      setExerciseLegalMoves([])
-      setExerciseSelectedSquare(null)
-      setExerciseStep(0)
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [exerciseSolved])
 
   const handleReplay = useCallback((detail: GameDetailResponse) => {
     setReplayDetail(detail)
