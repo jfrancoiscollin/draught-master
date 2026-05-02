@@ -15,6 +15,7 @@ interface BoardProps {
   // When provided, these squares can be selected even if not in legalMoves,
   // and any subsequent dark-square click triggers onMove (free-move mode).
   freeSelectSquares?: Set<number>
+  flipped?: boolean
 }
 
 const PIECE_WHITE: React.CSSProperties = {
@@ -94,6 +95,7 @@ export default function Board({
   highlightSquares = [],
   spokenSquares = [],
   freeSelectSquares,
+  flipped = false,
 }: BoardProps) {
   const legalTargets = useCallback((): Set<number> => {
     if (selectedSquare === null) return new Set()
@@ -159,8 +161,10 @@ export default function Board({
 
   const cells: React.ReactNode[] = []
 
-  for (let row = 0; row < 10; row++) {
-    for (let col = 0; col < 10; col++) {
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 10; c++) {
+      const row = flipped ? 9 - r : r
+      const col = flipped ? 9 - c : c
       const isDark = (row + col) % 2 === 1
       const sq     = isDark ? rcToSq(row, col) : null
       const piece  = sq !== null ? board[sq] : EMPTY
@@ -183,7 +187,7 @@ export default function Board({
 
       cells.push(
         <div
-          key={`${row}-${col}`}
+          key={`${r}-${c}`}
           onClick={() => sq !== null && isDark && handleCellClick(sq)}
           className={isSpoken ? 'spoken-square' : undefined}
           style={{

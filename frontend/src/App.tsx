@@ -978,6 +978,7 @@ export default function App() {
                   onSelectSquare={handleExerciseSelectSquare}
                   disabled={exerciseSolved}
                   freeSelectSquares={exerciseFreeSelectSquares}
+                  flipped={exerciseGameState.fen.startsWith('B:')}
                 />
                 {exerciseSolved && (
                   <div
@@ -1020,6 +1021,9 @@ export default function App() {
                   <span>{t('loading')}</span>
                 </div>
               )}
+              <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">
+                {exerciseGameState.fen.startsWith('B:') ? t('blackPerspective') : t('whitePerspective')}
+              </p>
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
               <div className="px-2 py-3 lg:px-0">
