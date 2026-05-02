@@ -966,75 +966,75 @@ export default function App() {
         )}
 
         {tab === 'exercises' && exerciseGameState && (
-          <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
-            <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0" style={{ width: '100%', maxWidth: '560px', alignSelf: 'center' }}>
-              {/* Board wrapper — overlay shown on success */}
-              <div className="relative w-full" style={{ maxWidth: '560px' }}>
-                <Board
-                  board={exerciseGameState.board}
-                  legalMoves={exerciseLegalMoves}
-                  onMove={handleExerciseMove}
-                  selectedSquare={exerciseSelectedSquare}
-                  onSelectSquare={handleExerciseSelectSquare}
-                  disabled={exerciseSolved}
-                  freeSelectSquares={exerciseFreeSelectSquares}
-                  flipped={exerciseGameState.fen.startsWith('B:')}
-                />
-                {exerciseSolved && (
-                  <div
-                    className="absolute inset-0 flex flex-col items-center justify-center rounded"
-                    style={{ background: 'rgba(0,0,0,0.55)', zIndex: 5 }}
-                  >
-                    <span style={{ fontSize: '5rem', lineHeight: 1 }} className="text-green-400">✓</span>
-                    <span className="text-white text-xl font-bold mt-2">{t('wellDone')}</span>
-                  </div>
-                )}
-              </div>
-              {/* Error feedback banner */}
-              {exerciseFeedback && !exerciseFeedback.correct && (
-                <div className="w-full mt-3 rounded-xl px-4 py-3 text-center bg-red-900 border border-red-600 text-red-200">
-                  <p className="text-lg font-bold">{`✗ ${t('tryAgain')}`}</p>
-                  {exerciseFeedback.solution && (
-                    <p className="text-sm mt-1 opacity-80">
-                      Solution : {exerciseFeedback.solution.join(', ')}
-                    </p>
-                  )}
-                  <button
-                    onClick={() => {
-                      setExerciseFeedback(null)
-                      setExerciseSolved(false)
-                      setExerciseStep(0)
-                      setExerciseSelectedSquare(null)
-                      setExerciseGameState(prev =>
-                        prev ? { ...prev, board: fenToBoard(prev.fen) } : prev
-                      )
-                    }}
-                    className="mt-2 px-4 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
-                  >
-                    {t('tryAgain')}
-                  </button>
+          <div className="h-full flex flex-col items-center px-2 pt-2 lg:px-4 lg:pt-4">
+            {/* Board wrapper — overlay shown on success */}
+            <div className="relative w-full" style={{ maxWidth: '560px' }}>
+              <Board
+                board={exerciseGameState.board}
+                legalMoves={exerciseLegalMoves}
+                onMove={handleExerciseMove}
+                selectedSquare={exerciseSelectedSquare}
+                onSelectSquare={handleExerciseSelectSquare}
+                disabled={exerciseSolved}
+                freeSelectSquares={exerciseFreeSelectSquares}
+                flipped={exerciseGameState.fen.startsWith('B:')}
+              />
+              {exerciseSolved && (
+                <div
+                  className="absolute inset-0 flex flex-col items-center justify-center rounded"
+                  style={{ background: 'rgba(0,0,0,0.55)', zIndex: 5 }}
+                >
+                  <span style={{ fontSize: '5rem', lineHeight: 1 }} className="text-green-400">✓</span>
+                  <span className="text-white text-xl font-bold mt-2">{t('wellDone')}</span>
                 </div>
               )}
-              {exerciseMovesLoading && !exerciseFeedback && (
-                <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
-                  <div className="spinner" style={{ width: 12, height: 12 }} />
-                  <span>{t('loading')}</span>
-                </div>
-              )}
-              <p style={{ alignSelf: 'flex-start' }} className="mt-1 text-xs text-gray-500">
+            </div>
+
+            {/* Below-board row: back arrow left, perspective center, loading right */}
+            <div className="flex items-center w-full mt-2" style={{ maxWidth: '560px' }}>
+              <button
+                onClick={resetExerciseState}
+                className="text-gray-400 hover:text-amber-500 text-2xl w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors flex-shrink-0"
+                title={t('exercises')}
+              >
+                ←
+              </button>
+              <p className="flex-1 text-center text-xs text-gray-500">
                 {exerciseGameState.fen.startsWith('B:') ? t('blackPerspective') : t('whitePerspective')}
               </p>
+              {exerciseMovesLoading && !exerciseFeedback && (
+                <div className="flex items-center gap-1 text-xs text-gray-400 flex-shrink-0">
+                  <div className="spinner" style={{ width: 12, height: 12 }} />
+                </div>
+              )}
+              {!exerciseMovesLoading && <div className="w-9 flex-shrink-0" />}
             </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
-              <div className="px-2 py-3 lg:px-0">
-                <ExercisePanel
-                  onExerciseLoad={handleExerciseLoad}
-                  currentExerciseId={exerciseGameState.exerciseId}
-                  feedback={exerciseFeedback}
-                  compact={true}
-                />
+
+            {/* Error feedback banner */}
+            {exerciseFeedback && !exerciseFeedback.correct && (
+              <div className="w-full mt-3 rounded-xl px-4 py-3 text-center bg-red-900 border border-red-600 text-red-200" style={{ maxWidth: '560px' }}>
+                <p className="text-lg font-bold">{`✗ ${t('tryAgain')}`}</p>
+                {exerciseFeedback.solution && (
+                  <p className="text-sm mt-1 opacity-80">
+                    Solution : {exerciseFeedback.solution.join(', ')}
+                  </p>
+                )}
+                <button
+                  onClick={() => {
+                    setExerciseFeedback(null)
+                    setExerciseSolved(false)
+                    setExerciseStep(0)
+                    setExerciseSelectedSquare(null)
+                    setExerciseGameState(prev =>
+                      prev ? { ...prev, board: fenToBoard(prev.fen) } : prev
+                    )
+                  }}
+                  className="mt-2 px-4 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
+                >
+                  {t('tryAgain')}
+                </button>
               </div>
-            </div>
+            )}
           </div>
         )}
 
