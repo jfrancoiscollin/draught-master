@@ -37,6 +37,7 @@ from database import (
     create_user, get_user_by_email, get_user_by_id,
     create_reset_token, get_reset_token, consume_reset_token,
     mark_exercise_solved, get_user_solved_exercise_ids,
+    mark_lesson_read, get_user_read_lesson_chapters,
 )
 from models import (
     NewGameRequest, MoveRequest, AnalyzeRequest,
@@ -695,6 +696,21 @@ async def auth_me(current_user: Dict[str, Any] = Depends(_require_auth)) -> User
 async def auth_me_progress(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
     solved_ids = await get_user_solved_exercise_ids(current_user["id"])
     return {"solved_exercise_ids": solved_ids}
+
+
+@app.get("/api/auth/me/lessons/read")
+async def get_read_lessons(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
+    chapters = await get_user_read_lesson_chapters(current_user["id"])
+    return {"read_chapters": chapters}
+
+
+@app.post("/api/auth/me/lessons/{chapter}/read")
+async def mark_lesson_read_endpoint(
+    chapter: int,
+    current_user: Dict[str, Any] = Depends(_require_auth),
+) -> Dict[str, Any]:
+    await mark_lesson_read(current_user["id"], chapter)
+    return {"ok": True}
 
 
 @app.get("/api/lessons")

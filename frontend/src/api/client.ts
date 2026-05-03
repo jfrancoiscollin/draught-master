@@ -151,3 +151,12 @@ export async function getLesson(chapter: number): Promise<{ title: string; text:
   const res = await api.get(`/lessons/${chapter}`)
   return res.data
 }
+
+export async function getReadLessons(): Promise<number[]> {
+  const res = await api.get<{ read_chapters: number[] }>('/auth/me/lessons/read')
+  return res.data.read_chapters
+}
+
+export async function markLessonRead(chapter: number): Promise<void> {
+  await api.post(`/auth/me/lessons/${chapter}/read`)
+}

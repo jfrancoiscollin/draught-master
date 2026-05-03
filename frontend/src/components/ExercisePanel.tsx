@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
-import { getExercises, getUserProgress, getLessonTitles } from '../api/client'
+import { getExercises, getUserProgress, getLessonTitles, getReadLessons } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
 
@@ -10,6 +10,7 @@ interface ExercisePanelProps {
   currentExerciseId: number | null
   feedback: ExerciseCheckResponse | null
   compact?: boolean
+  readChapters?: Set<number>
 }
 
 function Stars({ count }: { count: number }) {
@@ -37,6 +38,7 @@ export default function ExercisePanel({
   currentExerciseId,
   feedback,
   compact = true,
+  readChapters = new Set(),
 }: ExercisePanelProps) {
   const { t } = useLanguage()
   const { user } = useAuth()
@@ -124,6 +126,8 @@ export default function ExercisePanel({
               const firstEx = exercises[0]
               const solvedCount = exercises.filter(e => solvedIds.has(e.id)).length
 
+              const isLessonRead = readChapters.has(ch)
+
               return (
                 <div key={ch} className="mb-1 rounded-lg overflow-hidden">
                   {/* Chapter header */}
@@ -138,8 +142,13 @@ export default function ExercisePanel({
                       <span className="font-bold text-amber-400 text-sm flex-1 min-w-0 leading-snug">
                         {lessonTitle}
                       </span>
-                      <span className="text-xs text-gray-400 flex-shrink-0 ml-1">
-                        {solvedCount}/{exercises.length}
+                      <span className="flex items-center gap-1.5 flex-shrink-0 ml-1">
+                        {isLessonRead && (
+                          <span className="text-green-400 font-bold text-sm" title="Leçon lue">✓</span>
+                        )}
+                        <span className="text-xs text-gray-400">
+                          {solvedCount}/{exercises.length}
+                        </span>
                       </span>
                     </button>
                     {onLessonOpen && (

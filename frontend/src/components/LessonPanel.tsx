@@ -1,13 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import Board from './Board'
-import { getLesson, getExercises } from '../api/client'
+import { getLesson, getExercises, markLessonRead } from '../api/client'
 import { fenToBoard } from '../utils/fen'
+import { useAuth } from '../contexts/AuthContext'
 import type { MoveData, ExerciseResponse } from '../types'
 
 interface LessonPanelProps {
   chapter: number
   exampleFen: string
   onClose: () => void
+  onLessonRead?: (chapter: number) => void
+  isRead?: boolean
 }
 
 type Token =
@@ -100,13 +103,20 @@ function LessonText({
   )
 }
 
-export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPanelProps) {
+export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead, isRead: isReadProp }: LessonPanelProps) {
+  const { user } = useAuth()
   const [lesson, setLesson] = useState<{ title: string; text: string; diagrams?: string[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [exercises, setExercises] = useState<ExerciseResponse[]>([])
   const [activeDiagram, setActiveDiagram] = useState(0)
   const [highlighted, setHighlighted] = useState<number[]>([])
+  const [isRead, setIsRead] = useState(isReadProp ?? false)
+  const [marking, setMarking] = useState(false)
+
+  useEffect(() => {
+    setIsRead(isReadProp ?? false)
+  }, [isReadProp, chapter])
 
   useEffect(() => {
     setLoading(true)
@@ -150,6 +160,18 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
 
   const noOp = useCallback((_: MoveData) => {}, [])
   const noOpSq = useCallback((_: number | null) => {}, [])
+
+  const handleMarkRead = useCallback(async () => {
+    if (!user || isRead || marking) return
+    setMarking(true)
+    try {
+      await markLessonRead(chapter)
+      setIsRead(true)
+      onLessonRead?.(chapter)
+    } finally {
+      setMarking(false)
+    }
+  }, [user, isRead, marking, chapter, onLessonRead])
 
   return (
     <div className="flex flex-col h-full bg-gray-900 text-gray-100">
@@ -227,12 +249,31 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
         )}
         {error && <p className="text-red-400 text-sm py-6 text-center">{error}</p>}
         {lesson && !loading && (
-          <LessonText
-            text={lesson.text}
-            onSquareClick={handleSquareClick}
-            onDiagramClick={handleDiagramClick}
-            highlighted={highlighted}
-          />
+          <>
+            <LessonText
+              text={lesson.text}
+              onSquareClick={handleSquareClick}
+              onDiagramClick={handleDiagramClick}
+              highlighted={highlighted}
+            />
+            <div className="mt-6 mb-2 flex justify-center">
+              {user && (
+                isRead ? (
+                  <span className="flex items-center gap-2 text-green-400 font-semibold text-sm px-4 py-2 rounded-lg bg-green-900/30 border border-green-700">
+                    <span className="text-base">✓</span> Leçon lue
+                  </span>
+                ) : (
+                  <button
+                    onClick={handleMarkRead}
+                    disabled={marking}
+                    className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg border border-amber-600 text-amber-400 hover:bg-amber-900/40 transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {marking ? '...' : '✓ Marquer comme lue'}
+                  </button>
+                )
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

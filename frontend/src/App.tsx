@@ -23,6 +23,7 @@ import {
   undoMove,
   resignGame,
   getAiMove,
+  getReadLessons,
 } from './api/client'
 import {
   EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
@@ -158,6 +159,16 @@ export default function App() {
   }, [exerciseGameState, exerciseSolved, exerciseLegalMoves])
 
   const [lessonOpen, setLessonOpen] = useState<{ chapter: number; fen: string } | null>(null)
+  const [readChapters, setReadChapters] = useState<Set<number>>(new Set())
+
+  useEffect(() => {
+    if (!user) { setReadChapters(new Set()); return }
+    getReadLessons().then(chapters => setReadChapters(new Set(chapters))).catch(() => {})
+  }, [user])
+
+  const handleLessonRead = useCallback((chapter: number) => {
+    setReadChapters(prev => new Set([...prev, chapter]))
+  }, [])
 
   const [replayBoard, setReplayBoard] = useState<number[] | null>(null)
   const [replayFenIndex, setReplayFenIndex] = useState(0)
@@ -949,6 +960,7 @@ export default function App() {
                 currentExerciseId={null}
                 feedback={null}
                 compact={false}
+                readChapters={readChapters}
               />
             </div>
           </div>
@@ -960,6 +972,8 @@ export default function App() {
               chapter={lessonOpen.chapter}
               exampleFen={lessonOpen.fen}
               onClose={() => setLessonOpen(null)}
+              onLessonRead={handleLessonRead}
+              isRead={readChapters.has(lessonOpen.chapter)}
             />
           </div>
         )}

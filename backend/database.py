@@ -3751,6 +3751,15 @@ async def init_db() -> None:
                 FOREIGN KEY (exercise_id) REFERENCES exercises(id)
             )
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS user_lesson_read (
+                user_id INTEGER NOT NULL,
+                chapter INTEGER NOT NULL,
+                read_at TEXT NOT NULL,
+                PRIMARY KEY (user_id, chapter),
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        """)
         await db.commit()
 
         # Always upsert exercises with fixed IDs so Railway's persistent DB
@@ -4009,6 +4018,28 @@ async def get_user_solved_exercise_ids(user_id: int) -> List[int]:
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
             "SELECT exercise_id FROM user_exercise_solved WHERE user_id = ?",
+            (user_id,),
+        )
+        rows = await cursor.fetchall()
+        return [row[0] for row in rows]
+
+
+async def mark_lesson_read(user_id: int, chapter: int) -> None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            """
+            INSERT OR IGNORE INTO user_lesson_read (user_id, chapter, read_at)
+            VALUES (?, ?, ?)
+            """,
+            (user_id, chapter, datetime.utcnow().isoformat()),
+        )
+        await db.commit()
+
+
+async def get_user_read_lesson_chapters(user_id: int) -> List[int]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT chapter FROM user_lesson_read WHERE user_id = ?",
             (user_id,),
         )
         rows = await cursor.fetchall()
