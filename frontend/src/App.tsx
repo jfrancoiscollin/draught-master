@@ -556,7 +556,10 @@ export default function App() {
       <header className="bg-gray-800 border-b border-gray-700 px-4 py-3 flex-shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-amber-600 whitespace-nowrap">♟ Draught Master</h1>
+            <h1 className="text-xl font-bold text-amber-600 whitespace-nowrap flex items-center gap-2">
+              <img src="/logo.svg" alt="" className="w-7 h-7 flex-shrink-0" />
+              Draught Master
+            </h1>
             {tab !== 'home' && (
               <button
                 onClick={() => setTab('home')}
@@ -617,7 +620,7 @@ export default function App() {
                 onClick={() => handleGoToPlay(false)}
                 className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
               >
-                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">♟</span>
+                <img src="/logo.svg" alt="" className="w-16 h-16 group-hover:scale-110 transition-transform duration-200" />
                 <span className="text-lg font-bold text-white">{t('tabPlay')}</span>
                 <span className="text-sm text-gray-400 text-center">{t('playDesc')}</span>
               </button>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <!-- Checkerboard pattern, slightly rotated to match board perspective -->
+    <pattern id="ck" patternUnits="userSpaceOnUse" width="22" height="22"
+      patternTransform="rotate(-9, 100, 98)">
+      <rect width="11" height="11" fill="#ede6d0"/>
+      <rect x="11" width="11" height="11" fill="#181818"/>
+      <rect y="11" width="11" height="11" fill="#181818"/>
+      <rect x="11" y="11" width="11" height="11" fill="#ede6d0"/>
+    </pattern>
+    <clipPath id="bc">
+      <polygon points="38,80 162,60 166,118 34,138"/>
+    </clipPath>
+  </defs>
+
+  <!-- Cream background -->
+  <circle cx="100" cy="100" r="97" fill="#f5f0e8"/>
+
+  <!-- Outer black ring -->
+  <circle cx="100" cy="100" r="94" fill="none" stroke="#111" stroke-width="5"/>
+
+  <!-- Inner gold ring -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#c8a227" stroke-width="2.5"/>
+
+  <!-- Cap base: left face (darker, gives 3-D depth) -->
+  <polygon points="34,138 58,128 60,155 36,163" fill="#2e2e2e"/>
+
+  <!-- Cap base: front face -->
+  <polygon points="58,128 142,108 140,155 60,155" fill="#161616"/>
+
+  <!-- Board top: checkerboard fill with clip -->
+  <polygon points="38,80 162,60 166,118 34,138" fill="url(#ck)" clip-path="url(#bc)"/>
+
+  <!-- Board border -->
+  <polygon points="38,80 162,60 166,118 34,138"
+    fill="none" stroke="#111" stroke-width="3" stroke-linejoin="miter"/>
+
+  <!-- Center knob (outer disc) -->
+  <ellipse cx="101" cy="97" rx="9" ry="8" fill="#111"/>
+  <!-- Center knob (inner highlight, slight relief) -->
+  <ellipse cx="101" cy="95" rx="5.5" ry="4.5" fill="#2d2d2d"/>
+
+  <!-- Tassel cord: from knob to lower-right board edge, then straight down -->
+  <path d="M 109,99 Q 148,116 150,122 L 150,148"
+    fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Tassel gold band -->
+  <rect x="143" y="147" width="14" height="8" rx="2.5" fill="#c8a227"/>
+
+  <!-- Tassel strands -->
+  <line x1="144" y1="155" x2="140" y2="170" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+  <line x1="147" y1="155" x2="144" y2="172" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+  <line x1="150" y1="155" x2="150" y2="172" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+  <line x1="153" y1="155" x2="156" y2="172" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+  <line x1="156" y1="155" x2="160" y2="170" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+</svg>

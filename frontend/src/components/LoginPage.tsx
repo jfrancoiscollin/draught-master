@@ -102,7 +102,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <span className="text-5xl">♟</span>
+          <img src="/logo.svg" alt="Draught Master" className="w-20 h-20 mx-auto" />
           <h1 className="text-2xl font-bold text-amber-500 mt-2">Draught Master</h1>
           <p className="text-gray-400 text-sm mt-1">{t('appSubtitle')}</p>
         </div>
