@@ -14,20 +14,20 @@ interface ExercisePanelProps {
 
 function Stars({ count }: { count: number }) {
   return (
-    <span className="flex-shrink-0">
+    <span className="flex-shrink-0 text-xs tracking-tight">
       {Array.from({ length: 5 }, (_, i) => (
-        <span key={i} style={{ color: i < count ? '#f59e0b' : '#4b5563', fontSize: '11px' }}>★</span>
+        <span key={i} className={i < count ? 'text-amber-400' : 'text-gray-600'}>★</span>
       ))}
     </span>
   )
 }
 
-// Strip the chapter-title prefix from names like "COMBINAISONS EN 2 TEMPS – D1" → "D1"
+// Strip the chapter-title prefix: "COMBINAISONS EN 2 TEMPS – D1" → "D1"
 function shortName(name: string): string {
   const idx = name.indexOf('–')
   if (idx !== -1) return name.slice(idx + 1).trim()
-  const idx2 = name.indexOf('-')
-  if (idx2 !== -1 && idx2 > name.length / 2) return name.slice(idx2 + 1).trim()
+  const idx2 = name.lastIndexOf(' - ')
+  if (idx2 !== -1) return name.slice(idx2 + 3).trim()
   return name
 }
 
@@ -56,7 +56,6 @@ export default function ExercisePanel({
       .then(([exercises, titles]) => {
         setAllExercises(exercises)
         setLessonTitles(titles)
-        // Open first chapter by default
         const firstChapter = exercises.find(e => e.chapter)?.chapter
         if (firstChapter) setOpenChapters(new Set([firstChapter]))
       })
@@ -77,7 +76,6 @@ export default function ExercisePanel({
     }
   }, [feedback, selected, user])
 
-  // Auto-open chapter of currently active exercise
   useEffect(() => {
     if (currentExerciseId === null) return
     const ex = allExercises.find(e => e.id === currentExerciseId)
@@ -89,7 +87,6 @@ export default function ExercisePanel({
     onExerciseLoad(ex.initial_fen, ex.id)
   }
 
-  // Group exercises by chapter (preserving order)
   const chapters = React.useMemo(() => {
     const map = new Map<number, ExerciseResponse[]>()
     for (const ex of allExercises) {
@@ -117,68 +114,38 @@ export default function ExercisePanel({
         {loadError && <p className="text-red-400 text-xs py-2">Erreur : {loadError}</p>}
 
         {!loading && !loadError && (
-          <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0, maxHeight: compact ? '60vh' : '75vh' }}>
+          <div
+            className={compact ? 'max-h-[60vh]' : 'max-h-[75vh]'}
+            style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' as never }}
+          >
             {chapters.map(([ch, exercises]) => {
               const isOpen = openChapters.has(ch)
               const lessonTitle = lessonTitles[String(ch)]?.title ?? `Chapitre ${ch}`
               const firstEx = exercises[0]
-
               const solvedCount = exercises.filter(e => solvedIds.has(e.id)).length
 
               return (
-                <div key={ch} style={{ borderRadius: 8, overflow: 'hidden', marginBottom: 4 }}>
-                  {/* Chapter header row */}
-                  <div style={{ display: 'flex', alignItems: 'stretch', background: '#374151' }}>
+                <div key={ch} className="mb-1 rounded-lg overflow-hidden">
+                  {/* Chapter header */}
+                  <div className="flex items-stretch bg-gray-700">
                     <button
                       onClick={() => toggleChapter(ch)}
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '10px 12px',
-                        textAlign: 'left',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        minWidth: 0,
-                      }}
+                      className="flex-1 flex items-center gap-2 px-3 py-2.5 text-left bg-gray-700 hover:bg-gray-600 border-0 cursor-pointer"
                     >
-                      <span style={{ color: '#9ca3af', fontSize: 10, flexShrink: 0, width: 12 }}>
+                      <span className="text-gray-400 text-xs w-3 flex-shrink-0">
                         {isOpen ? '▼' : '▶'}
                       </span>
-                      <span style={{
-                        fontWeight: 700,
-                        color: '#fbbf24',
-                        fontSize: 13,
-                        flex: 1,
-                        minWidth: 0,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        lineHeight: 1.3,
-                      }}>
+                      <span className="font-bold text-amber-400 text-sm flex-1 min-w-0 truncate">
                         {lessonTitle}
                       </span>
-                      <span style={{ fontSize: 11, color: '#6b7280', flexShrink: 0, marginLeft: 4 }}>
+                      <span className="text-xs text-gray-400 flex-shrink-0 ml-1">
                         {solvedCount}/{exercises.length}
                       </span>
                     </button>
                     {onLessonOpen && (
                       <button
                         onClick={() => onLessonOpen(ch, firstEx.initial_fen)}
-                        style={{
-                          flexShrink: 0,
-                          width: 40,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: 'none',
-                          border: 'none',
-                          borderLeft: '1px solid #4b5563',
-                          cursor: 'pointer',
-                          fontSize: 16,
-                        }}
+                        className="flex-shrink-0 w-10 flex items-center justify-center bg-gray-700 hover:bg-amber-900 border-0 border-l border-gray-600 cursor-pointer text-base"
                         title={`Leçon – ${lessonTitle}`}
                       >
                         📖
@@ -186,9 +153,9 @@ export default function ExercisePanel({
                     )}
                   </div>
 
-                  {/* Exercises list */}
+                  {/* Exercise rows */}
                   {isOpen && (
-                    <div style={{ background: '#1f2937', paddingLeft: 8 }}>
+                    <div className="bg-gray-800 pl-2">
                       {exercises.map((ex, idx) => {
                         const isActive = currentExerciseId === ex.id
                         const isSolved = solvedIds.has(ex.id)
@@ -196,30 +163,20 @@ export default function ExercisePanel({
                           <button
                             key={ex.id}
                             onClick={() => handleSelect(ex)}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              width: '100%',
-                              padding: '8px 12px',
-                              textAlign: 'left',
-                              background: isActive ? '#92400e' : idx % 2 === 0 ? '#1f2937' : '#263144',
-                              border: 'none',
-                              borderLeft: isActive ? '3px solid #f59e0b' : '3px solid transparent',
-                              cursor: 'pointer',
-                              gap: 8,
-                            }}
+                            className={[
+                              'w-full flex items-center gap-2 px-3 py-2 text-left border-0 cursor-pointer',
+                              isActive
+                                ? 'bg-amber-900 border-l-2 border-amber-400'
+                                : idx % 2 === 0
+                                  ? 'bg-gray-800 hover:bg-gray-700 border-l-2 border-transparent'
+                                  : 'bg-gray-750 hover:bg-gray-700 border-l-2 border-transparent',
+                            ].join(' ')}
+                            style={idx % 2 !== 0 && !isActive ? { backgroundColor: '#263144' } : undefined}
                           >
-                            <span style={{ fontSize: 12, color: isSolved ? '#4ade80' : '#6b7280', flexShrink: 0, width: 14 }}>
-                              {isSolved ? '✓' : `${idx + 1}`}
+                            <span className={`text-xs w-5 flex-shrink-0 text-center ${isSolved ? 'text-green-400' : 'text-gray-500'}`}>
+                              {isSolved ? '✓' : idx + 1}
                             </span>
-                            <span style={{
-                              flex: 1,
-                              fontSize: 13,
-                              color: isActive ? '#fff' : '#d1d5db',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}>
+                            <span className={`flex-1 text-sm truncate ${isActive ? 'text-white' : 'text-gray-200'}`}>
                               {shortName(ex.name)}
                             </span>
                             <Stars count={ex.difficulty} />
