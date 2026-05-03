@@ -116,37 +116,61 @@ def find_boards_on_page(r_ch):
 def extract_fen(r_ch, x1, y1, x2, y2):
     """
     Extract FEN from a board region.
-    Uses tiny center-pixel sampling: dark square center is ~192 (empty),
-    ~0 (black piece), ~255 (white piece interior).
+    Center-pixel sampling: dark square bg ~192, black piece ~0, white piece ~255.
+    King detection: a king has a second disc below center — sample at cy+30%sq_h:
+      black king → still dark (<60) at that offset
+      white king → still bright (>220) at that offset
+      regular piece → background (~192)
     """
     sq_w = (x2 - x1) / 10.0
     sq_h = (y2 - y1) / 10.0
     white_sqs, black_sqs = [], []
-    # Use a tiny sample radius to stay within the piece center
+    white_king_sqs, black_king_sqs = [], []
     sample_r = max(3, int(min(sq_w, sq_h) * 0.07))
+    king_offset = int(sq_h * 0.30)  # offset to check for second disc
+
+    img_h, img_w = r_ch.shape
 
     for row in range(10):
         for col in range(10):
             if (row + col) % 2 == 0:
-                continue  # light square, skip
+                continue
             sq_num = row * 5 + col // 2 + 1
             cx = int(x1 + col * sq_w + sq_w / 2)
             cy = int(y1 + row * sq_h + sq_h / 2)
-            h, w = r_ch.shape
+
             region = r_ch[
-                max(0, cy - sample_r):min(h, cy + sample_r),
-                max(0, cx - sample_r):min(w, cx + sample_r)
+                max(0, cy - sample_r):min(img_h, cy + sample_r),
+                max(0, cx - sample_r):min(img_w, cx + sample_r)
             ]
             if region.size == 0:
                 continue
             val = region.mean()
-            if val < 50:
-                black_sqs.append(sq_num)
-            elif val > 220:
-                white_sqs.append(sq_num)
 
-    w_str = ','.join(str(s) for s in sorted(white_sqs))
-    b_str = ','.join(str(s) for s in sorted(black_sqs))
+            if val < 50:
+                # Check for king: second dark disc at cy + king_offset
+                lower_y = cy + king_offset
+                lower_val = r_ch[lower_y, cx] if 0 <= lower_y < img_h else 192
+                if lower_val < 60:
+                    black_king_sqs.append(sq_num)
+                else:
+                    black_sqs.append(sq_num)
+            elif val > 220:
+                # Check for white king: second bright disc at cy + king_offset
+                lower_y = cy + king_offset
+                lower_val = r_ch[lower_y, cx] if 0 <= lower_y < img_h else 192
+                if lower_val > 200:
+                    white_king_sqs.append(sq_num)
+                else:
+                    white_sqs.append(sq_num)
+
+    w_parts = ','.join(str(s) for s in sorted(white_sqs))
+    wk_parts = ','.join(f'K{s}' for s in sorted(white_king_sqs))
+    b_parts = ','.join(str(s) for s in sorted(black_sqs))
+    bk_parts = ','.join(f'K{s}' for s in sorted(black_king_sqs))
+
+    w_str = ','.join(filter(None, [w_parts, wk_parts]))
+    b_str = ','.join(filter(None, [b_parts, bk_parts]))
     return f"W:W{w_str}:B{b_str}"
 
 
