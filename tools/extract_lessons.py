@@ -41,6 +41,12 @@ for pg_idx, page_text in enumerate(pages):
             continue
         ch_num = int(m.group(1))
         title_raw = re.sub(r'\s+', ' ', m.group(2)).strip().rstrip('.')
+        # If the title ends with a conjunction/preposition, the next line may be a continuation
+        next_pos = m.end()
+        rest = page_text[next_pos:]
+        cont_m = re.match(r'[ \t]*\n([a-z][^\n]{0,60})\n', rest)
+        if cont_m:
+            title_raw = title_raw + ' ' + cont_m.group(1).strip()
         if ch_num not in chapter_pages:
             chapter_pages[ch_num] = (pg_idx, f"Chapitre {ch_num} : {title_raw}")
 
@@ -57,8 +63,8 @@ for i, ch_num in enumerate(chapter_nums):
     m_ex = EXERCISES_RE.search(chapter_text)
     lesson_text = chapter_text[:m_ex.start()] if m_ex else chapter_text
 
-    # Remove chapter heading line (already stored in title)
-    lesson_text = re.sub(r'^Chapitre\s+\d+[^\n]*\n?', '', lesson_text, count=1, flags=re.IGNORECASE)
+    # Remove chapter heading (one or two lines) already stored in title
+    lesson_text = re.sub(r'^Chapitre\s+\d+[^\n]*\n?(?:[a-z][^\n]*\n)?', '', lesson_text, count=1, flags=re.IGNORECASE)
 
     # Remove diagram captions (appear in lesson illustrative diagrams, image-only)
     lesson_text = re.sub(r'[ \t]*(Trait aux (?:blancs|noirs|Blancs|Noirs)|La rafle|La prise majoritaire)[ \t]*\n?', '\n', lesson_text)
