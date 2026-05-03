@@ -135,7 +135,7 @@ export default function ExercisePanel({
                       <span className="text-gray-400 text-xs w-3 flex-shrink-0">
                         {isOpen ? '▼' : '▶'}
                       </span>
-                      <span className="font-bold text-amber-400 text-sm flex-1 min-w-0 truncate">
+                      <span className="font-bold text-amber-400 text-sm flex-1 min-w-0 leading-snug">
                         {lessonTitle}
                       </span>
                       <span className="text-xs text-gray-400 flex-shrink-0 ml-1">
