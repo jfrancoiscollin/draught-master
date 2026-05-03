@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
+import Logo from './Logo'
 
 type View = 'login' | 'register' | 'forgot' | 'reset'
 
@@ -102,7 +103,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <img src="/logo.svg" alt="Draught Master" className="w-20 h-20 mx-auto" />
+          <Logo size={80} className="mx-auto" />
           <h1 className="text-2xl font-bold text-amber-500 mt-2">Draught Master</h1>
           <p className="text-gray-400 text-sm mt-1">{t('appSubtitle')}</p>
         </div>
