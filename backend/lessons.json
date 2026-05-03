@@ -4,10 +4,11 @@
     "text": "Pour comprendre comment s’articulent les combinaisons, nous allons commencer notre tour d’horizon\navec les combinaisons en 2 temps.\n1 – AU JEU DE DAMES, ON NE VOIT QUE CE QUE L’ON REGARDE\nCette phrase peut paraître simpliste et même inutile. Je dois avouer que je suis toujours surpris, après\nautant d’années de pratique du jeu, de pouvoir être encore victime de combinaisons en 2 temps. Ce\nn’est dû qu’à de l’inattention. Cela signifie qu’il est nécessaire de tout examiner, pour savoir s’il y a ou\nnon une combinaison. Il est impossible de le savoir en fixant une position statique, sans déplacer\nmentalement les pions. Il n’est pas possible de faire des impasses sans prendre le risque d’oublier une\ncombinaison.\nLes deux exemples qui suivent vont nous permettre de bien comprendre :\n\nCette position s’est présentée entre Wouter SIPMA et Alexander GEORGIEV, multiple champion du\nmonde, lors d’un match de départage en parties rapides.\nLes noirs viennent d’entrer en lunette et offrent à leur adversaire un gain direct par 32-28, forçant les\nnoirs à prendre 3 pions par (21x34), obtenant ainsi la position du troisième diagramme dans lequel les\nblancs reprennent la dame par 38x40.\n\nCe deuxième exemple est tiré d’une partie que j’ai jouée en amicale. Avec les noirs, mon dernier coup\nétait (23-28). Apparemment, les blancs semblent perdus. Pourtant, ils peuvent renverser la situation en\n2 temps, par un gambit : 16-11 (6x17) 27-22, position du second diagramme, où les noirs doivent se\nrésoudre à perdre un pion.\n\n2 – LA METHODOLOGIE POUR TROUVER\nRien ne prédestine notre esprit à trouver des combinaisons au jeu de dames. Sacrifier des pions pour\nen prendre plus, ou pour faire une dame, n’est pas inscrit dans nos gênes. Pas plus que la prise\nmajoritaire.\nIl va donc falloir habituer notre cerveau à une démarche qui n’est pas spontanée. La répétition des\nexercices conduit rapidement à des résultats probants. Il faut prendre conscience que le premier coup\nà rechercher provoque obligatoirement un contact entre deux pions. Le coup adverse correspond\nnécessairement à une prise dans laquelle le nombre de pions à prendre est primordial. Le second coup\nest une prise décisive.\nEn résumant, nous avons une mise en contact, puis une prise par le camp adverse, et enfin une prise\n(rafle).\n\nCONTACT : le premier coup des Blancs, 25-20.\nPRISE DES NOIRS : la prise majoritaire de 3 pions (26x39)\nPRISE DES BLANCS : 20x7\n3 – LES MECANISMES\nLes combinaisons sont toujours constituées d’un ou plusieurs mécanismes suivis d’une ou plusieurs\nrafles.\nDans les exemples qui suivent, on trouvera 3 mécanismes de base : LE COLLAGE, LA PRISE\nMAJORITAIRE et LE GAMBIT :\n4 – LE MODE OPERATOIRE\nLe but de ces exercices est d’habituer le cerveau à sacrifier des pions, à intégrer la prise majoritaire et\nà suivre mentalement le déplacement des pions. L’intention est également de prendre conscience que\ntout est possible, que même les coups les moins « naturels » peuvent être des solutions.\nDans cet esprit, je vous conseille de rechercher les combinaisons directement sur un support\ninformatique ou sur papier. Sans stress et sans contrainte de temps. Prenez le temps de visualiser\nmentalement les déplacements.\nJe vous recommande également, une fois la combinaison trouvée, de fixer la position de départ, de la\nmémoriser pendant quelques secondes, et ensuite de la reproduire sur un damier normal. Cet exercice\nde mémoire visuelle vous sera très utile par la suite. Vous prendrez conscience de la manière dont\nvous fixez les images, de manière globale ou par groupes de pions. L’idéal est évidemment d’avoir une\nmémoire visuelle globalisante, mais ce n’est pas donné à tout le monde. Cela n’a pas de grande\nconséquence car le cerveau trouve d’autres chemins pour reconstituer les positions. Il faut simplement\nlui donner l’occasion de le faire régulièrement. Cette démarche permet ensuite de soulager la mémoire\nde travail pendant les parties officielles.",
     "category": "combinaisons_2",
     "diagrams": [
-      "W:W1,3,4,6,9,10,11,13,14,16,19,20,21,23,24,26,28,29,30,31,33,34,36,39,40,41,43,44,46,49,50:B2,32",
-      "W:W1,2,4,5,7,10,11,12,14,15,17,20,21,22,24,25,26,27,30,31,32,34,35,36,37,39,40,41,42,44,45,47,50:B6,16,19",
-      "W:W1,2,5,7,8,10,11,12,15,16,17,18,20,21,22,25,27,28,30,31,32,35,36,37,38,40,41,42,45,47,48,50:B6,26,29,39",
-      "W:W1,3,4,6,9,11,13,14,16,19,21,23,24,26,29,31,33,34,35,36,38,39,41,43,44,45,46,48,49:B2,8,12,18"
+      "W:W5,26,27,29,31,32,36,37,38:B3,6,11,16,17,18,21,33",
+      "W:W5,26,27,28,29,31,36,37,38:B3,6,11,16,17,18,21,33",
+      "W:W5,26,31,36,37,38:B3,6,11,16,17,18,33,34",
+      "W:W16,27,30,34,35,36,37,39,44,45,49:B3,4,6,9,13,14,19,24,26,28,38",
+      "W:W22,30,34,35,36,37,39,44,45,49:B3,4,9,13,14,17,19,24,26,28,38"
     ]
   },
   "2": {
@@ -122,7 +123,9 @@
     "diagrams": [
       "W:W27,28,33,37,38,39:B",
       "W:W27,28,33,37,38,39:B8,9,16,26",
-      "W:W33,39:B8,9,18,28"
+      "W:W33,39:B8,9,18,28",
+      "W:W24,32,33,37,38,39:B8,9,13,15,22,26",
+      "W:W28,33,34,35,36,37,38,39:B8,9,11,13,15,24,26,27"
     ]
   },
   "14": {
@@ -132,7 +135,8 @@
     "diagrams": [
       "W:W28,32,33,34,35,40,45:B9,13,16,19,21,23,25",
       "W:W27,28,32,33,34,35,37,38,40,45:B9,13,15,16,18,19,21,23,24,25",
-      "W:W28,33:B21,22"
+      "W:W28,33:B21,22",
+      "W:W27,28,31,32,33,34,35,36,37,38,39,40,42,43,44,45,46,48,50:B1,2,3,4,5,6,8,9,10,12,13,14,15,16,18,19,21,23,25"
     ]
   },
   "15": {
@@ -142,7 +146,9 @@
     "diagrams": [
       "W:W28,32,33,37,38:B8,18,19",
       "W:W30,34,35,40:B10,19,20",
-      "W:W28,32,33,38,39:B9,17,18"
+      "W:W28,32,33,38,39:B9,17,18",
+      "W:W25,27,28,30,32,33,35,37,38,39:B9,13,14,15,16,19,21,23,24,26",
+      "W:W27,28,30,32,33,34,35,37,38:B8,13,14,16,18,19,21,23,24"
     ]
   },
   "16": {
@@ -150,9 +156,11 @@
     "text": "A présent, un mécanisme moins courant, mais utile à connaître car il se marie facilement avec des\ncoups de mazette, coups philippe, et même des coups de ricochet. Il s’agit du coup renversé.\n\nSa forme la plus élémentaire figure dans le diagramme ci-contre.\n\nLes blancs dament par 27-21, forçant les Noirs à prendre 2 pions par\n(26x28), avec la rafle 32x3.\n\nDans le premier diagramme, les blancs forcent le jeu en amenant un coup renversé par 25-20 (24x15)\n28-22 (8-13) 34-29 (23x34) 27-21 (26x28) 32x5.\nA noter que si les blancs attaquent directement par 1. 28-22, les noirs ont une défense par (10-14) 2.\n22x2 (16-21) 3. 27x16 (26-31) 4. 37x26 (23-29) 5. 34x23 (19x48) 6. 2x30 (14-20) 7. 25x14 (48x9)\nDans le second diagramme, les blancs utilisent le mécanisme du coup renversé pour éliminer les\npions 16 et 18, afin d’exécuter ensuite la rafle caractéristique du coup philippe, 40x16.\nSolution : 27-21 (26x28) 33x22 (18x27) 31x21 (16x27) 34-30 (25x34) 40x16\nLe troisième diagramme associe le mécanisme du coup renversé avec un coup de ricochet par 2721 (26x28) 32x23 (18x29) 33x15.\n\nLe diagramme suivant présente une autre forme de coup renversé,\nassez inattendue, sur l’autre aile du damier :\n1. 28-23 19x30 forcé\n3. 33x2\n\n2. 29-24\n\n30x28",
     "category": "combinaisons_4",
     "diagrams": [
-      "W:W27,28,32,37,38,42:B8,12,16,18,19,23,26",
+      "W:W22,27,32,37,38:B8,13,16,18,26",
+      "W:W25,27,28,32,34,35,37,38,42:B8,10,12,16,18,19,23,24,26",
       "W:W22,27,32,33,34,35,37,38,39,40,43,45:B3,11,12,13,15,16,18,19,23,24,25,26",
-      "W:W22,27,32,33,37,38,39,45:B3,11,12,13,16,18,20,26"
+      "W:W22,27,32,33,37,38,39,45:B3,11,12,13,16,18,20,26",
+      "W:W24,27,28,29,32,33,34,37,38,39,40:B3,7,12,13,15,16,17,18,19,20,25"
     ]
   },
   "17": {
@@ -174,9 +182,11 @@
     "text": "Les combinaisons sont bien souvent inattendues. Même les mécanismes les plus usuels peuvent\néchapper à notre vigilance. Ainsi, le coup de la trappe figure parmi les mécanismes assez sophistiqués.\nLe mécanisme de base est le suivant :\n\nDans la position du 1er diag. Les Blancs ont un coup de dame en 2. Le problème, c’est qu’il n’y a pas\nde pion d’appui pour exécuter la rafle 33x2. Le mécanisme du coup de la trappe permet de créer un\npion d’appui en emprisonnant un pion noir, comme le montre le second diagrame. La suite est alors\névidente.\nSolution : 44-39 (35x44) 37-31 (26x28) 33x2 (44x33), le pion noir ricoche, 38x20.\nComme on le voit, ce mécanisme permet éventuellement de cumuler 2 rafles.\n\nLes Blancs gagnent en associant le mécanisme de la trappe avec\nun coup renversé :\n1. 38-32 29x38\n3. 32x3\n\n2. 27-21\n\n26x28\n\nLes Blancs gagnent ici par un double coup de la trappe :\n1. 44-39 35x44\n3. 36-31 26x37\n5. 38x18 44x33\n\n2. 32-27\n4. 38-32\n6. 47x9\n\n22x42\n37x28\n\nComme on le voit, les rafles finales concluant les coups de la trappe,\nsont assez difficiles à prévoir.",
     "category": "combinaisons_4",
     "diagrams": [
-      "W:W27,32,33,36,37,38,42,44,48:B7,12,13,16,17,18,19,23,26",
+      "W:W27,32,33,36,37,38,40,42,44,48,50:B7,12,13,16,17,18,19,23,24,26,35",
       "W:W27,32,33,36,37,38,39,42,48,50:B7,12,13,16,17,18,19,23,24,26,44",
-      "W:W27,33,36,38,39,42,48,50:B7,12,13,16,17,18,19,23,24,28,44"
+      "W:W27,33,36,38,39,42,48,50:B7,12,13,16,17,18,19,23,24,28,44",
+      "W:W22,25,27,30,33,35,37,38,43,49:B8,11,13,14,16,18,19,24,26,29",
+      "W:W32,33,34,36,37,38,40,44,47,50:B7,12,14,16,18,22,23,24,26,35"
     ]
   },
   "19": {
@@ -186,7 +196,9 @@
     "diagrams": [
       "W:W27,30,32,33,34,35,37,40,45:B12,15,16,17,19,23,24,25,26",
       "W:W32,35,37,40,43,45:B12,15,16,19,23,24,26,34",
-      "W:W30,32,34,35,37,40,45:B12,15,16,19,23,24,25,26,39"
+      "W:W30,32,34,35,37,40,45:B12,15,16,19,23,24,25,26,39",
+      "W:W31,34,36,37,38,39,40,41,46,49:B8,9,10,17,22,23,24,25,26,27",
+      "W:W27,28,32,33,34,35,37,38,39,43:B8,11,13,14,16,19,21,23,24,26"
     ]
   },
   "20": {
@@ -194,14 +206,20 @@
     "text": "Nous avons vu précédemment les mécanismes les plus originaux et les plus compliqués.\nLe mécanisme que je vais vous présenter est beaucoup plus simple et bien mieux connu. Il s’agit du\ncoup Philippe.\nMais le coup Philippe n’est pas vraiment un mécanisme. C’est plutôt une forme de combinaison dont\nla rafle finale commence par 40x ou 38x comme le montre les deux diagrammes ci-après :\n\nLe principe de cette combinaison est très simple. D’un côté, on élimine les pions qui empêchent la rafle.\nDe l’autre côté on amène un pion noir sur la case 33 ou 34.\nL’élimination des pions :\n\nPour faire sauter le pion 18, les blancs jouent :\n1. 27-22\n\n18x27\n\n2. 32x21\n\n16x27\n\nIl ne reste plus qu’à jouer 33-29 ou 34-30 pour effectuer la rafle du\ncoup Philippe\n\nAmener un pion noir en 33 :\n\nLes blancs ont 2 manières d’amener un pion en 33 :\nA - Le coup de rappel par 34-29 (24x44) 43-39 (44x33)\nB - Le coup du tourniquet par 35-30 (24x35) 45-40 (35x33)",
     "category": "combinaisons_4",
     "diagrams": [
-      "W:W2,3,4,7,8,9,12,13,14,17,18,19,22,23,24,27,28,29,32,33,34,37,38,39,42,43,44,47,48,49:B35",
-      "W:W38,42:B12,23,33"
+      "W:W40,45:B12,23,34",
+      "W:W38,42:B12,23,33",
+      "W:W27,32,33,34,35,37,38,40,42,45:B12,13,15,16,18,19,23,24,25,26",
+      "W:W27,32,34,35,37,38,39,42,43,45:B9,12,13,15,16,19,23,24,25,26"
     ]
   },
   "21": {
     "title": "Chapitre 21 : récapitulatif",
     "text": "Avant de passer aux combinaisons en 5 temps, je vous propose de faire à nouveau un bilan de ce que\nnous avons vu.\nJe commence par rappeler une évidence. Notre cerveau, même après quelques années de pratique,\nne « voit » pas spontanément des combinaisons en 2 temps. Il est nécessaire de mettre en œuvre un\nraisonnement. Cela commence par examiner les points de contact, suivre mentalement le déplacement\ndes pions, et finalement découvrir la solution. La vitesse avec laquelle on décèle les combinaisons\ndépend de l’entrainement.\nPour les combinaisons en 3 ou 4 temps, il faut recourir à un raisonnement plus élaboré. Le\ncheminement de la pensée nous conduit à rechercher la case d’arrivée de la rafle, sa case de départ\net de répertorier les mécanismes disponibles pour acheminer les pions. A la suite de ce raisonnement,\non peut commencer à déplacer mentalement les pièces, jusqu’au dénouement.\nLe déplacement mental des pièces nécessite un effort cérébral assez intense car il sollicite la mémoire\nde travail dans ses limites. Avec l’entraînement, les exercices paraissent plus simples et moins\nfatigants.\nIdentifier les cases de départ et d’arrivée d’une rafle est primordial. En pratique, en partie, cela peut\npermettre d’affirmer qu’il n’y a pas de combinaison, tout simplement parce qu’il n’y a pas de rafle\npossible.\nLes combinaisons font toujours appel aux mêmes mécanismes de base, à savoir la prise majoritaire,\nle collage, les temps de repos, l’envoi à dame, et quelques autres plus spécifiques, comme le coup de\nrappel, le coup de talon, le coup de ricochet, par exemple.\nAvant d’entamer les séries avec des combinaisons en 5 temps, je vous conseille de bien maîtriser à la\nfois la méthode de recherche et le déroulement mental.\n\nDans cette position, on peut affirmer qu’il n’y a pas de combinaison\nsur la case 5. La seule case de départ vraisemblable est la case\n32, mais aucun pion noir ne peut être amené sur la case 28.\n\nDans cette position, un coup de dame à 5 est potentiellement\npossible en concevant la rafle 43x5.\nEn effet, le pion 26 peut être acheminé sur la case 39.\nSolution : 29-23 (18x29) 27-21 (16x27) 32x21 (26x17) 28-22\n(17x39) 43x5.",
-    "category": "combinaisons_4"
+    "category": "combinaisons_4",
+    "diagrams": [
+      "W:W27,28,32,33,35,36,37,38,39,44,45,48:B3,6,8,9,10,12,13,15,16,18,19,24",
+      "W:W27,28,29,32,33,35,36,37,38,40,43,45,48:B3,8,9,10,12,13,15,16,18,19,20,24,26"
+    ]
   },
   "22": {
     "title": "Chapitre 22 : la méthode D-P-A (DéblaiementPositionnement-Acheminement)",
@@ -221,7 +239,6 @@
       "W:W27,28,30,32,33,34,35,36,37,38,39:B3,8,9,13,16,17,18,19,23,24,26",
       "W:W28,30,32,33,34,35,36,37,38,39:B3,8,9,13,17,18,19,23,24,26,27",
       "W:W12,30,33,34,35,36,37,39:B3,8,9,13,18,19,24,26,43",
-      "W:W1,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,33,36,37,38,39,40,41,42,43,44,45,46,47,49,50:B34",
       "W:W25,27,28,32,33,35,37,38,39,43,47:B3,8,13,14,16,17,18,19,23,24,26",
       "W:W25,28,32,33,35,37,38,39,43,47:B3,8,13,14,17,18,19,23,24,26,27",
       "W:W12,25,33,35,38,39,43,47:B3,8,13,14,18,19,24,26,41"
@@ -261,8 +278,6 @@
       "W:W27,28,30,31,32,33,35,36,37,38,39,40,42,43,45,48:B3,6,8,9,11,12,13,14,15,16,18,19,21,23,24,25",
       "W:W22,28,30,31,32,33,35,36,37,38,39,40,42,43,45,48:B3,6,8,9,11,12,13,14,15,16,18,19,21,23,24,25",
       "W:W20,22,28,31,32,33,35,36,37,38,39,42,43,45,48:B3,6,8,9,11,12,13,14,15,16,18,19,21,23",
-      "W:W1,3,4,5,6,7,8,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,36,37,38,39,40,41,42,43,44,45,46,49:B",
-      "W:W1,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,48,50:B",
       "W:W26,27,30,31,32,33,35,36,38,39,40,42,43,45,48:B3,6,8,9,11,12,13,15,16,18,19,22,23,24,25",
       "W:W21,26,30,31,32,33,35,36,38,39,40,42,43,45,48:B3,6,8,9,11,12,13,15,16,18,19,22,23,24,25",
       "W:W20,21,26,31,32,33,35,36,38,39,42,43,45,48:B3,6,8,9,11,12,13,15,16,18,19,22,23"
@@ -289,8 +304,6 @@
       "W:W22,28,29,32,33,35,36,37,38,39,43,45:B3,8,9,13,15,16,18,19,20,21,24,26",
       "W:W22,23,28,32,33,35,36,37,38,39,43,45:B3,8,9,13,15,16,18,19,20,21,24,26",
       "W:W22,28,32,33,35,36,37,38,39,43,45:B3,8,9,13,15,16,19,20,21,24,26,29",
-      "W:W1,3,4,5,6,7,8,9,10,17,18,19,20,21,22,23,24,25,26,27,28,29,30,32,34,35,36,37,38,39,40,41,42,43,44,45,49:B11",
-      "W:W1,3,4,5,6,7,8,9,10,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,34,35,38,39,40,41,42,43,44,45,48,49,50:B",
       "W:W24,27,28,29,32,34,37,38,39,40,42,43,44,47,49:B2,3,8,9,10,13,15,16,18,19,20,21,23,25,26",
       "W:W24,32,34,37,38,39,40,42,43,44,47,49:B2,3,8,9,10,15,16,19,20,21,25,26,27,33",
       "W:W22,32,34,37,38,39,40,42,43,44,47,49:B2,3,8,9,10,15,16,18,20,21,25,26,30,33"
@@ -304,7 +317,6 @@
       "W:W27,34,35,40,45:B",
       "W:W:B12,18,23,25",
       "W:W27,32,33,34,35,37,38,40,45,47:B7,8,9,12,13,16,18,19,23,25",
-      "W:W1,2,3,4,5,6,7,8,9,10,14,15,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50:B",
       "W:W27,33,34,38,39,42,43,44:B",
       "W:W:B12,13,14,18,19,23,24",
       "W:W27,33,34,37,38,39,42,43,44:B11,12,13,16,18,19,20,23,24"
@@ -337,7 +349,8 @@
     "diagrams": [
       "W:W27,28,32,33,35,36,37,38,40,42,45,48:B12,13,14,15,16,17,18,19,21,23,24,25",
       "W:W32,36,37,38,40,42,45,48:B12,13,14,15,16,17,19,21,22,23,27,34",
-      "W:W36,37,38,42,45,48:B12,16,17,19,21,24,27,33"
+      "W:W36,37,38,42,45,48:B12,16,17,19,21,24,27,33",
+      "W:W27,28,30,32,33,35,36,38,40,42,43,45,48:B6,8,11,12,13,15,16,18,19,23,24,25,26"
     ]
   },
   "33": {
@@ -347,7 +360,8 @@
     "diagrams": [
       "W:W25,27,28,32,33,34,35,36,37,38,39,40,42,43,45,48:B2,3,6,8,9,12,13,14,15,16,17,18,19,23,24,26",
       "W:W25,28,33,35,36,37,38,39,42,43,45,48:B2,3,6,8,9,12,13,14,17,19,24,26,27",
-      "W:W25,28,33,35,36,38,39,43,45,48:B2,3,8,9,12,13,14,17,19,24"
+      "W:W25,28,33,35,36,38,39,43,45,48:B2,3,8,9,12,13,14,17,19,24",
+      "W:W27,28,30,32,33,34,35,36,37,38,39,42,43,48,50:B3,6,8,9,11,12,13,14,15,16,18,19,23,24,26"
     ]
   },
   "34": {
@@ -357,7 +371,8 @@
     "diagrams": [
       "W:W27,28,32,33,34,37,38,42,48,49:B13,14,16,17,18,19,21,23,24,26",
       "W:W27,38,42,44,48:B13,14,16,17,18,21,24,28,34,39",
-      "W:W42,48:B7,13,14,18,24,34,43"
+      "W:W42,48:B7,13,14,18,24,34,43",
+      "W:W23,24,27,28,29,33,34,39,42,43,49:B2,8,12,13,14,15,16,17,18,20,25"
     ]
   },
   "35": {
@@ -365,7 +380,8 @@
     "text": "On cherche toujours à tirer profit des faiblesses adverses. Le pion 35 est reconnu comme une faiblesse\npositionnelle dans bien des cas. Mais comment exploiter cette faiblesse ?\nJe vous propose ici d’examiner le schéma de la trappe en présence de ce pion 35.\nLe diagramme suivant en présente un exemple caractéristique :\n\nDans cette position, les noirs n’ont que 2 coups jouables, (4-9) et\n(24-30).\nSur (17-22) 28x17 (21x12), les blancs gagnent par 44-39, le\nfameux mécanisme de la trappe, (35x44) 37-31 (26x28) 33x22\n(44x33) 38x9.\nSur (18-23), les blancs gagnent également sur le même principe\nen jouant 44-39 (35x44) 28-22 (17x28) 33x22 (44x33) 38x29.\nAprès (14-20), les blancs ont une autre forme de combinaison,\nencore basée sur le mécanisme de la trappe, par 44-39 (35x44)\n28-22 (17x28) 32x25 (21x34) 50x8.\nSur (4-10), les blancs ont encore une combinaison par 44-39\n(35x44) 27-22 (18x27) 28-23 (19x28) 33x31 (44x33) 38x7.\nAprès l’échange (24-29) 33x24 (19x30), les blancs gagnent simplement le pion par 28-23 (18x29) 2722 (17x28) 32x25.\n\nDans le même registre, on trouve encore de nouvelles\ncombinaisons :\n1…\n\n17-22\n\nSur (23-29), les blancs gagnent par 44-39 (35x44) 28-23 (19x28)\n32x12 (21x34) 50x8 etc.\n2. 28x17\n\n21x12\n\n3. 47-42\n\n4-9\n\nSur (12-17), les blancs combinent par 44-39 (35x44) 37-31\n(26x28) 33x11 etc.\nSur (4-10), les blancs gagnent un pion par 44-39 (35x44) 37-31\n(26x28) 33x22 (44x33) 38x9 (13x4) 22x24.\nSur (14-20) 25x14 (19x10), les blancs gagnent par 44-39 (35x44) 32-28 (23x34) 50x17.",
     "category": "combinaisons_5_6",
     "diagrams": [
-      "W:W1,2,3,4,5,12,13,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,46,47,48,49,50:B15,36,37,38,39"
+      "W:W27,28,32,33,37,38,40,42,44,48,50:B4,13,14,16,17,18,19,21,24,26,35",
+      "W:W25,27,28,32,33,37,38,40,44,47,48,50:B4,13,14,16,17,18,19,21,23,24,26,35"
     ]
   },
   "36": {
@@ -375,7 +391,8 @@
     "diagrams": [
       "W:W25,27,30,32,33,34,35,36,37,38,42,48:B2,12,13,14,15,16,18,19,21,23,24,26",
       "W:W25,30,32,34,35,36,37,38,42,48:B2,12,13,14,15,16,19,21,23,26,27,33",
-      "W:W25,34,35,36,37,48:B2,10,12,15,16,20,21,26"
+      "W:W25,34,35,36,37,48:B2,10,12,15,16,20,21,26",
+      "W:W25,27,28,30,32,33,34,35,36,37,38,42,48:B6,8,12,13,14,15,16,17,18,19,23,24,26"
     ]
   },
   "37": {
@@ -400,14 +417,20 @@
   "39": {
     "title": "Chapitre 39 : combinaisons 34x3 ou 34x5",
     "text": "Les coups de dame avec rafle 34x3 ou 34x5 se présentent couramment en partie classique. Les\nmécanismes utilisés ont pour but d’éliminer le pion noir 23 et d’acheminer le pion 16 ou le pion 18 en\n29.\nEn voici quelques exemples :\n1 – Sur le thème du tourniquet\n\nLe thème est archi connu :\n1. 27-22\n\n18x27\n\n2. 38-33\n\n27x29\n\nLe pion 18 est en 29.\n3. 37-31\n\n23x32\n\nLa case 23 se libère\n4. 34x5\n\n2 – Sur le thème de la double prise\n\nLe thème suivant est également archi connu :\n1. 27-22\n\n18x27\n\n2. 32x21\n\nCela permet de dégager la case 23. Les Noirs ont à présent 2\nprises possibles :\nA – (23x41) 47x36 (16x27) 38-32 (27x29) 34x5\nB – (23x43) 39x48 (16x27) 37-32 (27x29) 34x5\n\n3 – Par un forcing\n\n1. 28-22\n\n8-13\n\n2. 32-28\n\n23x21\n\nElimine le pion 23 et livre un temps de repos qui permet\nd’acheminer le pion 18 en 29.\n3. 43-39\n5. 34x5\n\n18x27\n\n4. 38-32\n\n27x29\n\n4 – Par un envoi à dame\n\nL’acheminement du pion 18 se fait par un envoi à dame :\n1. 27-22\n3. 32x41\n5. 38x27\n7. 39x48\n\n18x27\n23x32\n21x32\n47x29\n\n2. 37-31\n4. 36-31\n6. 43-38\n8. 34x5\n\n26x37\n27x47\n32x43\n\n5 – Par un envoi à dame suivi d’une rafle avec la dame\n\nLa combinaison suivante est également sur un envoi à dame, mais\nce qui lui confère une valeur toute particulière, c’est le rebond du\npion noir 25 suivi d’rafle de 4 pions par la dame 5 :\n1. 27-22\n3. 47-41\n5. 50-45\n7. 40x20\n\n18x27\n36x47\n47x29\n25x14\n\n2. 37-31\n4. 32-28\n6. 34x5\n8. 5x26\n\n27x36\n23x43\n43x34",
-    "category": "combinaisons_5_6"
+    "category": "combinaisons_5_6",
+    "diagrams": [
+      "W:W27,28,32,34,37,38,39,40,47,48,50:B6,10,12,13,16,18,19,21,23,24,25",
+      "W:W27,28,32,33,34,37,38,39,40,47:B6,10,12,13,16,18,19,23,24,25"
+    ]
   },
   "40": {
     "title": "Chapitre 40 : combinaisons 31x22x11x2",
     "text": "Les coups de dame aboutissant sur la case 2 sont assez fréquents. Ceux dont la rafle se termine par\n31x22x11x2 méritent un traitement particulier car ils échappent bien souvent à notre vigilance.\nEn voici un premier exemple :\nNico Kocken – Jan de Jong\nExcelsior oc, 1977\n\nLes blancs ont un coup de dame par :\n30. 29-23\n32. 38-33\n34.31x2\n\n18x29\n29x38\n\n31. 33x24\n33. 37-32\n\n20x29\n38x27\n\nTon Sijbrands – Andris Andreiko\nWch, 26-10-1973\n\nCette position est extraite du match pour le titre mondial en 1973.\nLa combinaison qui suit n’est guère plus compliquée que la\nprécédente :\n35. 38-33\n37. 27-22\n39. 31x2\n\n29x38\n28x17\n\n36. 28-23\n38. 37-32\n\n19x28\n38x27\n\nCette combinaison se présente également\nsurprenante dans ce type de position :\n1. 27-21\n\nde\n\n16x27\n\nSur 26x17, suit directement 38-33.\n2. 32x21\n\n26x17\n\n3. 38-33\n\n4. 37-32\n\n38x27\n\n5. 31x2\n\n29x38\n\nmanière\n\nCe type de combinaison revêt un intérêt dans les positions\ndélicates de fin de milieu de partie classique. L’échange suivant\nest interdit :\n1….\n\n11-17\n\n2. 22x11\n\n16x7\n\nA présent, on retrouve le coup de dame par\n3. 27-21\n\n26x17\n\n4. 38-33\n\n29x27\n\n5. 31x2\n\nSur le même principe, le pionnage arrière est impossible :\n1…\n\n11-17\n\n2. 22x11\n\n16x7\n\n3. 27-21\n\n26x17\n\n4. 38-33\n\n29x27\n\n5. 37-31\n\n23x34\n\n6. 31x2\n\nTon Sijbrands) – Tjalling Goedemoed\nNLD-chT Hoofdklasse, 10-11-2001\n\nDans cette position, les noirs ont forcé le gain par :\n44… 23-29\nMenace (29-33)\n45. 42-37\n\n29-34\n\nEt les blancs ont abandonné sans attendre 30x39 (24-30) 35x24\n(19x30) 25x34 (13-18) 22x13 (14-19) 13x24 (20x49).",
     "category": "combinaisons_5_6",
     "diagrams": [
-      "W:W1,2,3,4,5,6,7,8,9,10,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,41,42,43,44,45,46,47,48,49,50:B"
+      "W:W28,29,31,33,35,36,37,38,39,40,45,47,48:B6,7,8,9,12,13,14,15,16,17,18,20,25",
+      "W:W26,27,28,31,36,37,38,39,44,45,48,49:B3,6,7,8,9,13,16,19,20,25,29,30",
+      "W:W25,27,28,31,32,36,37,38,40:B7,12,13,14,16,19,24,26,29"
     ]
   },
   "41": {

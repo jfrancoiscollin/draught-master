@@ -1,9 +1,9 @@
 """
 Extract FEN positions from lesson board diagrams in the Dubois PDF.
-For each chapter, renders the lesson page, finds board boundaries,
-and extracts piece positions using center-sampling.
+Robust version: finds horizontal borders first, then vertical borders
+that span the full board height (avoiding false positives from pieces/text).
 """
-import subprocess, json, re, sys, tempfile, glob, os
+import subprocess, json, sys, tempfile, glob, os
 from PIL import Image
 import numpy as np
 
@@ -11,7 +11,6 @@ PDF = "/home/user/Ai-draught/docs/livres/apprentissage/dubois_apprendre_combinai
 LESSONS_JSON = "/home/user/Ai-draught/backend/lessons.json"
 DPI = 300
 
-# TOC: chapter → page number (populated below)
 CHAPTER_PAGES = {
     1:4,2:8,3:11,4:14,5:17,6:20,7:23,8:26,9:29,10:32,
     11:36,12:39,13:42,14:45,15:48,16:51,17:54,18:57,19:60,20:63,
@@ -21,7 +20,6 @@ CHAPTER_PAGES = {
 
 
 def render_page(page_num):
-    """Render a PDF page at DPI and return numpy array (R channel only)."""
     with tempfile.TemporaryDirectory() as tmpdir:
         prefix = os.path.join(tmpdir, "pg")
         subprocess.run(
@@ -33,43 +31,16 @@ def render_page(page_num):
         if not files:
             return None
         arr = np.array(Image.open(files[0]))
-        return arr[:, :, 0].astype(np.float32)  # R channel (R=G, B=0 in this PDF)
+        # Use R channel (which equals G in this PDF; B may vary slightly)
+        return arr[:, :, 0].astype(np.float32)
 
 
-def find_board_vertical_borders(r_ch, y_start=400, y_end=None, min_run=200):
-    """Find x-positions of vertical board borders (long dark vertical runs)."""
+def find_h_border_groups(r_ch, min_run=200):
+    """Find groups of rows that are horizontal board borders."""
     h, w = r_ch.shape
-    if y_end is None:
-        y_end = h
     borders = []
-    for x in range(10, w-10, 3):
-        col = r_ch[y_start:y_end, x]
-        # Find longest dark run
-        max_run = cur = 0
-        for v in col:
-            if v < 25:
-                cur += 1
-                max_run = max(max_run, cur)
-            else:
-                cur = 0
-        if max_run >= min_run:
-            borders.append(x)
-    # Deduplicate: keep one representative per cluster
-    result = []
-    for x in borders:
-        if not result or x - result[-1] > 10:
-            result.append(x)
-    return result
-
-
-def find_board_horizontal_borders(r_ch, x_start=50, x_end=None, min_run=150):
-    """Find y-positions of horizontal board borders (long dark horizontal runs)."""
-    h, w = r_ch.shape
-    if x_end is None:
-        x_end = w
-    borders = []
-    for y in range(100, h-10):
-        row = r_ch[y, x_start:x_end]
+    for y in range(100, h - 10):
+        row = r_ch[y, 50:]
         max_run = cur = 0
         for v in row:
             if v < 25:
@@ -79,29 +50,93 @@ def find_board_horizontal_borders(r_ch, x_start=50, x_end=None, min_run=150):
                 cur = 0
         if max_run >= min_run:
             borders.append(y)
-    # Deduplicate
+    groups = []
+    if borders:
+        cur = [borders[0]]
+        for y in borders[1:]:
+            if y - cur[-1] <= 8:
+                cur.append(y)
+            else:
+                groups.append(cur)
+                cur = [y]
+        groups.append(cur)
+    return [(g[0], g[-1]) for g in groups]
+
+
+def find_v_borders_in_band(r_ch, y1, y2, min_span_ratio=0.82):
+    """Find x positions of vertical borders that span most of the y1-y2 band."""
+    w = r_ch.shape[1]
+    min_run = int((y2 - y1) * min_span_ratio)
+    borders = []
+    for x in range(10, w - 10, 2):
+        col = r_ch[y1:y2, x]
+        max_run = cur = 0
+        for v in col:
+            if v < 25:
+                cur += 1
+                max_run = max(max_run, cur)
+            else:
+                cur = 0
+        if max_run >= min_run:
+            borders.append(x)
+    # Deduplicate: one per cluster
     result = []
-    for y in borders:
-        if not result or y - result[-1] > 5:
-            result.append(y)
+    for x in borders:
+        if not result or x - result[-1] > 10:
+            result.append(x)
     return result
 
 
+def find_boards_on_page(r_ch):
+    """Return list of (x1, y1, x2, y2) for boards on the page, sorted top→left."""
+    h_groups = find_h_border_groups(r_ch)
+
+    boards = []
+    # Pair consecutive horizontal border groups as top/bottom of a board row
+    for i in range(len(h_groups) - 1):
+        by1 = h_groups[i][1] + 2    # just below top border
+        by2 = h_groups[i + 1][0] - 2  # just above bottom border
+        board_h = by2 - by1
+        if not (350 < board_h < 1000):
+            continue
+
+        v_borders = find_v_borders_in_band(r_ch, by1, by2)
+        # Pair consecutive vertical borders as left/right of a board
+        for j in range(len(v_borders) - 1):
+            bx1 = v_borders[j] + 2
+            bx2 = v_borders[j + 1] - 2
+            board_w = bx2 - bx1
+            if 350 < board_w < 900:
+                boards.append((bx1, by1, bx2, by2))
+
+    boards.sort(key=lambda b: (b[1], b[0]))
+    return boards
+
+
 def extract_fen(r_ch, x1, y1, x2, y2):
-    """Extract FEN from a board region using center-pixel sampling."""
+    """
+    Extract FEN from a board region.
+    Uses tiny center-pixel sampling: dark square center is ~192 (empty),
+    ~0 (black piece), ~255 (white piece interior).
+    """
     sq_w = (x2 - x1) / 10.0
     sq_h = (y2 - y1) / 10.0
     white_sqs, black_sqs = [], []
-    sample_r = max(3, int(min(sq_w, sq_h) * 0.06))  # tiny center sample
+    # Use a tiny sample radius to stay within the piece center
+    sample_r = max(3, int(min(sq_w, sq_h) * 0.07))
 
     for row in range(10):
         for col in range(10):
             if (row + col) % 2 == 0:
-                continue  # light square
+                continue  # light square, skip
             sq_num = row * 5 + col // 2 + 1
             cx = int(x1 + col * sq_w + sq_w / 2)
             cy = int(y1 + row * sq_h + sq_h / 2)
-            region = r_ch[max(0,cy-sample_r):cy+sample_r, max(0,cx-sample_r):cx+sample_r]
+            h, w = r_ch.shape
+            region = r_ch[
+                max(0, cy - sample_r):min(h, cy + sample_r),
+                max(0, cx - sample_r):min(w, cx + sample_r)
+            ]
             if region.size == 0:
                 continue
             val = region.mean()
@@ -115,82 +150,7 @@ def extract_fen(r_ch, x1, y1, x2, y2):
     return f"W:W{w_str}:B{b_str}"
 
 
-def find_boards_on_page(r_ch):
-    """Return list of (x1, y1, x2, y2) for each board on the page."""
-    h, w = r_ch.shape
-
-    # Find vertical borders across the whole page
-    v_borders = find_board_vertical_borders(r_ch, y_start=300, min_run=250)
-    h_borders = find_board_horizontal_borders(r_ch, min_run=200)
-
-    if len(v_borders) < 2 or len(h_borders) < 2:
-        return []
-
-    # Pair consecutive vertical borders as board left/right
-    # Filter: board width should be 500-900px
-    board_xs = []
-    for i in range(len(v_borders) - 1):
-        x1, x2 = v_borders[i], v_borders[i+1]
-        if 400 < (x2 - x1) < 1000:
-            board_xs.append((x1, x2))
-
-    # Find matching horizontal borders for each board column
-    # A board's top/bottom borders span the board's x range
-    boards = []
-    # Use the first and last horizontal borders that span at least 2/3 of a board width
-    # For simplicity: find the topmost and bottommost horizontal borders
-    # that span at least 300px in dark pixels
-    board_y_pairs = []
-    # Find rows with very long dark runs (spans multiple boards)
-    long_h = [y for y in h_borders
-               if (r_ch[y, 50:w-50] < 25).sum() > w * 0.3]
-
-    if len(long_h) >= 2:
-        # Multiple possible top/bottom pairs - group by proximity
-        # Typically boards have their top and bottom borders
-        groups = []
-        cur = [long_h[0]]
-        for y in long_h[1:]:
-            if y - cur[-1] < 20:
-                cur.append(y)
-            else:
-                groups.append(cur)
-                cur = [y]
-        groups.append(cur)
-
-        # Each group is either a single top border or bottom border
-        # Pair them: min distance between groups should be ~500-800px (board height)
-        for i in range(len(groups) - 1):
-            y1 = groups[i][-1]  # bottom of top border group
-            y2 = groups[i+1][0]  # top of bottom border group
-            if 400 < (y2 - y1) < 900:
-                board_y_pairs.append((y1 + 2, y2 - 2))
-    elif long_h:
-        # Only one horizontal border found - not enough info
-        pass
-
-    if not board_y_pairs and h_borders:
-        # Fallback: use first and last horizontal borders
-        y1, y2 = h_borders[0] + 2, h_borders[-1] - 2
-        if y2 - y1 > 400:
-            board_y_pairs = [(y1, y2)]
-
-    for bx1, bx2 in board_xs:
-        for by1, by2 in board_y_pairs:
-            # Verify: center of this region should have some gray pixels
-            mid_x = (bx1 + bx2) // 2
-            mid_y = (by1 + by2) // 2
-            sample = r_ch[mid_y-20:mid_y+20, mid_x-20:mid_x+20]
-            gray_count = ((sample > 100) & (sample < 230)).sum()
-            if gray_count > 50:  # has some gray (dark squares)
-                boards.append((bx1+2, by1+2, bx2-2, by2-2))
-
-    # Sort left to right (then top to bottom)
-    boards.sort(key=lambda b: (b[1], b[0]))
-    return boards
-
-
-def process_chapter(chapter):
+def process_chapter(chapter, verbose=False):
     page = CHAPTER_PAGES.get(chapter)
     if page is None:
         return []
@@ -199,6 +159,9 @@ def process_chapter(chapter):
         return []
     boards = find_boards_on_page(r_ch)
     fens = [extract_fen(r_ch, *b) for b in boards]
+    if verbose:
+        for i, (b, fen) in enumerate(zip(boards, fens)):
+            print(f"  Board {i+1} bounds={b}: {fen}")
     return fens
 
 
@@ -207,26 +170,31 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         chapters_to_process = [int(a) for a in sys.argv[1:]]
 
+    verbose = len(chapters_to_process) <= 5
+
     with open(LESSONS_JSON) as f:
         lessons = json.load(f)
 
     results = {}
     for ch in chapters_to_process:
-        fens = process_chapter(ch)
+        fens = process_chapter(ch, verbose=verbose)
         ch_str = str(ch)
         results[ch_str] = fens
         status = "OK" if fens else "NO BOARDS"
         print(f"Ch {ch:2d} (page {CHAPTER_PAGES.get(ch,'?')}): {len(fens)} boards → {status}")
-        if fens:
-            for i, fen in enumerate(fens[:3]):
+        if verbose and fens:
+            for i, fen in enumerate(fens[:5]):
                 print(f"  Diag {i+1}: {fen}")
 
-    # Update lessons.json with diagram FENs
+    # Update lessons.json
     for ch_str, fens in results.items():
-        if ch_str in lessons and fens:
-            lessons[ch_str]['diagrams'] = fens
+        if ch_str in lessons:
+            if fens:
+                lessons[ch_str]['diagrams'] = fens
+            else:
+                lessons[ch_str].pop('diagrams', None)
 
     with open(LESSONS_JSON, 'w', encoding='utf-8') as f:
         json.dump(lessons, f, ensure_ascii=False, indent=2)
 
-    print("\nlessons.json updated with diagram FENs.")
+    print("\nlessons.json updated.")
