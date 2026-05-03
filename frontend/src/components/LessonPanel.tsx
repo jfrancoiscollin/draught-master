@@ -101,7 +101,7 @@ function LessonText({
 }
 
 export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPanelProps) {
-  const [lesson, setLesson] = useState<{ title: string; text: string } | null>(null)
+  const [lesson, setLesson] = useState<{ title: string; text: string; diagrams?: string[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [exercises, setExercises] = useState<ExerciseResponse[]>([])
@@ -118,7 +118,7 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
       getExercises(),
     ])
       .then(([lessonData, allExercises]) => {
-        setLesson(lessonData)
+        setLesson(lessonData as typeof lesson)
         const chExercises = allExercises.filter(e => e.chapter === chapter)
         setExercises(chExercises)
       })
@@ -126,7 +126,13 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
       .finally(() => setLoading(false))
   }, [chapter])
 
-  const activeFen = exercises[activeDiagram]?.initial_fen ?? exampleFen
+  // Prefer lesson-specific diagrams extracted from PDF; fall back to exercise FENs
+  const lessonDiagrams = lesson?.diagrams ?? []
+  const diagrams: Array<{ label: string; fen: string }> = lessonDiagrams.length > 0
+    ? lessonDiagrams.map((fen, i) => ({ label: `Diag. ${i + 1}`, fen }))
+    : exercises.map((ex, i) => ({ label: `D${i + 1}`, fen: ex.initial_fen }))
+
+  const activeFen = diagrams[activeDiagram]?.fen ?? exampleFen
   const board = fenToBoard(activeFen)
   const flipped = activeFen.startsWith('B:')
 
@@ -136,11 +142,11 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
 
   const handleDiagramClick = useCallback((n: number) => {
     const idx = n - 1
-    if (idx >= 0 && idx < exercises.length) {
+    if (idx >= 0 && idx < diagrams.length) {
       setActiveDiagram(idx)
       setHighlighted([])
     }
-  }, [exercises])
+  }, [diagrams])
 
   const noOp = useCallback((_: MoveData) => {}, [])
   const noOpSq = useCallback((_: number | null) => {}, [])
@@ -176,14 +182,13 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
         </div>
 
         {/* Diagram selector buttons */}
-        {exercises.length > 0 && (
+        {diagrams.length > 0 && (
           <div className="flex items-center gap-1 mt-2 px-2 flex-wrap justify-center">
-            {exercises.map((ex, idx) => {
-              const label = `D${idx + 1}`
+            {diagrams.map((d, idx) => {
               const isActive = activeDiagram === idx
               return (
                 <button
-                  key={ex.id}
+                  key={idx}
                   onClick={() => { setActiveDiagram(idx); setHighlighted([]) }}
                   className={`px-2 py-0.5 text-xs rounded border cursor-pointer ${
                     isActive
@@ -191,7 +196,7 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
                       : 'bg-gray-800 border-gray-600 text-gray-400 hover:text-gray-200'
                   }`}
                 >
-                  {label}
+                  {d.label}
                 </button>
               )
             })}
