@@ -98,54 +98,51 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
         </h2>
       </div>
 
-      {/* Body */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
+      {/* Board — fixed below header, never scrolls */}
+      <div className="flex-shrink-0 flex flex-col items-center py-3 bg-gray-900 border-b border-gray-700">
+        <div style={{ width: '100%', maxWidth: 240 }}>
+          <Board
+            board={board}
+            legalMoves={[]}
+            onMove={noOp}
+            selectedSquare={null}
+            onSelectSquare={noOpSq}
+            disabled={true}
+            highlightSquares={highlighted}
+            flipped={flipped}
+          />
+        </div>
+        <div className="flex items-center gap-4 mt-1">
+          {highlighted.length > 0 && (
+            <button
+              onClick={() => setHighlighted([])}
+              className="text-xs text-gray-500 hover:text-gray-300 underline"
+            >
+              Effacer sélection
+            </button>
+          )}
+          <p className="text-xs text-gray-600">
+            Clique sur un numéro → surligne la case
+          </p>
+        </div>
+      </div>
+
+      {/* Lesson text — scrollable */}
+      <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4">
         {loading && (
           <div className="flex justify-center py-12">
             <div className="spinner" style={{ width: 28, height: 28 }} />
           </div>
         )}
         {error && (
-          <p className="text-red-400 text-sm px-4 py-6 text-center">{error}</p>
+          <p className="text-red-400 text-sm py-6 text-center">{error}</p>
         )}
         {lesson && !loading && (
-          <div className="lg:flex lg:flex-row-reverse lg:gap-4 lg:px-4 lg:py-4">
-            {/* Mini board — top-right on desktop, top on mobile */}
-            <div className="flex-shrink-0 flex flex-col items-center px-4 pt-4 pb-2 lg:px-0 lg:pt-0">
-              <div style={{ width: '100%', maxWidth: 220 }}>
-                <Board
-                  board={board}
-                  legalMoves={[]}
-                  onMove={noOp}
-                  selectedSquare={null}
-                  onSelectSquare={noOpSq}
-                  disabled={true}
-                  highlightSquares={highlighted}
-                  flipped={flipped}
-                />
-              </div>
-              {highlighted.length > 0 && (
-                <button
-                  onClick={() => setHighlighted([])}
-                  className="mt-2 text-xs text-gray-500 hover:text-gray-300 underline"
-                >
-                  Effacer sélection
-                </button>
-              )}
-              <p className="mt-1 text-xs text-gray-600 text-center">
-                Clique sur un numéro dans le texte pour surligner la case
-              </p>
-            </div>
-
-            {/* Lesson text */}
-            <div className="flex-1 min-w-0 px-4 pb-6 lg:px-0">
-              <LessonText
-                text={lesson.text}
-                onSquareClick={handleSquareClick}
-                highlighted={highlighted}
-              />
-            </div>
-          </div>
+          <LessonText
+            text={lesson.text}
+            onSquareClick={handleSquareClick}
+            highlighted={highlighted}
+          />
         )}
       </div>
     </div>
