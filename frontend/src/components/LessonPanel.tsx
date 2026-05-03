@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import Board from './Board'
-import { getLesson } from '../api/client'
+import { getLesson, getExercises } from '../api/client'
 import { fenToBoard } from '../utils/fen'
-import type { MoveData } from '../types'
+import type { MoveData, ExerciseResponse } from '../types'
 
 interface LessonPanelProps {
   chapter: number
@@ -10,30 +10,55 @@ interface LessonPanelProps {
   onClose: () => void
 }
 
-// Wrap square numbers (1-50) appearing as standalone tokens in lesson text
-// into clickable spans. Avoids matching numbers inside longer numbers.
+type Token =
+  | { kind: 'text'; value: string }
+  | { kind: 'square'; sq: number; value: string }
+  | { kind: 'diag'; n: number; value: string }
+
+function tokenize(text: string): Token[] {
+  const tokens: Token[] = []
+  // Match (diag. N), diag. N, or standalone square numbers 1-50
+  const re = /\(diag\.\s*(\d+)\)|diag\.\s*(\d+)|\b([1-4]?\d|50)\b/g
+  let last = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) tokens.push({ kind: 'text', value: text.slice(last, m.index) })
+    if (m[1] !== undefined) {
+      tokens.push({ kind: 'diag', n: parseInt(m[1]), value: m[0] })
+    } else if (m[2] !== undefined) {
+      tokens.push({ kind: 'diag', n: parseInt(m[2]), value: m[0] })
+    } else {
+      const sq = parseInt(m[3])
+      if (sq >= 1 && sq <= 50) tokens.push({ kind: 'square', sq, value: m[0] })
+      else tokens.push({ kind: 'text', value: m[0] })
+    }
+    last = m.index + m[0].length
+  }
+  if (last < text.length) tokens.push({ kind: 'text', value: text.slice(last) })
+  return tokens
+}
+
 function LessonText({
   text,
   onSquareClick,
+  onDiagramClick,
   highlighted,
 }: {
   text: string
   onSquareClick: (sq: number) => void
+  onDiagramClick: (n: number) => void
   highlighted: number[]
 }) {
-  // Split text into tokens: square numbers vs everything else
-  const parts = text.split(/\b([1-4]?\d|50)\b/)
-
+  const tokens = tokenize(text)
   return (
-    <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7, fontSize: '0.92rem' }}>
-      {parts.map((part, i) => {
-        const n = Number(part)
-        if (i % 2 === 1 && n >= 1 && n <= 50) {
-          const isHl = highlighted.includes(n)
+    <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.75, fontSize: '0.92rem' }}>
+      {tokens.map((tok, i) => {
+        if (tok.kind === 'square') {
+          const isHl = highlighted.includes(tok.sq)
           return (
             <span
               key={i}
-              onClick={() => onSquareClick(n)}
+              onClick={() => onSquareClick(tok.sq)}
               style={{
                 cursor: 'pointer',
                 fontWeight: 700,
@@ -43,13 +68,33 @@ function LessonText({
                 padding: '0 1px',
                 textDecoration: 'underline dotted',
               }}
-              title={`Case ${n}`}
+              title={`Case ${tok.sq}`}
             >
-              {part}
+              {tok.value}
             </span>
           )
         }
-        return <span key={i}>{part}</span>
+        if (tok.kind === 'diag') {
+          return (
+            <span
+              key={i}
+              onClick={() => onDiagramClick(tok.n)}
+              style={{
+                cursor: 'pointer',
+                fontWeight: 700,
+                color: '#67e8f9',
+                background: 'rgba(103,232,249,0.12)',
+                borderRadius: 4,
+                padding: '0 3px',
+                textDecoration: 'underline dotted',
+              }}
+              title={`Voir diagramme ${tok.n}`}
+            >
+              {tok.value}
+            </span>
+          )
+        }
+        return <span key={i}>{tok.value}</span>
       })}
     </div>
   )
@@ -59,26 +104,43 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
   const [lesson, setLesson] = useState<{ title: string; text: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [exercises, setExercises] = useState<ExerciseResponse[]>([])
+  const [activeDiagram, setActiveDiagram] = useState(0)
   const [highlighted, setHighlighted] = useState<number[]>([])
 
   useEffect(() => {
     setLoading(true)
     setError(null)
     setHighlighted([])
-    getLesson(chapter)
-      .then(setLesson)
+    setActiveDiagram(0)
+    Promise.all([
+      getLesson(chapter),
+      getExercises(),
+    ])
+      .then(([lessonData, allExercises]) => {
+        setLesson(lessonData)
+        const chExercises = allExercises.filter(e => e.chapter === chapter)
+        setExercises(chExercises)
+      })
       .catch(() => setError('Leçon introuvable'))
       .finally(() => setLoading(false))
   }, [chapter])
 
-  const board = fenToBoard(exampleFen)
-  const flipped = exampleFen.startsWith('B:')
+  const activeFen = exercises[activeDiagram]?.initial_fen ?? exampleFen
+  const board = fenToBoard(activeFen)
+  const flipped = activeFen.startsWith('B:')
 
   const handleSquareClick = useCallback((sq: number) => {
-    setHighlighted(prev =>
-      prev.includes(sq) ? prev.filter(s => s !== sq) : [...prev, sq]
-    )
+    setHighlighted(prev => prev.includes(sq) ? prev.filter(s => s !== sq) : [...prev, sq])
   }, [])
+
+  const handleDiagramClick = useCallback((n: number) => {
+    const idx = n - 1
+    if (idx >= 0 && idx < exercises.length) {
+      setActiveDiagram(idx)
+      setHighlighted([])
+    }
+  }, [exercises])
 
   const noOp = useCallback((_: MoveData) => {}, [])
   const noOpSq = useCallback((_: number | null) => {}, [])
@@ -98,7 +160,7 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
         </h2>
       </div>
 
-      {/* Board — fixed below header, never scrolls */}
+      {/* Board — fixed below header */}
       <div className="flex-shrink-0 flex flex-col items-center py-3 bg-gray-900 border-b border-gray-700">
         <div style={{ width: '100%', maxWidth: 240 }}>
           <Board
@@ -112,7 +174,31 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
             flipped={flipped}
           />
         </div>
-        <div className="flex items-center gap-4 mt-1">
+
+        {/* Diagram selector buttons */}
+        {exercises.length > 0 && (
+          <div className="flex items-center gap-1 mt-2 px-2 flex-wrap justify-center">
+            {exercises.map((ex, idx) => {
+              const label = `D${idx + 1}`
+              const isActive = activeDiagram === idx
+              return (
+                <button
+                  key={ex.id}
+                  onClick={() => { setActiveDiagram(idx); setHighlighted([]) }}
+                  className={`px-2 py-0.5 text-xs rounded border cursor-pointer ${
+                    isActive
+                      ? 'bg-cyan-700 border-cyan-500 text-white font-bold'
+                      : 'bg-gray-800 border-gray-600 text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        <div className="flex items-center gap-4 mt-1.5">
           {highlighted.length > 0 && (
             <button
               onClick={() => setHighlighted([])}
@@ -122,7 +208,7 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
             </button>
           )}
           <p className="text-xs text-gray-600">
-            Clique sur un numéro → surligne la case
+            Clique sur un numéro → case · <span className="text-cyan-600">diag.</span> → damier
           </p>
         </div>
       </div>
@@ -134,13 +220,12 @@ export default function LessonPanel({ chapter, exampleFen, onClose }: LessonPane
             <div className="spinner" style={{ width: 28, height: 28 }} />
           </div>
         )}
-        {error && (
-          <p className="text-red-400 text-sm py-6 text-center">{error}</p>
-        )}
+        {error && <p className="text-red-400 text-sm py-6 text-center">{error}</p>}
         {lesson && !loading && (
           <LessonText
             text={lesson.text}
             onSquareClick={handleSquareClick}
+            onDiagramClick={handleDiagramClick}
             highlighted={highlighted}
           />
         )}
