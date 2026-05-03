@@ -698,6 +698,38 @@ async def auth_me_progress(current_user: Dict[str, Any] = Depends(_require_auth)
     return {"solved_exercise_ids": solved_ids}
 
 
+@app.post("/api/position/legal-moves")
+async def position_legal_moves(body: Dict[str, Any]) -> Dict[str, Any]:
+    fen = body.get("fen", "")
+    try:
+        state = fen_to_board(fen)
+    except Exception:
+        raise HTTPException(status_code=400, detail="FEN invalide")
+    moves = get_legal_moves(state)
+    return {"moves": [{"path": m.path, "captures": m.captures} for m in moves]}
+
+
+@app.post("/api/position/apply-move")
+async def position_apply_move(body: Dict[str, Any]) -> Dict[str, Any]:
+    fen = body.get("fen", "")
+    path = body.get("path", [])
+    try:
+        state = fen_to_board(fen)
+    except Exception:
+        raise HTTPException(status_code=400, detail="FEN invalide")
+    legal = get_legal_moves(state)
+    move = next((m for m in legal if m.path == path), None)
+    if move is None:
+        raise HTTPException(status_code=400, detail="Coup illégal")
+    new_state = apply_move(state, move)
+    result = game_result(new_state)
+    next_legal = get_legal_moves(new_state) if result is None else []
+    return {
+        "fen": board_to_fen(new_state),
+        "moves": [{"path": m.path, "captures": m.captures} for m in next_legal],
+    }
+
+
 @app.get("/api/auth/me/lessons/read")
 async def get_read_lessons(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
     chapters = await get_user_read_lesson_chapters(current_user["id"])

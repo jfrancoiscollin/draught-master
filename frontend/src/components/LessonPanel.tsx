@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import Board from './Board'
-import { getLesson, getExercises, markLessonRead } from '../api/client'
+import { getLesson, getExercises, markLessonRead, getPositionLegalMoves, applyPositionMove } from '../api/client'
 import { fenToBoard } from '../utils/fen'
 import { useAuth } from '../contexts/AuthContext'
 import type { MoveData, ExerciseResponse } from '../types'
@@ -20,7 +20,6 @@ type Token =
 
 function tokenize(text: string): Token[] {
   const tokens: Token[] = []
-  // Match (diag. N), diag. N, or standalone square numbers 1-50
   const re = /\(diag\.\s*(\d+)\)|diag\.\s*(\d+)|\b([1-4]?\d|50)\b/g
   let last = 0
   let m: RegExpExecArray | null
@@ -114,6 +113,13 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
   const [isRead, setIsRead] = useState(isReadProp ?? false)
   const [marking, setMarking] = useState(false)
 
+  // Interactive board state
+  const [currentFen, setCurrentFen] = useState<string>('')
+  const [legalMoves, setLegalMoves] = useState<MoveData[]>([])
+  const [selectedSquare, setSelectedSquare] = useState<number | null>(null)
+  const [isDirty, setIsDirty] = useState(false) // position changed from initial
+  const loadingMovesRef = useRef(false)
+
   useEffect(() => {
     setIsRead(isReadProp ?? false)
   }, [isReadProp, chapter])
@@ -123,10 +129,7 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
     setError(null)
     setHighlighted([])
     setActiveDiagram(0)
-    Promise.all([
-      getLesson(chapter),
-      getExercises(),
-    ])
+    Promise.all([getLesson(chapter), getExercises()])
       .then(([lessonData, allExercises]) => {
         setLesson(lessonData as typeof lesson)
         const chExercises = allExercises.filter(e => e.chapter === chapter)
@@ -136,15 +139,57 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
       .finally(() => setLoading(false))
   }, [chapter])
 
-  // Prefer lesson-specific diagrams extracted from PDF; fall back to exercise FENs
   const lessonDiagrams = lesson?.diagrams ?? []
   const diagrams: Array<{ label: string; fen: string }> = lessonDiagrams.length > 0
     ? lessonDiagrams.map((fen, i) => ({ label: `Diag. ${i + 1}`, fen }))
     : exercises.map((ex, i) => ({ label: `D${i + 1}`, fen: ex.initial_fen }))
 
-  const activeFen = diagrams[activeDiagram]?.fen ?? exampleFen
-  const board = fenToBoard(activeFen)
-  const flipped = activeFen.startsWith('B:')
+  const initialFen = diagrams[activeDiagram]?.fen ?? exampleFen
+
+  // Load legal moves whenever currentFen changes
+  const loadLegalMoves = useCallback(async (fen: string) => {
+    if (!fen || loadingMovesRef.current) return
+    loadingMovesRef.current = true
+    try {
+      const moves = await getPositionLegalMoves(fen)
+      setLegalMoves(moves)
+    } catch {
+      setLegalMoves([])
+    } finally {
+      loadingMovesRef.current = false
+    }
+  }, [])
+
+  // Reset board to initial diagram FEN
+  const resetToInitial = useCallback((fen: string) => {
+    setCurrentFen(fen)
+    setSelectedSquare(null)
+    setIsDirty(false)
+    loadLegalMoves(fen)
+  }, [loadLegalMoves])
+
+  // When active diagram changes, reset board
+  useEffect(() => {
+    const fen = diagrams[activeDiagram]?.fen ?? exampleFen
+    resetToInitial(fen)
+    setHighlighted([])
+  }, [activeDiagram, diagrams.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const board = fenToBoard(currentFen || initialFen)
+  const flipped = (currentFen || initialFen).startsWith('B:')
+
+  const handleMove = useCallback(async (move: MoveData) => {
+    setSelectedSquare(null)
+    try {
+      const result = await applyPositionMove(currentFen, move.path)
+      setCurrentFen(result.fen)
+      setLegalMoves(result.moves)
+      setIsDirty(true)
+    } catch {
+      // Reload legal moves on error
+      loadLegalMoves(currentFen)
+    }
+  }, [currentFen, loadLegalMoves])
 
   const handleSquareClick = useCallback((sq: number) => {
     setHighlighted(prev => prev.includes(sq) ? prev.filter(s => s !== sq) : [...prev, sq])
@@ -157,9 +202,6 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
       setHighlighted([])
     }
   }, [diagrams])
-
-  const noOp = useCallback((_: MoveData) => {}, [])
-  const noOpSq = useCallback((_: number | null) => {}, [])
 
   const handleMarkRead = useCallback(async () => {
     if (!user || isRead || marking) return
@@ -193,17 +235,17 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
         <div style={{ width: '100%', maxWidth: 240 }}>
           <Board
             board={board}
-            legalMoves={[]}
-            onMove={noOp}
-            selectedSquare={null}
-            onSelectSquare={noOpSq}
-            disabled={true}
+            legalMoves={legalMoves}
+            onMove={handleMove}
+            selectedSquare={selectedSquare}
+            onSelectSquare={setSelectedSquare}
+            disabled={false}
             highlightSquares={highlighted}
             flipped={flipped}
           />
         </div>
 
-        {/* Diagram selector buttons */}
+        {/* Diagram selector buttons + reset */}
         {diagrams.length > 0 && (
           <div className="flex items-center gap-1 mt-2 px-2 flex-wrap justify-center">
             {diagrams.map((d, idx) => {
@@ -225,18 +267,28 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
           </div>
         )}
 
-        <div className="flex items-center gap-4 mt-1.5">
+        <div className="flex items-center gap-3 mt-1.5 flex-wrap justify-center">
+          {isDirty && (
+            <button
+              onClick={() => resetToInitial(initialFen)}
+              className="text-xs text-amber-500 hover:text-amber-300 underline cursor-pointer"
+            >
+              ↺ Réinitialiser
+            </button>
+          )}
           {highlighted.length > 0 && (
             <button
               onClick={() => setHighlighted([])}
-              className="text-xs text-gray-500 hover:text-gray-300 underline"
+              className="text-xs text-gray-500 hover:text-gray-300 underline cursor-pointer"
             >
               Effacer sélection
             </button>
           )}
-          <p className="text-xs text-gray-600">
-            Clique sur un numéro → case · <span className="text-cyan-600">diag.</span> → damier
-          </p>
+          {!isDirty && highlighted.length === 0 && (
+            <p className="text-xs text-gray-600">
+              Déplace les pions · <span className="text-cyan-600">diag.</span> → damier
+            </p>
+          )}
         </div>
       </div>
 

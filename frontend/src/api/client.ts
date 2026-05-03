@@ -160,3 +160,13 @@ export async function getReadLessons(): Promise<number[]> {
 export async function markLessonRead(chapter: number): Promise<void> {
   await api.post(`/auth/me/lessons/${chapter}/read`)
 }
+
+export async function getPositionLegalMoves(fen: string): Promise<MoveData[]> {
+  const res = await api.post<{ moves: MoveData[] }>('/position/legal-moves', { fen })
+  return res.data.moves
+}
+
+export async function applyPositionMove(fen: string, path: number[]): Promise<{ fen: string; moves: MoveData[] }> {
+  const res = await api.post<{ fen: string; moves: MoveData[] }>('/position/apply-move', { fen, path })
+  return res.data
+}
