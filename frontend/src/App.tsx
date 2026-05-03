@@ -556,7 +556,7 @@ export default function App() {
       <header className="bg-gray-800 border-b border-gray-700 px-4 py-3 flex-shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-amber-600 whitespace-nowrap">♟ AI-Draught</h1>
+            <h1 className="text-xl font-bold text-amber-600 whitespace-nowrap">♟ Draught Master</h1>
             {tab !== 'home' && (
               <button
                 onClick={() => setTab('home')}

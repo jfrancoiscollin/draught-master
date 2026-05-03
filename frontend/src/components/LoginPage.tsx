@@ -103,7 +103,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <span className="text-5xl">♟</span>
-          <h1 className="text-2xl font-bold text-amber-500 mt-2">AI-Draught</h1>
+          <h1 className="text-2xl font-bold text-amber-500 mt-2">Draught Master</h1>
           <p className="text-gray-400 text-sm mt-1">{t('appSubtitle')}</p>
         </div>
 
