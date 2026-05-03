@@ -116,20 +116,21 @@ def find_boards_on_page(r_ch):
 def extract_fen(r_ch, x1, y1, x2, y2):
     """
     Extract FEN from a board region.
-    Center-pixel sampling: dark square bg ~192, black piece ~0, white piece ~255.
-    King detection: a king has a second disc below center — sample at cy+30%sq_h:
-      black king → still dark (<60) at that offset
-      white king → still bright (>220) at that offset
-      regular piece → background (~192)
+    Two-pass approach:
+    Pass 1 — detect pieces by center sampling (black <50, white >220, bg ~192).
+    Pass 2 — detect kings: a king has a second disc below center.
+              Skip king check when a piece is present in the square directly below
+              (the dark/bright pixel below could come from that neighbour, not a second disc).
     """
     sq_w = (x2 - x1) / 10.0
     sq_h = (y2 - y1) / 10.0
-    white_sqs, black_sqs = [], []
-    white_king_sqs, black_king_sqs = [], []
     sample_r = max(3, int(min(sq_w, sq_h) * 0.07))
-    king_offset = int(sq_h * 0.30)  # offset to check for second disc
-
+    king_offset = int(sq_h * 0.30)
     img_h, img_w = r_ch.shape
+
+    # Pass 1: classify each dark square as empty / white / black
+    piece_color = {}  # sq_num → 'W' | 'B' | None
+    sq_centers = {}   # sq_num → (cx, cy)
 
     for row in range(10):
         for col in range(10):
@@ -138,27 +139,60 @@ def extract_fen(r_ch, x1, y1, x2, y2):
             sq_num = row * 5 + col // 2 + 1
             cx = int(x1 + col * sq_w + sq_w / 2)
             cy = int(y1 + row * sq_h + sq_h / 2)
+            sq_centers[sq_num] = (cx, cy)
 
             region = r_ch[
                 max(0, cy - sample_r):min(img_h, cy + sample_r),
                 max(0, cx - sample_r):min(img_w, cx + sample_r)
             ]
             if region.size == 0:
+                piece_color[sq_num] = None
                 continue
             val = region.mean()
-
             if val < 50:
-                # Check for king: second dark disc at cy + king_offset
-                lower_y = cy + king_offset
-                lower_val = r_ch[lower_y, cx] if 0 <= lower_y < img_h else 192
+                piece_color[sq_num] = 'B'
+            elif val > 220:
+                piece_color[sq_num] = 'W'
+            else:
+                piece_color[sq_num] = None
+
+    # Pass 2: king detection — only when no piece in the square directly below
+    white_sqs, black_sqs = [], []
+    white_king_sqs, black_king_sqs = [], []
+
+    for row in range(10):
+        for col in range(10):
+            if (row + col) % 2 == 0:
+                continue
+            sq_num = row * 5 + col // 2 + 1
+            color = piece_color.get(sq_num)
+            if color is None:
+                continue
+
+            cx, cy = sq_centers[sq_num]
+
+            # Find the square directly below (row + 1, same col)
+            sq_below = (row + 1) * 5 + col // 2 + 1 if row < 9 else None
+            piece_below = piece_color.get(sq_below) if sq_below else None
+
+            if piece_below is not None:
+                # Neighbour below exists — can't safely infer second disc
+                if color == 'W':
+                    white_sqs.append(sq_num)
+                else:
+                    black_sqs.append(sq_num)
+                continue
+
+            # Safe to attempt king detection
+            lower_y = cy + king_offset
+            lower_val = r_ch[lower_y, cx] if 0 <= lower_y < img_h else 192
+
+            if color == 'B':
                 if lower_val < 60:
                     black_king_sqs.append(sq_num)
                 else:
                     black_sqs.append(sq_num)
-            elif val > 220:
-                # Check for white king: second bright disc at cy + king_offset
-                lower_y = cy + king_offset
-                lower_val = r_ch[lower_y, cx] if 0 <= lower_y < img_h else 192
+            else:
                 if lower_val > 200:
                     white_king_sqs.append(sq_num)
                 else:
