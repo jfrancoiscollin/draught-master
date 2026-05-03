@@ -1,4 +1,5 @@
 import React from 'react'
+import logoSrc from '../assets/logo.png'
 
 interface LogoProps {
   size?: number
@@ -7,80 +8,13 @@ interface LogoProps {
 
 export default function Logo({ size = 32, className = '' }: LogoProps) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 200 200"
+    <img
+      src={logoSrc}
+      alt="Draught Master"
       width={size}
       height={size}
       className={className}
-      aria-hidden="true"
-    >
-      <circle cx="100" cy="100" r="97" fill="#f5f0e8"/>
-      <circle cx="100" cy="100" r="94" fill="none" stroke="#111111" strokeWidth="5"/>
-      <circle cx="100" cy="100" r="85" fill="none" stroke="#c8a227" strokeWidth="2.5"/>
-      <polygon points="34,138 58,128 60,155 36,163" fill="#2e2e2e"/>
-      <polygon points="58,128 142,108 140,155 60,155" fill="#161616"/>
-      <polygon points="38,80 162,60 166,118 34,138" fill="#ede6d0"/>
-      <polygon points="50.4,78.0 62.8,76.0 62.4,81.8 50.0,83.8" fill="#181818"/>
-      <polygon points="75.2,74.0 87.6,72.0 87.2,77.8 74.8,79.8" fill="#181818"/>
-      <polygon points="100.0,70.0 112.4,68.0 112.0,73.8 99.6,75.8" fill="#181818"/>
-      <polygon points="124.8,66.0 137.2,64.0 136.8,69.8 124.4,71.8" fill="#181818"/>
-      <polygon points="149.6,62.0 162.0,60.0 161.6,65.8 149.2,67.8" fill="#181818"/>
-      <polygon points="37.6,85.8 50.0,83.8 49.6,89.6 37.2,91.6" fill="#181818"/>
-      <polygon points="62.4,81.8 74.8,79.8 74.4,85.6 62.0,87.6" fill="#181818"/>
-      <polygon points="87.2,77.8 99.6,75.8 99.2,81.6 86.8,83.6" fill="#181818"/>
-      <polygon points="112.0,73.8 124.4,71.8 124.0,77.6 111.6,79.6" fill="#181818"/>
-      <polygon points="136.8,69.8 149.2,67.8 148.8,73.6 136.4,75.6" fill="#181818"/>
-      <polygon points="49.6,89.6 62.0,87.6 61.6,93.4 49.2,95.4" fill="#181818"/>
-      <polygon points="74.4,85.6 86.8,83.6 86.4,89.4 74.0,91.4" fill="#181818"/>
-      <polygon points="99.2,81.6 111.6,79.6 111.2,85.4 98.8,87.4" fill="#181818"/>
-      <polygon points="124.0,77.6 136.4,75.6 136.0,81.4 123.6,83.4" fill="#181818"/>
-      <polygon points="148.8,73.6 161.2,71.6 160.8,77.4 148.4,79.4" fill="#181818"/>
-      <polygon points="36.8,97.4 49.2,95.4 48.8,101.2 36.4,103.2" fill="#181818"/>
-      <polygon points="61.6,93.4 74.0,91.4 73.6,97.2 61.2,99.2" fill="#181818"/>
-      <polygon points="86.4,89.4 98.8,87.4 98.4,93.2 86.0,95.2" fill="#181818"/>
-      <polygon points="111.2,85.4 123.6,83.4 123.2,89.2 110.8,91.2" fill="#181818"/>
-      <polygon points="136.0,81.4 148.4,79.4 148.0,85.2 135.6,87.2" fill="#181818"/>
-      <polygon points="48.8,101.2 61.2,99.2 60.8,105.0 48.4,107.0" fill="#181818"/>
-      <polygon points="73.6,97.2 86.0,95.2 85.6,101.0 73.2,103.0" fill="#181818"/>
-      <polygon points="98.4,93.2 110.8,91.2 110.4,97.0 98.0,99.0" fill="#181818"/>
-      <polygon points="123.2,89.2 135.6,87.2 135.2,93.0 122.8,95.0" fill="#181818"/>
-      <polygon points="148.0,85.2 160.4,83.2 160.0,89.0 147.6,91.0" fill="#181818"/>
-      <polygon points="36.0,109.0 48.4,107.0 48.0,112.8 35.6,114.8" fill="#181818"/>
-      <polygon points="60.8,105.0 73.2,103.0 72.8,108.8 60.4,110.8" fill="#181818"/>
-      <polygon points="85.6,101.0 98.0,99.0 97.6,104.8 85.2,106.8" fill="#181818"/>
-      <polygon points="110.4,97.0 122.8,95.0 122.4,100.8 110.0,102.8" fill="#181818"/>
-      <polygon points="135.2,93.0 147.6,91.0 147.2,96.8 134.8,98.8" fill="#181818"/>
-      <polygon points="48.0,112.8 60.4,110.8 60.0,116.6 47.6,118.6" fill="#181818"/>
-      <polygon points="72.8,108.8 85.2,106.8 84.8,112.6 72.4,114.6" fill="#181818"/>
-      <polygon points="97.6,104.8 110.0,102.8 109.6,108.6 97.2,110.6" fill="#181818"/>
-      <polygon points="122.4,100.8 134.8,98.8 134.4,104.6 122.0,106.6" fill="#181818"/>
-      <polygon points="147.2,96.8 159.6,94.8 159.2,100.6 146.8,102.6" fill="#181818"/>
-      <polygon points="35.2,120.6 47.6,118.6 47.2,124.4 34.8,126.4" fill="#181818"/>
-      <polygon points="60.0,116.6 72.4,114.6 72.0,120.4 59.6,122.4" fill="#181818"/>
-      <polygon points="84.8,112.6 97.2,110.6 96.8,116.4 84.4,118.4" fill="#181818"/>
-      <polygon points="109.6,108.6 122.0,106.6 121.6,112.4 109.2,114.4" fill="#181818"/>
-      <polygon points="134.4,104.6 146.8,102.6 146.4,108.4 134.0,110.4" fill="#181818"/>
-      <polygon points="47.2,124.4 59.6,122.4 59.2,128.2 46.8,130.2" fill="#181818"/>
-      <polygon points="72.0,120.4 84.4,118.4 84.0,124.2 71.6,126.2" fill="#181818"/>
-      <polygon points="96.8,116.4 109.2,114.4 108.8,120.2 96.4,122.2" fill="#181818"/>
-      <polygon points="121.6,112.4 134.0,110.4 133.6,116.2 121.2,118.2" fill="#181818"/>
-      <polygon points="146.4,108.4 158.8,106.4 158.4,112.2 146.0,114.2" fill="#181818"/>
-      <polygon points="34.4,132.2 46.8,130.2 46.4,136.0 34.0,138.0" fill="#181818"/>
-      <polygon points="59.2,128.2 71.6,126.2 71.2,132.0 58.8,134.0" fill="#181818"/>
-      <polygon points="84.0,124.2 96.4,122.2 96.0,128.0 83.6,130.0" fill="#181818"/>
-      <polygon points="108.8,120.2 121.2,118.2 120.8,124.0 108.4,126.0" fill="#181818"/>
-      <polygon points="133.6,116.2 146.0,114.2 145.6,120.0 133.2,122.0" fill="#181818"/>
-      <polygon points="38,80 162,60 166,118 34,138" fill="none" stroke="#111111" strokeWidth="3" strokeLinejoin="miter"/>
-      <ellipse cx="101" cy="97" rx="9" ry="8" fill="#111111"/>
-      <ellipse cx="101" cy="95" rx="5.5" ry="4.5" fill="#2d2d2d"/>
-      <path d="M 109,99 Q 148,116 150,122 L 150,148" fill="none" stroke="#111111" strokeWidth="2.5" strokeLinecap="round"/>
-      <rect x="143" y="147" width="14" height="8" rx="2.5" fill="#c8a227"/>
-      <line x1="144" y1="155" x2="140" y2="170" stroke="#111111" strokeWidth="2" strokeLinecap="round"/>
-      <line x1="147" y1="155" x2="144" y2="172" stroke="#111111" strokeWidth="2" strokeLinecap="round"/>
-      <line x1="150" y1="155" x2="150" y2="172" stroke="#111111" strokeWidth="2" strokeLinecap="round"/>
-      <line x1="153" y1="155" x2="156" y2="172" stroke="#111111" strokeWidth="2" strokeLinecap="round"/>
-      <line x1="156" y1="155" x2="160" y2="170" stroke="#111111" strokeWidth="2" strokeLinecap="round"/>
-    </svg>
+      style={{ objectFit: 'contain' }}
+    />
   )
 }
