@@ -176,7 +176,8 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
   }, [activeDiagram, diagrams.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const board = fenToBoard(currentFen || initialFen)
-  const flipped = (currentFen || initialFen).startsWith('B:')
+  // Fix orientation based on the initial diagram FEN — never flip mid-exploration
+  const flipped = initialFen.startsWith('B:')
 
   const handleMove = useCallback(async (move: MoveData) => {
     setSelectedSquare(null)
