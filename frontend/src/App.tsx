@@ -624,7 +624,7 @@ export default function App() {
                 onClick={() => setTab('exercise-library')}
                 className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
               >
-                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">✏️</span>
+                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">📖</span>
                 <span className="text-lg font-bold text-white">{t('tabExercises')}</span>
                 <span className="text-sm text-gray-400 text-center">{t('exercisesDesc')}</span>
               </button>
