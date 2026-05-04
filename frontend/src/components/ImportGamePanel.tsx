@@ -177,7 +177,6 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdn,text/plain"
             className="hidden"
             onChange={handleFileChange}
           />
