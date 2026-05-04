@@ -170,3 +170,39 @@ export async function applyPositionMove(fen: string, path: number[]): Promise<{ 
   const res = await api.post<{ fen: string; moves: MoveData[] }>('/position/apply-move', { fen, path })
   return res.data
 }
+
+export interface PdnPosition {
+  fen: string
+  notation: string | null
+  move_number: number
+  color: string | null
+}
+
+export interface PdnImportResult {
+  positions: PdnPosition[]
+  metadata: Record<string, string>
+  total_moves: number
+}
+
+export async function importPdn(pdn: string): Promise<PdnImportResult> {
+  const res = await api.post<PdnImportResult>('/pdn/import', { pdn })
+  return res.data
+}
+
+export async function analyzePositionFen(
+  fen: string,
+  question?: string,
+  language: string = 'fr',
+): Promise<AnalysisResponse> {
+  const res = await api.post<AnalysisResponse>(
+    '/position/analyze',
+    { fen, question: question || null, language },
+    { timeout: 90000 },
+  )
+  return res.data
+}
+
+export async function getPositionBestMove(fen: string, depth: number = 6): Promise<string | null> {
+  const res = await api.post<{ move: string | null }>('/position/best-move', { fen, depth })
+  return res.data.move
+}

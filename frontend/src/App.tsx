@@ -7,7 +7,7 @@ import MoveList from './components/MoveList'
 import ExercisePanel from './components/ExercisePanel'
 import ExerciseLibraryPage from './components/ExerciseLibraryPage'
 import LessonPanel from './components/LessonPanel'
-import GameHistory from './components/GameHistory'
+import ImportGamePanel from './components/ImportGamePanel'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
 import Logo from './components/Logo'
@@ -110,7 +110,7 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'exercise-library' | 'exercises' | 'history'
+type Tab = 'home' | 'play' | 'exercise-library' | 'exercises' | 'import-game'
 
 export default function App() {
   const { t, language } = useLanguage()
@@ -645,14 +645,14 @@ export default function App() {
                 <span className="text-lg font-bold text-white">{t('tabExercises')}</span>
                 <span className="text-sm text-gray-400 text-center">{t('exercisesDesc')}</span>
               </button>
-              {/* History */}
+              {/* Import & Analyze */}
               <button
-                onClick={() => setTab('history')}
+                onClick={() => setTab('import-game')}
                 className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
               >
-                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">📋</span>
-                <span className="text-lg font-bold text-white">{t('tabHistory')}</span>
-                <span className="text-sm text-gray-400 text-center">{t('historyDesc')}</span>
+                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">📂</span>
+                <span className="text-lg font-bold text-white">{t('tabImport')}</span>
+                <span className="text-sm text-gray-400 text-center">{t('importDesc')}</span>
               </button>
             </div>
           </div>
@@ -1052,45 +1052,10 @@ export default function App() {
           </div>
         )}
 
-        {/* HISTORY TAB */}
-        {tab === 'history' && (
-          <div className="h-full flex flex-col lg:h-auto lg:flex-row lg:gap-6 lg:max-w-7xl lg:mx-auto lg:px-4 lg:py-4">
-            <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2 lg:px-0 lg:pt-0">
-              {replayBoard ? (
-                <>
-                  <Board
-                    board={replayBoard}
-                    legalMoves={[]}
-                    onMove={() => {}}
-                    selectedSquare={null}
-                    onSelectSquare={() => {}}
-                    disabled={true}
-                  />
-                  {replayDetail && (
-                    <div className="mt-2 flex items-center gap-3 w-full">
-                      <button onClick={() => replayStep(-1)} disabled={replayFenIndex === 0} className="btn-secondary text-sm flex-1">
-                        {t('previous')}
-                      </button>
-                      <span className="text-gray-400 text-sm whitespace-nowrap">
-                        {replayFenIndex + 1} / {replayDetail.fen_positions.length}
-                      </span>
-                      <button onClick={() => replayStep(1)} disabled={replayFenIndex >= replayDetail.fen_positions.length - 1} className="btn-secondary text-sm flex-1">
-                        {t('next')}
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="w-full aspect-square max-w-sm flex items-center justify-center bg-gray-800 rounded-lg border border-dashed border-gray-700">
-                  <p className="text-gray-600 text-sm text-center px-4">{t('selectGame')}</p>
-                </div>
-              )}
-            </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain pb-4 min-w-0">
-              <div className="px-2 py-3 lg:px-0">
-                <GameHistory onReplay={handleReplay} />
-              </div>
-            </div>
+        {/* IMPORT & ANALYZE TAB */}
+        {tab === 'import-game' && (
+          <div className="h-full">
+            <ImportGamePanel onClose={() => setTab('home')} />
           </div>
         )}
       </main>

@@ -792,6 +792,88 @@ async def debug_db_stats() -> Dict[str, Any]:
     return {"total": total, "by_category": cats}
 
 
+@app.post("/api/pdn/import")
+async def import_pdn_game(body: Dict[str, Any]) -> Dict[str, Any]:
+    import re as _re
+    pdn_text = body.get("pdn", "").strip()
+    if not pdn_text:
+        raise HTTPException(status_code=400, detail="PDN vide")
+
+    # Extract metadata from [Tag "value"] headers
+    metadata: Dict[str, str] = {}
+    for m in _re.finditer(r'\[(\w+)\s+"([^"]*)"\]', pdn_text):
+        metadata[m.group(1).lower()] = m.group(2)
+
+    # Strip headers, curly-brace comments, semicolon comments
+    moves_text = _re.sub(r'\[.*?\]', '', pdn_text, flags=_re.DOTALL)
+    moves_text = _re.sub(r'\{[^}]*\}', '', moves_text)
+    moves_text = _re.sub(r';[^\n]*', '', moves_text)
+
+    # Collect move tokens (skip "1." / "12..." numbering and result strings)
+    result_tokens = {'1-0', '0-1', '1/2-1/2', '*', '2-0', '0-2', '1-1'}
+    move_tokens: List[str] = []
+    for tok in moves_text.split():
+        if _re.match(r'^\d+\.+$', tok):
+            continue
+        if tok in result_tokens:
+            continue
+        if _re.match(r'^\d+[-x]\d', tok):
+            move_tokens.append(tok)
+
+    if not move_tokens:
+        raise HTTPException(status_code=400, detail="Aucun coup trouvé dans le PDN")
+
+    # Replay from initial position, collecting a FEN snapshot after each move
+    state = initial_state()
+    positions = [{"fen": board_to_fen(state), "notation": None, "move_number": 0, "color": None}]
+
+    for i, pdn_move in enumerate(move_tokens):
+        legal = get_legal_moves(state)
+        move = _find_move_by_pdn(pdn_move, legal)
+        if move is None:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Coup illisible ou illégal : '{pdn_move}' (coup n°{i + 1})"
+            )
+        state = apply_move(state, move)
+        positions.append({
+            "fen": board_to_fen(state),
+            "notation": move_to_pdn(move),
+            "move_number": i // 2 + 1,
+            "color": "white" if i % 2 == 0 else "black",
+        })
+
+    return {"positions": positions, "metadata": metadata, "total_moves": len(move_tokens)}
+
+
+@app.post("/api/position/analyze")
+async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
+    fen = body.get("fen", "")
+    question = body.get("question") or None
+    language = body.get("language", "fr")
+    try:
+        state = fen_to_board(fen)
+    except Exception:
+        raise HTTPException(status_code=400, detail="FEN invalide")
+    result = await analyze_position(state, [], question, language)
+    return AnalysisResponse(**result)
+
+
+@app.post("/api/position/best-move")
+async def position_best_move(body: Dict[str, Any]) -> Dict[str, Any]:
+    fen = body.get("fen", "")
+    depth = int(body.get("depth", 6))
+    try:
+        state = fen_to_board(fen)
+    except Exception:
+        raise HTTPException(status_code=400, detail="FEN invalide")
+    loop = asyncio.get_event_loop()
+    move = await loop.run_in_executor(None, lambda: get_scan_move(state, depth))
+    if move is None:
+        return {"move": None}
+    return {"move": move_to_pdn(move)}
+
+
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 
 if os.path.isdir(_STATIC_DIR):
