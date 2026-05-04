@@ -12,6 +12,7 @@ import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
 import Logo from './components/Logo'
 import logoBothSrc from './assets/logo-both.png'
+import logoPlaySrc from './assets/logo-play.png'
 import BottomSheet from './components/BottomSheet'
 import LoginPage from './components/LoginPage'
 import { useAuth } from './contexts/AuthContext'
@@ -622,7 +623,7 @@ export default function App() {
                 onClick={() => handleGoToPlay(false)}
                 className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
               >
-                <Logo size={64} className="group-hover:scale-110 transition-transform duration-200" />
+                <img src={logoPlaySrc} alt="" className="w-16 h-16 group-hover:scale-110 transition-transform duration-200" style={{ objectFit: 'contain' }} />
                 <span className="text-lg font-bold text-white">{t('tabPlay')}</span>
                 <span className="text-sm text-gray-400 text-center">{t('playDesc')}</span>
               </button>
