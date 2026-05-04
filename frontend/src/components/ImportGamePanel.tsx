@@ -116,6 +116,32 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
     }
   }, [currentFen, language])
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    setPdn(text)
+    setImportError(null)
+    // Auto-import after reading the file
+    setImporting(true)
+    try {
+      const data = await importPdn(text)
+      setResult(data)
+      setCurrentIdx(0)
+      setCurrentFen(data.positions[0].fen)
+      loadLegalMoves(data.positions[0].fen)
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      setImportError(detail ?? 'Erreur lors de l\'import')
+    } finally {
+      setImporting(false)
+      // Reset input so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   const handleBestMove = useCallback(async (): Promise<string[] | null> => {
     setAiThinking(true)
     try {
@@ -142,28 +168,38 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
           <h2 className="font-bold text-amber-500 text-base">Importer une partie</h2>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-          <p className="text-gray-400 text-sm">
-            Collez une partie au format PDN (lidraughts, etc.) ci-dessous.
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
+          <p className="text-gray-400 text-sm text-center">
+            Sélectionnez un fichier <span className="text-amber-400 font-mono">.pdn</span> exporté depuis lidraughts ou un autre logiciel.
           </p>
-          <textarea
-            value={pdn}
-            onChange={e => setPdn(e.target.value)}
-            placeholder={'[Event "Casual game"]\n[White "Joueur1"]\n[Black "Joueur2"]\n[Result "1-0"]\n\n1. 32-28 17-21 2. 28-22 21-26 3. ...'}
-            className="w-full h-52 bg-gray-800 text-gray-100 text-xs font-mono rounded-lg border border-gray-600 p-3 focus:border-amber-500 focus:outline-none resize-none"
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdn,text/plain"
+            className="hidden"
+            onChange={handleFileChange}
           />
+
+          {/* Drop zone / pick button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="w-full flex flex-col items-center gap-3 border-2 border-dashed border-gray-600 hover:border-amber-500 rounded-xl py-12 px-4 transition-colors disabled:opacity-40 cursor-pointer"
+          >
+            <span className="text-5xl">📂</span>
+            <span className="text-white font-semibold text-sm">
+              {importing ? 'Chargement…' : 'Choisir un fichier .pdn'}
+            </span>
+            <span className="text-gray-500 text-xs">lidraughts · DraughtsBoard · etc.</span>
+          </button>
+
           {importError && (
             <p className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded px-3 py-2">
               {importError}
             </p>
           )}
-          <button
-            onClick={handleImport}
-            disabled={!pdn.trim() || importing}
-            className="w-full bg-amber-700 hover:bg-amber-600 disabled:opacity-40 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm cursor-pointer"
-          >
-            {importing ? 'Chargement…' : 'Importer et analyser →'}
-          </button>
         </div>
       </div>
     )
