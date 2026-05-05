@@ -275,41 +275,47 @@ export default function App() {
             aiMoveData = matchHubMove(hubMove, playerResp.legal_moves)
           }
 
-          if (aiMoveData) {
-            const aiResp = await makeMove(gameState.game_id, aiMoveData, aiDepth, true)
+          const applyAiResp = (resp: typeof playerResp, aiMove: MoveData) => {
             playMoveSound()
             setGameState({
-              game_id: aiResp.game_id,
-              board: aiResp.board,
-              turn: aiResp.turn,
-              half_move_clock: aiResp.half_move_clock,
-              move_count: aiResp.move_count,
-              result: aiResp.result,
-              fen: aiResp.fen,
-              last_move: aiMoveData,
-              legal_moves: aiResp.legal_moves ?? [],
+              game_id: resp.game_id,
+              board: resp.board,
+              turn: resp.turn,
+              half_move_clock: resp.half_move_clock,
+              move_count: resp.move_count,
+              result: resp.result,
+              fen: resp.fen,
+              last_move: aiMove,
+              legal_moves: resp.legal_moves ?? [],
             })
-            setMoveHistory(prev => [...prev, aiMoveData!])
+            setMoveHistory(prev => [...prev, aiMove])
+          }
+
+          if (aiMoveData) {
+            // WASM gave a valid move — apply it
+            const aiResp = await makeMove(gameState.game_id, aiMoveData, aiDepth, true)
+            applyAiResp(aiResp, aiMoveData)
           } else {
-            // WASM unavailable or failed — fall back to server AI
-            const fallbackResp = await makeMove(gameState.game_id, move, aiDepth, false)
-            if (fallbackResp.ai_move) playMoveSound()
-            setGameState({
-              game_id: fallbackResp.game_id,
-              board: fallbackResp.board,
-              turn: fallbackResp.turn,
-              half_move_clock: fallbackResp.half_move_clock,
-              move_count: fallbackResp.move_count,
-              result: fallbackResp.result,
-              fen: fallbackResp.fen,
-              last_move: fallbackResp.ai_move || fallbackResp.player_move,
-              legal_moves: fallbackResp.legal_moves ?? [],
-            })
-            setMoveHistory(prev => {
-              const updated = [...prev, fallbackResp.player_move]
-              if (fallbackResp.ai_move) updated.push(fallbackResp.ai_move)
-              return updated
-            })
+            // WASM not ready yet — ask server Scan to compute AI move only
+            // (player's move is already committed, so we only need the AI's response)
+            const serverAiMove = await getAiMove(gameState.game_id, aiDepth)
+            if (serverAiMove) {
+              const aiResp = await makeMove(gameState.game_id, serverAiMove, aiDepth, true)
+              applyAiResp(aiResp, serverAiMove)
+            } else {
+              // No AI move (game ended or error) — show current state
+              setGameState({
+                game_id: playerResp.game_id,
+                board: playerResp.board,
+                turn: playerResp.turn,
+                half_move_clock: playerResp.half_move_clock,
+                move_count: playerResp.move_count,
+                result: playerResp.result,
+                fen: playerResp.fen,
+                last_move: playerResp.player_move,
+                legal_moves: playerResp.legal_moves ?? [],
+              })
+            }
           }
         }
       }
