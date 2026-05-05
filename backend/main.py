@@ -30,7 +30,7 @@ from game_engine import (
 )
 from ai_engine import get_best_move
 from scan_engine import get_scan_move
-from claude_advisor import analyze_position, suggest_exercises, analyze_full_game, explain_best_move_concise
+from claude_advisor import analyze_position, suggest_exercises, analyze_full_game, analyze_full_game_pdn, explain_best_move_concise
 from database import (
     init_db, save_game, get_games, get_game,
     get_exercises, get_exercise, record_progress,
@@ -851,18 +851,23 @@ async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
     fen = body.get("fen", "")
     question = body.get("question") or None
     language = body.get("language", "fr")
+    mode = body.get("mode", "position")
+    pdn_history: List[str] = body.get("move_history") or []
     try:
         state = fen_to_board(fen)
     except Exception:
         raise HTTPException(status_code=400, detail="FEN invalide")
-    if language == 'en':
-        context_note = ("Note: this position comes from an imported PDN game. "
-                        "The FEN is correct and valid. ")
+    if mode == "full_game":
+        result = await analyze_full_game_pdn(state, pdn_history, language)
     else:
-        context_note = ("Note : cette position est extraite d'une partie importée au format PDN. "
-                        "Le FEN est correct et la position est valide. ")
-    effective_question = context_note + (question or "")
-    result = await analyze_position(state, [], effective_question, language)
+        if language == 'en':
+            context_note = ("Note: this position comes from an imported PDN game. "
+                            "The FEN is correct and valid. ")
+        else:
+            context_note = ("Note : cette position est extraite d'une partie importée au format PDN. "
+                            "Le FEN est correct et la position est valide. ")
+        effective_question = context_note + (question or "")
+        result = await analyze_position(state, [], effective_question, language)
     return AnalysisResponse(**result)
 
 

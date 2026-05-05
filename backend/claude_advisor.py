@@ -270,6 +270,82 @@ Analyse complète de la partie :
     }
 
 
+def format_pdn_history(pdn_moves: list[str]) -> str:
+    if not pdn_moves:
+        return "Aucun coup joué."
+    parts = []
+    for i, move in enumerate(pdn_moves):
+        move_num = i // 2 + 1
+        if i % 2 == 0:
+            parts.append(f"{move_num}. {move}")
+        else:
+            parts[-1] += f" {move}"
+    return ' '.join(parts)
+
+
+async def analyze_full_game_pdn(
+    state: GameState,
+    pdn_history: list[str],
+    language: str = 'fr',
+) -> dict:
+    client = _get_client()
+    history_repr = format_pdn_history(pdn_history)
+    board_repr = format_board_for_claude(state)
+    wm, wk, bm, bk = _piece_counts(state)
+    current_score = evaluate(state)
+    lang_instruction = "Respond in English. No markdown." if language == 'en' \
+        else "Réponds en français. Pas de markdown."
+
+    if language == 'en':
+        prompt = f"""Analyse this entire international draughts game from start to finish.
+
+Full game ({len(pdn_history)} moves):
+{history_repr}
+
+Final position:
+{board_repr}
+Material — White: {wm} men, {wk} kings | Black: {bm} men, {bk} kings
+Engine evaluation: {current_score:+.0f}
+
+Provide a complete game analysis:
+1. Opening phase: which moves were strong or weak? What strategy did each side adopt?
+2. Middlegame: identify the key strong and weak moves. Were there important tactical or strategic errors?
+3. Conclusion: what are the strengths and weaknesses of each side's strategy? Which side played better and why?
+
+{lang_instruction}"""
+    else:
+        prompt = f"""Analyse l'ensemble de cette partie de jeu de dames international depuis le début.
+
+Historique complet ({len(pdn_history)} coups) :
+{history_repr}
+
+Position finale (ou position actuelle si la partie n'est pas terminée) :
+{board_repr}
+Matériel — Blancs : {wm} pions, {wk} dames | Noirs : {bm} pions, {bk} dames
+Évaluation moteur : {current_score:+.0f}
+
+Analyse complète de la partie :
+1. Phase d'ouverture : quels coups ont été forts ou faibles ? Quelle stratégie chaque camp a-t-il adoptée ?
+2. Milieu de jeu : identifie les coups forts et faibles des deux camps. Y a-t-il eu des erreurs importantes ?
+3. Conclusion : quelles sont les forces et faiblesses de la stratégie des Blancs et des Noirs ? Quel camp a joué le mieux et pourquoi ?
+
+{lang_instruction}"""
+
+    message = await client.messages.create(
+        model="claude-opus-4-7",
+        max_tokens=2000,
+        system=SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    analysis_text = message.content[0].text
+    return {
+        "analysis": analysis_text,
+        "best_moves": [],
+        "key_squares": [],
+        "strategic_advice": _extract_advice(analysis_text),
+    }
+
+
 async def explain_best_move_concise(
     state: GameState,
     move_history: list[Move],

@@ -103,10 +103,15 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
     }
   }, [currentFen, loadLegalMoves])
 
-  const handleAnalyze = useCallback(async (question?: string) => {
+  const handleAnalyze = useCallback(async (question?: string, mode?: string) => {
     setAnalysisLoading(true)
     try {
-      const res = await analyzePositionFen(currentFen, question, language)
+      const analysisMode = mode ?? 'position'
+      // For full game analysis, extract all PDN moves up to the current position
+      const moveHistory = (analysisMode === 'full_game' && result)
+        ? result.positions.slice(1, currentIdx + 1).map(p => p.notation).filter((n): n is string => n !== null)
+        : undefined
+      const res = await analyzePositionFen(currentFen, question, language, analysisMode, moveHistory)
       setAnalysis(res)
       return res
     } catch {
@@ -114,7 +119,7 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
     } finally {
       setAnalysisLoading(false)
     }
-  }, [currentFen, language])
+  }, [currentFen, language, result, currentIdx])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 

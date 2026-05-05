@@ -193,10 +193,12 @@ export async function analyzePositionFen(
   fen: string,
   question?: string,
   language: string = 'fr',
+  mode: string = 'position',
+  moveHistory?: string[],
 ): Promise<AnalysisResponse> {
   const res = await api.post<AnalysisResponse>(
     '/position/analyze',
-    { fen, question: question || null, language },
+    { fen, question: question || null, language, mode, move_history: moveHistory ?? [] },
     { timeout: 90000 },
   )
   return res.data
