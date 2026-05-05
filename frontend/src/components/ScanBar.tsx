@@ -21,7 +21,7 @@ function formatNps(nps: number): string {
 
 export default function ScanBar({ info, loading = false }: ScanBarProps) {
   const isRunning = !info?.done || loading
-  // Track elapsed seconds since mount to detect stuck loading
+  // Track elapsed seconds since mount to show download progress
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
@@ -32,9 +32,7 @@ export default function ScanBar({ info, loading = false }: ScanBarProps) {
 
   const loadingLabel = elapsed < 5
     ? 'Chargement…'
-    : elapsed < 20
-    ? `Téléchargement moteur… (${elapsed}s)`
-    : 'Moteur indisponible sur cet appareil'
+    : `Téléchargement moteur… (${elapsed}s)`
 
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-950 border-b border-gray-800 text-xs font-mono select-none min-h-[28px]">

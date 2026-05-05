@@ -55,12 +55,14 @@ function parseInfo(msg: string): Partial<ScanInfo> {
 
 class ScanEngineWorker {
   private worker: Worker | null = null
-  private ready = false
+  private _ready = false
   private analyzing = false
   private currentCb: ScanCallback | null = null
   private lastInfo: Partial<ScanInfo> = {}
-  private pending: { hubPos: string; cb: ScanCallback } | null = null
   private bestSoFar: string | null = null
+  private generation = 0                  // incremented on each new search
+  private activegen = 0                   // generation of the currently running search
+  private onReadyQueue: (() => void)[] = []
 
   constructor() {
     this.boot()
@@ -73,8 +75,10 @@ class ScanEngineWorker {
       this.worker.onerror = (err) => {
         console.error('[Scan WASM] worker error:', err)
         this.worker = null
+        // flush ready queue with no-op so getMove callers unblock
+        const queue = this.onReadyQueue.splice(0)
+        queue.forEach(fn => fn())
       }
-      // Init sequence — queued by worker until WASM finishes loading
       this.send('hub')
       this.send('set-param name=variant value=normal')
       this.send('set-param name=bb-size value=0')
@@ -92,11 +96,9 @@ class ScanEngineWorker {
     if (!msg) return
 
     if (msg === 'ready') {
-      this.ready = true
-      if (this.pending) {
-        this.run(this.pending.hubPos, this.pending.cb)
-        this.pending = null
-      }
+      this._ready = true
+      const queue = this.onReadyQueue.splice(0)
+      queue.forEach(fn => fn())
       return
     }
 
@@ -116,7 +118,9 @@ class ScanEngineWorker {
       const depthM = msg.match(/depth=(\d+)/)
       const scoreM = msg.match(/score=([+-]?\d+)/)
       const bestMove = moveM?.[1] ?? this.bestSoFar ?? null
-      this.currentCb?.({
+      const cb = this.currentCb
+      this.currentCb = null
+      cb?.({
         ...emptyInfo(),
         ...this.lastInfo,
         bestMove,
@@ -127,8 +131,17 @@ class ScanEngineWorker {
     }
   }
 
-  private run(hubPos: string, cb: ScanCallback) {
+  // Returns a Promise that resolves when engine is ready (possibly immediately)
+  private whenReady(): Promise<void> {
+    if (this._ready) return Promise.resolve()
+    return new Promise(resolve => this.onReadyQueue.push(resolve))
+  }
+
+  // Low-level: start a new search, replacing any ongoing one
+  private doAnalyze(hubPos: string, cb: ScanCallback) {
     if (this.analyzing) this.send('stop')
+    this.generation++
+    this.activegen = this.generation
     this.currentCb = cb
     this.lastInfo = {}
     this.bestSoFar = null
@@ -137,31 +150,44 @@ class ScanEngineWorker {
     this.send('go analyze')
   }
 
-  analyze(fen: string, cb: ScanCallback) {
+  // Continuous analysis — starts as soon as engine is ready
+  analyze(fen: string, cb: ScanCallback): void {
     const hubPos = fenToHubPos(fen)
-    if (!this.ready) {
-      this.pending = { hubPos, cb }
-      return
-    }
-    this.run(hubPos, cb)
+    this.whenReady().then(() => this.doAnalyze(hubPos, cb))
   }
 
-  // One-shot: analyze for `ms` milliseconds and resolve with best move found
-  getMove(fen: string, ms: number = 500): Promise<string | null> {
-    return new Promise((resolve) => {
+  // One-shot best move:
+  // - If engine not ready: returns null immediately (caller should fall back to server)
+  // - If engine ready: gives it `ms` milliseconds then resolves
+  getMove(fen: string, ms: number = 1500): Promise<string | null> {
+    if (!this._ready) return Promise.resolve(null)
+
+    return new Promise(resolve => {
       let resolved = false
+      const myGen = ++this.generation
+      this.activegen = myGen
+
       const finish = (move: string | null) => {
         if (resolved) return
         resolved = true
         resolve(move)
       }
 
-      this.analyze(fen, (info) => {
+      if (this.analyzing) this.send('stop')
+      this.currentCb = (info) => {
+        if (this.activegen !== myGen) return  // stale callback, ignore
+        if (info.pv.length > 0) this.bestSoFar = info.pv[0]
         if (info.done) finish(info.bestMove)
-      })
+      }
+      this.lastInfo = {}
+      this.bestSoFar = null
+      this.analyzing = true
+      this.send(`pos pos=${fenToHubPos(fen)}`)
+      this.send('go analyze')
 
       setTimeout(() => {
         if (!resolved) {
+          this.activegen++            // invalidate this generation's callback
           this.send('stop')
           this.analyzing = false
           this.currentCb = null
@@ -171,17 +197,21 @@ class ScanEngineWorker {
     })
   }
 
-  stop() {
+  stop(): void {
     if (this.analyzing) {
       this.send('stop')
       this.analyzing = false
     }
+    this.activegen++    // invalidate any in-flight callback
     this.currentCb = null
-    this.pending = null
   }
 
   get available(): boolean {
     return this.worker !== null
+  }
+
+  get ready(): boolean {
+    return this._ready
   }
 }
 
@@ -193,12 +223,10 @@ export function matchHubMove(hubMove: string, legalMoves: MoveData[]): MoveData 
     const squares = hubMove.split('x').map(Number)
     const from = squares[0]
     const to = squares[squares.length - 1]
-    // Exact path match
     const exact = legalMoves.find(m =>
       m.path.length === squares.length && m.path.every((sq, i) => sq === squares[i])
     )
     if (exact) return exact
-    // Fallback: start + end + is capture
     return legalMoves.find(m =>
       m.path[0] === from && m.path[m.path.length - 1] === to && m.captures.length > 0
     ) ?? null
