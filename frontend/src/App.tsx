@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import Board from './components/Board'
+import type { Arrow } from './components/Board'
 import AnalysisPanel from './components/AnalysisPanel'
 import AnalysisText from './components/AnalysisText'
 import GameControls from './components/GameControls'
@@ -125,6 +126,7 @@ export default function App() {
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null)
   const [analysisLoading, setAnalysisLoading] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
+  const [bestMoveArrow, setBestMoveArrow] = useState<Arrow | null>(null)
   const [isAiThinking, setIsAiThinking] = useState(false)
   const [bothSides, setBothSides] = useState(false)
   const [spokenSquares, setSpokenSquares] = useState<number[]>([])
@@ -222,6 +224,7 @@ export default function App() {
   const handleMove = useCallback(async (move: MoveData) => {
     if (!gameState || gameState.result || isAiThinking) return
     setSelectedSquare(null)
+    setBestMoveArrow(null)
     setIsAiThinking(true)
 
     // Optimistic update: show player's move immediately
@@ -358,13 +361,24 @@ export default function App() {
 
   const handleBestMoveQuick = useCallback(async (): Promise<string[] | null> => {
     if (!gameState) return null
+    setBestMoveArrow(null)
     try {
-      const move = await getAiMove(gameState.game_id, aiDepth)
-      if (!move) return []
-      const notation = move.captures.length > 0
-        ? move.path.join('x')
-        : `${move.path[0]}-${move.path[move.path.length - 1]}`
-      return [notation]
+      const engine = getScanEngine()
+      let hubMove: string | null = await engine.getMove(gameState.fen, 1500)
+      if (!hubMove) {
+        // Fallback: server Scan
+        const move = await getAiMove(gameState.game_id, aiDepth)
+        if (!move) return []
+        hubMove = move.captures.length > 0
+          ? move.path.join('x')
+          : `${move.path[0]}-${move.path[move.path.length - 1]}`
+      }
+      if (!hubMove) return []
+      // Set arrow on board
+      const sep = hubMove.includes('x') ? 'x' : '-'
+      const parts = hubMove.split(sep).map(Number)
+      if (parts.length >= 2) setBestMoveArrow({ from: parts[0], to: parts[parts.length - 1] })
+      return [hubMove]
     } catch {
       return null
     }
@@ -767,6 +781,7 @@ export default function App() {
                         disabled={boardDisabled}
                         lastMove={gameState?.last_move}
                         spokenSquares={spokenSquares}
+                        arrows={bestMoveArrow ? [bestMoveArrow] : []}
                       />
                       {gameState && (
                         <div style={{ alignSelf: 'stretch', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -829,6 +844,7 @@ export default function App() {
                       disabled={boardDisabled}
                       lastMove={gameState?.last_move}
                       spokenSquares={spokenSquares}
+                      arrows={bestMoveArrow ? [bestMoveArrow] : []}
                     />
                     {gameState && (
                       <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -2,6 +2,11 @@ import React, { useCallback } from 'react'
 import { rcToSq, EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING } from '../types'
 import type { MoveData } from '../types'
 
+export interface Arrow {
+  from: number
+  to: number
+}
+
 interface BoardProps {
   board: number[]
   legalMoves: MoveData[]
@@ -12,6 +17,7 @@ interface BoardProps {
   lastMove?: MoveData | null
   highlightSquares?: number[]
   spokenSquares?: number[]
+  arrows?: Arrow[]
   // When provided, these squares can be selected even if not in legalMoves,
   // and any subsequent dark-square click triggers onMove (free-move mode).
   freeSelectSquares?: Set<number>
@@ -94,9 +100,19 @@ export default function Board({
   lastMove = null,
   highlightSquares = [],
   spokenSquares = [],
+  arrows = [],
   freeSelectSquares,
   flipped = false,
 }: BoardProps) {
+  // Convert square number to center % coordinates in the 100×100 SVG viewBox
+  function sqCenter(sq: number): { x: number; y: number } {
+    const row = Math.floor((sq - 1) / 5)
+    const colInRow = (sq - 1) % 5
+    const col = colInRow * 2 + (row % 2 === 0 ? 1 : 0)
+    const r = flipped ? 9 - row : row
+    const c = flipped ? 9 - col : col
+    return { x: (c + 0.5) * 10, y: (r + 0.5) * 10 }
+  }
   const legalTargets = useCallback((): Set<number> => {
     if (selectedSquare === null) return new Set()
     const targets = new Set<number>()
@@ -251,6 +267,7 @@ export default function Board({
 
   return (
     <div style={{
+      position: 'relative',
       display: 'grid',
       gridTemplateColumns: 'repeat(10, 1fr)',
       width: '100%',
@@ -261,6 +278,52 @@ export default function Board({
       boxShadow: '0 8px 32px rgba(0,0,0,0.55)',
     }}>
       {cells}
+
+      {/* Arrow overlay */}
+      {arrows.length > 0 && (
+        <svg
+          viewBox="0 0 100 100"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        >
+          <defs>
+            <marker id="bm-arrow" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto">
+              <polygon points="0 0, 5 2, 0 4" fill="#F59E0B" />
+            </marker>
+          </defs>
+          {arrows.map((arrow, i) => {
+            const f = sqCenter(arrow.from)
+            const t = sqCenter(arrow.to)
+            const dx = t.x - f.x
+            const dy = t.y - f.y
+            const len = Math.sqrt(dx * dx + dy * dy)
+            if (len < 1) return null
+            const ux = dx / len
+            const uy = dy / len
+            const x1 = f.x + ux * 3.8
+            const y1 = f.y + uy * 3.8
+            const x2 = t.x - ux * 4.8
+            const y2 = t.y - uy * 4.8
+            return (
+              <line
+                key={i}
+                x1={x1} y1={y1} x2={x2} y2={y2}
+                stroke="#F59E0B"
+                strokeWidth="2.8"
+                strokeLinecap="round"
+                opacity="0.88"
+                markerEnd="url(#bm-arrow)"
+              />
+            )
+          })}
+        </svg>
+      )}
     </div>
   )
 }

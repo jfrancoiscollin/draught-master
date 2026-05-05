@@ -3,6 +3,8 @@ import Board from './Board'
 import AnalysisPanel from './AnalysisPanel'
 import ScanBar from './ScanBar'
 import { useScanEngine } from '../hooks/useScanEngine'
+import { getScanEngine } from '../lib/scanEngine'
+import type { Arrow } from './Board'
 import {
   importPdn, getPositionLegalMoves, applyPositionMove,
   analyzePositionFen, getPositionBestMove,
@@ -42,6 +44,9 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
   // ── WASM engine (continuous evaluation) ───────────────────────
   const scanInfo = useScanEngine(result ? currentFen : null)
 
+  // ── Best-move arrow ────────────────────────────────────────────
+  const [arrow, setArrow] = useState<Arrow | null>(null)
+
   const loadLegalMoves = useCallback(async (fen: string) => {
     if (!fen || loadingMovesRef.current) return
     loadingMovesRef.current = true
@@ -63,6 +68,7 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
     setSelectedSquare(null)
     setHighlighted([])
     setAnalysis(null)
+    setArrow(null)
     loadLegalMoves(pos.fen)
   }, [loadLegalMoves])
 
@@ -97,6 +103,7 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
 
   const handleMove = useCallback(async (move: MoveData) => {
     setSelectedSquare(null)
+    setArrow(null)
     try {
       const res = await applyPositionMove(currentFen, move.path)
       setCurrentFen(res.fen)
@@ -152,11 +159,26 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
     }
   }
 
+  function hubNotationToArrow(hub: string): Arrow | null {
+    const sep = hub.includes('x') ? 'x' : hub.includes('-') ? '-' : null
+    if (!sep) return null
+    const parts = hub.split(sep).map(Number)
+    if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[parts.length - 1])) return null
+    return { from: parts[0], to: parts[parts.length - 1] }
+  }
+
   const handleBestMove = useCallback(async (): Promise<string[] | null> => {
     setAiThinking(true)
+    setArrow(null)
     try {
-      const move = await getPositionBestMove(currentFen)
-      return move ? [move] : null
+      const engine = getScanEngine()
+      let hubMove: string | null = await engine.getMove(currentFen, 1500)
+      // Fallback to server if WASM not ready
+      if (!hubMove) hubMove = await getPositionBestMove(currentFen)
+      if (!hubMove) return null
+      const a = hubNotationToArrow(hubMove)
+      if (a) setArrow(a)
+      return [hubMove]
     } catch {
       return null
     } finally {
@@ -259,6 +281,7 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
             onSelectSquare={setSelectedSquare}
             disabled={false}
             highlightSquares={highlighted}
+            arrows={arrow ? [arrow] : []}
             flipped={flipped}
           />
         </div>
