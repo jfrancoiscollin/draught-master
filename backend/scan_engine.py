@@ -126,6 +126,27 @@ class ScanEngine:
                     return m.group(1)
         return None
 
+    def evaluate_pos(self, pos: str, movetime_s: float) -> Optional[dict]:
+        """Evaluate one position; returns {"score": int, "bestMove": str|None} or None."""
+        with self._lock:
+            while True:
+                try:
+                    self._q.get_nowait()
+                except queue.Empty:
+                    break
+            self._send(f"pos pos={pos}")
+            self._send(f"level move-time={movetime_s}")
+            self._send("go think")
+            resp = self._wait_for("done ", timeout=movetime_s + 10.0)
+            if resp:
+                move_m = re.search(r'move=(\S+)', resp)
+                score_m = re.search(r'score=([+-]?\d+)', resp)
+                return {
+                    "bestMove": move_m.group(1) if move_m else None,
+                    "score": int(score_m.group(1)) if score_m else 0,
+                }
+        return None
+
     def alive(self) -> bool:
         return self._proc.poll() is None
 

@@ -1,4 +1,5 @@
-import type { PdnPosition } from '../api/client'
+import type { PdnPosition, PositionEval } from '../api/client'
+import { analyzePositionsBatch } from '../api/client'
 import { getScanEngine } from './scanEngine'
 
 export type Verdict = 'blunder' | 'mistake' | 'inaccuracy' | null
@@ -56,46 +57,8 @@ export function computeStats(annotations: MoveAnnotation[]): GameStats {
   }
 }
 
-export async function annotateGame(
-  positions: PdnPosition[],
-  msPerMove: number = 500,
-  onProgress: (done: number, total: number) => void,
-  signal: AbortSignal,
-): Promise<MoveAnnotation[]> {
-  const engine = getScanEngine()
-  if (!engine.ready) return []
-
-  // Stop any ongoing search and lock the engine so that external callers
-  // (e.g. useScanEngine cleanup after React re-render) cannot interrupt us.
-  engine.stop()
-  engine.lock()
-
-  // Yield to the event loop so any in-flight "done" messages from the
-  // stopped search are processed (and discarded) before we start evaluating.
-  await new Promise(r => setTimeout(r, 100))
-
-  if (signal.aborted) { engine.unlock(); return [] }
-
-  // Evaluate every position (0 to N)
-  const evals: Array<{ score: number; bestMove: string | null }> = []
-
-  try {
-    for (let i = 0; i < positions.length; i++) {
-      if (signal.aborted) break
-      const res = await engine.evaluate(positions[i].fen, msPerMove)
-      evals.push(res ?? { score: 0, bestMove: null })
-      console.log(`[annotate] pos ${i} score=${evals[i].score} best=${evals[i].bestMove} fen=${positions[i].fen.slice(0, 40)}`)
-      onProgress(i + 1, positions.length)
-    }
-  } finally {
-    engine.unlock()
-  }
-
-  if (signal.aborted) return []
-
-  // Build annotations for each move (positions[1..N])
+function buildAnnotations(positions: PdnPosition[], evals: PositionEval[]): MoveAnnotation[] {
   const annotations: MoveAnnotation[] = []
-
   for (let i = 1; i < positions.length; i++) {
     const pos = positions[i]
     if (!pos.color) continue
@@ -110,13 +73,12 @@ export async function annotateGame(
     const rawLoss = scoreBefore + scoreAfter
     const lossCp = Math.min(1000, Math.max(0, rawLoss))
 
-    // Winning chance delta (lidraughts formula)
     const dwc = winChance(scoreBefore) + winChance(scoreAfter)
     const deltaWinChance = Math.max(0, dwc)
     const verdict = classify(deltaWinChance)
 
     if (verdict) {
-      console.log(`[annotate] move ${pos.move_number} ${pos.color} ${pos.notation}: scoreBefore=${scoreBefore} scoreAfter=${scoreAfter} lossCp=${lossCp} dwc=${dwc.toFixed(3)} → ${verdict}`)
+      console.log(`[annotate] move ${pos.move_number} ${pos.color} ${pos.notation}: before=${scoreBefore} after=${scoreAfter} loss=${lossCp}cp dwc=${dwc.toFixed(3)} → ${verdict}`)
     }
 
     annotations.push({
@@ -130,8 +92,57 @@ export async function annotateGame(
       bestMove,
     })
   }
-
   return annotations
+}
+
+export async function annotateGame(
+  positions: PdnPosition[],
+  msPerMove: number = 500,
+  onProgress: (done: number, total: number) => void,
+  signal: AbortSignal,
+): Promise<MoveAnnotation[]> {
+  onProgress(0, positions.length)
+
+  // ── Try server-side batch analysis first (native Scan binary: faster & deeper) ──
+  if (!signal.aborted) {
+    const serverEvals = await analyzePositionsBatch(positions, 300)
+    if (serverEvals && serverEvals.length === positions.length) {
+      onProgress(positions.length, positions.length)
+      return buildAnnotations(positions, serverEvals)
+    }
+  }
+
+  // ── Fall back to client-side WASM Scan ──
+  const engine = getScanEngine()
+  if (!engine.ready) return []
+
+  // Stop any ongoing search and lock the engine so that external callers
+  // (e.g. useScanEngine cleanup after React re-render) cannot interrupt us.
+  engine.stop()
+  engine.lock()
+
+  // Yield to the event loop so any in-flight "done" messages from the
+  // stopped search are processed (and discarded) before we start evaluating.
+  await new Promise(r => setTimeout(r, 100))
+
+  if (signal.aborted) { engine.unlock(); return [] }
+
+  const evals: PositionEval[] = []
+
+  try {
+    for (let i = 0; i < positions.length; i++) {
+      if (signal.aborted) break
+      const res = await engine.evaluate(positions[i].fen, msPerMove)
+      evals.push(res ?? { score: 0, bestMove: null })
+      console.log(`[annotate:wasm] pos ${i} score=${evals[i].score} best=${evals[i].bestMove}`)
+      onProgress(i + 1, positions.length)
+    }
+  } finally {
+    engine.unlock()
+  }
+
+  if (signal.aborted) return []
+  return buildAnnotations(positions, evals)
 }
 
 export const VERDICT_SYMBOL: Record<NonNullable<Verdict>, string> = {

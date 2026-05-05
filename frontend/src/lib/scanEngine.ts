@@ -173,15 +173,16 @@ class ScanEngineWorker {
   }
 
   // One-shot evaluation for batch analysis: returns {score, bestMove} or null if not ready.
-  // Uses "level move-time" + "go think" so the engine searches for exactly ms milliseconds
-  // and sends "done" naturally — no manual stop needed (matching backend scan_engine.py).
-  evaluate(fen: string, ms: number = 1000): Promise<{ score: number; bestMove: string | null } | null> {
+  // Uses "go analyze" + timeout-stop (the WASM build does not support "go think" with time limits).
+  evaluate(fen: string, ms: number = 500): Promise<{ score: number; bestMove: string | null } | null> {
     if (!this._ready) return Promise.resolve(null)
 
     return new Promise(resolve => {
       let resolved = false
       const myGen = ++this.generation
       this.activegen = myGen
+      let localScore = 0
+      let localBest: string | null = null
 
       const finish = (score: number, bestMove: string | null) => {
         if (resolved) return
@@ -189,29 +190,27 @@ class ScanEngineWorker {
         resolve({ score, bestMove })
       }
 
-      // Stop any ongoing search (analyze or think) before starting a new timed one.
       this.stopSearch()
       this.currentCb = (info) => {
         if (this.activegen !== myGen) return
-        if (info.pv.length > 0) this.bestSoFar = info.pv[0]
-        if (info.done) finish(info.score, info.bestMove ?? this.bestSoFar)
+        if (info.pv.length > 0) { localBest = info.pv[0]; this.bestSoFar = info.pv[0] }
+        localScore = info.score
+        if (info.done) finish(info.score, info.bestMove ?? localBest)
       }
       this.lastInfo = {}
       this.bestSoFar = null
       this.analyzing = true
       this.send(`pos pos=${fenToHubPos(fen)}`)
-      this.send(`level move-time=${(ms / 1000).toFixed(3)}`)
-      this.send('go think')
+      this.send('go analyze')
 
-      // Safety timeout at 3× the budget in case the engine doesn't send "done".
       setTimeout(() => {
         if (!resolved) {
           this.activegen++
           this.stopSearch()
           this.currentCb = null
-          finish(this.lastInfo.score ?? 0, this.bestSoFar)
+          finish(localScore, localBest)
         }
-      }, ms * 3)
+      }, ms)
     })
   }
 

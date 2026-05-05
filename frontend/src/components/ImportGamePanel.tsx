@@ -203,7 +203,7 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
     try {
       const anns = await annotateGame(
         result.positions,
-        1000,
+        500,
         (done, total) => {
           setAnnotationProgress(done)
           setAnnotationTotal(total)
@@ -376,14 +376,20 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
       {annotating && (
         <div className="flex-shrink-0 px-3 py-2 bg-gray-950 border-b border-gray-800">
           <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-            <span>Analyse en cours…</span>
-            <span className="font-mono">{annotationProgress} / {annotationTotal}</span>
+            <span>{annotationProgress === 0 && annotationTotal > 0 ? '⚡ Analyse serveur…' : 'Analyse en cours…'}</span>
+            {annotationProgress > 0 && (
+              <span className="font-mono">{annotationProgress} / {annotationTotal}</span>
+            )}
           </div>
           <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-indigo-500 rounded-full transition-all duration-200"
-              style={{ width: annotationTotal > 0 ? `${(annotationProgress / annotationTotal) * 100}%` : '0%' }}
-            />
+            {annotationProgress === 0 && annotationTotal > 0 ? (
+              <div className="h-full bg-indigo-500 rounded-full animate-pulse w-full" />
+            ) : (
+              <div
+                className="h-full bg-indigo-500 rounded-full transition-all duration-200"
+                style={{ width: annotationTotal > 0 ? `${(annotationProgress / annotationTotal) * 100}%` : '0%' }}
+              />
+            )}
           </div>
         </div>
       )}

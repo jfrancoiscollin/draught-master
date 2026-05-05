@@ -846,6 +846,39 @@ async def import_pdn_game(body: Dict[str, Any]) -> Dict[str, Any]:
     return {"positions": positions, "metadata": metadata, "total_moves": len(move_tokens)}
 
 
+@app.post("/api/pdn/annotate")
+async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Batch position evaluation using the native Scan engine.
+    Returns evaluations for every position or available=false if Scan is not installed."""
+    from scan_engine import _get_engine, _build_pos
+    import asyncio
+
+    positions = body.get("positions", [])
+    ms_per_move = min(max(int(body.get("ms_per_move", 200)), 50), 1000)
+
+    engine = _get_engine()
+    if engine is None:
+        return {"evaluations": None, "available": False}
+
+    movetime_s = ms_per_move / 1000.0
+
+    def run_batch() -> list:
+        results = []
+        for pos_data in positions:
+            fen = pos_data.get("fen", "")
+            if not fen:
+                results.append({"score": 0, "bestMove": None})
+                continue
+            state = fen_to_board(fen)
+            hub_pos = _build_pos(state)
+            result = engine.evaluate_pos(hub_pos, movetime_s)
+            results.append(result or {"score": 0, "bestMove": None})
+        return results
+
+    evaluations = await asyncio.get_event_loop().run_in_executor(None, run_batch)
+    return {"evaluations": evaluations, "available": True}
+
+
 @app.post("/api/position/analyze")
 async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
     fen = body.get("fen", "")

@@ -208,3 +208,27 @@ export async function getPositionBestMove(fen: string, depth: number = 6): Promi
   const res = await api.post<{ move: string | null }>('/position/best-move', { fen, depth })
   return res.data.move
 }
+
+export interface PositionEval {
+  score: number
+  bestMove: string | null
+}
+
+// Batch evaluation using the server's native Scan engine (fast, high depth).
+// Returns null if the server doesn't have Scan installed.
+export async function analyzePositionsBatch(
+  positions: PdnPosition[],
+  msPerMove: number = 200,
+): Promise<PositionEval[] | null> {
+  try {
+    const res = await api.post<{ evaluations: PositionEval[] | null; available: boolean }>(
+      '/pdn/annotate',
+      { positions, ms_per_move: msPerMove },
+      { timeout: 180000 },
+    )
+    if (!res.data.available || !res.data.evaluations) return null
+    return res.data.evaluations
+  } catch {
+    return null
+  }
+}
