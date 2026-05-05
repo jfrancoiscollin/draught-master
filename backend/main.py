@@ -864,7 +864,7 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
 
     def run_batch() -> list:
         results = []
-        for pos_data in positions:
+        for i, pos_data in enumerate(positions):
             fen = pos_data.get("fen", "")
             if not fen:
                 results.append({"score": 0, "bestMove": None})
@@ -872,10 +872,16 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
             state = fen_to_board(fen)
             hub_pos = _build_pos(state)
             result = engine.evaluate_pos(hub_pos, movetime_s)
-            results.append(result or {"score": 0, "bestMove": None})
+            ev = result or {"score": 0, "bestMove": None}
+            results.append(ev)
+            # Log a sample of scores to confirm the engine is working
+            if i < 5 or i == len(positions) // 2:
+                logger.info("annotate pos %d: score=%d best=%s", i, ev["score"], ev["bestMove"])
         return results
 
     evaluations = await asyncio.get_event_loop().run_in_executor(None, run_batch)
+    non_zero = sum(1 for e in evaluations if e["score"] != 0)
+    logger.info("annotate done: %d positions, %d non-zero scores", len(evaluations), non_zero)
     return {"evaluations": evaluations, "available": True}
 
 

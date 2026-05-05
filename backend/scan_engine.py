@@ -127,26 +127,28 @@ class ScanEngine:
         return None
 
     def evaluate_pos(self, pos: str, movetime_s: float) -> Optional[dict]:
-        """Evaluate one position; returns {"score": int, "bestMove": str|None} or None.
-        Collects all info lines (where the score lives) then reads the done line."""
+        """Evaluate one position using go analyze + stop (same as the WASM frontend).
+        go analyze sends info score=X messages continuously; go think may not.
+        Returns {"score": int, "bestMove": str|None}."""
         with self._lock:
             while True:
                 try:
                     self._q.get_nowait()
                 except queue.Empty:
                     break
-            self._send(f"pos pos={pos}")
-            self._send(f"level move-time={movetime_s}")
-            self._send("go think")
 
-            deadline = time.monotonic() + movetime_s + 10.0
+            self._send(f"pos pos={pos}")
+            self._send("go analyze")
+
+            deadline = time.monotonic() + movetime_s
             last_score = 0
             last_best: Optional[str] = None
 
+            # Collect info messages until the time budget is exhausted
             while True:
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
-                    return None
+                    break
                 try:
                     line = self._q.get(timeout=min(0.05, remaining))
                     if line.startswith("info "):
@@ -159,6 +161,7 @@ class ScanEngine:
                             if words:
                                 last_best = words[0]
                     elif line.startswith("done"):
+                        # Engine resolved the position by itself (forced sequence)
                         move_m = re.search(r'\bmove=(\S+)', line)
                         score_m = re.search(r'\bscore=([+-]?\d+)', line)
                         return {
@@ -167,7 +170,32 @@ class ScanEngine:
                         }
                 except queue.Empty:
                     pass
-        return None
+
+            # Stop the search and wait for its "done" acknowledgement
+            self._send("stop")
+            ack_deadline = time.monotonic() + 3.0
+            while True:
+                remaining = ack_deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                try:
+                    line = self._q.get(timeout=min(0.05, remaining))
+                    if line.startswith("info "):
+                        s = re.search(r'\bscore=([+-]?\d+)', line)
+                        if s:
+                            last_score = int(s.group(1))
+                    elif line.startswith("done"):
+                        move_m = re.search(r'\bmove=(\S+)', line)
+                        score_m = re.search(r'\bscore=([+-]?\d+)', line)
+                        return {
+                            "bestMove": (move_m.group(1) if move_m else None) or last_best,
+                            "score": int(score_m.group(1)) if score_m else last_score,
+                        }
+                except queue.Empty:
+                    pass
+
+            logger.warning("evaluate_pos: no done received, returning last score=%d", last_score)
+            return {"bestMove": last_best, "score": last_score}
 
     def alive(self) -> bool:
         return self._proc.poll() is None
