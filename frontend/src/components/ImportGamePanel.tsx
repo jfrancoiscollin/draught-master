@@ -203,7 +203,7 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
     try {
       const anns = await annotateGame(
         result.positions,
-        500,
+        1000,
         (done, total) => {
           setAnnotationProgress(done)
           setAnnotationTotal(total)

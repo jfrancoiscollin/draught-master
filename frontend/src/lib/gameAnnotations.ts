@@ -84,6 +84,7 @@ export async function annotateGame(
       if (signal.aborted) break
       const res = await engine.evaluate(positions[i].fen, msPerMove)
       evals.push(res ?? { score: 0, bestMove: null })
+      console.log(`[annotate] pos ${i} score=${evals[i].score} best=${evals[i].bestMove} fen=${positions[i].fen.slice(0, 40)}`)
       onProgress(i + 1, positions.length)
     }
   } finally {
@@ -103,9 +104,9 @@ export async function annotateGame(
     const scoreAfter  = evals[i].score
     const bestMove    = evals[i - 1].bestMove
 
-    // scoreBefore: from player-to-move's perspective (positive = that player is ahead)
-    // scoreAfter:  from opponent's perspective (positive = opponent is ahead)
-    // Centipawn loss = max(0, scoreBefore + scoreAfter)
+    // scoreBefore: from side-to-move's perspective (positive = that player is ahead)
+    // scoreAfter:  from opponent's perspective after the move (positive = opponent is ahead)
+    // Perfect move: scoreBefore + scoreAfter ≈ 0 (signs cancel). Blunder: both positive = large loss.
     const rawLoss = scoreBefore + scoreAfter
     const lossCp = Math.min(1000, Math.max(0, rawLoss))
 
@@ -113,6 +114,10 @@ export async function annotateGame(
     const dwc = winChance(scoreBefore) + winChance(scoreAfter)
     const deltaWinChance = Math.max(0, dwc)
     const verdict = classify(deltaWinChance)
+
+    if (verdict) {
+      console.log(`[annotate] move ${pos.move_number} ${pos.color} ${pos.notation}: scoreBefore=${scoreBefore} scoreAfter=${scoreAfter} lossCp=${lossCp} dwc=${dwc.toFixed(3)} → ${verdict}`)
+    }
 
     annotations.push({
       posIdx: i,
