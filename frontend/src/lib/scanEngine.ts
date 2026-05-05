@@ -156,6 +156,45 @@ class ScanEngineWorker {
     this.whenReady().then(() => this.doAnalyze(hubPos, cb))
   }
 
+  // One-shot evaluation: returns {score, bestMove} or null if not ready
+  evaluate(fen: string, ms: number = 600): Promise<{ score: number; bestMove: string | null } | null> {
+    if (!this._ready) return Promise.resolve(null)
+
+    return new Promise(resolve => {
+      let resolved = false
+      const myGen = ++this.generation
+      this.activegen = myGen
+
+      const finish = (score: number, bestMove: string | null) => {
+        if (resolved) return
+        resolved = true
+        resolve({ score, bestMove })
+      }
+
+      if (this.analyzing) this.send('stop')
+      this.currentCb = (info) => {
+        if (this.activegen !== myGen) return
+        if (info.pv.length > 0) this.bestSoFar = info.pv[0]
+        if (info.done) finish(info.score, info.bestMove)
+      }
+      this.lastInfo = {}
+      this.bestSoFar = null
+      this.analyzing = true
+      this.send(`pos pos=${fenToHubPos(fen)}`)
+      this.send('go analyze')
+
+      setTimeout(() => {
+        if (!resolved) {
+          this.activegen++
+          this.send('stop')
+          this.analyzing = false
+          this.currentCb = null
+          finish(this.lastInfo.score ?? 0, this.bestSoFar)
+        }
+      }, ms)
+    })
+  }
+
   // One-shot best move:
   // - If engine not ready: returns null immediately (caller should fall back to server)
   // - If engine ready: gives it `ms` milliseconds then resolves
