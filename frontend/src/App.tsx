@@ -166,6 +166,7 @@ export default function App() {
 
   const [lessonOpen, setLessonOpen] = useState<{ chapter: number; fen: string } | null>(null)
   const [readChapters, setReadChapters] = useState<Set<number>>(new Set())
+  const [resultFlash, setResultFlash] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) { setReadChapters(new Set()); return }
@@ -588,6 +589,13 @@ export default function App() {
     return ''
   }
 
+  useEffect(() => {
+    if (!gameState?.result) return
+    setResultFlash(getResultLabel(gameState.result))
+    const id = setTimeout(() => setResultFlash(null), 1500)
+    return () => clearTimeout(id)
+  }, [gameState?.result])
+
   // Reconstruct all board positions from move history for replay
   const boardPositions = useMemo(() => {
     const positions: number[][] = [getInitialBoard()]
@@ -665,11 +673,6 @@ export default function App() {
                 <span className="hidden sm:inline">{t('aiThinking')}</span>
               </span>
             )}
-            {!isAiThinking && gameState?.result && (
-              <span className="text-yellow-300 font-semibold text-sm">
-                {getResultLabel(gameState.result)}
-              </span>
-            )}
           </div>
           <div className="flex items-center gap-2">
             <LanguageSelector />
@@ -695,7 +698,7 @@ export default function App() {
 
 
       {/* Main content — mobile: no page scroll (each section scrolls itself); desktop: page scrolls */}
-      <main className="flex-1 overflow-hidden lg:overflow-y-auto">
+      <main className="flex-1 overflow-hidden lg:overflow-y-auto relative">
 
         {/* HOME SCREEN */}
         {tab === 'home' && (
@@ -745,6 +748,28 @@ export default function App() {
         {/* PLAY TAB */}
         {tab === 'play' && (
           <>
+            {/* Result flash overlay */}
+            {resultFlash && (
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 50,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                pointerEvents: 'none',
+              }}>
+                <div style={{
+                  background: 'rgba(0,0,0,0.72)',
+                  color: '#fde68a',
+                  fontSize: '1.6rem',
+                  fontWeight: 700,
+                  padding: '18px 36px',
+                  borderRadius: '14px',
+                  boxShadow: '0 4px 32px rgba(0,0,0,0.6)',
+                  letterSpacing: '0.01em',
+                  animation: 'fadeInOut 1.5s ease forwards',
+                }}>
+                  {resultFlash}
+                </div>
+              </div>
+            )}
             {/* ── MOBILE (hidden on lg+) ── */}
             <div className="lg:hidden h-full flex flex-col">
               {analysisExpanded ? (
