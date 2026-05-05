@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Board from './Board'
 import AnalysisPanel from './AnalysisPanel'
+import ScanBar from './ScanBar'
+import { useScanEngine } from '../hooks/useScanEngine'
 import {
   importPdn, getPositionLegalMoves, applyPositionMove,
   analyzePositionFen, getPositionBestMove,
@@ -36,6 +38,9 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null)
   const [analysisLoading, setAnalysisLoading] = useState(false)
   const [aiThinking, setAiThinking] = useState(false)
+
+  // ── WASM engine (continuous evaluation) ───────────────────────
+  const scanInfo = useScanEngine(result ? currentFen : null)
 
   const loadLegalMoves = useCallback(async (fen: string) => {
     if (!fen || loadingMovesRef.current) return
@@ -289,6 +294,9 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
           </button>
         )}
       </div>
+
+      {/* Scan WASM engine bar */}
+      <ScanBar info={scanInfo} />
 
       {/* Move list — horizontal scrollable strip */}
       <div className="flex-shrink-0 flex gap-1 px-2 py-1.5 overflow-x-auto bg-gray-950 border-b border-gray-800">
