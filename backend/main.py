@@ -891,6 +891,33 @@ _STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 if os.path.isdir(_STATIC_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(_STATIC_DIR, "assets")), name="assets")
 
+    # Serve Scan WASM engine files with correct MIME types (iOS Safari is strict)
+    _WASM_CACHE = "public, max-age=604800, immutable"
+
+    @app.get("/scan_normal.wasm.js")
+    async def serve_scan_js() -> FileResponse:
+        return FileResponse(
+            os.path.join(_STATIC_DIR, "scan_normal.wasm.js"),
+            media_type="application/javascript",
+            headers={"Cache-Control": _WASM_CACHE},
+        )
+
+    @app.get("/scan_normal.wasm")
+    async def serve_scan_wasm() -> FileResponse:
+        return FileResponse(
+            os.path.join(_STATIC_DIR, "scan_normal.wasm"),
+            media_type="application/wasm",
+            headers={"Cache-Control": _WASM_CACHE},
+        )
+
+    @app.get("/scan_normal.data")
+    async def serve_scan_data() -> FileResponse:
+        return FileResponse(
+            os.path.join(_STATIC_DIR, "scan_normal.data"),
+            media_type="application/octet-stream",
+            headers={"Cache-Control": _WASM_CACHE},
+        )
+
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str) -> FileResponse:
         return FileResponse(
