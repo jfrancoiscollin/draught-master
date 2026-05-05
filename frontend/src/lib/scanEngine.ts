@@ -60,9 +60,15 @@ class ScanEngineWorker {
   private currentCb: ScanCallback | null = null
   private lastInfo: Partial<ScanInfo> = {}
   private bestSoFar: string | null = null
-  private generation = 0                  // incremented on each new search
-  private activegen = 0                   // generation of the currently running search
+  private generation = 0
+  private activegen = 0
   private onReadyQueue: (() => void)[] = []
+
+  // Prevent external stop() calls during batch evaluation (annotateGame)
+  private locked = false
+  // How many "done" responses we expect from previously-stopped searches
+  // to discard before processing new search results
+  private pendingStopDones = 0
 
   constructor() {
     this.boot()
@@ -75,7 +81,6 @@ class ScanEngineWorker {
       this.worker.onerror = (err) => {
         console.error('[Scan WASM] worker error:', err)
         this.worker = null
-        // flush ready queue with no-op so getMove callers unblock
         const queue = this.onReadyQueue.splice(0)
         queue.forEach(fn => fn())
       }
@@ -114,6 +119,12 @@ class ScanEngineWorker {
 
     if (msg.startsWith('done ')) {
       this.analyzing = false
+      // Consume stale "done" from a search we stopped manually.
+      // These arrive as macro-tasks and can corrupt the next search's callback.
+      if (this.pendingStopDones > 0) {
+        this.pendingStopDones--
+        return
+      }
       const moveM  = msg.match(/move=(\S+)/)
       const depthM = msg.match(/depth=(\d+)/)
       const scoreM = msg.match(/score=([+-]?\d+)/)
@@ -131,15 +142,21 @@ class ScanEngineWorker {
     }
   }
 
-  // Returns a Promise that resolves when engine is ready (possibly immediately)
+  private stopSearch() {
+    if (this.analyzing) {
+      this.send('stop')
+      this.pendingStopDones++
+      this.analyzing = false
+    }
+  }
+
   private whenReady(): Promise<void> {
     if (this._ready) return Promise.resolve()
     return new Promise(resolve => this.onReadyQueue.push(resolve))
   }
 
-  // Low-level: start a new search, replacing any ongoing one
   private doAnalyze(hubPos: string, cb: ScanCallback) {
-    if (this.analyzing) this.send('stop')
+    this.stopSearch()
     this.generation++
     this.activegen = this.generation
     this.currentCb = cb
@@ -150,13 +167,14 @@ class ScanEngineWorker {
     this.send('go analyze')
   }
 
-  // Continuous analysis — starts as soon as engine is ready
   analyze(fen: string, cb: ScanCallback): void {
     const hubPos = fenToHubPos(fen)
     this.whenReady().then(() => this.doAnalyze(hubPos, cb))
   }
 
-  // One-shot evaluation: returns {score, bestMove} or null if not ready
+  // One-shot evaluation for batch analysis: returns {score, bestMove} or null if not ready.
+  // During batch evaluation the engine is locked (lock()/unlock()), so useScanEngine's
+  // stop() calls cannot interrupt mid-evaluation.
   evaluate(fen: string, ms: number = 600): Promise<{ score: number; bestMove: string | null } | null> {
     if (!this._ready) return Promise.resolve(null)
 
@@ -165,17 +183,22 @@ class ScanEngineWorker {
       const myGen = ++this.generation
       this.activegen = myGen
 
+      // Capture locals so timeout can use them even if class state changed
+      let localScore = 0
+      let localBest: string | null = null
+
       const finish = (score: number, bestMove: string | null) => {
         if (resolved) return
         resolved = true
         resolve({ score, bestMove })
       }
 
-      if (this.analyzing) this.send('stop')
+      this.stopSearch()
       this.currentCb = (info) => {
         if (this.activegen !== myGen) return
-        if (info.pv.length > 0) this.bestSoFar = info.pv[0]
-        if (info.done) finish(info.score, info.bestMove)
+        if (info.pv.length > 0) { localBest = info.pv[0]; this.bestSoFar = info.pv[0] }
+        localScore = info.score
+        if (info.done) finish(info.score, info.bestMove ?? localBest)
       }
       this.lastInfo = {}
       this.bestSoFar = null
@@ -186,18 +209,15 @@ class ScanEngineWorker {
       setTimeout(() => {
         if (!resolved) {
           this.activegen++
-          this.send('stop')
-          this.analyzing = false
+          this.stopSearch()
           this.currentCb = null
-          finish(this.lastInfo.score ?? 0, this.bestSoFar)
+          finish(localScore, localBest)
         }
       }, ms)
     })
   }
 
-  // One-shot best move:
-  // - If engine not ready: returns null immediately (caller should fall back to server)
-  // - If engine ready: gives it `ms` milliseconds then resolves
+  // One-shot best move: returns null immediately if not ready (caller falls back to server)
   getMove(fen: string, ms: number = 1500): Promise<string | null> {
     if (!this._ready) return Promise.resolve(null)
 
@@ -205,6 +225,7 @@ class ScanEngineWorker {
       let resolved = false
       const myGen = ++this.generation
       this.activegen = myGen
+      let localBest: string | null = null
 
       const finish = (move: string | null) => {
         if (resolved) return
@@ -212,11 +233,11 @@ class ScanEngineWorker {
         resolve(move)
       }
 
-      if (this.analyzing) this.send('stop')
+      this.stopSearch()
       this.currentCb = (info) => {
-        if (this.activegen !== myGen) return  // stale callback, ignore
-        if (info.pv.length > 0) this.bestSoFar = info.pv[0]
-        if (info.done) finish(info.bestMove)
+        if (this.activegen !== myGen) return
+        if (info.pv.length > 0) { localBest = info.pv[0]; this.bestSoFar = info.pv[0] }
+        if (info.done) finish(info.bestMove ?? localBest)
       }
       this.lastInfo = {}
       this.bestSoFar = null
@@ -226,32 +247,30 @@ class ScanEngineWorker {
 
       setTimeout(() => {
         if (!resolved) {
-          this.activegen++            // invalidate this generation's callback
-          this.send('stop')
-          this.analyzing = false
+          this.activegen++
+          this.stopSearch()
           this.currentCb = null
-          finish(this.bestSoFar)
+          finish(localBest)
         }
       }, ms)
     })
   }
 
   stop(): void {
-    if (this.analyzing) {
-      this.send('stop')
-      this.analyzing = false
-    }
-    this.activegen++    // invalidate any in-flight callback
+    // During batch evaluation, external stops (e.g. from useScanEngine cleanup) are ignored
+    // so they don't interrupt mid-evaluation.
+    if (this.locked) return
+    this.stopSearch()
+    this.activegen++
     this.currentCb = null
   }
 
-  get available(): boolean {
-    return this.worker !== null
-  }
+  // Prevent external stop() calls during batch evaluation
+  lock(): void { this.locked = true }
+  unlock(): void { this.locked = false }
 
-  get ready(): boolean {
-    return this._ready
-  }
+  get available(): boolean { return this.worker !== null }
+  get ready(): boolean { return this._ready }
 }
 
 // Match a Hub move notation ("37-32" or "26x17x8") against legal moves

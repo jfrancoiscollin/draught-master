@@ -65,14 +65,29 @@ export async function annotateGame(
   const engine = getScanEngine()
   if (!engine.ready) return []
 
+  // Stop any ongoing search and lock the engine so that external callers
+  // (e.g. useScanEngine cleanup after React re-render) cannot interrupt us.
+  engine.stop()
+  engine.lock()
+
+  // Yield to the event loop so any in-flight "done" messages from the
+  // stopped search are processed (and discarded) before we start evaluating.
+  await new Promise(r => setTimeout(r, 100))
+
+  if (signal.aborted) { engine.unlock(); return [] }
+
   // Evaluate every position (0 to N)
   const evals: Array<{ score: number; bestMove: string | null }> = []
 
-  for (let i = 0; i < positions.length; i++) {
-    if (signal.aborted) break
-    const res = await engine.evaluate(positions[i].fen, msPerMove)
-    evals.push(res ?? { score: 0, bestMove: null })
-    onProgress(i + 1, positions.length)
+  try {
+    for (let i = 0; i < positions.length; i++) {
+      if (signal.aborted) break
+      const res = await engine.evaluate(positions[i].fen, msPerMove)
+      evals.push(res ?? { score: 0, bestMove: null })
+      onProgress(i + 1, positions.length)
+    }
+  } finally {
+    engine.unlock()
   }
 
   if (signal.aborted) return []
@@ -90,8 +105,7 @@ export async function annotateGame(
 
     // scoreBefore: from player-to-move's perspective (positive = that player is ahead)
     // scoreAfter:  from opponent's perspective (positive = opponent is ahead)
-    // The player's eval after their move = -scoreAfter
-    // Centipawn loss = max(0, scoreBefore - (-scoreAfter)) = max(0, scoreBefore + scoreAfter)
+    // Centipawn loss = max(0, scoreBefore + scoreAfter)
     const rawLoss = scoreBefore + scoreAfter
     const lossCp = Math.min(1000, Math.max(0, rawLoss))
 
