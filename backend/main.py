@@ -855,7 +855,14 @@ async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
         state = fen_to_board(fen)
     except Exception:
         raise HTTPException(status_code=400, detail="FEN invalide")
-    result = await analyze_position(state, [], question, language)
+    if language == 'en':
+        context_note = ("Note: this position comes from an imported PDN game. "
+                        "The FEN is correct and valid. ")
+    else:
+        context_note = ("Note : cette position est extraite d'une partie importée au format PDN. "
+                        "Le FEN est correct et la position est valide. ")
+    effective_question = context_note + (question or "")
+    result = await analyze_position(state, [], effective_question, language)
     return AnalysisResponse(**result)
 
 
