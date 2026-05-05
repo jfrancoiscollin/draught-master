@@ -1,3 +1,5 @@
+import type { MoveData } from '../types'
+
 export interface ScanInfo {
   depth: number
   score: number   // centipawns, positive = white advantage
@@ -58,6 +60,7 @@ class ScanEngineWorker {
   private currentCb: ScanCallback | null = null
   private lastInfo: Partial<ScanInfo> = {}
   private pending: { hubPos: string; cb: ScanCallback } | null = null
+  private bestSoFar: string | null = null
 
   constructor() {
     this.boot()
@@ -102,6 +105,7 @@ class ScanEngineWorker {
     if (msg.startsWith('info ')) {
       const parsed = parseInfo(msg)
       this.lastInfo = { ...this.lastInfo, ...parsed }
+      if (this.lastInfo.pv?.length) this.bestSoFar = this.lastInfo.pv[0]
       this.currentCb?.({ ...emptyInfo(), ...this.lastInfo, done: false })
       return
     }
@@ -111,10 +115,11 @@ class ScanEngineWorker {
       const moveM  = msg.match(/move=(\S+)/)
       const depthM = msg.match(/depth=(\d+)/)
       const scoreM = msg.match(/score=([+-]?\d+)/)
+      const bestMove = moveM?.[1] ?? this.bestSoFar ?? null
       this.currentCb?.({
         ...emptyInfo(),
         ...this.lastInfo,
-        bestMove: moveM?.[1] ?? null,
+        bestMove,
         depth:    parseInt(depthM?.[1] ?? '0') || (this.lastInfo.depth ?? 0),
         score:    parseInt(scoreM?.[1] ?? String(this.lastInfo.score ?? 0)),
         done: true,
@@ -126,6 +131,7 @@ class ScanEngineWorker {
     if (this.analyzing) this.send('stop')
     this.currentCb = cb
     this.lastInfo = {}
+    this.bestSoFar = null
     this.analyzing = true
     this.send(`pos pos=${hubPos}`)
     this.send('go analyze')
@@ -140,6 +146,31 @@ class ScanEngineWorker {
     this.run(hubPos, cb)
   }
 
+  // One-shot: analyze for `ms` milliseconds and resolve with best move found
+  getMove(fen: string, ms: number = 500): Promise<string | null> {
+    return new Promise((resolve) => {
+      let resolved = false
+      const finish = (move: string | null) => {
+        if (resolved) return
+        resolved = true
+        resolve(move)
+      }
+
+      this.analyze(fen, (info) => {
+        if (info.done) finish(info.bestMove)
+      })
+
+      setTimeout(() => {
+        if (!resolved) {
+          this.send('stop')
+          this.analyzing = false
+          this.currentCb = null
+          finish(this.bestSoFar)
+        }
+      }, ms)
+    })
+  }
+
   stop() {
     if (this.analyzing) {
       this.send('stop')
@@ -152,6 +183,35 @@ class ScanEngineWorker {
   get available(): boolean {
     return this.worker !== null
   }
+}
+
+// Match a Hub move notation ("37-32" or "26x17x8") against legal moves
+export function matchHubMove(hubMove: string, legalMoves: MoveData[]): MoveData | null {
+  if (!hubMove || !legalMoves.length) return null
+
+  if (hubMove.includes('x')) {
+    const squares = hubMove.split('x').map(Number)
+    const from = squares[0]
+    const to = squares[squares.length - 1]
+    // Exact path match
+    const exact = legalMoves.find(m =>
+      m.path.length === squares.length && m.path.every((sq, i) => sq === squares[i])
+    )
+    if (exact) return exact
+    // Fallback: start + end + is capture
+    return legalMoves.find(m =>
+      m.path[0] === from && m.path[m.path.length - 1] === to && m.captures.length > 0
+    ) ?? null
+  }
+
+  if (hubMove.includes('-')) {
+    const [from, to] = hubMove.split('-').map(Number)
+    return legalMoves.find(m =>
+      m.path[0] === from && m.path[m.path.length - 1] === to && m.captures.length === 0
+    ) ?? null
+  }
+
+  return null
 }
 
 let _instance: ScanEngineWorker | null = null
