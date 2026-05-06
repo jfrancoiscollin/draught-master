@@ -149,17 +149,15 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
           const result = await ingestPdn(raw, maxMoves)
           totalGames += result.games
           totalFens += result.fens_added
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : String(err)
-          setFetchMessage('')
-          alert(`Erreur envoi données (${username}):\n${msg}`)
-          return
+          if (result.games === 0) failCount++
+        } catch {
+          failCount++  // backend error on this player — continue with others
         }
       }
 
-      if (totalGames === 0) {
+      if (totalFens === 0) {
         setFetchMessage('')
-        alert(`Aucune partie récupérée (${failCount}/${names.length} joueurs en échec).\nVérifie les pseudos sur lidraughts.org.`)
+        alert(`Aucune position extraite (${failCount}/${names.length} joueurs en échec).\nVérifie les pseudos sur lidraughts.org.`)
         return
       }
 

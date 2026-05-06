@@ -1001,8 +1001,12 @@ async def ingest_pdn(body: Dict[str, Any]) -> Dict[str, Any]:
     import cache_builder
     raw: str = body.get("raw", "")
     max_moves: int = min(int(body.get("max_moves", 12)), 20)
-    result = cache_builder.ingest_raw(raw, max_moves)
-    return result
+    try:
+        result = cache_builder.ingest_raw(raw, max_moves)
+        return result
+    except Exception as exc:
+        logging.exception("ingest_raw error (raw[:80]=%s)", raw[:80] if raw else "")
+        return {"games": 0, "fens_added": 0, "format": "error", "error": str(exc)}
 
 
 @app.post("/api/opening-book/start-eval")
