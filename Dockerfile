@@ -28,7 +28,7 @@ RUN test -f /tmp/scan/data/eval \
     && echo "data/eval OK: $(stat -c%s /tmp/scan/data/eval) bytes"
 
 RUN cp /tmp/scan/scan_linux /scan && chmod +x /scan
-RUN mkdir -p /scan-data && cp /tmp/scan/data/eval /scan-data/eval
+RUN mkdir -p /scan-data && cp -r /tmp/scan/data/. /scan-data/ && echo "Scan data files:" && ls -la /scan-data/
 
 # ── Stage 3: Python runtime ───────────────────────────────────────────────
 FROM python:3.12-slim

@@ -51,11 +51,15 @@ class ScanEngine:
         cwd = os.path.dirname(os.path.abspath(__file__))
 
         # Log the data/eval file size to diagnose LFS pointer issues
-        eval_path = os.path.join(cwd, "data", "eval")
-        if os.path.isfile(eval_path):
-            logger.info("data/eval size: %d bytes", os.path.getsize(eval_path))
+        data_dir = os.path.join(cwd, "data")
+        if os.path.isdir(data_dir):
+            files = os.listdir(data_dir)
+            logger.info("Scan data dir %s: %s", data_dir, files)
+            for f in files:
+                fp = os.path.join(data_dir, f)
+                logger.info("  %s: %d bytes", f, os.path.getsize(fp))
         else:
-            logger.warning("data/eval not found at %s", eval_path)
+            logger.warning("Scan data dir not found: %s", data_dir)
 
         self._stderr_lines: list[str] = []
         self._proc = subprocess.Popen(
@@ -117,7 +121,7 @@ class ScanEngine:
         if result is None:
             raise RuntimeError("Scan did not send 'wait' during handshake")
         self._send("set-param name=variant value=normal")
-        self._send("set-param name=book value=false")
+        self._send("set-param name=book value=true")
         self._send("set-param name=bb-size value=0")
         self._send("init")
         result = self._wait_for("ready", timeout=10.0)
@@ -184,7 +188,7 @@ class ScanEngine:
                         score_m = re.search(r'\bscore=([+-]?\d+)', line)
                         final_score = int(score_m.group(1)) if score_m else last_score
                         final_move = (move_m.group(1) if move_m else None) or last_best
-                        logger.debug("evaluate_pos done: score=%d best=%s", final_score, final_move)
+                        logger.info("evaluate_pos done: score=%d best=%s", final_score, final_move)
                         return {"bestMove": final_move, "score": final_score}
                 except queue.Empty:
                     pass
