@@ -22,9 +22,10 @@ export interface GameStats {
   blackCounts: Record<NonNullable<Verdict>, number>
 }
 
-// Lidraughts sigmoid formula: winning chance for the side to move
+// Scan uses a compressed score scale (~30 units ≈ one man, vs Stockfish's 100 cp = one pawn).
+// Coefficient 0.04 is calibrated so: inaccuracy ≥ 4 pts, mistake ≥ 8 pts, blunder ≥ 20 pts.
 function winChance(cp: number): number {
-  return 2 / (1 + Math.exp(-0.004 * cp)) - 1
+  return 2 / (1 + Math.exp(-0.04 * cp)) - 1
 }
 
 function classify(dwc: number): Verdict {
