@@ -126,12 +126,17 @@ def run_build(
         total_games = 0
 
         if pdn_texts:
-            # PDN already downloaded by the browser — just parse
+            # Data already downloaded by the browser — parse PDN or NDJSON
+            from lidraughts_fetcher import _ndjson_to_pdn
             _set(message=f"Analyse de {len(pdn_texts)} lot(s) de parties…")
-            for i, pdn_bulk in enumerate(pdn_texts):
-                if not pdn_bulk:
+            for i, raw in enumerate(pdn_texts):
+                if not raw or not raw.strip():
                     continue
+                # Auto-detect format: NDJSON lines start with '{', PDN with '['
+                pdn_bulk = raw if raw.lstrip().startswith('[') else _ndjson_to_pdn(raw)
                 games = split_pdn_games(pdn_bulk)
+                logger.info("cache_builder: lot %d → %d games (format=%s)",
+                            i, len(games), "PDN" if raw.lstrip().startswith('[') else "NDJSON")
                 total_games += len(games)
                 _set(fetched_games=total_games,
                      message=f"{total_games} parties reçues ({i+1}/{len(pdn_texts)} joueurs)…")

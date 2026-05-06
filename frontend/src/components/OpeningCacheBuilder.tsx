@@ -116,23 +116,27 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     setFetchMessage('')
 
     try {
-      // Phase 1: download PDN from Lidraughts in the browser
-      // (server-side fetching is blocked by Lidraughts allowlist)
+      // Phase 1: download games from Lidraughts in the browser
+      // No custom Accept header → plain GET avoids CORS preflight.
+      // Lidraughts returns NDJSON by default; backend handles both formats.
       const pdnTexts: string[] = []
+      let downloadedCount = 0
       for (let i = 0; i < names.length; i++) {
         const username = names[i]
         setFetchMessage(`Téléchargement ${username} (${i + 1}/${names.length})…`)
         try {
           const resp = await fetch(
-            `https://lidraughts.org/api/games/user/${encodeURIComponent(username)}?max=${maxGames}&variant=standard`,
-            { headers: { Accept: 'application/x-draughts-pdn' } },
+            `https://lidraughts.org/api/games/user/${encodeURIComponent(username)}?max=${maxGames}`,
           )
           if (resp.ok) {
             const text = await resp.text()
-            if (text && text.includes('[')) pdnTexts.push(text)
+            if (text && text.trim()) {
+              pdnTexts.push(text)
+              downloadedCount++
+            }
           }
         } catch {
-          // CORS or network error — skip this player
+          // Network or CORS error — skip this player
         }
       }
 
