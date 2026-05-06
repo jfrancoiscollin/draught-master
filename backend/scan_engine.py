@@ -150,8 +150,8 @@ class ScanEngine:
 
     def evaluate_pos(self, pos: str, movetime_s: float) -> Optional[dict]:
         """Evaluate using 'go think' so Scan manages the time budget internally.
-        The 'done' message includes the final depth score; we also track info lines
-        as a fallback in case done omits the score field.
+        Book is disabled so every position gets a real search score (book positions
+        return score=0 which breaks the blunder-detection formula).
         Returns {"score": int, "bestMove": str|None}."""
         with self._lock:
             while True:
@@ -160,6 +160,8 @@ class ScanEngine:
                 except queue.Empty:
                     break
 
+            # Disable book so we always get a search-based score
+            self._send("set-param name=book value=false")
             self._send(f"pos pos={pos}")
             self._send(f"level move-time={movetime_s:.3f}")
             self._send("go think")
@@ -189,10 +191,14 @@ class ScanEngine:
                         final_score = int(score_m.group(1)) if score_m else last_score
                         final_move = (move_m.group(1) if move_m else None) or last_best
                         logger.info("evaluate_pos done: score=%d best=%s", final_score, final_move)
+                        # Re-enable book for best_move() calls
+                        self._send("set-param name=book value=true")
                         return {"bestMove": final_move, "score": final_score}
                 except queue.Empty:
                     pass
 
+            # Re-enable book even on timeout
+            self._send("set-param name=book value=true")
             logger.warning("evaluate_pos: no done received, last_score=%d", last_score)
             return {"bestMove": last_best, "score": last_score}
 
