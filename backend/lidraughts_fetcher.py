@@ -88,9 +88,12 @@ def fetch_players_by_rating(
 
     candidates = _fetch_leaderboard_candidates(perf_type)
 
-    if not candidates:
-        logger.warning("Leaderboard API unavailable — using static player list")
-        candidates = _STATIC_PLAYERS
+    # Always merge static list so high-rated players are always available,
+    # regardless of what the live API returns.
+    api_names = {p["username"] for p in candidates}
+    candidates += [p for p in _STATIC_PLAYERS if p["username"] not in api_names]
+    if not api_names:
+        logger.warning("Leaderboard API unavailable — using static player list only")
 
     in_range = [p for p in candidates if rating_min <= p["rating"] <= rating_max]
     logger.info(
