@@ -226,12 +226,13 @@ export async function findPlayersByRating(
 }
 
 export async function startOpeningCacheBuild(params: {
-  usernames: string[]
+  usernames?: string[]
+  pdn_texts?: string[]
   max_games_per_user?: number
   max_moves?: number
   ms_per_position?: number
 }): Promise<{ started: boolean; message: string }> {
-  const res = await api.post('/opening-book/build', params)
+  const res = await api.post('/opening-book/build', params, { timeout: 120000 })
   return res.data
 }
 

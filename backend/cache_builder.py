@@ -106,6 +106,7 @@ def run_build(
     max_games_per_user: int,
     max_moves: int,
     ms_per_position: int,
+    pdn_texts: list[str] | None = None,
 ) -> None:
     """Entry point for the background thread."""
     from lidraughts_fetcher import fetch_user_games_pdn, split_pdn_games
@@ -120,32 +121,47 @@ def run_build(
     movetime_s = ms_per_position / 1000.0
 
     try:
-        # ── Phase 1: collect unique FENs from all users ────────────────────
-        _set(message="Téléchargement des parties depuis Lidraughts…")
+        # ── Phase 1: collect unique FENs ──────────────────────────────────────
         all_fens: set[str] = set()
         total_games = 0
 
-        for i, username in enumerate(usernames):
-            pdn_bulk = fetch_user_games_pdn(username.strip(), max_games_per_user)
-            if not pdn_bulk:
-                logger.warning("No games fetched for user '%s'", username)
-                _inc("errors")
-                continue
-            games = split_pdn_games(pdn_bulk)
-            total_games += len(games)
-            _set(fetched_games=total_games,
-                 message=f"{total_games} parties chargées ({i+1}/{len(usernames)} joueurs)…")
-
-            for game_pdn in games:
-                try:
-                    fens = extract_fens(game_pdn, max_moves)
-                    all_fens.update(fens)
-                except Exception:
+        if pdn_texts:
+            # PDN already downloaded by the browser — just parse
+            _set(message=f"Analyse de {len(pdn_texts)} lot(s) de parties…")
+            for i, pdn_bulk in enumerate(pdn_texts):
+                if not pdn_bulk:
+                    continue
+                games = split_pdn_games(pdn_bulk)
+                total_games += len(games)
+                _set(fetched_games=total_games,
+                     message=f"{total_games} parties reçues ({i+1}/{len(pdn_texts)} joueurs)…")
+                for game_pdn in games:
+                    try:
+                        fens = extract_fens(game_pdn, max_moves)
+                        all_fens.update(fens)
+                    except Exception:
+                        _inc("errors")
+        else:
+            # Fetch from Lidraughts server-side (may fail due to allowlist)
+            _set(message="Téléchargement des parties depuis Lidraughts…")
+            for i, username in enumerate(usernames):
+                pdn_bulk = fetch_user_games_pdn(username.strip(), max_games_per_user)
+                if not pdn_bulk:
+                    logger.warning("No games fetched for user '%s'", username)
                     _inc("errors")
-
-            # Be polite to Lidraughts API between users
-            if i < len(usernames) - 1:
-                time.sleep(2)
+                    continue
+                games = split_pdn_games(pdn_bulk)
+                total_games += len(games)
+                _set(fetched_games=total_games,
+                     message=f"{total_games} parties chargées ({i+1}/{len(usernames)} joueurs)…")
+                for game_pdn in games:
+                    try:
+                        fens = extract_fens(game_pdn, max_moves)
+                        all_fens.update(fens)
+                    except Exception:
+                        _inc("errors")
+                if i < len(usernames) - 1:
+                    time.sleep(2)
 
         # ── Phase 2: filter already-cached positions ───────────────────────
         new_fens = [f for f in all_fens if not db_lookup(f)]
@@ -158,7 +174,10 @@ def run_build(
         logger.info("cache_builder: %d unique FENs, %d new to compute", len(all_fens), len(new_fens))
 
         if not new_fens:
-            _set(status="done", message="Toutes les positions étaient déjà en cache !")
+            if len(all_fens) == 0:
+                _set(status="error", message="Aucune partie trouvée — vérifiez les pseudos ou réessayez.")
+            else:
+                _set(status="done", message="Toutes les positions étaient déjà en cache !")
             return
 
         # ── Phase 3: evaluate with Scan ────────────────────────────────────
@@ -206,6 +225,7 @@ def start(
     max_games_per_user: int = 100,
     max_moves: int = 12,
     ms_per_position: int = 5000,
+    pdn_texts: list[str] | None = None,
 ) -> bool:
     """Start the background build job. Returns False if already running."""
     with _lock:
@@ -214,7 +234,7 @@ def start(
 
     t = threading.Thread(
         target=run_build,
-        args=(usernames, max_games_per_user, max_moves, ms_per_position),
+        args=(usernames, max_games_per_user, max_moves, ms_per_position, pdn_texts),
         daemon=True,
     )
     t.start()

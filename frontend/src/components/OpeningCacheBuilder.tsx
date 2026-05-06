@@ -76,6 +76,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     total_to_compute: number; errors: number; cache_size: number;
   } | null>(null)
   const [starting, setStarting] = useState(false)
+  const [fetchMessage, setFetchMessage] = useState('')
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const stopPolling = () => {
@@ -112,10 +113,39 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
       : foundPlayers.map(p => p.username)
     if (!names.length) return
     setStarting(true)
+    setFetchMessage('')
+
     try {
+      // Phase 1: download PDN from Lidraughts in the browser
+      // (server-side fetching is blocked by Lidraughts allowlist)
+      const pdnTexts: string[] = []
+      for (let i = 0; i < names.length; i++) {
+        const username = names[i]
+        setFetchMessage(`Téléchargement ${username} (${i + 1}/${names.length})…`)
+        try {
+          const resp = await fetch(
+            `https://lidraughts.org/api/games/user/${encodeURIComponent(username)}?max=${maxGames}&variant=standard`,
+            { headers: { Accept: 'application/x-draughts-pdn' } },
+          )
+          if (resp.ok) {
+            const text = await resp.text()
+            if (text && text.includes('[')) pdnTexts.push(text)
+          }
+        } catch {
+          // CORS or network error — skip this player
+        }
+      }
+
+      setFetchMessage('')
+
+      if (pdnTexts.length === 0) {
+        alert('Impossible de télécharger les parties depuis Lidraughts (CORS ou réseau). Essaie le mode Manuel avec des pseudos valides.')
+        return
+      }
+
+      // Phase 2: send PDN to backend for Scan evaluation
       const res = await startOpeningCacheBuild({
-        usernames: names,
-        max_games_per_user: maxGames,
+        pdn_texts: pdnTexts,
         max_moves: maxMoves,
         ms_per_position: msPerPos,
       })
@@ -312,13 +342,18 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
           </p>
         )}
 
+        {/* Fetch progress */}
+        {fetchMessage && (
+          <p className="text-xs text-indigo-300 text-center animate-pulse">{fetchMessage}</p>
+        )}
+
         {/* Start button */}
         <button
           onClick={handleStart}
           disabled={isRunning || starting || activeNames.length === 0}
           className="w-full py-3 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white font-semibold text-sm disabled:opacity-40 transition-colors"
         >
-          {starting ? 'Démarrage…' : isRunning ? 'Calcul en cours…' : '🚀 Lancer le calcul'}
+          {starting && fetchMessage ? '⬇️ Téléchargement…' : starting ? 'Démarrage…' : isRunning ? 'Calcul en cours…' : '🚀 Lancer le calcul'}
         </button>
 
         {/* Status */}

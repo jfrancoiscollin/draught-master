@@ -965,20 +965,24 @@ async def find_players_by_rating(
 
 @app.post("/api/opening-book/build")
 async def start_cache_build(body: Dict[str, Any]) -> Dict[str, Any]:
-    """Start a background job that fetches Lidraughts games and evaluates opening positions."""
+    """Start a background job that evaluates opening positions.
+    Accepts either usernames (server fetches from Lidraughts) or
+    pdn_texts (PDN already downloaded by the browser client).
+    """
     import cache_builder
     usernames: List[str] = body.get("usernames", [])
-    if not usernames:
-        raise HTTPException(status_code=400, detail="Au moins un pseudo Lidraughts requis")
+    pdn_texts: List[str] = body.get("pdn_texts", [])
+    if not usernames and not pdn_texts:
+        raise HTTPException(status_code=400, detail="Fournir 'usernames' ou 'pdn_texts'")
     max_games = min(int(body.get("max_games_per_user", 100)), 500)
     max_moves = min(int(body.get("max_moves", 12)), 20)
     ms_per_pos = min(max(int(body.get("ms_per_position", 5000)), 1000), 15000)
-    started = cache_builder.start(usernames, max_games, max_moves, ms_per_pos)
+    started = cache_builder.start(usernames, max_games, max_moves, ms_per_pos, pdn_texts or None)
     if not started:
         return {"started": False, "message": "Un calcul est déjà en cours"}
-    logging.info("cache_builder started: users=%s max_games=%d max_moves=%d ms=%d",
-                 usernames, max_games, max_moves, ms_per_pos)
-    return {"started": True, "message": f"Calcul lancé pour {len(usernames)} joueur(s)"}
+    src = f"{len(pdn_texts)} lots PDN" if pdn_texts else f"{len(usernames)} joueurs"
+    logging.info("cache_builder started: %s max_moves=%d ms=%d", src, max_moves, ms_per_pos)
+    return {"started": True, "message": f"Calcul lancé ({src})"}
 
 
 @app.get("/api/opening-book/build/status")
