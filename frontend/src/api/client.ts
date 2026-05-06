@@ -214,6 +214,23 @@ export interface PositionEval {
   bestMove: string | null
 }
 
+// Pre-compute deep evaluations for a game's positions and store them in the
+// server-side opening eval cache. Subsequent annotation calls will use the cache.
+export async function precomputePositions(
+  positions: PdnPosition[],
+): Promise<{ success: boolean; computed?: number; cache_size?: number; evaluations?: PositionEval[] }> {
+  try {
+    const res = await api.post(
+      '/opening-book/precompute',
+      { positions },
+      { timeout: 600000 },
+    )
+    return res.data
+  } catch {
+    return { success: false }
+  }
+}
+
 // Batch evaluation using the server's native Scan engine (fast, high depth).
 // Returns null if the server doesn't have Scan installed.
 export async function analyzePositionsBatch(

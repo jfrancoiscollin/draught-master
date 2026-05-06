@@ -8,7 +8,7 @@ import { getScanEngine } from '../lib/scanEngine'
 import type { Arrow } from './Board'
 import {
   importPdn, getPositionLegalMoves, applyPositionMove,
-  analyzePositionFen, getPositionBestMove,
+  analyzePositionFen, getPositionBestMove, precomputePositions,
 } from '../api/client'
 import type { PdnPosition, PdnImportResult } from '../api/client'
 import { fenToBoard } from '../utils/fen'
@@ -57,6 +57,9 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
   const [annotationTotal, setAnnotationTotal] = useState(0)
   const annotationAbortRef = useRef<AbortController | null>(null)
   const autoLearnRef = useRef(false)
+
+  // ── Deep pre-computation ──────────────────────────────────────
+  const [precomputing, setPrecomputing] = useState(false)
 
   // ── Mode: review or learn ─────────────────────────────────────
   const [panelMode, setPanelMode] = useState<PanelMode>('review')
@@ -237,6 +240,20 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
       handleAnnotateGame()
     }
   }, [gameStats, handleAnnotateGame])
+
+  const handleDeepAnalysis = useCallback(async () => {
+    if (!result) return
+    setPrecomputing(true)
+    try {
+      const res = await precomputePositions(result.positions)
+      if (res.success) {
+        // Cache is now populated — run annotation which will use it instantly
+        await handleAnnotateGame()
+      }
+    } finally {
+      setPrecomputing(false)
+    }
+  }, [result, handleAnnotateGame])
 
   const annotationByIdx = new Map(annotations.map(a => [a.posIdx, a]))
 
@@ -488,6 +505,36 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
             onLearn={handleLearnClick}
             annotating={annotating}
           />
+
+          {/* Deep pre-computation button */}
+          {(() => {
+            const n = result?.positions.length ?? 0
+            const secPerPos = Math.min(10, Math.floor(280 / Math.max(n, 1)))
+            const estimMin = Math.ceil(n * secPerPos / 60)
+            return (
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={handleDeepAnalysis}
+                  disabled={precomputing || annotating}
+                  className="w-full text-sm py-2 px-3 rounded-lg bg-indigo-900/60 hover:bg-indigo-800/80 border border-indigo-700 text-indigo-200 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
+                >
+                  {precomputing ? (
+                    <>
+                      <span className="animate-spin inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full" />
+                      Analyse profonde en cours…
+                    </>
+                  ) : (
+                    <>🔬 Analyse approfondie (~{estimMin} min)</>
+                  )}
+                </button>
+                {!precomputing && (
+                  <p className="text-xs text-gray-500 text-center">
+                    {secPerPos}s/coup · résultats mis en cache · détecte plus d'erreurs
+                  </p>
+                )}
+              </div>
+            )
+          })()}
         </div>
 
         {/* ── Move list ── */}

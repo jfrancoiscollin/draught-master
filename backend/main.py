@@ -863,11 +863,20 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     movetime_s = ms_per_move / 1000.0
 
     def run_batch() -> list:
+        from opening_eval_db import lookup as cached_lookup
         results = []
+        cache_hits = 0
         for i, pos_data in enumerate(positions):
             fen = pos_data.get("fen", "")
             if not fen:
                 results.append({"score": 0, "bestMove": None})
+                continue
+            # Check pre-computed cache first (populated by /api/opening-book/precompute)
+            hit = cached_lookup(fen)
+            if hit:
+                results.append({"score": hit["score"], "bestMove": hit["bestMove"]})
+                logging.info("annotate pos %d/%d: CACHED score=%d best=%s", i, len(positions)-1, hit["score"], hit["bestMove"])
+                cache_hits += 1
                 continue
             state = fen_to_board(fen)
             hub_pos = _build_pos(state)
@@ -881,6 +890,62 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     non_zero = sum(1 for e in evaluations if e["score"] != 0)
     logging.info("annotate done: %d positions, %d non-zero scores", len(evaluations), non_zero)
     return {"evaluations": evaluations, "available": True}
+
+
+@app.post("/api/opening-book/precompute")
+async def precompute_positions(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Deep evaluation of a game's positions, stored in the opening eval cache.
+    Uses more time per position than the live annotate endpoint so Scan reaches
+    higher depth. Cached results are reused instantly on future annotation calls."""
+    from scan_engine import _get_engine, _build_pos
+    from opening_eval_db import lookup as cached_lookup, store as cache_store, size as cache_size
+    import asyncio
+
+    positions = body.get("positions", [])
+    if not positions:
+        return {"success": False, "error": "No positions provided"}
+
+    engine = _get_engine()
+    if engine is None:
+        return {"success": False, "error": "Scan non disponible"}
+
+    # Allocate up to 10 s/position, total budget 280 s so we stay under HTTP timeout
+    ms_per_pos = min(10000, max(3000, 280000 // max(len(positions), 1)))
+    movetime_s = ms_per_pos / 1000.0
+    logging.info("precompute: %d positions, %.1f s each (total ~%.0f s)", len(positions), movetime_s, len(positions) * movetime_s)
+
+    def run() -> list:
+        new_entries: list[dict] = []
+        all_results: list[dict] = []
+        for i, pos_data in enumerate(positions):
+            fen = pos_data.get("fen", "")
+            if not fen:
+                all_results.append({"score": 0, "bestMove": None})
+                continue
+            # Skip positions already in cache
+            existing = cached_lookup(fen)
+            if existing:
+                logging.info("precompute pos %d/%d: already cached score=%d", i, len(positions)-1, existing["score"])
+                all_results.append({"score": existing["score"], "bestMove": existing["bestMove"]})
+                continue
+            state = fen_to_board(fen)
+            hub_pos = _build_pos(state)
+            ev = engine.evaluate_pos(hub_pos, movetime_s) or {"score": 0, "bestMove": None}
+            entry = {"fen": fen, "score": ev["score"], "bestMove": ev["bestMove"]}
+            new_entries.append(entry)
+            all_results.append({"score": ev["score"], "bestMove": ev["bestMove"]})
+            logging.info("precompute pos %d/%d: score=%d best=%s", i, len(positions)-1, ev["score"], ev["bestMove"])
+        if new_entries:
+            cache_store(new_entries)
+        return all_results
+
+    evaluations = await asyncio.get_event_loop().run_in_executor(None, run)
+    return {
+        "success": True,
+        "computed": len(evaluations),
+        "cache_size": cache_size(),
+        "evaluations": evaluations,
+    }
 
 
 @app.post("/api/position/analyze")
