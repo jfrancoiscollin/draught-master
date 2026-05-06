@@ -82,23 +82,15 @@ def fetch_players_by_rating(
     """Return up to `count` randomly-sampled Lidraughts players whose rating
     falls within [rating_min, rating_max].
 
-    Tries several Lidraughts API endpoints; falls back to a curated static list.
+    Uses the curated static list directly (fast, reliable). The Lidraughts
+    leaderboard API is only used for fetching games, not for player discovery.
     """
     import random
 
-    candidates = _fetch_leaderboard_candidates(perf_type)
-
-    # Always merge static list so high-rated players are always available,
-    # regardless of what the live API returns.
-    api_names = {p["username"] for p in candidates}
-    candidates += [p for p in _STATIC_PLAYERS if p["username"] not in api_names]
-    if not api_names:
-        logger.warning("Leaderboard API unavailable — using static player list only")
-
-    in_range = [p for p in candidates if rating_min <= p["rating"] <= rating_max]
+    in_range = [p for p in _STATIC_PLAYERS if rating_min <= p["rating"] <= rating_max]
     logger.info(
-        "fetch_players_by_rating: %d candidates, %d in [%d,%d]",
-        len(candidates), len(in_range), rating_min, rating_max,
+        "fetch_players_by_rating: %d in [%d,%d] from static list",
+        len(in_range), rating_min, rating_max,
     )
 
     random.shuffle(in_range)
