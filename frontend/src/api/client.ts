@@ -214,6 +214,31 @@ export interface PositionEval {
   bestMove: string | null
 }
 
+export async function startOpeningCacheBuild(params: {
+  usernames: string[]
+  max_games_per_user?: number
+  max_moves?: number
+  ms_per_position?: number
+}): Promise<{ started: boolean; message: string }> {
+  const res = await api.post('/opening-book/build', params)
+  return res.data
+}
+
+export async function getOpeningCacheBuildStatus(): Promise<{
+  status: string
+  message: string
+  fetched_games: number
+  unique_positions: number
+  computed: number
+  skipped: number
+  total_to_compute: number
+  errors: number
+  cache_size: number
+}> {
+  const res = await api.get('/opening-book/build/status')
+  return res.data
+}
+
 // Pre-compute deep evaluations for a game's positions and store them in the
 // server-side opening eval cache. Subsequent annotation calls will use the cache.
 export async function precomputePositions(

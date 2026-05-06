@@ -948,7 +948,35 @@ async def precompute_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-@app.post("/api/position/analyze")
+@app.post("/api/opening-book/build")
+async def start_cache_build(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Start a background job that fetches Lidraughts games and evaluates opening positions."""
+    import cache_builder
+    usernames: List[str] = body.get("usernames", [])
+    if not usernames:
+        raise HTTPException(status_code=400, detail="Au moins un pseudo Lidraughts requis")
+    max_games = min(int(body.get("max_games_per_user", 100)), 500)
+    max_moves = min(int(body.get("max_moves", 12)), 20)
+    ms_per_pos = min(max(int(body.get("ms_per_position", 5000)), 1000), 15000)
+    started = cache_builder.start(usernames, max_games, max_moves, ms_per_pos)
+    if not started:
+        return {"started": False, "message": "Un calcul est déjà en cours"}
+    logging.info("cache_builder started: users=%s max_games=%d max_moves=%d ms=%d",
+                 usernames, max_games, max_moves, ms_per_pos)
+    return {"started": True, "message": f"Calcul lancé pour {len(usernames)} joueur(s)"}
+
+
+@app.get("/api/opening-book/build/status")
+async def get_cache_build_status() -> Dict[str, Any]:
+    """Poll the status of the background opening cache build job."""
+    import cache_builder
+    from opening_eval_db import size as cache_size
+    status = cache_builder.get_status()
+    status["cache_size"] = cache_size()
+    return status
+
+
+
 async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
     fen = body.get("fen", "")
     question = body.get("question") or None

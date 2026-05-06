@@ -9,6 +9,7 @@ import ExercisePanel from './components/ExercisePanel'
 import ExerciseLibraryPage from './components/ExerciseLibraryPage'
 import LessonPanel from './components/LessonPanel'
 import ImportGamePanel from './components/ImportGamePanel'
+import OpeningCacheBuilder from './components/OpeningCacheBuilder'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
 import Logo from './components/Logo'
@@ -112,7 +113,7 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'exercise-library' | 'exercises' | 'import-game'
+type Tab = 'home' | 'play' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder'
 
 export default function App() {
   const { t, language } = useLanguage()
@@ -741,6 +742,15 @@ export default function App() {
                 <span className="text-lg font-bold text-white">{t('tabImport')}</span>
                 <span className="text-sm text-gray-400 text-center">{t('importDesc')}</span>
               </button>
+              {/* Opening cache builder */}
+              <button
+                onClick={() => setTab('opening-builder')}
+                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-indigo-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+              >
+                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">🔬</span>
+                <span className="text-lg font-bold text-white">Base ouvertures</span>
+                <span className="text-sm text-gray-400 text-center">Pré-calcule les positions depuis Lidraughts</span>
+              </button>
             </div>
           </div>
         )}
@@ -1167,6 +1177,13 @@ export default function App() {
         {tab === 'import-game' && (
           <div className="h-full">
             <ImportGamePanel onClose={() => setTab('home')} />
+          </div>
+        )}
+
+        {/* OPENING CACHE BUILDER TAB */}
+        {tab === 'opening-builder' && (
+          <div className="h-full">
+            <OpeningCacheBuilder onClose={() => setTab('home')} />
           </div>
         )}
       </main>
