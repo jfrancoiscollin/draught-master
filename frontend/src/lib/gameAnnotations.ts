@@ -114,7 +114,11 @@ export async function annotateGame(
 
   // ── Fall back to client-side WASM Scan ──
   const engine = getScanEngine()
-  if (!engine.ready) return []
+  // If WASM is still initialising (downloading), wait up to 90s for it
+  if (!engine.ready) {
+    const ok = await engine.waitReady(90000)
+    if (!ok) return []
+  }
 
   // Stop any ongoing search and lock the engine so that external callers
   // (e.g. useScanEngine cleanup after React re-render) cannot interrupt us.

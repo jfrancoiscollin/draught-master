@@ -49,11 +49,20 @@ class ScanEngine:
         import subprocess
         # CWD must be the backend dir so Scan finds data/eval relative to itself
         cwd = os.path.dirname(os.path.abspath(__file__))
+
+        # Log the data/eval file size to diagnose LFS pointer issues
+        eval_path = os.path.join(cwd, "data", "eval")
+        if os.path.isfile(eval_path):
+            logger.info("data/eval size: %d bytes", os.path.getsize(eval_path))
+        else:
+            logger.warning("data/eval not found at %s", eval_path)
+
+        self._stderr_lines: list[str] = []
         self._proc = subprocess.Popen(
             [path, "hub"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
             text=True,
             bufsize=1,
             cwd=cwd,
@@ -62,6 +71,8 @@ class ScanEngine:
         self._lock = threading.Lock()
         t = threading.Thread(target=self._read_loop, daemon=True)
         t.start()
+        t2 = threading.Thread(target=self._stderr_loop, daemon=True)
+        t2.start()
         self._init()
 
     def _read_loop(self) -> None:
@@ -70,6 +81,13 @@ class ScanEngine:
             line = raw.strip()
             if line:
                 self._q.put(line)
+
+    def _stderr_loop(self) -> None:
+        assert self._proc.stderr
+        for raw in self._proc.stderr:
+            line = raw.strip()
+            if line:
+                logger.warning("Scan stderr: %s", line)
 
     def _send(self, cmd: str) -> None:
         assert self._proc.stdin

@@ -266,6 +266,22 @@ class ScanEngineWorker {
   lock(): void { this.locked = true }
   unlock(): void { this.locked = false }
 
+  // Wait up to `ms` milliseconds for the engine to finish initialising.
+  waitReady(ms: number = 60000): Promise<boolean> {
+    if (this._ready) return Promise.resolve(true)
+    if (!this.worker) return Promise.resolve(false)
+    return new Promise(resolve => {
+      const deadline = Date.now() + ms
+      const check = () => {
+        if (this._ready) { resolve(true); return }
+        if (Date.now() >= deadline) { resolve(false); return }
+        setTimeout(check, 500)
+      }
+      this.onReadyQueue.push(() => resolve(true))
+      setTimeout(() => { if (!this._ready) resolve(false) }, ms)
+    })
+  }
+
   get available(): boolean { return this.worker !== null }
   get ready(): boolean { return this._ready }
 }

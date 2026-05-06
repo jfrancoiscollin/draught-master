@@ -7,23 +7,28 @@ COPY frontend/ ./
 RUN npm run build
 
 # ── Stage 2: Fetch Scan engine + eval weights ────────────────────────────
-# Using the pre-compiled Linux binary from rhalbersma/scan (mirror of
-# Fabien Letouzey's Scan 3.1 — the engine behind lidraughts).
-# No C++ compilation needed.
+# raw.githubusercontent.com serves Git LFS pointer files, not the real blobs.
+# git clone + git lfs pull downloads the actual binaries.
 FROM ubuntu:22.04 AS scan-fetcher
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl ca-certificates \
+        git git-lfs ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL \
-    "https://raw.githubusercontent.com/rhalbersma/scan/master/scan_linux" \
-    -o /scan && chmod +x /scan
+RUN git lfs install --skip-repo \
+    && git clone --depth=1 https://github.com/rhalbersma/scan.git /tmp/scan \
+    && cd /tmp/scan && git lfs pull
 
-# Evaluation weights (~8.5 MB) — required for strong play
-RUN mkdir -p /scan-data && \
-    curl -fsSL \
-    "https://raw.githubusercontent.com/rhalbersma/scan/master/data/eval" \
-    -o /scan-data/eval
+# Verify the files are real (not LFS pointer stubs)
+RUN test -f /tmp/scan/scan_linux \
+    && test $(stat -c%s /tmp/scan/scan_linux) -gt 100000 \
+    && echo "scan_linux OK: $(stat -c%s /tmp/scan/scan_linux) bytes"
+
+RUN test -f /tmp/scan/data/eval \
+    && test $(stat -c%s /tmp/scan/data/eval) -gt 1000000 \
+    && echo "data/eval OK: $(stat -c%s /tmp/scan/data/eval) bytes"
+
+RUN cp /tmp/scan/scan_linux /scan && chmod +x /scan
+RUN mkdir -p /scan-data && cp /tmp/scan/data/eval /scan-data/eval
 
 # ── Stage 3: Python runtime ───────────────────────────────────────────────
 FROM python:3.12-slim
