@@ -876,12 +876,12 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
             results.append(ev)
             # Log a sample of scores to confirm the engine is working
             if i < 5 or i == len(positions) // 2:
-                logger.info("annotate pos %d: score=%d best=%s", i, ev["score"], ev["bestMove"])
+                logging.info("annotate pos %d: score=%d best=%s", i, ev["score"], ev["bestMove"])
         return results
 
     evaluations = await asyncio.get_event_loop().run_in_executor(None, run_batch)
     non_zero = sum(1 for e in evaluations if e["score"] != 0)
-    logger.info("annotate done: %d positions, %d non-zero scores", len(evaluations), non_zero)
+    logging.info("annotate done: %d positions, %d non-zero scores", len(evaluations), non_zero)
     return {"evaluations": evaluations, "available": True}
 
 
