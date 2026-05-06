@@ -4,8 +4,6 @@ import logging
 import re
 import time
 
-import requests
-
 logger = logging.getLogger(__name__)
 
 LIDRAUGHTS_API = "https://lidraughts.org"
@@ -13,6 +11,7 @@ LIDRAUGHTS_API = "https://lidraughts.org"
 
 def fetch_user_games_pdn(username: str, max_games: int = 200) -> str:
     """Download up to max_games games for a Lidraughts user as PDN text."""
+    import requests
     url = f"{LIDRAUGHTS_API}/api/games/user/{username}"
     try:
         logger.info("Fetching %d games for user '%s'…", max_games, username)
@@ -113,6 +112,7 @@ def fetch_players_by_rating(
 
 def _fetch_leaderboard_candidates(perf_type: str) -> list[dict]:
     """Try multiple Lidraughts API endpoints to get a list of players with ratings."""
+    import requests
     candidates: list[dict] = []
 
     endpoints = [
