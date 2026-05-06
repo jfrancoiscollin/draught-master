@@ -251,6 +251,16 @@ export async function getOpeningCacheBuildStatus(): Promise<{
   return res.data
 }
 
+export async function ingestPdn(raw: string, maxMoves: number): Promise<{ games: number; fens_added: number; format: string }> {
+  const res = await api.post('/opening-book/ingest', { raw, max_moves: maxMoves }, { timeout: 30000 })
+  return res.data
+}
+
+export async function startEval(msPerPosition: number): Promise<{ started: boolean; message: string }> {
+  const res = await api.post('/opening-book/start-eval', { ms_per_position: msPerPosition }, { timeout: 10000 })
+  return res.data
+}
+
 // Pre-compute deep evaluations for a game's positions and store them in the
 // server-side opening eval cache. Subsequent annotation calls will use the cache.
 export async function precomputePositions(

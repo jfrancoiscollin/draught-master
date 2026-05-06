@@ -225,6 +225,124 @@ def run_build(
         _set(status="error", message=f"Erreur : {exc}")
 
 
+# ── Incremental ingest (one player at a time) ─────────────────────────────────
+
+_pending_fens: set = set()
+_pending_games: int = 0
+
+
+def ingest_raw(raw: str, max_moves: int) -> dict:
+    """Parse one player's raw PDN or NDJSON text. Adds extracted FENs to the
+    pending pool. Returns {games: N, fens_added: N, format: str}."""
+    global _pending_fens, _pending_games
+    from lidraughts_fetcher import _ndjson_to_pdn, split_pdn_games
+
+    if not raw or not raw.strip():
+        return {"games": 0, "fens_added": 0, "format": "empty"}
+
+    stripped = raw.lstrip()
+    if stripped.startswith('{'):
+        fmt = "ndjson"
+        pdn_bulk = _ndjson_to_pdn(raw)
+    else:
+        fmt = "pdn"
+        pdn_bulk = raw
+
+    games = split_pdn_games(pdn_bulk)
+    new_fens: set = set()
+    for game_pdn in games:
+        try:
+            fens = extract_fens(game_pdn, max_moves)
+            new_fens.update(fens)
+        except Exception:
+            pass
+
+    with _lock:
+        before = len(_pending_fens)
+        _pending_fens.update(new_fens)
+        _pending_games += len(games)
+        added = len(_pending_fens) - before
+
+    logger.info("ingest_raw: fmt=%s games=%d fens=%d added=%d pending_total=%d",
+                fmt, len(games), len(new_fens), added, len(_pending_fens))
+    return {"games": len(games), "fens_added": added, "format": fmt}
+
+
+def start_eval(ms_per_position: int) -> bool:
+    """Start Scan evaluation on all pending FENs. Returns False if already running."""
+    global _pending_fens, _pending_games
+
+    with _lock:
+        if _job.get("status") == "running":
+            return False
+        fens = list(_pending_fens)
+        games = _pending_games
+        _pending_fens = set()
+        _pending_games = 0
+
+    if not fens:
+        return False
+
+    t = threading.Thread(
+        target=_run_eval_only,
+        args=(fens, games, ms_per_position),
+        daemon=True,
+    )
+    t.start()
+    return True
+
+
+def _run_eval_only(fens: list, total_games: int, ms_per_position: int) -> None:
+    """Background thread: evaluate a list of FENs with Scan."""
+    from opening_eval_db import lookup as db_lookup, store as db_store
+    from scan_engine import _get_engine, _build_pos
+    from game_engine import fen_to_board
+
+    _set(status="running",
+         fetched_games=total_games,
+         unique_positions=len(fens),
+         computed=0, skipped=0, errors=0,
+         message=f"{total_games} parties · {len(fens)} positions à évaluer…")
+
+    new_fens = [f for f in fens if not db_lookup(f)]
+    skipped = len(fens) - len(new_fens)
+    _set(skipped=skipped, total_to_compute=len(new_fens),
+         message=f"{len(fens)} positions · {len(new_fens)} à calculer · {skipped} en cache")
+
+    if not new_fens:
+        _set(status="done", message="Toutes les positions étaient déjà en cache !")
+        return
+
+    engine = _get_engine()
+    if engine is None:
+        _set(status="error", message="Moteur Scan non disponible")
+        return
+
+    movetime_s = ms_per_position / 1000.0
+    batch: list[dict] = []
+    for i, fen in enumerate(new_fens):
+        try:
+            state = fen_to_board(fen)
+            hub_pos = _build_pos(state)
+            ev = engine.evaluate_pos(hub_pos, movetime_s) or {"score": 0, "bestMove": None}
+            batch.append({"fen": fen, "score": ev["score"], "bestMove": ev["bestMove"]})
+        except Exception as exc:
+            logger.warning("Eval error pos %d: %s", i, exc)
+            _inc("errors")
+        _set(computed=i + 1, message=f"Évaluation {i+1}/{len(new_fens)}…")
+        if len(batch) >= 50:
+            db_store(batch)
+            batch.clear()
+
+    if batch:
+        db_store(batch)
+
+    from opening_eval_db import size as cache_size
+    _set(status="done",
+         message=f"Terminé ! {len(new_fens)} nouvelles positions ajoutées. Cache : {cache_size()} total.")
+    logger.info("_run_eval_only: done, %d new entries", len(new_fens))
+
+
 def start(
     usernames: list[str],
     max_games_per_user: int = 100,

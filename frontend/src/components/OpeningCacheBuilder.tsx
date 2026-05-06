@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { startOpeningCacheBuild, getOpeningCacheBuildStatus } from '../api/client'
+import { getOpeningCacheBuildStatus, ingestPdn, startEval } from '../api/client'
 
 interface Props {
   onClose: () => void
@@ -116,71 +116,71 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     setFetchMessage('')
 
     try {
-      // Phase 1: download games from Lidraughts in the browser
-      // Plain GET (no custom Accept) avoids CORS preflight issues.
-      const pdnTexts: string[] = []
+      let totalGames = 0
+      let totalFens = 0
       let failCount = 0
+
       for (let i = 0; i < names.length; i++) {
         const username = names[i]
-        setFetchMessage(`⬇️ ${username} (${i + 1}/${names.length})…`)
+        setFetchMessage(`⬇️ ${username} (${i + 1}/${names.length}) — ${totalGames} parties, ${totalFens} pos…`)
+
+        // Step 1: download from Lidraughts in browser (bypasses server-side block)
+        let raw = ''
         try {
-          // Accept header is safelisted in CORS — no preflight triggered.
-          // We request NDJSON explicitly so Lidraughts doesn't redirect to HTML.
           const resp = await fetch(
             `https://lidraughts.org/api/games/user/${encodeURIComponent(username)}?max=${maxGames}`,
             { headers: { Accept: 'application/x-ndjson' } },
           )
           if (resp.ok) {
             const ct = resp.headers.get('content-type') ?? ''
-            if (ct.includes('html')) {
-              // Lidraughts redirected to web page — not API data
-              failCount++
-            } else {
-              const text = await resp.text()
-              if (text && text.trim().length > 10) {
-                pdnTexts.push(text)
-              } else {
-                failCount++  // empty response (player has no games)
-              }
+            if (!ct.includes('html')) {
+              raw = await resp.text()
             }
-          } else {
-            failCount++
           }
-        } catch {
+        } catch { /* network/CORS error */ }
+
+        if (!raw || raw.trim().length < 10) {
           failCount++
+          continue
+        }
+
+        // Step 2: send this player's data to backend immediately (small POST)
+        try {
+          const result = await ingestPdn(raw, maxMoves)
+          totalGames += result.games
+          totalFens += result.fens_added
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          setFetchMessage('')
+          alert(`Erreur envoi données (${username}):\n${msg}`)
+          return
         }
       }
 
-      if (pdnTexts.length === 0) {
+      if (totalGames === 0) {
         setFetchMessage('')
-        alert(`Aucune partie récupérée depuis Lidraughts (${failCount} échec(s)).\nEssaie le mode Manuel avec des pseudos vérifiés sur lidraughts.org.`)
+        alert(`Aucune partie récupérée (${failCount}/${names.length} joueurs en échec).\nVérifie les pseudos sur lidraughts.org.`)
         return
       }
 
-      const totalKb = Math.round(pdnTexts.reduce((s, t) => s + t.length, 0) / 1024)
-      setFetchMessage(`✓ ${pdnTexts.length}/${names.length} joueurs • ${totalKb} KB reçus • Envoi au serveur…`)
-
-      // Phase 2: send game data to backend for Scan evaluation
-      let res: { started: boolean; message: string }
+      // Step 3: start Scan evaluation on all collected FENs
+      setFetchMessage(`✓ ${totalGames} parties · ${totalFens} nouvelles positions · Lancement du calcul Scan…`)
+      let evalRes: { started: boolean; message: string }
       try {
-        res = await startOpeningCacheBuild({
-          pdn_texts: pdnTexts,
-          max_moves: maxMoves,
-          ms_per_position: msPerPos,
-        })
+        evalRes = await startEval(msPerPos)
       } catch (err: unknown) {
         setFetchMessage('')
         const msg = err instanceof Error ? err.message : String(err)
-        alert(`Erreur lors de l'envoi au serveur:\n${msg}`)
+        alert(`Erreur démarrage Scan:\n${msg}`)
         return
       }
 
       setFetchMessage('')
-      if (res.started) {
+      if (evalRes.started) {
         setStatus(null)
         startPolling()
       } else {
-        alert(res.message)
+        alert(evalRes.message)
       }
     } finally {
       setStarting(false)

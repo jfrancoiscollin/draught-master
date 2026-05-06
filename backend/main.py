@@ -995,6 +995,29 @@ async def get_cache_build_status() -> Dict[str, Any]:
     return status
 
 
+@app.post("/api/opening-book/ingest")
+async def ingest_pdn(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Receive one player's raw PDN or NDJSON text, extract FENs into pending pool."""
+    import cache_builder
+    raw: str = body.get("raw", "")
+    max_moves: int = min(int(body.get("max_moves", 12)), 20)
+    result = cache_builder.ingest_raw(raw, max_moves)
+    return result
+
+
+@app.post("/api/opening-book/start-eval")
+async def start_eval(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Start Scan evaluation on all FENs collected via /ingest calls."""
+    import cache_builder
+    ms_per_pos: int = min(max(int(body.get("ms_per_position", 5000)), 1000), 15000)
+    started = cache_builder.start_eval(ms_per_pos)
+    if not started:
+        s = cache_builder.get_status()
+        if s.get("status") == "running":
+            return {"started": False, "message": "Un calcul est déjà en cours"}
+        return {"started": False, "message": "Aucune position en attente d'évaluation"}
+    return {"started": True, "message": "Évaluation Scan démarrée en arrière-plan"}
+
 
 async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
     fen = body.get("fen", "")
