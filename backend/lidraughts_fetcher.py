@@ -48,21 +48,32 @@ def _ndjson_to_pdn(ndjson_text: str) -> str:
     """Convert NDJSON game objects to concatenated PDN text."""
     import json
     games: list[str] = []
+    skipped = 0
     for line in ndjson_text.splitlines():
         line = line.strip()
         if not line:
             continue
+        if not line.startswith('{'):
+            # Not JSON (HTML or other format) — abort early
+            logger.warning("_ndjson_to_pdn: non-JSON line detected, skipping bulk: %s", line[:80])
+            return ""
         try:
             obj = json.loads(line)
-            # Lidraughts NDJSON has moves in "pgn" or "pdn" or "moves" field
-            moves = obj.get("pgn") or obj.get("pdn") or obj.get("moves", "")
+            # Try all known Lidraughts/Lichess field names for the move sequence
+            moves = (obj.get("moves") or obj.get("pgn") or
+                     obj.get("pdn") or obj.get("notation") or "")
+            if not moves:
+                skipped += 1
+                continue
             players = obj.get("players", {})
-            white = players.get("white", {}).get("user", {}).get("name", "?")
-            black = players.get("black", {}).get("user", {}).get("name", "?")
-            result = obj.get("winner", "*")
-            if result == "white":
+            white = (players.get("white", {}).get("user", {}).get("name")
+                     or players.get("white", {}).get("name", "?"))
+            black = (players.get("black", {}).get("user", {}).get("name")
+                     or players.get("black", {}).get("name", "?"))
+            winner = obj.get("winner", "")
+            if winner == "white":
                 result = "2-0"
-            elif result == "black":
+            elif winner == "black":
                 result = "0-2"
             else:
                 result = "1-1"
@@ -70,6 +81,9 @@ def _ndjson_to_pdn(ndjson_text: str) -> str:
             games.append(pdn)
         except Exception:
             pass
+    if skipped:
+        logger.debug("_ndjson_to_pdn: %d games had no moves field", skipped)
+    logger.info("_ndjson_to_pdn: parsed %d games from %d chars", len(games), len(ndjson_text))
     return "\n\n".join(games)
 
 

@@ -124,15 +124,24 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
         const username = names[i]
         setFetchMessage(`⬇️ ${username} (${i + 1}/${names.length})…`)
         try {
+          // Accept header is safelisted in CORS — no preflight triggered.
+          // We request NDJSON explicitly so Lidraughts doesn't redirect to HTML.
           const resp = await fetch(
             `https://lidraughts.org/api/games/user/${encodeURIComponent(username)}?max=${maxGames}`,
+            { headers: { Accept: 'application/x-ndjson' } },
           )
           if (resp.ok) {
-            const text = await resp.text()
-            if (text && text.trim().length > 10) {
-              pdnTexts.push(text)
-            } else {
+            const ct = resp.headers.get('content-type') ?? ''
+            if (ct.includes('html')) {
+              // Lidraughts redirected to web page — not API data
               failCount++
+            } else {
+              const text = await resp.text()
+              if (text && text.trim().length > 10) {
+                pdnTexts.push(text)
+              } else {
+                failCount++  // empty response (player has no games)
+              }
             }
           } else {
             failCount++
@@ -144,12 +153,12 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
 
       if (pdnTexts.length === 0) {
         setFetchMessage('')
-        alert(`Aucune partie téléchargée depuis Lidraughts.\n${failCount} joueur(s) en échec.\nVérifie les pseudos (mode Manuel) ou réessaie.`)
+        alert(`Aucune partie récupérée depuis Lidraughts (${failCount} échec(s)).\nEssaie le mode Manuel avec des pseudos vérifiés sur lidraughts.org.`)
         return
       }
 
       const totalKb = Math.round(pdnTexts.reduce((s, t) => s + t.length, 0) / 1024)
-      setFetchMessage(`✓ ${pdnTexts.length}/${names.length} joueurs • ${totalKb}KB • Envoi au serveur…`)
+      setFetchMessage(`✓ ${pdnTexts.length}/${names.length} joueurs • ${totalKb} KB reçus • Envoi au serveur…`)
 
       // Phase 2: send game data to backend for Scan evaluation
       let res: { started: boolean; message: string }
