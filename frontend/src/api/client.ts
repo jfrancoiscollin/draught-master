@@ -214,6 +214,17 @@ export interface PositionEval {
   bestMove: string | null
 }
 
+export async function findPlayersByRating(
+  ratingMin: number,
+  ratingMax: number,
+  count: number,
+): Promise<{ players: { username: string; rating: number }[]; found: number }> {
+  const res = await api.get('/opening-book/players', {
+    params: { rating_min: ratingMin, rating_max: ratingMax, count },
+  })
+  return res.data
+}
+
 export async function startOpeningCacheBuild(params: {
   usernames: string[]
   max_games_per_user?: number

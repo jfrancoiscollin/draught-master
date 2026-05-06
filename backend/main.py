@@ -948,6 +948,21 @@ async def precompute_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+@app.get("/api/opening-book/players")
+async def find_players_by_rating(
+    rating_min: int = Query(1600, ge=500, le=2800),
+    rating_max: int = Query(2200, ge=500, le=2800),
+    count: int = Query(10, ge=1, le=50),
+    perf_type: str = Query("standard"),
+) -> Dict[str, Any]:
+    """Return randomly-sampled Lidraughts players within a rating range."""
+    from lidraughts_fetcher import fetch_players_by_rating
+    if rating_min >= rating_max:
+        raise HTTPException(status_code=400, detail="rating_min doit être < rating_max")
+    players = fetch_players_by_rating(rating_min, rating_max, count, perf_type)
+    return {"players": players, "found": len(players)}
+
+
 @app.post("/api/opening-book/build")
 async def start_cache_build(body: Dict[str, Any]) -> Dict[str, Any]:
     """Start a background job that fetches Lidraughts games and evaluates opening positions."""
