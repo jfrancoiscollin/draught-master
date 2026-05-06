@@ -224,7 +224,7 @@ export async function analyzePositionsBatch(
     const res = await api.post<{ evaluations: PositionEval[] | null; available: boolean }>(
       '/pdn/annotate',
       { positions, ms_per_move: msPerMove },
-      { timeout: 180000 },
+      { timeout: 300000 },
     )
     if (!res.data.available || !res.data.evaluations) return null
     return res.data.evaluations

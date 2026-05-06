@@ -854,7 +854,7 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     import asyncio
 
     positions = body.get("positions", [])
-    ms_per_move = min(max(int(body.get("ms_per_move", 200)), 50), 1000)
+    ms_per_move = min(max(int(body.get("ms_per_move", 200)), 50), 3000)
 
     engine = _get_engine()
     if engine is None:
