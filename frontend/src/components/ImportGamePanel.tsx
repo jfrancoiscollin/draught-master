@@ -49,13 +49,14 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
   const [analysisLoading, setAnalysisLoading] = useState(false)
   const [aiThinking, setAiThinking] = useState(false)
 
-  // ── Game annotation (move-by-move WASM analysis) ──────────────
+  // ── Game annotation (move-by-move analysis) ───────────────────
   const [annotations, setAnnotations] = useState<MoveAnnotation[]>([])
   const [gameStats, setGameStats] = useState<GameStats | null>(null)
   const [annotating, setAnnotating] = useState(false)
   const [annotationProgress, setAnnotationProgress] = useState(0)
   const [annotationTotal, setAnnotationTotal] = useState(0)
   const annotationAbortRef = useRef<AbortController | null>(null)
+  const autoLearnRef = useRef(false)
 
   // ── Mode: review or learn ─────────────────────────────────────
   const [panelMode, setPanelMode] = useState<PanelMode>('review')
@@ -66,6 +67,12 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
 
   // ── Best-move arrow ────────────────────────────────────────────
   const [arrow, setArrow] = useState<Arrow | null>(null)
+
+  // ── Auto-scroll active move row ───────────────────────────────
+  const activeRowRef = useRef<HTMLTableRowElement | null>(null)
+  useEffect(() => {
+    activeRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [currentIdx])
 
   const loadLegalMoves = useCallback(async (fen: string) => {
     if (!fen || loadingMovesRef.current) return
@@ -187,8 +194,6 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
   // ── Batch game annotation ──────────────────────────────────────
   const handleAnnotateGame = useCallback(async () => {
     if (!result) return
-    const engine = getScanEngine()
-    if (!engine.ready) return
 
     annotationAbortRef.current?.abort()
     const ctrl = new AbortController()
@@ -213,13 +218,62 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
       if (!ctrl.signal.aborted) {
         setAnnotations(anns)
         setGameStats(computeStats(anns))
+        if (autoLearnRef.current) {
+          autoLearnRef.current = false
+          setPanelMode('learn')
+        }
       }
     } finally {
       setAnnotating(false)
+      autoLearnRef.current = false
     }
   }, [result])
 
+  const handleLearnClick = useCallback(() => {
+    if (gameStats !== null) {
+      setPanelMode('learn')
+    } else {
+      autoLearnRef.current = true
+      handleAnnotateGame()
+    }
+  }, [gameStats, handleAnnotateGame])
+
   const annotationByIdx = new Map(annotations.map(a => [a.posIdx, a]))
+
+  // ── Build move pairs for the table ────────────────────────────
+  // positions[0] = initial, positions[1] = white move 1, positions[2] = black move 1 …
+  const movePairs = result ? (() => {
+    const pairs: Array<{
+      moveNum: number
+      whiteIdx: number
+      whiteMoveLabel: string
+      whiteVerdict: string | null
+      whiteVerdictColor: string | undefined
+      blackIdx: number | null
+      blackMoveLabel: string | null
+      blackVerdict: string | null
+      blackVerdictColor: string | undefined
+    }> = []
+    const pos = result.positions
+    for (let i = 1; i < pos.length; i += 2) {
+      const wPos = pos[i]
+      const bPos = i + 1 < pos.length ? pos[i + 1] : null
+      const wAnn = annotationByIdx.get(i)
+      const bAnn = bPos ? annotationByIdx.get(i + 1) : null
+      pairs.push({
+        moveNum: wPos.move_number,
+        whiteIdx: i,
+        whiteMoveLabel: wPos.notation ?? '',
+        whiteVerdict: wAnn?.verdict ? VERDICT_SYMBOL[wAnn.verdict] : null,
+        whiteVerdictColor: wAnn?.verdict ? VERDICT_COLOR[wAnn.verdict] : undefined,
+        blackIdx: bPos ? i + 1 : null,
+        blackMoveLabel: bPos?.notation ?? null,
+        blackVerdict: bAnn?.verdict ? VERDICT_SYMBOL[bAnn.verdict] : null,
+        blackVerdictColor: bAnn?.verdict ? VERDICT_COLOR[bAnn.verdict] : undefined,
+      })
+    }
+    return pairs
+  })() : []
 
   // ── Import phase UI ───────────────────────────────────────────
   if (!result) {
@@ -286,9 +340,6 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
   const moveLabel = currentIdx === 0
     ? 'Position initiale'
     : `Coup ${currentPos.move_number} · ${currentPos.color === 'white' ? '⬜' : '⬛'} ${currentPos.notation}`
-
-  const engine = getScanEngine()
-  const canAnnotate = engine.ready && !annotating
 
   return (
     <div className="flex flex-col h-full bg-gray-900 text-gray-100">
@@ -359,142 +410,159 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
       {/* Scan WASM engine bar */}
       <ScanBar info={scanInfo} loading={annotating} />
 
-      {/* Annotation trigger / progress / stats */}
-      {!annotating && !gameStats && (
-        <div className="flex-shrink-0 px-3 py-2 bg-gray-950 border-b border-gray-800">
-          <button
-            onClick={handleAnnotateGame}
-            disabled={!canAnnotate}
-            className="w-full text-xs py-1.5 rounded-lg font-semibold transition-colors
-              bg-indigo-900 hover:bg-indigo-800 text-indigo-200 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {canAnnotate ? '⚙ Analyser coup par coup' : '⚙ Moteur en cours de chargement…'}
-          </button>
-        </div>
-      )}
+      {/* Scrollable content: move list + analysis */}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
 
-      {annotating && (
-        <div className="flex-shrink-0 px-3 py-2 bg-gray-950 border-b border-gray-800">
-          <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-            <span>{annotationProgress === 0 && annotationTotal > 0 ? '⚡ Analyse serveur…' : 'Analyse en cours…'}</span>
-            {annotationProgress > 0 && (
-              <span className="font-mono">{annotationProgress} / {annotationTotal}</span>
-            )}
-          </div>
-          <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
-            {annotationProgress === 0 && annotationTotal > 0 ? (
-              <div className="h-full bg-indigo-500 rounded-full animate-pulse w-full" />
-            ) : (
-              <div
-                className="h-full bg-indigo-500 rounded-full transition-all duration-200"
-                style={{ width: annotationTotal > 0 ? `${(annotationProgress / annotationTotal) * 100}%` : '0%' }}
-              />
-            )}
-          </div>
+        {/* ── Move list ── */}
+        <div className="px-2 pt-2 pb-1 border-b border-gray-800">
+          <table className="w-full border-collapse text-xs font-mono">
+            <tbody>
+              {movePairs.map(row => {
+                const isActiveRow = currentIdx === row.whiteIdx || currentIdx === row.blackIdx
+                return (
+                  <tr
+                    key={row.moveNum}
+                    ref={isActiveRow ? activeRowRef : null}
+                  >
+                    <td className="text-gray-600 pr-1 py-0.5 select-none text-right w-7">
+                      {row.moveNum}.
+                    </td>
+                    <td className="py-0.5 pr-0.5 w-1/2">
+                      <button
+                        onClick={() => goTo(row.whiteIdx, positions)}
+                        className={`w-full text-left px-1.5 py-0.5 rounded transition-colors ${
+                          currentIdx === row.whiteIdx
+                            ? 'bg-amber-700 text-white font-bold'
+                            : 'text-gray-200 hover:bg-gray-800'
+                        }`}
+                      >
+                        {row.whiteMoveLabel}
+                        {row.whiteVerdict && (
+                          <span className="ml-0.5 font-bold" style={{ color: row.whiteVerdictColor }}>
+                            {row.whiteVerdict}
+                          </span>
+                        )}
+                      </button>
+                    </td>
+                    <td className="py-0.5 w-1/2">
+                      {row.blackMoveLabel !== null && row.blackIdx !== null && (
+                        <button
+                          onClick={() => goTo(row.blackIdx!, positions)}
+                          className={`w-full text-left px-1.5 py-0.5 rounded transition-colors ${
+                            currentIdx === row.blackIdx
+                              ? 'bg-amber-700 text-white font-bold'
+                              : 'text-gray-400 hover:bg-gray-800'
+                          }`}
+                        >
+                          {row.blackMoveLabel}
+                          {row.blackVerdict && (
+                            <span className="ml-0.5 font-bold" style={{ color: row.blackVerdictColor }}>
+                              {row.blackVerdict}
+                            </span>
+                          )}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
 
-      {gameStats && !annotating && (
-        <div className="flex-shrink-0 bg-gray-950 border-b border-gray-800">
-          <div className="grid grid-cols-2 gap-px bg-gray-800 text-xs">
-            {(['white', 'black'] as const).map(color => {
-              const acpl = color === 'white' ? gameStats.whiteAcpl : gameStats.blackAcpl
-              const counts = color === 'white' ? gameStats.whiteCounts : gameStats.blackCounts
-              const player = color === 'white' ? meta.white : meta.black
-              return (
-                <div key={color} className="bg-gray-950 px-3 py-2 flex flex-col gap-1">
-                  <div className="flex items-center gap-1.5">
-                    <span>{color === 'white' ? '⬜' : '⬛'}</span>
-                    {player && <span className="text-gray-300 truncate font-semibold text-xs">{player}</span>}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">Moy.</span>
-                    <span className="font-mono font-bold text-gray-200">{acpl} cp</span>
-                  </div>
-                  <div className="flex gap-2">
-                    {counts.blunder > 0 && (
-                      <span className="font-bold" style={{ color: VERDICT_COLOR.blunder }}>{counts.blunder}??</span>
-                    )}
-                    {counts.mistake > 0 && (
-                      <span className="font-bold" style={{ color: VERDICT_COLOR.mistake }}>{counts.mistake}?</span>
-                    )}
-                    {counts.inaccuracy > 0 && (
-                      <span className="font-bold" style={{ color: VERDICT_COLOR.inaccuracy }}>{counts.inaccuracy}?!</span>
-                    )}
-                    {counts.blunder + counts.mistake + counts.inaccuracy === 0 && (
-                      <span className="text-green-500">Parfait ✓</span>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+        {/* ── Analysis section ── */}
+        <div className="px-3 py-3 flex flex-col gap-3">
+
+          {/* Annotation buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={handleAnnotateGame}
+              disabled={annotating}
+              className="text-xs py-1.5 rounded-lg font-semibold transition-colors
+                bg-indigo-900 hover:bg-indigo-800 text-indigo-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {annotating ? '⚙ Analyse…' : '⚙ Analyser coup par coup'}
+            </button>
+            <button
+              onClick={handleLearnClick}
+              disabled={annotating}
+              className="text-xs py-1.5 rounded-lg font-semibold transition-colors
+                bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              📚 Apprendre de vos erreurs
+            </button>
           </div>
-          {annotations.some(a => a.verdict !== null) && (
-            <div className="px-3 py-2">
-              <button
-                onClick={() => setPanelMode('learn')}
-                className="w-full text-xs py-1.5 rounded-lg font-semibold bg-amber-700 hover:bg-amber-600 text-white transition-colors"
-              >
-                📚 Apprendre de ses erreurs
-              </button>
+
+          {/* Progress bar */}
+          {annotating && (
+            <div>
+              <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                <span>{annotationProgress === 0 && annotationTotal > 0 ? '⚡ Analyse serveur…' : 'Analyse en cours…'}</span>
+                {annotationProgress > 0 && (
+                  <span className="font-mono">{annotationProgress} / {annotationTotal}</span>
+                )}
+              </div>
+              <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                {annotationProgress === 0 && annotationTotal > 0 ? (
+                  <div className="h-full bg-indigo-500 rounded-full animate-pulse w-full" />
+                ) : (
+                  <div
+                    className="h-full bg-indigo-500 rounded-full transition-all duration-200"
+                    style={{ width: annotationTotal > 0 ? `${(annotationProgress / annotationTotal) * 100}%` : '0%' }}
+                  />
+                )}
+              </div>
             </div>
           )}
+
+          {/* Stats */}
+          {gameStats && !annotating && (
+            <div className="grid grid-cols-2 gap-px bg-gray-800 rounded-lg overflow-hidden text-xs">
+              {(['white', 'black'] as const).map(color => {
+                const acpl = color === 'white' ? gameStats.whiteAcpl : gameStats.blackAcpl
+                const counts = color === 'white' ? gameStats.whiteCounts : gameStats.blackCounts
+                const player = color === 'white' ? meta.white : meta.black
+                return (
+                  <div key={color} className="bg-gray-950 px-3 py-2 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <span>{color === 'white' ? '⬜' : '⬛'}</span>
+                      {player && <span className="text-gray-300 truncate font-semibold">{player}</span>}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-500">Moy.</span>
+                      <span className="font-mono font-bold text-gray-200">{acpl} cp</span>
+                    </div>
+                    <div className="flex gap-2">
+                      {counts.blunder > 0 && (
+                        <span className="font-bold" style={{ color: VERDICT_COLOR.blunder }}>{counts.blunder}??</span>
+                      )}
+                      {counts.mistake > 0 && (
+                        <span className="font-bold" style={{ color: VERDICT_COLOR.mistake }}>{counts.mistake}?</span>
+                      )}
+                      {counts.inaccuracy > 0 && (
+                        <span className="font-bold" style={{ color: VERDICT_COLOR.inaccuracy }}>{counts.inaccuracy}?!</span>
+                      )}
+                      {counts.blunder + counts.mistake + counts.inaccuracy === 0 && (
+                        <span className="text-green-500">Parfait ✓</span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* AI analysis buttons + results */}
+          <AnalysisPanel
+            gameId="import"
+            onAnalyze={handleAnalyze}
+            onBestMove={handleBestMove}
+            analysis={analysis}
+            loading={analysisLoading}
+            onHighlightSquare={setHighlighted}
+            aiThinking={aiThinking}
+          />
         </div>
-      )}
-
-      {/* Move list with verdict markers */}
-      <div className="flex-shrink-0 flex gap-1 px-2 py-1.5 overflow-x-auto bg-gray-950 border-b border-gray-800">
-        {positions.map((pos, idx) => {
-          const isActive = idx === currentIdx
-          const ann = annotationByIdx.get(idx)
-          const verdictSym = ann?.verdict ? VERDICT_SYMBOL[ann.verdict] : ''
-          const verdictCol = ann?.verdict ? VERDICT_COLOR[ann.verdict] : undefined
-
-          if (idx === 0) return (
-            <button
-              key={0}
-              onClick={() => goTo(0, positions)}
-              className={`px-2 py-0.5 rounded text-xs flex-shrink-0 cursor-pointer ${isActive ? 'bg-amber-700 text-white font-bold' : 'text-gray-500 hover:text-gray-300'}`}
-            >
-              départ
-            </button>
-          )
-          if (pos.color === 'white') {
-            return (
-              <button
-                key={idx}
-                onClick={() => goTo(idx, positions)}
-                className={`px-2 py-0.5 rounded text-xs flex-shrink-0 cursor-pointer border ${isActive ? 'bg-amber-700 border-amber-500 text-white font-bold' : 'border-gray-700 text-gray-400 hover:text-gray-200'}`}
-              >
-                {pos.move_number}. {pos.notation}
-                {verdictSym && <span className="ml-0.5 font-bold" style={{ color: verdictCol }}>{verdictSym}</span>}
-              </button>
-            )
-          }
-          return (
-            <button
-              key={idx}
-              onClick={() => goTo(idx, positions)}
-              className={`px-2 py-0.5 rounded text-xs flex-shrink-0 cursor-pointer ${isActive ? 'bg-amber-700 text-white font-bold' : 'text-gray-500 hover:text-gray-300'}`}
-            >
-              {pos.notation}
-              {verdictSym && <span className="ml-0.5 font-bold" style={{ color: verdictCol }}>{verdictSym}</span>}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Analysis panel */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
-        <AnalysisPanel
-          gameId="import"
-          onAnalyze={handleAnalyze}
-          onBestMove={handleBestMove}
-          analysis={analysis}
-          loading={analysisLoading}
-          onHighlightSquare={setHighlighted}
-          aiThinking={aiThinking}
-        />
       </div>
     </div>
   )
