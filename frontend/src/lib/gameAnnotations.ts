@@ -105,7 +105,7 @@ export async function annotateGame(
 
   // ── Try server-side batch analysis first (native Scan binary: faster & deeper) ──
   if (!signal.aborted) {
-    const serverEvals = await analyzePositionsBatch(positions, 300)
+    const serverEvals = await analyzePositionsBatch(positions, 500)
     if (serverEvals && serverEvals.length === positions.length) {
       onProgress(positions.length, positions.length)
       return buildAnnotations(positions, serverEvals)
