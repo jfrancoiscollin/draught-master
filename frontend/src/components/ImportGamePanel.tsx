@@ -410,11 +410,88 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
       {/* Scan WASM engine bar */}
       <ScanBar info={scanInfo} loading={annotating} />
 
-      {/* Scrollable content: move list + analysis */}
+      {/* Scrollable content: analysis first, then move list */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
 
+        {/* ── Analysis section (6 buttons + progress + stats + AI results) ── */}
+        <div className="px-3 py-3 flex flex-col gap-3 border-b border-gray-800">
+
+          {/* Progress bar (shown while annotating) */}
+          {annotating && (
+            <div>
+              <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                <span>{annotationProgress === 0 && annotationTotal > 0 ? '⚡ Analyse serveur…' : 'Analyse en cours…'}</span>
+                {annotationProgress > 0 && (
+                  <span className="font-mono">{annotationProgress} / {annotationTotal}</span>
+                )}
+              </div>
+              <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                {annotationProgress === 0 && annotationTotal > 0 ? (
+                  <div className="h-full bg-indigo-500 rounded-full animate-pulse w-full" />
+                ) : (
+                  <div
+                    className="h-full bg-indigo-500 rounded-full transition-all duration-200"
+                    style={{ width: annotationTotal > 0 ? `${(annotationProgress / annotationTotal) * 100}%` : '0%' }}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Stats (shown after annotation) */}
+          {gameStats && !annotating && (
+            <div className="grid grid-cols-2 gap-px bg-gray-800 rounded-lg overflow-hidden text-xs">
+              {(['white', 'black'] as const).map(color => {
+                const acpl = color === 'white' ? gameStats.whiteAcpl : gameStats.blackAcpl
+                const counts = color === 'white' ? gameStats.whiteCounts : gameStats.blackCounts
+                const player = color === 'white' ? meta.white : meta.black
+                return (
+                  <div key={color} className="bg-gray-950 px-3 py-2 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <span>{color === 'white' ? '⬜' : '⬛'}</span>
+                      {player && <span className="text-gray-300 truncate font-semibold">{player}</span>}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-500">Moy.</span>
+                      <span className="font-mono font-bold text-gray-200">{acpl} cp</span>
+                    </div>
+                    <div className="flex gap-2">
+                      {counts.blunder > 0 && (
+                        <span className="font-bold" style={{ color: VERDICT_COLOR.blunder }}>{counts.blunder}??</span>
+                      )}
+                      {counts.mistake > 0 && (
+                        <span className="font-bold" style={{ color: VERDICT_COLOR.mistake }}>{counts.mistake}?</span>
+                      )}
+                      {counts.inaccuracy > 0 && (
+                        <span className="font-bold" style={{ color: VERDICT_COLOR.inaccuracy }}>{counts.inaccuracy}?!</span>
+                      )}
+                      {counts.blunder + counts.mistake + counts.inaccuracy === 0 && (
+                        <span className="text-green-500">Parfait ✓</span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* AnalysisPanel — 6 buttons (4 AI + Coup par coup + Apprendre) */}
+          <AnalysisPanel
+            gameId="import"
+            onAnalyze={handleAnalyze}
+            onBestMove={handleBestMove}
+            analysis={analysis}
+            loading={analysisLoading}
+            onHighlightSquare={setHighlighted}
+            aiThinking={aiThinking}
+            onAnnotate={handleAnnotateGame}
+            onLearn={handleLearnClick}
+            annotating={annotating}
+          />
+        </div>
+
         {/* ── Move list ── */}
-        <div className="px-2 pt-2 pb-1 border-b border-gray-800">
+        <div className="px-2 pt-2 pb-3">
           <table className="w-full border-collapse text-xs font-mono">
             <tbody>
               {movePairs.map(row => {
@@ -468,100 +545,6 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
               })}
             </tbody>
           </table>
-        </div>
-
-        {/* ── Analysis section ── */}
-        <div className="px-3 py-3 flex flex-col gap-3">
-
-          {/* Annotation buttons */}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={handleAnnotateGame}
-              disabled={annotating}
-              className="text-xs py-1.5 rounded-lg font-semibold transition-colors
-                bg-indigo-900 hover:bg-indigo-800 text-indigo-200 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {annotating ? '⚙ Analyse…' : '⚙ Analyser coup par coup'}
-            </button>
-            <button
-              onClick={handleLearnClick}
-              disabled={annotating}
-              className="text-xs py-1.5 rounded-lg font-semibold transition-colors
-                bg-amber-700 hover:bg-amber-600 text-white disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              📚 Apprendre de vos erreurs
-            </button>
-          </div>
-
-          {/* Progress bar */}
-          {annotating && (
-            <div>
-              <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-                <span>{annotationProgress === 0 && annotationTotal > 0 ? '⚡ Analyse serveur…' : 'Analyse en cours…'}</span>
-                {annotationProgress > 0 && (
-                  <span className="font-mono">{annotationProgress} / {annotationTotal}</span>
-                )}
-              </div>
-              <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                {annotationProgress === 0 && annotationTotal > 0 ? (
-                  <div className="h-full bg-indigo-500 rounded-full animate-pulse w-full" />
-                ) : (
-                  <div
-                    className="h-full bg-indigo-500 rounded-full transition-all duration-200"
-                    style={{ width: annotationTotal > 0 ? `${(annotationProgress / annotationTotal) * 100}%` : '0%' }}
-                  />
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Stats */}
-          {gameStats && !annotating && (
-            <div className="grid grid-cols-2 gap-px bg-gray-800 rounded-lg overflow-hidden text-xs">
-              {(['white', 'black'] as const).map(color => {
-                const acpl = color === 'white' ? gameStats.whiteAcpl : gameStats.blackAcpl
-                const counts = color === 'white' ? gameStats.whiteCounts : gameStats.blackCounts
-                const player = color === 'white' ? meta.white : meta.black
-                return (
-                  <div key={color} className="bg-gray-950 px-3 py-2 flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <span>{color === 'white' ? '⬜' : '⬛'}</span>
-                      {player && <span className="text-gray-300 truncate font-semibold">{player}</span>}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-gray-500">Moy.</span>
-                      <span className="font-mono font-bold text-gray-200">{acpl} cp</span>
-                    </div>
-                    <div className="flex gap-2">
-                      {counts.blunder > 0 && (
-                        <span className="font-bold" style={{ color: VERDICT_COLOR.blunder }}>{counts.blunder}??</span>
-                      )}
-                      {counts.mistake > 0 && (
-                        <span className="font-bold" style={{ color: VERDICT_COLOR.mistake }}>{counts.mistake}?</span>
-                      )}
-                      {counts.inaccuracy > 0 && (
-                        <span className="font-bold" style={{ color: VERDICT_COLOR.inaccuracy }}>{counts.inaccuracy}?!</span>
-                      )}
-                      {counts.blunder + counts.mistake + counts.inaccuracy === 0 && (
-                        <span className="text-green-500">Parfait ✓</span>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {/* AI analysis buttons + results */}
-          <AnalysisPanel
-            gameId="import"
-            onAnalyze={handleAnalyze}
-            onBestMove={handleBestMove}
-            analysis={analysis}
-            loading={analysisLoading}
-            onHighlightSquare={setHighlighted}
-            aiThinking={aiThinking}
-          />
         </div>
       </div>
     </div>

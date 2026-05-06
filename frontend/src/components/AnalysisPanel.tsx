@@ -14,6 +14,9 @@ interface AnalysisPanelProps {
   onCollapse?: () => void
   aiThinking?: boolean
   onMoveClick?: (pdn: string) => void
+  onAnnotate?: () => void
+  onLearn?: () => void
+  annotating?: boolean
 }
 
 function extractMoveSquares(text: string, charIndex: number): number[] {
@@ -92,6 +95,9 @@ export default function AnalysisPanel({
   onCollapse,
   aiThinking = false,
   onMoveClick,
+  onAnnotate,
+  onLearn,
+  annotating = false,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
   const [mode, setMode] = useState<'bestmove' | 'full' | 'fullgame' | 'bestmoveexplain' | null>(null)
@@ -194,6 +200,30 @@ export default function AnalysisPanel({
             </span>
           ) : t('explainMove')}
         </button>
+
+        {onAnnotate && (
+          <button
+            onClick={onAnnotate}
+            disabled={annotating || aiThinking}
+            className="btn-secondary text-sm col-span-1 disabled:opacity-40"
+          >
+            {annotating ? (
+              <span className="flex items-center gap-2 justify-center">
+                <div className="spinner" style={{ width: 14, height: 14 }} />
+              </span>
+            ) : '⚙ Coup par coup'}
+          </button>
+        )}
+
+        {onLearn && (
+          <button
+            onClick={onLearn}
+            disabled={annotating || aiThinking}
+            className="btn-secondary text-sm col-span-1 disabled:opacity-40"
+          >
+            📚 Apprendre
+          </button>
+        )}
       </div>
 
       {mode === 'bestmove' && quickMoves !== null && (
