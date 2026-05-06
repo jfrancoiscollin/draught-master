@@ -117,42 +117,56 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
 
     try {
       // Phase 1: download games from Lidraughts in the browser
-      // No custom Accept header → plain GET avoids CORS preflight.
-      // Lidraughts returns NDJSON by default; backend handles both formats.
+      // Plain GET (no custom Accept) avoids CORS preflight issues.
       const pdnTexts: string[] = []
-      let downloadedCount = 0
+      let failCount = 0
       for (let i = 0; i < names.length; i++) {
         const username = names[i]
-        setFetchMessage(`Téléchargement ${username} (${i + 1}/${names.length})…`)
+        setFetchMessage(`⬇️ ${username} (${i + 1}/${names.length})…`)
         try {
           const resp = await fetch(
             `https://lidraughts.org/api/games/user/${encodeURIComponent(username)}?max=${maxGames}`,
           )
           if (resp.ok) {
             const text = await resp.text()
-            if (text && text.trim()) {
+            if (text && text.trim().length > 10) {
               pdnTexts.push(text)
-              downloadedCount++
+            } else {
+              failCount++
             }
+          } else {
+            failCount++
           }
         } catch {
-          // Network or CORS error — skip this player
+          failCount++
         }
       }
 
-      setFetchMessage('')
-
       if (pdnTexts.length === 0) {
-        alert('Impossible de télécharger les parties depuis Lidraughts (CORS ou réseau). Essaie le mode Manuel avec des pseudos valides.')
+        setFetchMessage('')
+        alert(`Aucune partie téléchargée depuis Lidraughts.\n${failCount} joueur(s) en échec.\nVérifie les pseudos (mode Manuel) ou réessaie.`)
         return
       }
 
-      // Phase 2: send PDN to backend for Scan evaluation
-      const res = await startOpeningCacheBuild({
-        pdn_texts: pdnTexts,
-        max_moves: maxMoves,
-        ms_per_position: msPerPos,
-      })
+      const totalKb = Math.round(pdnTexts.reduce((s, t) => s + t.length, 0) / 1024)
+      setFetchMessage(`✓ ${pdnTexts.length}/${names.length} joueurs • ${totalKb}KB • Envoi au serveur…`)
+
+      // Phase 2: send game data to backend for Scan evaluation
+      let res: { started: boolean; message: string }
+      try {
+        res = await startOpeningCacheBuild({
+          pdn_texts: pdnTexts,
+          max_moves: maxMoves,
+          ms_per_position: msPerPos,
+        })
+      } catch (err: unknown) {
+        setFetchMessage('')
+        const msg = err instanceof Error ? err.message : String(err)
+        alert(`Erreur lors de l'envoi au serveur:\n${msg}`)
+        return
+      }
+
+      setFetchMessage('')
       if (res.started) {
         setStatus(null)
         startPolling()
