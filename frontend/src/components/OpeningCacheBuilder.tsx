@@ -7,48 +7,18 @@ interface Props {
 
 type SelectionMode = 'manual' | 'elo'
 
-const STATIC_PLAYERS: { username: string; rating: number }[] = [
-  { username: 'el-negron',       rating: 2450 },
-  { username: 'roepstoel',       rating: 2380 },
-  { username: 'pbp7055',         rating: 2320 },
-  { username: 'Roel_Boomstra',   rating: 2300 },
-  { username: 'Sharkbite',       rating: 2280 },
-  { username: 'macaca',          rating: 2260 },
-  { username: 'Draughts-knight', rating: 2240 },
-  { username: 'GOAT64',          rating: 2220 },
-  { username: 'Zaka',            rating: 2200 },
-  { username: 'DamSpeler',       rating: 2180 },
-  { username: 'chessspider',     rating: 2160 },
-  { username: 'damgenot',        rating: 2140 },
-  { username: 'tonyp',           rating: 2120 },
-  { username: 'LaCulpada',       rating: 2100 },
-  { username: 'draughts_fan',    rating: 2080 },
-  { username: 'WimS',            rating: 2060 },
-  { username: 'ItsHendo',        rating: 2040 },
-  { username: 'Raf2000',         rating: 2020 },
-  { username: 'Adri10',          rating: 2000 },
-  { username: 'damspeler2',      rating: 1980 },
-  { username: 'DamTrainer',      rating: 1960 },
-  { username: 'BramB',           rating: 1940 },
-  { username: 'NicolaasV',       rating: 1920 },
-  { username: 'PlayerX42',       rating: 1900 },
-  { username: 'MidLevel1',       rating: 1850 },
-  { username: 'Regular1',        rating: 1800 },
-  { username: 'ClubPlayer',      rating: 1750 },
-  { username: 'Amateur1',        rating: 1700 },
-  { username: 'Casual1',         rating: 1600 },
-  { username: 'Beginner1',       rating: 1500 },
-  { username: 'Novice1',         rating: 1400 },
-  { username: 'Learner1',        rating: 1300 },
-  { username: 'NewPlayer1',      rating: 1200 },
-  { username: 'Started1',        rating: 1100 },
-  { username: 'Beginning1',      rating: 1000 },
-]
-
-function samplePlayers(min: number, max: number, count: number) {
-  const pool = STATIC_PLAYERS.filter(p => p.rating >= min && p.rating <= max)
-  const shuffled = [...pool].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, count)
+async function fetchPlayersByRating(
+  min: number, max: number, count: number
+): Promise<{ username: string; rating: number }[]> {
+  const params = new URLSearchParams({
+    rating_min: String(min),
+    rating_max: String(max),
+    count: String(count),
+  })
+  const res = await fetch(`/api/opening-book/players?${params}`)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const data = await res.json()
+  return (data.players ?? []) as { username: string; rating: number }[]
 }
 
 export default function OpeningCacheBuilder({ onClose }: Props) {
@@ -103,11 +73,15 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     }, 2000)
   }
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     setSearchDone(false)
     setFoundPlayers([])
-    const players = samplePlayers(ratingMin, ratingMax, playerCount)
-    setFoundPlayers(players)
+    try {
+      const players = await fetchPlayersByRating(ratingMin, ratingMax, playerCount)
+      setFoundPlayers(players)
+    } catch {
+      setFoundPlayers([])
+    }
     setSearchDone(true)
   }
 
