@@ -32,13 +32,24 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
   const scale   = selected ? 1.08 : moveable ? 1.02 : 1
 
-  // Single oval disc body: back edge (darker) + front face (main color)
-  const front = isWhite ? '#D4B060' : '#3E1A08'
-  const back  = isWhite ? '#8A5C12' : '#140604'
+  // Geometry: front face + back rim
+  const FCX = 50, FCY = 30, FRX = 43, FRY = 26   // front face ellipse
+  const BCX = 50, BCY = 58, BRX = 43, BRY = 18   // back rim ellipse
+  const LX  = FCX - FRX  // 7  — left edge shared by both
+  const RX  = FCX + FRX  // 93 — right edge shared by both
+
+  // Side wall: lower arc of face → straight sides → upper arc of back rim
+  const sideWall =
+    `M ${LX} ${FCY} A ${FRX} ${FRY} 0 0 1 ${RX} ${FCY}` +
+    ` L ${RX} ${BCY} A ${BRX} ${BRY} 0 0 0 ${LX} ${BCY} Z`
+
+  const face = isWhite ? '#F2EEE0' : '#181412'
+  const side = isWhite ? '#C0A850' : '#0E0A06'
+  const back = isWhite ? '#867228' : '#060402'
 
   return (
     <svg
-      viewBox="0 0 100 80"
+      viewBox={`0 0 100 ${BCY + BRY + 4}`}
       style={{
         width: '92%',
         height: '92%',
@@ -46,16 +57,18 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
         transition: 'transform 0.12s ease',
       }}
     >
-      {/* Back edge */}
-      <ellipse cx="50" cy="52" rx="44" ry="18" fill={back} />
+      {/* Back rim — bottom face of the disc */}
+      <ellipse cx={BCX} cy={BCY} rx={BRX} ry={BRY} fill={back} />
+
+      {/* Cylindrical side wall connecting face to rim */}
+      <path d={sideWall} fill={side} />
 
       {/* Front face */}
-      <ellipse cx="50" cy="27" rx="43" ry="26" fill={front} />
+      <ellipse cx={FCX} cy={FCY} rx={FRX} ry={FRY} fill={face} />
 
       {/* Selection / moveable ring */}
       {(selected || moveable) && (
-        <ellipse
-          cx="50" cy="27" rx="43" ry="26"
+        <ellipse cx={FCX} cy={FCY} rx={FRX} ry={FRY}
           fill="none"
           stroke={selected ? '#D4A017' : 'rgba(212,160,23,0.65)'}
           strokeWidth={selected ? 4 : 2.5}
@@ -64,10 +77,9 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
 
       {/* King inner ring */}
       {isKing && (
-        <ellipse
-          cx="50" cy="27" rx="27" ry="17"
+        <ellipse cx={FCX} cy={FCY} rx={27} ry={16}
           fill="none"
-          stroke={isWhite ? 'rgba(70,38,0,0.85)' : 'rgba(210,148,0,0.85)'}
+          stroke={isWhite ? 'rgba(100,60,0,0.85)' : 'rgba(200,140,0,0.85)'}
           strokeWidth="3"
         />
       )}
