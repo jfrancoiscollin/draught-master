@@ -27,81 +27,91 @@ interface BoardProps {
 function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boolean; selected: boolean }) {
   const isWhite = piece === WHITE_MAN || piece === WHITE_KING
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
-
   const scale = selected ? 1.10 : moveable ? 1.03 : 1
 
-  // Warm wooden tones, flat rim (only 8% height)
+  // Coin side edge — visible thickness like a real checker
   const rimBg = isWhite
-    ? 'linear-gradient(to bottom, #c8b898 0%, #a89070 100%)'
-    : 'linear-gradient(to bottom, #2a1a0e 0%, #140a04 100%)'
+    ? 'linear-gradient(180deg, #cfc0a0 0%, #b0a080 50%, #c0b090 100%)'
+    : 'linear-gradient(180deg, #3c2010 0%, #1c0c06 50%, #2a1408 100%)'
 
-  // Top face — warm wood gradient, light from top-left
+  // Top face — lacquered wood, light from top-left
   const topBg = isWhite
-    ? 'radial-gradient(ellipse at 36% 28%, #fff8f0 0%, #ede0cc 28%, #d8c8a8 58%, #c4b090 85%, #b8a080 100%)'
-    : 'radial-gradient(ellipse at 36% 28%, #6a3e22 0%, #3e2010 32%, #1e0e06 64%, #0e0604 85%, #080402 100%)'
+    ? 'radial-gradient(ellipse 78% 72% at 38% 32%, #ffffff 0%, #f2e4cc 16%, #ddc8a8 42%, #c8b090 68%, #b4987a 88%, #a08868 100%)'
+    : 'radial-gradient(ellipse 78% 72% at 38% 32%, #7a3e1e 0%, #4e2210 22%, #2e1208 48%, #1a0806 74%, #0e0402 90%, #080402 100%)'
 
-  // Specular highlight — simulates top-lit lacquered wood
+  // Strong specular blob — clear 3D sheen
   const specular = isWhite
-    ? 'radial-gradient(ellipse at 35% 25%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.35) 28%, transparent 58%)'
-    : 'radial-gradient(ellipse at 35% 25%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.08) 30%, transparent 58%)'
+    ? 'radial-gradient(ellipse 50% 42% at 37% 30%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.80) 20%, rgba(255,255,255,0.30) 50%, transparent 68%)'
+    : 'radial-gradient(ellipse 50% 42% at 37% 30%, rgba(255,255,255,0.58) 0%, rgba(255,255,255,0.30) 22%, rgba(255,255,255,0.07) 52%, transparent 70%)'
 
-  // Subtle sheen on lower-right (rim reflection)
+  // Secondary bounce light on lower-right
   const rimSheen = isWhite
-    ? 'radial-gradient(ellipse at 62% 78%, rgba(255,255,255,0.45) 0%, transparent 50%)'
-    : 'radial-gradient(ellipse at 62% 78%, rgba(255,255,255,0.12) 0%, transparent 50%)'
+    ? 'radial-gradient(ellipse at 65% 76%, rgba(255,255,255,0.40) 0%, transparent 48%)'
+    : 'radial-gradient(ellipse at 65% 76%, rgba(255,255,255,0.10) 0%, transparent 48%)'
 
-  const faceGlow = selected
-    ? '0 0 0 3px rgba(212,160,23,0.95)'
+  const selectionRing = selected
+    ? '0 0 0 3px #d4a017, 0 0 10px rgba(212,160,23,0.55)'
     : moveable
-      ? '0 0 0 2px rgba(212,160,23,0.5)'
-      : 'none'
+      ? '0 0 0 2px rgba(212,160,23,0.72)'
+      : undefined
+
+  // Inner shadow on face gives dome curvature
+  const faceInner = isWhite
+    ? 'inset 0 -5px 12px rgba(0,0,0,0.20), inset 0 3px 7px rgba(255,255,255,0.45)'
+    : 'inset 0 -5px 12px rgba(0,0,0,0.45), inset 0 3px 7px rgba(255,255,255,0.06)'
+
+  const faceShadow = [selectionRing, faceInner].filter(Boolean).join(', ')
 
   return (
-    // perspective + rotateX gives the "coin viewed from above" flat inclined look
     <div style={{
       width: '86%',
       height: '86%',
       position: 'relative',
       flexShrink: 0,
-      transform: `perspective(280px) rotateX(16deg) scale(${scale})`,
+      transform: `scale(${scale})`,
       transition: 'transform 0.12s ease',
     }}>
-      {/* Drop shadow — elliptical, offset downward for depth */}
+      {/* Drop shadow — asymmetric offset for lifted 3D look */}
       <div style={{
         position: 'absolute',
-        bottom: '-10%',
-        left: '8%',
-        right: '8%',
-        height: '22%',
+        bottom: '-14%',
+        left: '10%',
+        right: '6%',
+        height: '26%',
         borderRadius: '50%',
-        background: `radial-gradient(ellipse, ${isWhite ? 'rgba(0,0,0,0.32)' : 'rgba(0,0,0,0.58)'} 0%, transparent 78%)`,
-        filter: 'blur(3px)',
+        background: isWhite
+          ? 'radial-gradient(ellipse, rgba(0,0,0,0.40) 0%, transparent 72%)'
+          : 'radial-gradient(ellipse, rgba(0,0,0,0.70) 0%, transparent 72%)',
+        filter: 'blur(5px)',
       }} />
 
-      {/* Thin rim — only 8% of height, warm wood side */}
+      {/* RIM — visible side of the coin (20 % of height) */}
       <div style={{
         position: 'absolute',
-        top: '92%',
-        left: '3%',
-        right: '3%',
+        top: '80%',
+        left: '2%',
+        right: '2%',
         bottom: 0,
         borderRadius: '50%',
         background: rimBg,
+        boxShadow: isWhite
+          ? 'inset 0 3px 5px rgba(255,255,255,0.35), inset 0 -2px 6px rgba(0,0,0,0.28)'
+          : 'inset 0 3px 5px rgba(80,40,10,0.35), inset 0 -2px 6px rgba(0,0,0,0.45)',
       }} />
 
-      {/* Top face */}
+      {/* TOP FACE — sits above the rim */}
       <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        bottom: '8%',
+        bottom: '20%',
         borderRadius: '50%',
         background: topBg,
-        boxShadow: faceGlow,
+        boxShadow: faceShadow,
         overflow: 'hidden',
       }}>
-        {/* Primary specular */}
+        {/* Primary specular highlight */}
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -110,7 +120,7 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
           pointerEvents: 'none',
         }} />
 
-        {/* Secondary rim sheen */}
+        {/* Secondary bounce light */}
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -119,7 +129,7 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
           pointerEvents: 'none',
         }} />
 
-        {/* King marker */}
+        {/* King crown ring */}
         {isKing && (
           <div style={{
             position: 'absolute',

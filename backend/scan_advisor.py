@@ -39,28 +39,52 @@ def _load_kb() -> list[dict]:
 
 
 def _board_features(state: GameState, counts: dict, phase: str,
-                    pdn_list: list[str], best_move: str | None) -> set[str]:
+                    pdn_list: list[str], best_move: str | None,
+                    legal_cnt: int = 0) -> set[str]:
     """Extract boolean features from the position for knowledge-base matching."""
     b = state.board
     feats: set[str] = set()
 
-    # Center squares
-    if b[27] in (WHITE_MAN, WHITE_KING):  feats.add("white_on_27")
-    if b[28] in (WHITE_MAN, WHITE_KING):  feats.add("white_on_28")
-    if b[23] in (BLACK_MAN, BLACK_KING):  feats.add("black_on_23")
-    if b[24] in (BLACK_MAN, BLACK_KING):  feats.add("black_on_24")
-    if b[26] in (BLACK_MAN, BLACK_KING):  feats.add("black_on_26")
-    if b[36] in (WHITE_MAN, WHITE_KING):  feats.add("white_on_36")
-    if b[46] in (WHITE_MAN, WHITE_KING):  feats.add("white_on_46")
+    # ── Square presences ──────────────────────────────────────────────────────
+    W = (WHITE_MAN, WHITE_KING)
+    BL = (BLACK_MAN, BLACK_KING)
 
-    # Marchand de bois core
-    if (b[27] in (WHITE_MAN, WHITE_KING) and
-            b[32] in (WHITE_MAN, WHITE_KING) and
-            b[38] in (WHITE_MAN, WHITE_KING)):
+    # White squares
+    for sq, tag in [(23, "white_on_23"), (25, "white_on_25"), (27, "white_on_27"),
+                    (28, "white_on_28"), (29, "white_on_29"), (35, "white_on_35"),
+                    (36, "white_on_36"), (45, "white_on_45"), (46, "white_on_46"),
+                    (47, "white_on_47")]:
+        if b[sq] in W: feats.add(tag)
+
+    # Black squares
+    for sq, tag in [(6, "black_on_6"), (15, "black_on_15"), (16, "black_on_16"),
+                    (21, "black_on_21"), (22, "black_on_22"), (23, "black_on_23"),
+                    (24, "black_on_24"), (26, "black_on_26")]:
+        if b[sq] in BL: feats.add(tag)
+
+    # ── Formations ────────────────────────────────────────────────────────────
+    # Marchand de bois core (27-32-38)
+    if b[27] in W and b[32] in W and b[38] in W:
         feats.add("white_on_32")
         feats.add("white_on_38")
 
-    # Capture / tactical richness
+    # Formation 45-40
+    if b[45] in W and b[40] in W:
+        feats.add("formation_45_40")
+
+    # Flèche 33-38-42
+    if b[33] in W and b[38] in W:
+        feats.add("formation_33_38")
+
+    # Formation 34-39-43
+    if b[34] in W and b[39] in W:
+        feats.add("formation_34_39")
+
+    # Piquet canadien: black on 23 without white support nearby
+    if b[23] in BL and b[28] not in W:
+        feats.add("piquet_canadien")
+
+    # ── Tactical richness ─────────────────────────────────────────────────────
     n_moves = len(pdn_list)
     n_cap = _count_captures_in_pdn(pdn_list)
     if n_moves > 4 and n_cap / max(n_moves, 1) > 0.25:
@@ -79,40 +103,83 @@ def _board_features(state: GameState, counts: dict, phase: str,
         except Exception:
             pass
 
-    # Endgame patterns
+    # ── Piece advancement ─────────────────────────────────────────────────────
+    # White pawns close to promotion (rows 2-3, squares 6-15)
+    if any(b[sq] == WHITE_MAN for sq in range(6, 16)):
+        feats.add("pion_avance_blanc")
+    # Black pawns close to promotion (rows 7-8, squares 36-45)
+    if any(b[sq] == BLACK_MAN for sq in range(36, 46)):
+        feats.add("pion_avance_noir")
+
+    # ── Wing imbalance ────────────────────────────────────────────────────────
+    left_w  = sum(1 for sq in [31, 32, 36, 37, 41, 42, 46, 47] if b[sq] in W)
+    right_w = sum(1 for sq in [33, 34, 38, 39, 43, 44, 48, 49] if b[sq] in W)
+    if abs(left_w - right_w) >= 3:
+        feats.add("wing_imbalance")
+
+    # ── Tempo advantage (opening/middlegame) ──────────────────────────────────
+    if phase in ("opening", "middlegame"):
+        w_adv = sum(1 for sq in range(1, 51) if b[sq] in W
+                    for _ in [1] if (10 - (sq - 1) // 5) >= 7)
+        b_adv = sum(1 for sq in range(1, 51) if b[sq] in BL
+                    for _ in [1] if ((sq - 1) // 5 + 1) >= 7)
+        if w_adv > b_adv + 2 or b_adv > w_adv + 2:
+            feats.add("tempo_advantage")
+
+    # ── Restricted side ───────────────────────────────────────────────────────
+    if legal_cnt <= 3 and legal_cnt > 0:
+        feats.add("restricted_side")
+
+    # ── Endgame patterns ──────────────────────────────────────────────────────
     total = _total_pieces(counts)
     if phase == "endgame":
         feats.add("few_pieces")
         if counts["wk"] > 0 or counts["bk"] > 0:
             feats.add("kings_present")
+
         # King vs pawns
         if counts["wk"] >= 1 and counts["bk"] == 0 and counts["bm"] <= 3:
             feats.add("king_vs_pawns")
         if counts["bk"] >= 1 and counts["wk"] == 0 and counts["wm"] <= 3:
             feats.add("king_vs_pawns")
-        # 1 king vs 2 pawns specifically
+
+        # 1 king vs 2 pawns
         if ((counts["wk"] == 1 and counts["wm"] == 0 and counts["bm"] == 2 and counts["bk"] == 0) or
                 (counts["bk"] == 1 and counts["bm"] == 0 and counts["wm"] == 2 and counts["wk"] == 0)):
             feats.add("dame_vs_two_pawns")
+
+        # King+pawn vs 2 pawns
+        if ((counts["wk"] == 1 and counts["wm"] == 1 and counts["bm"] == 2 and counts["bk"] == 0) or
+                (counts["bk"] == 1 and counts["bm"] == 1 and counts["wm"] == 2 and counts["wk"] == 0)):
+            feats.add("dame_pion_vs_deux")
+
+        # King+pawn vs 3 pawns
+        if ((counts["wk"] == 1 and counts["wm"] >= 1 and counts["bm"] == 3 and counts["bk"] == 0) or
+                (counts["bk"] == 1 and counts["bm"] >= 1 and counts["wm"] == 3 and counts["wk"] == 0)):
+            feats.add("dame_pion_vs_trois")
+
+        # Pure pawn endgame
+        if counts["wk"] == 0 and counts["bk"] == 0 and counts["wm"] > 0 and counts["bm"] > 0:
+            feats.add("pions_vs_pions")
+
         # Corner pieces
         corner_sqs = {1, 5, 46, 50}
         if any(b[sq] != EMPTY for sq in corner_sqs):
             feats.add("piece_in_corner")
+
         # Equal endgame
         mat = _material_value(counts)
         if abs(mat["diff"]) <= 1 and total <= 8:
             feats.add("equal_endgame")
 
-    # Middlegame features
+    # ── Middlegame features ───────────────────────────────────────────────────
     if phase == "middlegame":
         mat = _material_value(counts)
         if abs(mat["diff"]) <= 1:
             feats.add("balanced_material")
-        # Approximate "many contacts": pieces in rows 4-7 (squares 16-35)
         contacts = sum(1 for sq in range(16, 36) if b[sq] != EMPTY)
         if contacts >= 10:
             feats.add("many_contacts")
-        # Restricted side: one side has very few legal moves (approximation via material diff)
 
     # Opening general
     if phase == "opening":
@@ -123,10 +190,10 @@ def _board_features(state: GameState, counts: dict, phase: str,
 
 def _select_book_tip(state: GameState, counts: dict, phase: str,
                      pdn_list: list[str], best_move: str | None,
-                     lang: str) -> dict | None:
+                     lang: str, legal_cnt: int = 0) -> dict | None:
     """Return the best matching knowledge-base tip for the current position."""
     tips = _load_kb()
-    feats = _board_features(state, counts, phase, pdn_list, best_move)
+    feats = _board_features(state, counts, phase, pdn_list, best_move, legal_cnt)
 
     for tip in tips:
         # Phase filter
@@ -480,7 +547,7 @@ async def analyze_position(
     # ── Book tip ──────────────────────────────────────────────────────────────
     pdn_list = [move_to_pdn(m) if not isinstance(m, str) else m
                 for m in (move_history or [])]
-    tip = _select_book_tip(state, counts, phase, pdn_list, best_move, language)
+    tip = _select_book_tip(state, counts, phase, pdn_list, best_move, language, legal_cnt)
     if tip:
         sep = "\n\n─────────────────────"
         fr = language == "fr"
@@ -683,9 +750,9 @@ async def _full_game_common(
         lines.append("Advice: " + adv_text)
 
     # ── Book tip ──────────────────────────────────────────────────────────────
-    tip = _select_book_tip(state, counts, phase, pdn_list, None, lang)
+    tip = _select_book_tip(state, counts, phase, pdn_list, None, language)
     if tip:
-        fr = lang == "fr"
+        fr = language == "fr"
         label = "📚 À approfondir" if fr else "📚 Further reading"
         lines.append("")
         lines.append("─────────────────────")

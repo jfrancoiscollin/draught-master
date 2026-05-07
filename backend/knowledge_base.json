@@ -1,229 +1,58 @@
 {
   "tips": [
+
+
     {
-      "id": "jeu_central_blanc",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_27", "white_on_28"],
-      "require_all": true,
-      "fr": {
-        "concept": "Jeu Central (Classique offensif)",
-        "text": "Les pions en 27 et 28 forment le pivot du Classique offensif : ils contrôlent seuls le centre et ouvrent la voie à une domination territoriale. L'objectif est de maintenir cette emprise tout en restreignant la liberté adverse.",
-        "source": "Dubois, Référentiel des systèmes de jeu, Ch. 1 — Le classique offensif"
-      },
-      "en": {
-        "concept": "Central Game (Offensive Classic)",
-        "text": "Pieces on 27 and 28 form the pivot of the Offensive Classic: they control the centre alone and open the way to territorial domination. The goal is to maintain this grip while restricting the opponent's freedom.",
-        "source": "Dubois, Guide to Systems of Play, Ch. 1 — The Offensive Classic"
-      }
-    },
-    {
-      "id": "jeu_central_noir",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["black_on_23", "black_on_24"],
-      "require_all": true,
-      "fr": {
-        "concept": "Jeu Central Noirs (23-24-27)",
-        "text": "La formation noire en 23-24 cherche à déloger les blancs du centre pour s'approprier seul l'espace de jeu. La flèche 6-11-17 est souvent la clé pour briser l'équilibre et prendre le dessus au centre.",
-        "source": "Dubois, Référentiel des systèmes de jeu, Ch. 2 — Le jeu central 23-24-27"
-      },
-      "en": {
-        "concept": "Black Central Game (23-24-27)",
-        "text": "The black formation on 23-24 aims to drive white from the centre to claim the space alone. The arrow 6-11-17 is often the key to breaking the balance and gaining central dominance.",
-        "source": "Dubois, Guide to Systems of Play, Ch. 2 — The central game 23-24-27"
-      }
-    },
-    {
-      "id": "avant_poste_24",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["black_on_24"],
-      "require_all": false,
-      "fr": {
-        "concept": "L'avant-poste 24 (pion taquin)",
-        "text": "Le pion noir en 24 est appelé « pion taquin » : il perturbe le développement blanc et crée des déséquilibres. Sa présence exige une réponse précise, car il menace de s'appuyer sur les pions voisins pour déclencher des combinaisons.",
-        "source": "Dubois, Sens du jeu, Ch. 6 — Le pion 24 appelé « pion taquin »"
-      },
-      "en": {
-        "concept": "The 24 Outpost (teasing pawn)",
-        "text": "The black pawn on 24 is the 'teasing pawn': it disrupts white's development and creates imbalances. Its presence demands a precise response, as it threatens to use neighbouring pawns to trigger combinations.",
-        "source": "Dubois, Game Sense, Ch. 6 — The pawn 24, the teasing pawn"
-      }
-    },
-    {
-      "id": "pion_bande_26",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["black_on_26"],
-      "require_all": false,
-      "fr": {
-        "concept": "Le pion de bande 26",
-        "text": "Le pion noir en 26 est un pion de bande actif : il contrôle l'aile gauche et peut servir de levier pour attaquer les pions blancs de flanc. Il doit être soutenu pour ne pas devenir une faiblesse.",
-        "source": "Dubois, Sens du jeu, 3e partie Ch. 2 — Le pion de bande 26"
-      },
-      "en": {
-        "concept": "The edge pawn 26",
-        "text": "The black pawn on 26 is an active edge pawn: it controls the left wing and can act as a lever to attack white pawns from the flank. It must be supported to avoid becoming a weakness.",
-        "source": "Dubois, Game Sense, Part 3 Ch. 2 — The edge pawn 26"
-      }
-    },
-    {
-      "id": "pion_bande_36_blanc",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_36"],
-      "require_all": false,
-      "fr": {
-        "concept": "Le pion blanc 36",
-        "text": "Le pion blanc en 36 est un pion de bande stratégique : bien soutenu, il renforce l'aile droite et prépare des poussées offensives. Dubois lui consacre un chapitre entier, soulignant son rôle dans la formation 36-41.",
-        "source": "Dubois, Sens du jeu, 3e partie Ch. 1 — Le pion blanc 36"
-      },
-      "en": {
-        "concept": "The white pawn 36",
-        "text": "The white pawn on 36 is a strategic edge pawn: well supported, it reinforces the right wing and prepares offensive pushes. Dubois devotes an entire chapter to its role in the 36-41 formation.",
-        "source": "Dubois, Game Sense, Part 3 Ch. 1 — The white pawn 36"
-      }
-    },
-    {
-      "id": "enchaînement_general",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["restricted_side"],
-      "require_all": false,
-      "fr": {
-        "concept": "Position d'enchaînement",
-        "text": "Un enchaînement se produit lorsqu'un camp immobilise les pièces adverses sur une aile. C'est dans ces positions fermées que naissent la plupart des combinaisons, car les pièces des deux camps sont en contact direct. L'objectif est de maintenir le blocage tout en cherchant la rafle décisive.",
-        "source": "Grégoire, Les enchaînements — Introduction ; Dubois, Référentiel, 2e partie"
-      },
-      "en": {
-        "concept": "Locked position",
-        "text": "A lock occurs when one side immobilises the opponent's pieces on one wing. It is in these closed positions that most combinations arise, as the pieces of both sides are in direct contact. The goal is to maintain the blockade while seeking the decisive capture.",
-        "source": "Grégoire, Enchainements — Introduction; Dubois, Reference Guide, Part 2"
-      }
-    },
-    {
-      "id": "marchand_de_bois",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_27", "white_on_32", "white_on_38"],
-      "require_all": true,
-      "fr": {
-        "concept": "Le Marchand de Bois",
-        "text": "La formation du Marchand de Bois (pions en 27-32-38 ou similaire) est un système d'enchaînement classique qui limite la liberté noire. Elle recèle des combinaisons typiques qu'il faut connaître des deux côtés.",
-        "source": "Grégoire, Les enchaînements, Ch. Marchand de bois ; Dubois, Référentiel, 2e partie Ch. 2"
-      },
-      "en": {
-        "concept": "The Merchant of Wood",
-        "text": "The Merchant of Wood formation (pawns on 27-32-38 or similar) is a classic locking system that restricts black's freedom. It contains typical combinations that must be known from both sides.",
-        "source": "Grégoire, Enchainements, Ch. Merchant of Wood; Dubois, Reference Guide, Part 2 Ch. 2"
-      }
-    },
-    {
-      "id": "combinaisons_actives",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures"],
-      "require_all": false,
-      "fr": {
-        "concept": "Recherche de combinaisons",
-        "text": "La partie est tactiquement riche. La méthode de Dubois : chercher d'abord la rafle finale (point d'appui + case d'arrivée), puis déterminer les mécanismes pour la rendre possible — collage, envoi à dame, prise majoritaire. Recherchez les points de contact entre vos pions et les pions adverses.",
-        "source": "Dubois, Apprendre les combinaisons, Ch. 2 — Méthode d'identification de la rafle"
-      },
-      "en": {
-        "concept": "Combination opportunities",
-        "text": "The game is tactically rich. Dubois's method: first seek the final capture (support point + landing square), then determine the mechanisms to make it possible — sticking, queen sacrifice, majority capture. Look for contact points between your pieces and opponent's pieces.",
-        "source": "Dubois, Learning Combinations, Ch. 2 — Method for identifying captures"
-      }
-    },
-    {
-      "id": "combinaisons_2_temps",
-      "phase": ["middlegame", "endgame"],
-      "conditions": ["capture_possible"],
-      "require_all": false,
-      "fr": {
-        "concept": "Combinaisons en 2 temps",
-        "text": "Au jeu de dames, on ne voit que ce que l'on regarde : il est indispensable d'examiner tous les coups jouables, même les plus inattendus. Le premier coup provoque un contact ; le coup adverse est une prise ; le second coup est la rafle décisive.",
-        "source": "Dubois, Apprendre les combinaisons, Ch. 1 — Les combinaisons en 2 temps"
-      },
-      "en": {
-        "concept": "Two-move combinations",
-        "text": "In draughts, you only see what you look for: every playable move must be examined, even the most unexpected. The first move creates contact; the opponent's reply is a capture; the second move is the decisive capture.",
-        "source": "Dubois, Learning Combinations, Ch. 1 — Two-move combinations"
-      }
-    },
-    {
-      "id": "liberte_mouvement",
-      "phase": ["middlegame"],
-      "conditions": ["balanced_material"],
-      "require_all": false,
-      "fr": {
-        "concept": "Liberté de mouvement",
-        "text": "En position équilibrée, la liberté de mouvement relative est décisive. Dubois insiste : limitez au maximum les possibilités adverses tout en conservant vos propres options. Les échanges doivent être évalués à l'aune de la position qui en résulte, pas seulement du bilan matériel.",
-        "source": "Dubois, Sens du jeu, Ch. 3 — La liberté de mouvement relative"
-      },
-      "en": {
-        "concept": "Freedom of movement",
-        "text": "In a balanced position, relative freedom of movement is decisive. Dubois insists: restrict the opponent's possibilities to the maximum while preserving your own options. Exchanges must be evaluated by the resulting position, not just the material count.",
-        "source": "Dubois, Game Sense, Ch. 3 — Relative freedom of movement"
-      }
-    },
-    {
-      "id": "temps_avance",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["tempo_advantage"],
-      "require_all": false,
-      "fr": {
-        "concept": "Les temps d'avance",
-        "text": "Un temps d'avance au jeu de dames est précieux : il permet de prendre l'initiative. Dubois explique comment exploiter cette avance en forçant l'adversaire à réagir et en choisissant le moment opportun pour déclencher les hostilités.",
-        "source": "Dubois, Sens du jeu, Ch. 5 — Les temps d'avance"
-      },
-      "en": {
-        "concept": "Tempo advantage",
-        "text": "A tempo advantage in draughts is precious: it allows you to seize the initiative. Dubois explains how to exploit this lead by forcing the opponent to react and choosing the right moment to open hostilities.",
-        "source": "Dubois, Game Sense, Ch. 5 — Tempo advantage"
-      }
-    },
-    {
-      "id": "pion_angle_46",
-      "phase": ["middlegame", "endgame"],
-      "conditions": ["white_on_46"],
-      "require_all": false,
-      "fr": {
-        "concept": "Le pion d'angle 46",
-        "text": "Le pion blanc en 46 est un pion de base fondamental. Dubois lui consacre trois chapitres : il est à la fois une ancre défensive et un atout stratégique, mais sa sortie prématurée fragilise la base blanche.",
-        "source": "Dubois, Sens du jeu, 2e partie Ch. 1-3 — Le pion d'angle 46"
-      },
-      "en": {
-        "concept": "The corner pawn 46",
-        "text": "The white pawn on 46 is a fundamental base pawn. Dubois devotes three chapters to it: it is both a defensive anchor and a strategic asset, but its premature advance weakens white's base.",
-        "source": "Dubois, Game Sense, Part 2 Ch. 1-3 — The corner pawn 46"
-      }
-    },
-    {
-      "id": "comite_accueil",
+      "id": "dame_pion_vs_trois",
       "phase": ["endgame"],
-      "conditions": ["king_vs_pawns"],
+      "conditions": ["dame_pion_vs_trois"],
       "require_all": false,
       "fr": {
-        "concept": "Le Comité d'accueil",
-        "text": "Le Comité d'accueil est un mécanisme de fin de partie fondamental : la dame prépare un double crochet sur les cases de promotion adverses pour empêcher le pion de damer. L'attaque à distance force le pion à aller précisément là où le piège l'attend.",
-        "source": "Dubois, Fins de parties, Ch. 1 — Le comité d'accueil"
+        "concept": "1 dame + 1 pion contre 3 pions",
+        "text": "Avec une dame et un pion face à 3 pions adverses, agissez vite avant leur coordination. Les mécanismes clés : le blocage angulaire du groupe, le crochet sur la case de promotion et l'attaque à distance pour séparer les pions.",
+        "source": "Dubois, Fins de parties, Ch. 12 — 1 dame et 1 pion contre 3 pions"
       },
       "en": {
-        "concept": "The Reception Committee",
-        "text": "The Reception Committee is a fundamental endgame mechanism: the king prepares a double hook on the opponent's promotion squares to prevent pawn promotion. A long-range attack forces the pawn to go exactly where the trap awaits.",
-        "source": "Dubois, Endgames, Ch. 1 — The reception committee"
+        "concept": "1 king + 1 pawn vs 3 pawns",
+        "text": "With a king and pawn against 3 opponent pawns, act before they coordinate. Key mechanisms: angular blocking of the group, a hook on the promotion square, and long-range attacks to separate the pawns.",
+        "source": "Dubois, Endgames, Ch. 12 — 1 king and 1 pawn vs 3 pawns"
       }
     },
+
     {
-      "id": "attaque_distance",
+      "id": "dame_pion_vs_deux",
       "phase": ["endgame"],
-      "conditions": ["kings_present", "few_pieces"],
+      "conditions": ["dame_pion_vs_deux"],
       "require_all": false,
       "fr": {
-        "concept": "L'attaque à distance",
-        "text": "L'attaque à distance — déplacer sa dame pour attaquer deux pions adverses en même temps — est l'un des moyens les plus puissants pour restreindre les coups adverses en finale. Elle force l'adversaire à des réponses précises et prépare le mécanisme final.",
-        "source": "Dubois, Fins de parties, Ch. 1 — L'attaque à distance"
+        "concept": "1 dame + 1 pion contre 2 pions",
+        "text": "La finale 1 dame + 1 pion contre 2 pions est souvent gagnante si le pion est avancé. Faites avancer votre pion en dame tout en utilisant votre dame pour attaquer les pions adverses à distance et les empêcher d'avancer.",
+        "source": "Dubois, Fins de parties, Ch. 4 — 1 dame et 1 pion contre 2 pions"
       },
       "en": {
-        "concept": "Long-range attack",
-        "text": "The long-range attack — moving a king to attack two opponent pieces simultaneously — is one of the most powerful tools to restrict the opponent's options in the endgame. It forces precise replies and sets up the final mechanism.",
-        "source": "Dubois, Endgames, Ch. 1 — The long-range attack"
+        "concept": "1 king + 1 pawn vs 2 pawns",
+        "text": "The endgame of 1 king + 1 pawn vs 2 pawns is often winning for the stronger side when the pawn is advanced. Promote the pawn while using your king to attack the opponent's pawns from a distance and prevent their advance.",
+        "source": "Dubois, Endgames, Ch. 4 — 1 king and 1 pawn vs 2 pawns"
       }
     },
+
+    {
+      "id": "pions_vs_pions",
+      "phase": ["endgame"],
+      "conditions": ["pions_vs_pions"],
+      "require_all": false,
+      "fr": {
+        "concept": "Finale de pions purs",
+        "text": "En finale de pions purs, comptez les temps d'avance avec précision. Avec 3 temps d'avance et le trait, la victoire est possible par passage à dame forcé. L'opposition et la manipulation du trait sont les outils décisifs.",
+        "source": "Dubois, Fins de parties, Ch. 3 — Pions contre pions ; Ch. 5 — 1 pion contre 1 avec 3 temps"
+      },
+      "en": {
+        "concept": "Pure pawn endgame",
+        "text": "In a pure pawn ending, count tempi precisely. With a 3-tempo advantage and the move, winning by forced promotion is possible. Opposition and tempo manipulation are the decisive tools.",
+        "source": "Dubois, Endgames, Ch. 3 — Pawns vs pawns; Ch. 5 — 1 pawn vs 1 with 3 tempi"
+      }
+    },
+
     {
       "id": "dame_vs_deux_pions",
       "phase": ["endgame"],
@@ -231,31 +60,118 @@
       "require_all": false,
       "fr": {
         "concept": "1 dame contre 2 pions",
-        "text": "La finale 1 dame contre 2 pions dépend crucialmente de la position : le blocage angulaire, le blocage sur la grande diagonale (tric trac 1-45) et le blocage arrière sont les mécanismes permettant de neutraliser les pions. Si les pions sont trop avancés et bien placés, la nulle est souvent inévitable.",
+        "text": "La finale 1 dame contre 2 pions dépend crucialement des positions relatives. Les mécanismes gagnants : blocage angulaire, blocage sur la grande diagonale (tric-trac 1-45) et blocage arrière. Si les pions sont trop avancés et coordonnés, la nulle est souvent inévitable.",
         "source": "Dubois, Fins de parties, Ch. 2 — 1 dame contre 2 pions"
       },
       "en": {
         "concept": "1 king against 2 pawns",
-        "text": "The endgame of 1 king vs 2 pawns depends critically on position: angular blocking, blocking on the main diagonal (tric trac 1-45) and rear blocking are the mechanisms to neutralise the pawns. If pawns are too advanced and well placed, a draw is often inevitable.",
+        "text": "The endgame of 1 king vs 2 pawns depends critically on relative positions. Winning mechanisms: angular blocking, long-diagonal blocking (tric-trac 1-45), and rear blocking. If the pawns are too advanced and coordinated, a draw is often unavoidable.",
         "source": "Dubois, Endgames, Ch. 2 — 1 king against 2 pawns"
       }
     },
+
     {
-      "id": "blocage_angulaire",
+      "id": "blocage_grande_diagonale",
       "phase": ["endgame"],
-      "conditions": ["piece_in_corner"],
-      "require_all": false,
+      "conditions": ["kings_present", "few_pieces"],
+      "require_all": true,
       "fr": {
-        "concept": "Le blocage angulaire",
-        "text": "Le blocage angulaire exploite la géométrie des angles du damier pour piéger la dame adverse ou neutraliser des pions avancés. C'est un thème récurrent en finale qu'il faut savoir reconnaître.",
-        "source": "Dubois, Fins de parties, Ch. 2.1 — Le blocage angulaire"
+        "concept": "Blocage sur la grande diagonale",
+        "text": "Si deux pions adverses sont alignés sur la grande diagonale (tric-trac 1-45 ou 6-50), la dame peut s'intercaler entre eux pour les bloquer simultanément. Ce mécanisme interdit au pion de tête d'avancer sans être pris.",
+        "source": "Dubois, Fins de parties, Ch. 2.2-2.4 — Blocage sur les diagonales"
       },
       "en": {
-        "concept": "Angular blocking",
-        "text": "Angular blocking exploits the geometry of the board's corners to trap the opponent's king or neutralise advanced pawns. It is a recurring endgame theme that must be recognised.",
-        "source": "Dubois, Endgames, Ch. 2.1 — Angular blocking"
+        "concept": "Blocking on the long diagonal",
+        "text": "If two opponent pawns are aligned on the long diagonal (tric-trac 1-45 or 6-50), the king can insert itself between them to block both simultaneously. This prevents the lead pawn from advancing without being captured.",
+        "source": "Dubois, Endgames, Ch. 2.2-2.4 — Blocking on the diagonals"
       }
     },
+
+    {
+      "id": "blocage_arriere",
+      "phase": ["endgame"],
+      "conditions": ["dame_vs_two_pawns"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le blocage arrière",
+        "text": "Le blocage arrière consiste à attaquer le pion de queue depuis une diagonale arrière, forçant soit sa prise soit son immobilisation, puis à neutraliser le second pion. C'est le troisième mécanisme majeur de la finale 1 dame contre 2 pions.",
+        "source": "Dubois, Fins de parties, Ch. 2.5 — Le blocage arrière"
+      },
+      "en": {
+        "concept": "Rear blocking",
+        "text": "Rear blocking means attacking the trailing pawn from a diagonal behind it, forcing its capture or immobilisation, then neutralising the second pawn. This is the third major mechanism in the 1 king vs 2 pawns endgame.",
+        "source": "Dubois, Endgames, Ch. 2.5 — Rear blocking"
+      }
+    },
+
+    {
+      "id": "comite_accueil_46_47",
+      "phase": ["endgame"],
+      "conditions": ["king_vs_pawns", "pion_avance_noir"],
+      "require_all": true,
+      "fr": {
+        "concept": "Comité d'accueil — cases 46-47",
+        "text": "Quand les pions adverses menacent de damer sur 46 ou 47, préparez un comité d'accueil : positionnez votre dame pour effectuer un double crochet couvrant les deux cases damantes. L'attaque à distance préalable force les pions à se diriger précisément dans le piège.",
+        "source": "Dubois, Fins de parties, Ch. 6 — Comité d'accueil sur les cases 46 et 47"
+      },
+      "en": {
+        "concept": "Reception committee — squares 46-47",
+        "text": "When opponent pawns threaten to promote on 46 or 47, prepare a reception committee: position your king to set up a double hook covering both promotion squares. A prior long-range attack forces the pawns to walk straight into the trap.",
+        "source": "Dubois, Endgames, Ch. 6 — Reception committee on squares 46 and 47"
+      }
+    },
+
+    {
+      "id": "traversee_grande_diagonale",
+      "phase": ["endgame"],
+      "conditions": ["kings_present", "pion_avance_blanc"],
+      "require_all": true,
+      "fr": {
+        "concept": "Traversée de la grande diagonale",
+        "text": "Traverser la grande diagonale avec sa dame est une manœuvre puissante qui coupe l'adversaire en deux. Ce franchissement force souvent les pièces adverses à reculer ou à exposer des faiblesses que l'on exploite immédiatement.",
+        "source": "Dubois, Fins de parties, Ch. 11 — La traversée de la grande diagonale"
+      },
+      "en": {
+        "concept": "Crossing the long diagonal",
+        "text": "Crossing the long diagonal with your king is a powerful manoeuvre that cuts the opponent in two. This crossing often forces opponent pieces to retreat or to expose weaknesses that can be immediately exploited.",
+        "source": "Dubois, Endgames, Ch. 11 — Crossing the long diagonal"
+      }
+    },
+
+    {
+      "id": "comite_accueil",
+      "phase": ["endgame"],
+      "conditions": ["king_vs_pawns"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le Comité d'accueil",
+        "text": "Le Comité d'accueil est un mécanisme fondamental : la dame prépare un double crochet sur les cases de promotion adverses pour empêcher le pion de damer. L'attaque à distance préalable force le pion à aller précisément là où le piège l'attend.",
+        "source": "Dubois, Fins de parties, Ch. 1 — Le comité d'accueil"
+      },
+      "en": {
+        "concept": "The Reception Committee",
+        "text": "The Reception Committee is a fundamental endgame mechanism: the king prepares a double hook on the opponent's promotion squares to prevent pawn promotion. A long-range attack beforehand forces the pawn to go exactly where the trap awaits.",
+        "source": "Dubois, Endgames, Ch. 1 — The reception committee"
+      }
+    },
+
+    {
+      "id": "attaque_distance",
+      "phase": ["endgame"],
+      "conditions": ["kings_present", "few_pieces"],
+      "require_all": false,
+      "fr": {
+        "concept": "L'attaque à distance",
+        "text": "L'attaque à distance — déplacer sa dame pour menacer deux pièces adverses simultanément — est l'outil le plus puissant pour restreindre les coups adverses en finale. Elle force des réponses précises et prépare le mécanisme final.",
+        "source": "Dubois, Fins de parties, Ch. 1 — L'attaque à distance"
+      },
+      "en": {
+        "concept": "Long-range attack",
+        "text": "The long-range attack — moving a king to threaten two opponent pieces simultaneously — is the most powerful tool for restricting the opponent in the endgame. It forces precise replies and sets up the final mechanism.",
+        "source": "Dubois, Endgames, Ch. 1 — The long-range attack"
+      }
+    },
+
     {
       "id": "opposition_finale",
       "phase": ["endgame"],
@@ -263,47 +179,768 @@
       "require_all": false,
       "fr": {
         "concept": "L'opposition en finale",
-        "text": "En finale équilibrée, l'opposition est le principe fondamental : celui qui obtient l'opposition (pièces face à face avec l'adversaire au trait) force son camp à céder du terrain. Les temps d'avance deviennent alors décisifs.",
+        "text": "En finale équilibrée, l'opposition est le principe fondamental : celui qui obtient l'opposition (pièces face à face, adversaire au trait) force son camp à céder du terrain. Les temps d'avance deviennent alors décisifs.",
         "source": "Dubois, Fins de parties — L'opposition ; Sens du jeu, Ch. 5"
       },
       "en": {
         "concept": "Opposition in the endgame",
-        "text": "In a balanced endgame, opposition is the fundamental principle: the player who achieves opposition (pieces face to face with the opponent to move) forces their camp to yield ground. Tempo advantages then become decisive.",
+        "text": "In a balanced endgame, opposition is the fundamental principle: the player who achieves opposition (pieces face to face, opponent to move) forces their side to yield ground. Tempo advantages then become decisive.",
         "source": "Dubois, Endgames — Opposition; Game Sense, Ch. 5"
       }
     },
+
     {
-      "id": "envoi_dame_mecanisme",
-      "phase": ["middlegame"],
-      "conditions": ["promotion_possible"],
+      "id": "blocage_angulaire",
+      "phase": ["endgame"],
+      "conditions": ["piece_in_corner"],
       "require_all": false,
       "fr": {
-        "concept": "L'envoi à dame",
-        "text": "L'envoi à dame est l'un des mécanismes les plus surprenants des combinaisons : on envoie un pion damer délibérément pour récupérer la dame adverse avec avantage, ou pour créer un collage décisif. Ce sacrifice apparent peut déboucher sur une rafle spectaculaire.",
-        "source": "Dubois, Apprendre les combinaisons, Ch. 4 — L'envoi à dame"
+        "concept": "Le blocage angulaire",
+        "text": "Le blocage angulaire exploite la géométrie des angles du damier pour piéger la dame adverse ou neutraliser des pions avancés. C'est le thème le plus fréquent de la finale 1 dame contre 2 pions : l'adversaire doit sacrifier un pion, et la dame poursuit le second.",
+        "source": "Dubois, Fins de parties, Ch. 2.1 — Le blocage angulaire"
       },
       "en": {
-        "concept": "Forced promotion sacrifice",
-        "text": "A forced promotion sacrifice is one of the most surprising combination mechanisms: a pawn is deliberately promoted to enable recapturing the opponent's king with advantage, or to create a decisive pin. This apparent sacrifice can lead to a spectacular capture.",
-        "source": "Dubois, Learning Combinations, Ch. 4 — The promotion sacrifice"
+        "concept": "Angular blocking",
+        "text": "Angular blocking exploits the geometry of the board's corners to trap the opponent's king or neutralise advanced pawns. It is the most common theme in 1 king vs 2 pawns: the opponent must sacrifice a pawn, and the king pursues the second.",
+        "source": "Dubois, Endgames, Ch. 2.1 — Angular blocking"
       }
     },
+
+
     {
-      "id": "points_contact",
+      "id": "marchand_de_bois",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_27", "white_on_32", "white_on_38"],
+      "require_all": true,
+      "fr": {
+        "concept": "Le Marchand de Bois",
+        "text": "La formation Marchand de Bois (pions en 27-32-38) est un enchaînement classique qui limite la liberté noire sur toute une aile. Des combinaisons typiques naissent de ce blocage — il faut les connaître des deux côtés pour ne pas être surpris.",
+        "source": "Grégoire, Les enchaînements, Ch. Marchand de bois ; Dubois, Référentiel, 2e partie Ch. 2"
+      },
+      "en": {
+        "concept": "The Merchant of Wood",
+        "text": "The Merchant of Wood formation (pawns on 27-32-38) is a classic locking system that restricts Black's freedom across an entire wing. Typical combinations arise from this blockade — know them from both sides to avoid being caught off guard.",
+        "source": "Grégoire, Enchainements, Ch. Merchant of Wood; Dubois, Reference Guide, Part 2 Ch. 2"
+      }
+    },
+
+    {
+      "id": "jeu_central_blanc",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_27", "white_on_28"],
+      "require_all": true,
+      "fr": {
+        "concept": "Jeu Central (Classique offensif)",
+        "text": "Les pions en 27 et 28 forment le pivot du Classique offensif : ils contrôlent seuls le centre et ouvrent la voie à une domination territoriale. L'objectif est de maintenir cette emprise tout en restreignant la liberté adverse par la flèche ou les échanges latéraux.",
+        "source": "Dubois, Référentiel des systèmes de jeu, Ch. 1 — Le classique offensif"
+      },
+      "en": {
+        "concept": "Central Game (Offensive Classic)",
+        "text": "Pieces on 27 and 28 form the pivot of the Offensive Classic: they control the centre alone and open the way to territorial domination. The goal is to maintain this grip while restricting the opponent's freedom via the arrow or lateral exchanges.",
+        "source": "Dubois, Guide to Systems of Play, Ch. 1 — The Offensive Classic"
+      }
+    },
+
+    {
+      "id": "jeu_central_noir",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["black_on_23", "black_on_24"],
+      "require_all": true,
+      "fr": {
+        "concept": "Jeu Central Noirs (23-24-27)",
+        "text": "La formation noire en 23-24 cherche à déloger les blancs du centre pour s'approprier seul l'espace. La flèche 6-11-17 est souvent la clé pour briser l'équilibre central. Les noirs doivent agir vite avant que les blancs ne consolident leur formation.",
+        "source": "Dubois, Référentiel des systèmes de jeu, Ch. 2 — Le jeu central 23-24-27"
+      },
+      "en": {
+        "concept": "Black Central Game (23-24-27)",
+        "text": "The black formation on 23-24 aims to drive white from the centre and claim the space alone. The arrow 6-11-17 is often the key to breaking the central balance. Black must act quickly before white consolidates.",
+        "source": "Dubois, Guide to Systems of Play, Ch. 2 — The central game 23-24-27"
+      }
+    },
+
+    {
+      "id": "formation_45_40",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["formation_45_40"],
+      "require_all": false,
+      "fr": {
+        "concept": "La formation 45-40",
+        "text": "La formation 45-40 est un système de pionnage blanc solide sur l'aile droite. Elle offre une base défensive fiable tout en préparant des poussées offensives via les cases 34 ou 35. Dubois lui consacre un chapitre entier dans les formations.",
+        "source": "Dubois, Sens du jeu, 5e partie Ch. 1 — La formation 45-40"
+      },
+      "en": {
+        "concept": "The 45-40 formation",
+        "text": "The 45-40 formation is a solid white pawn system on the right wing. It provides a reliable defensive base while preparing offensive pushes via squares 34 or 35. Dubois devotes an entire chapter to it in formations.",
+        "source": "Dubois, Game Sense, Part 5 Ch. 1 — The 45-40 formation"
+      }
+    },
+
+    {
+      "id": "fleche_33_38_42",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["formation_33_38"],
+      "require_all": false,
+      "fr": {
+        "concept": "La flèche 33-38-42",
+        "text": "La flèche 33-38-42 est une formation offensive blanche en forme de coin qui exerce une pression sur l'aile gauche noire. Elle crée des menaces de combinaisons sur les cases 22-24 et peut forcer des échanges favorables pour les blancs.",
+        "source": "Dubois, Sens du jeu, 5e partie Ch. 2 — La flèche 33-38-42"
+      },
+      "en": {
+        "concept": "The 33-38-42 arrow",
+        "text": "The 33-38-42 arrow is an offensive white wedge formation that pressures Black's left wing. It creates combination threats on squares 22-24 and can force favourable exchanges for White.",
+        "source": "Dubois, Game Sense, Part 5 Ch. 2 — The 33-38-42 arrow"
+      }
+    },
+
+    {
+      "id": "formation_34_39_43",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["formation_34_39"],
+      "require_all": false,
+      "fr": {
+        "concept": "La formation 34-39-43",
+        "text": "La formation 34-39-43 est une disposition offensive complémentaire à la flèche 33-38-42. Elle prépare une attaque sur l'aile droite et offre des possibilités de combinaisons quand les pions noirs sont mal coordonnés sur cette partie du damier.",
+        "source": "Dubois, Sens du jeu, 5e partie Ch. 3 — La formation 34-39-43"
+      },
+      "en": {
+        "concept": "The 34-39-43 formation",
+        "text": "The 34-39-43 formation is an offensive complement to the 33-38-42 arrow. It prepares a right-wing attack and offers combination opportunities when Black's pawns are poorly coordinated on that part of the board.",
+        "source": "Dubois, Game Sense, Part 5 Ch. 3 — The 34-39-43 formation"
+      }
+    },
+
+
+    {
+      "id": "avant_poste_24",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["black_on_24"],
+      "require_all": false,
+      "fr": {
+        "concept": "L'avant-poste 24 (pion taquin)",
+        "text": "Le pion noir en 24 est le «pion taquin» : il perturbe le développement blanc et crée des déséquilibres. Sa présence exige une réponse précise, car il menace de s'appuyer sur les pions voisins pour déclencher des combinaisons sur les cases blanches du centre.",
+        "source": "Dubois, Sens du jeu, Ch. 6 — Le pion 24 appelé « pion taquin » ; Référentiel, 5e partie Ch. 1"
+      },
+      "en": {
+        "concept": "The 24 outpost (teasing pawn)",
+        "text": "The black pawn on 24 is the 'teasing pawn': it disrupts White's development and creates imbalances. Its presence demands a precise response, as it threatens to use neighbouring pawns to trigger combinations on the central white squares.",
+        "source": "Dubois, Game Sense, Ch. 6 — The pawn 24; Reference Guide, Part 5 Ch. 1"
+      }
+    },
+
+    {
+      "id": "pion_bande_26",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["black_on_26"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion de bande 26",
+        "text": "Le pion noir en 26 est un pion de bande actif : il contrôle l'aile gauche et peut servir de levier pour attaquer les pions blancs de flanc. Il doit être soutenu pour ne pas devenir une faiblesse isolée, car sa situation sur la bande le rend vulnérable.",
+        "source": "Dubois, Sens du jeu, 3e partie Ch. 2 — Le pion de bande 26 ; Référentiel, 5e partie Ch. 2"
+      },
+      "en": {
+        "concept": "The edge pawn 26",
+        "text": "The black pawn on 26 is an active edge pawn: it controls the left wing and can act as a lever to attack white's flank pawns. It must be supported to avoid becoming an isolated weakness, as its edge position makes it vulnerable.",
+        "source": "Dubois, Game Sense, Part 3 Ch. 2 — The edge pawn 26; Reference Guide, Part 5 Ch. 2"
+      }
+    },
+
+    {
+      "id": "pion_bande_36_blanc",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_36"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion blanc 36",
+        "text": "Le pion blanc en 36 est un pion de bande stratégique : bien soutenu par 41 et 31, il renforce l'aile droite et prépare l'enchaînement de l'aile droite (EAD). Son avancée prématurée sans soutien peut cependant créer une faiblesse sur la case 41.",
+        "source": "Dubois, Sens du jeu, 3e partie Ch. 1 — Le pion blanc 36 ; Référentiel, 2e partie Ch. 5"
+      },
+      "en": {
+        "concept": "The white pawn 36",
+        "text": "The white pawn on 36 is a strategic edge pawn: well supported by 41 and 31, it reinforces the right wing and prepares the right-wing lock (EAD). However, its premature advance without support can create a weakness on square 41.",
+        "source": "Dubois, Game Sense, Part 3 Ch. 1 — The white pawn 36; Reference Guide, Part 2 Ch. 5"
+      }
+    },
+
+    {
+      "id": "pion_angle_46",
+      "phase": ["middlegame", "endgame"],
+      "conditions": ["white_on_46"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion d'angle 46",
+        "text": "Le pion blanc en 46 est un pion de base fondamental. Dubois lui consacre trois chapitres : il sert d'ancre défensive et d'atout stratégique pour résister aux enchaînements adverses. Sa sortie prématurée fragilise irrémédiablement la base blanche.",
+        "source": "Dubois, Sens du jeu, 2e partie Ch. 1-3 — Le pion d'angle 46"
+      },
+      "en": {
+        "concept": "The corner pawn 46",
+        "text": "The white pawn on 46 is a fundamental base pawn. Dubois devotes three chapters to it: it serves as a defensive anchor and strategic asset for resisting opponent locks. Its premature advance permanently weakens White's base.",
+        "source": "Dubois, Game Sense, Part 2 Ch. 1-3 — The corner pawn 46"
+      }
+    },
+
+    {
+      "id": "pion_base_47",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_47"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion de base 47",
+        "text": "Le pion blanc en 47 est un pion de base essentiel qui contrôle les cases 41 et 42. Sa sortie prématurée en 41 ou 42 peut déséquilibrer la base blanche. Il doit avancer au bon moment, quand son départ n'affaiblit pas la structure.",
+        "source": "Dubois, Sens du jeu, 2e partie Ch. 4-5 — Le pion de base 47"
+      },
+      "en": {
+        "concept": "The base pawn 47",
+        "text": "The white pawn on 47 is an essential base pawn controlling squares 41 and 42. Its premature advance to 41 or 42 can destabilise White's base. It should advance at the right moment, when its departure does not weaken the structure.",
+        "source": "Dubois, Game Sense, Part 2 Ch. 4-5 — The base pawn 47"
+      }
+    },
+
+    {
+      "id": "pion_bande_45",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_45"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion blanc 45",
+        "text": "Le pion blanc en 45 est un pion de bande puissant qui, associé au pion 40, forme la formation 45-40 très solide. Sa présence sur la bande droite prépare des coups offensifs via les cases 34 et 39 tout en maintenant une base défensive stable.",
+        "source": "Dubois, Sens du jeu, 3e partie Ch. 5 — Le pion blanc 45"
+      },
+      "en": {
+        "concept": "The white pawn 45",
+        "text": "The white pawn on 45 is a powerful edge pawn that, paired with pawn 40, forms the solid 45-40 formation. Its presence on the right edge prepares offensive moves via squares 34 and 39 while maintaining a stable defensive base.",
+        "source": "Dubois, Game Sense, Part 3 Ch. 5 — The white pawn 45"
+      }
+    },
+
+    {
+      "id": "pion_bande_35",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_35"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion blanc 35",
+        "text": "Le pion blanc en 35 est un pion de bande avancé. Dubois lui consacre un chapitre : bien utilisé, il exerce une pression sur l'aile droite noire et prépare des avancées sur les cases 29-30. Mal soutenu, il devient une cible vulnérable.",
+        "source": "Dubois, Sens du jeu, 3e partie Ch. 6 — Le pion blanc 35"
+      },
+      "en": {
+        "concept": "The white pawn 35",
+        "text": "The white pawn on 35 is an advanced edge pawn. Dubois devotes a chapter to it: well used, it pressures Black's right wing and prepares advances on squares 29-30. Without support, it becomes a vulnerable target.",
+        "source": "Dubois, Game Sense, Part 3 Ch. 6 — The white pawn 35"
+      }
+    },
+
+    {
+      "id": "pion_bande_15_noir",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["black_on_15"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion noir 15",
+        "text": "Le pion noir en 15 est un pion de bande dont les spécificités sont importantes à connaître. Il peut servir de base à un enchaînement latéral sur l'aile gauche, mais sa présence sur la bande l'expose à des attaques directes. Son soutien par le pion 20 est souvent nécessaire.",
+        "source": "Dubois, Sens du jeu, 3e partie Ch. 8 — Le pion 15 : les spécificités"
+      },
+      "en": {
+        "concept": "The black pawn 15",
+        "text": "The black pawn on 15 has important edge-pawn specificities. It can anchor a lateral lock on the left wing, but its edge position exposes it to direct attacks. Support from pawn 20 is often necessary.",
+        "source": "Dubois, Game Sense, Part 3 Ch. 8 — The pawn 15: specific features"
+      }
+    },
+
+    {
+      "id": "pion_offensif_28",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_28"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion offensif 28",
+        "text": "Le pion blanc en 28 est l'un des pions offensifs les plus importants : il occupe le cœur du centre et contrôle les cases 22-23. En le maintenant en 28, les blancs créent une pression constante sur la zone centrale adverse et préparent des combinaisons sur les cases clés.",
+        "source": "Dubois, Sens du jeu, 4e partie Ch. 2 — Le pion 28 ; Référentiel, Ch. 1 (classique offensif)"
+      },
+      "en": {
+        "concept": "The offensive pawn 28",
+        "text": "The white pawn on 28 is one of the most important offensive pawns: it sits at the heart of the centre and controls squares 22-23. Maintaining it on 28 creates constant pressure on the opponent's central zone and sets up combinations on key squares.",
+        "source": "Dubois, Game Sense, Part 4 Ch. 2 — The pawn 28; Reference Guide, Ch. 1 (offensive classic)"
+      }
+    },
+
+    {
+      "id": "pion_offensif_29",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_29"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion blanc 29",
+        "text": "Le pion blanc en 29 occupe une case offensive centrale importante. Il soutient les pions 28 et 34 tout en menaçant l'avancée vers 23. Cette case est stratégiquement sensible car elle conditionne le contrôle de toute la zone centrale du damier.",
+        "source": "Dubois, Sens du jeu, 4e partie Ch. 3 — Le pion 29"
+      },
+      "en": {
+        "concept": "The white pawn 29",
+        "text": "The white pawn on 29 occupies an important central offensive square. It supports pawns 28 and 34 while threatening an advance to 23. This square is strategically sensitive as it conditions control of the entire central zone.",
+        "source": "Dubois, Game Sense, Part 4 Ch. 3 — The pawn 29"
+      }
+    },
+
+    {
+      "id": "piquet_canadien",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["piquet_canadien"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le piquet canadien",
+        "text": "Le piquet canadien est un pion noir planté en 23 sans pion de soutien adjacent. Bien placé, il immobilise plusieurs pions blancs et crée une menace permanente au centre. Mais il est aussi une cible potentielle si les blancs parviennent à l'encercler.",
+        "source": "Dubois, Sens du jeu, Ch. 2 — Le piquet canadien ; Référentiel, 3e partie Ch. 6"
+      },
+      "en": {
+        "concept": "The Canadian pillar",
+        "text": "The Canadian pillar is a black pawn planted on 23 without adjacent support. Well placed, it immobilises several white pawns and creates a permanent central threat. But it is also a potential target if white manages to encircle it.",
+        "source": "Dubois, Game Sense, Ch. 2 — The Canadian pillar; Reference Guide, Part 3 Ch. 6"
+      }
+    },
+
+    {
+      "id": "pion_16_noir",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["black_on_16"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion noir 16",
+        "text": "Le pion blanc 16 (case des noirs) est un pion de bande que Dubois étudie dans le référentiel. Sa présence en 16 peut servir de base pour un encerclement de l'aile gauche, à condition d'être bien coordonné avec les pions centraux.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 5e partie Ch. 4 — Le pion blanc 16"
+      },
+      "en": {
+        "concept": "The black pawn 16",
+        "text": "The pawn on square 16 is an edge pawn studied in the Reference Guide. Its presence on 16 can anchor a left-wing encirclement, provided it is well coordinated with the central pawns.",
+        "source": "Dubois, Reference Guide, Part 5 Ch. 4 — The pawn 16"
+      }
+    },
+
+    {
+      "id": "pion_6_noir",
+      "phase": ["middlegame"],
+      "conditions": ["black_on_6"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion 6 en création",
+        "text": "Le pion noir en 6 est un pion de bande très avancé sur l'aile gauche. Sa simple présence crée une menace de passage à dame par la bande. Il faut évaluer si cet avant-poste est durable ou vulnérable selon la structure environnante.",
+        "source": "Dubois, Sens du jeu, 3e partie Ch. 4 — Le pion de bande 6 ; Référentiel, 5e partie Ch. 5"
+      },
+      "en": {
+        "concept": "The pawn 6 (advanced edge)",
+        "text": "The black pawn on 6 is a very advanced left-wing edge pawn. Its mere presence creates a promotion threat along the edge. Evaluate whether this outpost is durable or vulnerable based on the surrounding structure.",
+        "source": "Dubois, Game Sense, Part 3 Ch. 4 — The edge pawn 6; Reference Guide, Part 5 Ch. 5"
+      }
+    },
+
+    {
+      "id": "pion_21_noir",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["black_on_21"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion 21 en création",
+        "text": "Le pion noir en 21 occupe une case centrale importante de la zone intermédiaire. Sa présence ici conditionne le contrôle des cases 27 et 16, et peut préparer une offensive sur l'aile gauche blanche. C'est souvent un avant-poste offensif décisif.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 5e partie Ch. 6 — Le pion 21"
+      },
+      "en": {
+        "concept": "The pawn 21 (central post)",
+        "text": "The black pawn on 21 occupies an important central square in the intermediate zone. Its presence here conditions control of squares 27 and 16, and can prepare an offensive on White's left wing. It is often a decisive offensive outpost.",
+        "source": "Dubois, Reference Guide, Part 5 Ch. 6 — The pawn 21"
+      }
+    },
+
+    {
+      "id": "pion_22_noir",
+      "phase": ["middlegame"],
+      "conditions": ["black_on_22"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion noir en 22",
+        "text": "Le pion noir en 22 est un pion offensif actif qui contrôle les cases blanches 17 et 27. Il crée une pression directe sur la formation blanche et prépare des combinaisons en 2 temps via les contacts qu'il établit avec les pions adverses.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 5 — La méthode des points de contact"
+      },
+      "en": {
+        "concept": "The black pawn on 22",
+        "text": "The black pawn on 22 is an active offensive pawn controlling the white squares 17 and 27. It creates direct pressure on the white formation and prepares 2-move combinations via the contact points it establishes with opponent pawns.",
+        "source": "Dubois, Learning Combinations, Ch. 5 — The contact points method"
+      }
+    },
+
+    {
+      "id": "pion_passe_blanc",
+      "phase": ["middlegame", "endgame"],
+      "conditions": ["pion_avance_blanc"],
+      "require_all": false,
+      "fr": {
+        "concept": "Pion blanc avancé (pion passé)",
+        "text": "Un pion blanc avancé dans le camp adverse est une menace de dame permanente. L'adversaire doit soit le bloquer soit sacrifier pour l'arrêter. Exploitez cette menace en contraignant l'adversaire à des réponses forcées, ce qui libère du terrain ailleurs.",
+        "source": "Dubois, Sens du jeu, Ch. 2 — Le pion passé"
+      },
+      "en": {
+        "concept": "Advanced white pawn (passed pawn)",
+        "text": "A white pawn advanced into enemy territory is a permanent promotion threat. The opponent must either block it or sacrifice to stop it. Exploit this threat by forcing the opponent into reactive moves, which frees space elsewhere.",
+        "source": "Dubois, Game Sense, Ch. 2 — The passed pawn"
+      }
+    },
+
+    {
+      "id": "pion_passe_noir",
+      "phase": ["middlegame", "endgame"],
+      "conditions": ["pion_avance_noir"],
+      "require_all": false,
+      "fr": {
+        "concept": "Pion noir avancé (pion passé)",
+        "text": "Un pion noir avancé dans le camp blanc est une menace de dame permanente. Forcez l'adversaire à réagir en combinant la menace de passage avec des attaques sur les autres zones du damier. Un pion passé non bloqué peut décider la partie à lui seul.",
+        "source": "Dubois, Sens du jeu, Ch. 2 — Le pion passé"
+      },
+      "en": {
+        "concept": "Advanced black pawn (passed pawn)",
+        "text": "A black pawn advanced into white territory is a permanent promotion threat. Force the opponent to react by combining the promotion threat with attacks on other parts of the board. An unblocked passed pawn can decide the game on its own.",
+        "source": "Dubois, Game Sense, Ch. 2 — The passed pawn"
+      }
+    },
+
+
+    {
+      "id": "classique_positions_ref",
+      "phase": ["opening"],
+      "conditions": ["white_on_27", "opening_general"],
+      "require_all": false,
+      "fr": {
+        "concept": "Système classique — positions de référence",
+        "text": "Le système classique repose sur des positions de référence que les deux camps peuvent adopter. Dubois en identifie dix sous-variantes selon la gestion des ailes et du centre. Connaître ces positions de référence évite les imprécisions des premiers coups.",
+        "source": "Dubois, Référentiel des systèmes de jeu, Ch. 3 — Le système classique (3.1)"
+      },
+      "en": {
+        "concept": "Classical system — reference positions",
+        "text": "The classical system is built on reference positions that both sides can adopt. Dubois identifies ten sub-variations based on wing and centre management. Knowing these reference positions avoids inaccuracies in the opening moves.",
+        "source": "Dubois, Reference Guide, Ch. 3 — The classical system (3.1)"
+      }
+    },
+
+    {
+      "id": "classique_ghestem",
+      "phase": ["opening"],
+      "conditions": ["white_on_36", "white_on_27"],
+      "require_all": false,
+      "fr": {
+        "concept": "L'avancée Ghestem",
+        "text": "L'avancée Ghestem est une idée offensive dans le système classique : avancer le pion de bande en temps opportun pour déséquilibrer la formation adverse. Elle crée des menaces de combinaisons sur l'aile et doit être préparée avec précision.",
+        "source": "Dubois, Référentiel des systèmes de jeu, Ch. 3.4 — L'avancée Ghestem"
+      },
+      "en": {
+        "concept": "The Ghestem advance",
+        "text": "The Ghestem advance is an offensive idea in the classical system: advance the edge pawn at the right moment to unbalance the opponent's formation. It creates combination threats on the wing and must be prepared with precision.",
+        "source": "Dubois, Reference Guide, Ch. 3.4 — The Ghestem advance"
+      }
+    },
+
+    {
+      "id": "classique_kerkhof",
+      "phase": ["opening"],
+      "conditions": ["white_on_28"],
+      "require_all": false,
+      "fr": {
+        "concept": "L'incursion Kerkhof",
+        "text": "L'incursion Kerkhof est une manœuvre dans le système classique qui consiste à pénétrer dans le camp adverse par une case imprévue pour créer un avant-poste. Ce coup surprenant oblige l'adversaire à reorganiser sa défense sous la pression.",
+        "source": "Dubois, Référentiel des systèmes de jeu, Ch. 3.8 — L'incursion Kerkhof"
+      },
+      "en": {
+        "concept": "The Kerkhof incursion",
+        "text": "The Kerkhof incursion is a manoeuvre in the classical system: penetrate into enemy territory via an unexpected square to create an outpost. This surprising move forces the opponent to reorganise their defence under pressure.",
+        "source": "Dubois, Reference Guide, Ch. 3.8 — The Kerkhof incursion"
+      }
+    },
+
+    {
+      "id": "classique_dpk",
+      "phase": ["opening"],
+      "conditions": ["white_on_27", "white_on_28"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le double pion Kerkhof (DPK)",
+        "text": "Le Double Pion Kerkhof est une variante aggressive du système classique où les deux pions centraux (27-28) avancent de concert pour créer une double menace au centre. Cette structure exige un suivi précis pour éviter de fragiliser la base.",
+        "source": "Dubois, Référentiel des systèmes de jeu, Ch. 3.10 — Le double pion Kerkhof (DPK)"
+      },
+      "en": {
+        "concept": "The double Kerkhof pawn (DPK)",
+        "text": "The Double Kerkhof Pawn is an aggressive classical system variant where both central pawns (27-28) advance together to create a double central threat. This structure requires precise follow-up to avoid weakening the base.",
+        "source": "Dubois, Reference Guide, Ch. 3.10 — The double Kerkhof pawn (DPK)"
+      }
+    },
+
+    {
+      "id": "faux_mdb",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_27"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le faux marchand de bois",
+        "text": "Le faux marchand de bois est une formation blanche qui ressemble au vrai Marchand de Bois mais avec des pions mal coordonnés. Les noirs doivent le reconnaître pour identifier les combinaisons typiques qui brisent cet enchaînement incomplet.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 2e partie Ch. 1 — Le faux marchand de bois"
+      },
+      "en": {
+        "concept": "The fake Merchant of Wood",
+        "text": "The fake Merchant of Wood is a white formation resembling the true MdB but with poorly coordinated pawns. Black must recognise it to identify the typical combinations that break this incomplete lock.",
+        "source": "Dubois, Reference Guide, Part 2 Ch. 1 — The fake Merchant of Wood"
+      }
+    },
+
+    {
+      "id": "tenailles",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["restricted_side"],
+      "require_all": false,
+      "fr": {
+        "concept": "Les tenailles",
+        "text": "Les tenailles sont un enchaînement latéral où deux pions blancs, disposés en pince, bloquent une formation noire sur toute une aile. C'est une structure d'enchaînement classique qui génère de nombreuses combinaisons tactiques.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 2e partie Ch. 4 — L'enchaînement en tenailles"
+      },
+      "en": {
+        "concept": "The pincers",
+        "text": "The pincers are a lateral lock where two white pawns arranged as pincers block a black formation across an entire wing. It is a classic lock structure that generates many tactical combinations.",
+        "source": "Dubois, Reference Guide, Part 2 Ch. 4 — The pincer lock"
+      }
+    },
+
+    {
+      "id": "enchaînement_EAD",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_36"],
+      "require_all": false,
+      "fr": {
+        "concept": "L'Enchaînement de l'Aile Droite (EAD)",
+        "text": "L'EAD est un système d'enchaînement sur l'aile droite, souvent déclenché par une avancée du pion 36. Il crée une pression latérale sur les pions noirs de l'aile droite et prépare des combinaisons spécifiques à ce type de structure.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 2e partie Ch. 5 — L'EAD"
+      },
+      "en": {
+        "concept": "The Right-Wing Lock (EAD)",
+        "text": "The EAD is a right-wing lock system, often triggered by advancing pawn 36. It creates lateral pressure on Black's right-wing pawns and prepares combinations specific to this structure.",
+        "source": "Dubois, Reference Guide, Part 2 Ch. 5 — The Right-Wing Lock"
+      }
+    },
+
+    {
+      "id": "enchaînement_EAG",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["white_on_46"],
+      "require_all": false,
+      "fr": {
+        "concept": "L'Enchaînement de l'Aile Gauche (EAG)",
+        "text": "L'EAG est un système d'enchaînement sur l'aile gauche. Il exploite la présence de pions blancs bien placés sur l'aile gauche pour créer un blocus et forcer l'adversaire à des réponses précises sous peine de combinaisons décisives.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 2e partie Ch. 6 — L'EAG"
+      },
+      "en": {
+        "concept": "The Left-Wing Lock (EAG)",
+        "text": "The EAG is a left-wing lock system. It exploits well-placed white pawns on the left wing to create a blockade and force precise replies from the opponent, under threat of decisive combinations.",
+        "source": "Dubois, Reference Guide, Part 2 Ch. 6 — The Left-Wing Lock"
+      }
+    },
+
+    {
+      "id": "systeme_utrecht",
+      "phase": ["opening"],
+      "conditions": ["opening_general"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le système d'Utrecht",
+        "text": "Le système d'Utrecht est un système offensif qui met l'accent sur une avancée rapide sur l'une des ailes pour créer un déséquilibre. Il surprend l'adversaire par son caractère direct et exige une réponse précise pour ne pas subir une attaque dévastatrice.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 3e partie Ch. 1 — Le système d'Utrecht"
+      },
+      "en": {
+        "concept": "The Utrecht system",
+        "text": "The Utrecht system is an offensive system that emphasises a rapid advance on one wing to create imbalance. It surprises the opponent with its directness and demands a precise response to avoid suffering a devastating attack.",
+        "source": "Dubois, Reference Guide, Part 3 Ch. 1 — The Utrecht system"
+      }
+    },
+
+    {
+      "id": "systeme_roozenburg",
+      "phase": ["opening"],
+      "conditions": ["black_on_23", "opening_general"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le système Roozenburg",
+        "text": "Le système Roozenburg, développé par le champion du monde 1948 Piet Roozenburg, est un système offensif basé sur une expansion territoriale rapide au centre. Il recherche la domination de l'espace pour contraindre l'adversaire à des positions défensives.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 3e partie Ch. 2 — Le système Roozenburg"
+      },
+      "en": {
+        "concept": "The Roozenburg system",
+        "text": "The Roozenburg system, developed by 1948 world champion Piet Roozenburg, is an offensive system based on rapid central territorial expansion. It seeks spatial domination to force the opponent into defensive positions.",
+        "source": "Dubois, Reference Guide, Part 3 Ch. 2 — The Roozenburg system"
+      }
+    },
+
+    {
+      "id": "batterie_chizhov",
+      "phase": ["opening"],
+      "conditions": ["black_on_24", "opening_general"],
+      "require_all": false,
+      "fr": {
+        "concept": "La batterie Chizhov",
+        "text": "La batterie Chizhov est une formation offensive noire qui place des pions en avant-postes pour créer des menaces multiples. Elle exige des blancs une défense précise et active, car tout retard dans la réaction peut mener à une position perdante rapidement.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 3e partie Ch. 3 — La batterie Chizhov"
+      },
+      "en": {
+        "concept": "The Chizhov battery",
+        "text": "The Chizhov battery is an offensive black formation that places pawns as outposts to create multiple threats. It demands a precise and active defence from White, as any delay in responding can quickly lead to a losing position.",
+        "source": "Dubois, Reference Guide, Part 3 Ch. 3 — The Chizhov battery"
+      }
+    },
+
+    {
+      "id": "encerclement_lateral",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["wing_imbalance"],
+      "require_all": false,
+      "fr": {
+        "concept": "L'encerclement latéral",
+        "text": "L'encerclement latéral consiste à concentrer des forces sur une aile pour encercler et isoler les pièces adverses. Cette stratégie crée une supériorité locale décisive. Il faut s'assurer que les forces utilisées pour l'encerclement ne fragilisent pas le reste de la position.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 4e partie Ch. 3 — L'encerclement latéral"
+      },
+      "en": {
+        "concept": "Lateral encirclement",
+        "text": "Lateral encirclement means concentrating forces on one wing to encircle and isolate the opponent's pieces. This strategy creates a decisive local superiority. Ensure that the forces used for encirclement do not weaken the rest of the position.",
+        "source": "Dubois, Reference Guide, Part 4 Ch. 3 — Lateral encirclement"
+      }
+    },
+
+    {
+      "id": "encerclement_central",
       "phase": ["middlegame"],
       "conditions": ["many_contacts"],
       "require_all": false,
       "fr": {
-        "concept": "La méthode des points de contact",
-        "text": "Lorsque la rafle finale n'est pas évidente, Dubois recommande de rechercher d'abord les points de contact entre les pions des deux camps, puis de sacrifier mentalement les pions pour explorer les mécanismes disponibles. Cette méthode complémentaire révèle souvent des combinaisons que la recherche systématique ne trouve pas.",
-        "source": "Dubois, Apprendre les combinaisons, Ch. 5 — La méthode des points de contact"
+        "concept": "L'encerclement central",
+        "text": "L'encerclement central vise à entourer et neutraliser les forces adverses au centre du damier. En occupant les cases clés autour des pièces adverses, on les prive de mouvement et on crée les conditions pour des combinaisons décisives.",
+        "source": "Dubois, Référentiel des systèmes de jeu, 4e partie Ch. 4 — L'encerclement central"
       },
       "en": {
-        "concept": "Contact points method",
-        "text": "When the final capture is not obvious, Dubois recommends first identifying contact points between both sides' pieces, then mentally sacrificing pawns to explore available mechanisms. This complementary method often reveals combinations that systematic search misses.",
-        "source": "Dubois, Learning Combinations, Ch. 5 — The contact points method"
+        "concept": "Central encirclement",
+        "text": "Central encirclement aims to surround and neutralise the opponent's forces in the board's centre. By occupying the key squares around the opponent's pieces, you deprive them of movement and create the conditions for decisive combinations.",
+        "source": "Dubois, Reference Guide, Part 4 Ch. 4 — Central encirclement"
       }
     },
+
+    {
+      "id": "enchaînement_general",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["restricted_side"],
+      "require_all": false,
+      "fr": {
+        "concept": "Position d'enchaînement",
+        "text": "Un enchaînement se produit lorsqu'un camp immobilise les pièces adverses sur une aile. Dans ces positions fermées naissent la plupart des combinaisons. L'objectif est de maintenir le blocage tout en cherchant la rafle décisive parmi les contacts directs.",
+        "source": "Grégoire, Les enchaînements — Introduction ; Dubois, Référentiel, 2e partie"
+      },
+      "en": {
+        "concept": "Locked position",
+        "text": "A lock occurs when one side immobilises the opponent's pieces on one wing. Most combinations arise in these closed positions. The goal is to maintain the blockade while seeking the decisive capture among the direct contacts.",
+        "source": "Grégoire, Enchainements — Introduction; Dubois, Reference Guide, Part 2"
+      }
+    },
+
+
+    {
+      "id": "avantage_structurel",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["balanced_material"],
+      "require_all": false,
+      "fr": {
+        "concept": "Les avantages structurels durables",
+        "text": "Les avantages structurels durables — enchaînement latéral, trèfle immobilisateur, pion suspendu, piquet canadien, pion passé — l'emportent sur les avantages circonstanciels (trait, attaque à contretemps). Cherchez à les créer activement plutôt qu'à les attendre.",
+        "source": "Dubois, Sens du jeu, Ch. 2 — La notion d'avantage"
+      },
+      "en": {
+        "concept": "Durable structural advantages",
+        "text": "Durable structural advantages — lateral lock, clover formation, hanging pawn, Canadian pillar, passed pawn — outweigh circumstantial advantages (tempo, counter-timing). Seek to create them actively rather than waiting for them.",
+        "source": "Dubois, Game Sense, Ch. 2 — The notion of advantage"
+      }
+    },
+
+    {
+      "id": "les_echanges",
+      "phase": ["middlegame"],
+      "conditions": ["balanced_material"],
+      "require_all": false,
+      "fr": {
+        "concept": "La valeur des échanges",
+        "text": "Les échanges modifient l'espace et la liberté de mouvement. Un échange ne doit pas être évalué seulement sur le bilan matériel, mais sur la position qui en résulte. Dubois insiste : un échange qui déplace la pression vers une zone favorable vaut davantage que la simple égalité matérielle.",
+        "source": "Dubois, Sens du jeu, Ch. 4 — Les échanges"
+      },
+      "en": {
+        "concept": "The value of exchanges",
+        "text": "Exchanges modify space and freedom of movement. An exchange should not be judged only by the material balance, but by the resulting position. Dubois insists: an exchange that shifts pressure to a favourable zone is worth more than mere material equality.",
+        "source": "Dubois, Game Sense, Ch. 4 — Exchanges"
+      }
+    },
+
+    {
+      "id": "temps_reserve_general",
+      "phase": ["middlegame"],
+      "conditions": ["balanced_material"],
+      "require_all": false,
+      "fr": {
+        "concept": "Les temps de réserve",
+        "text": "En position fermée, les temps de réserve — coups disponibles sans affaiblir la structure — sont précieux. Avoir 2-3 temps de réserve de plus que l'adversaire permet de maintenir le contrôle. Dubois montre comment les gérer pour forcer l'adversaire à s'affaiblir.",
+        "source": "Dubois, Sens du jeu, Ch. 6 — Les temps de réserve"
+      },
+      "en": {
+        "concept": "Reserve moves",
+        "text": "In a closed position, reserve moves — moves available without weakening the structure — are precious. Having 2-3 more reserve moves than the opponent allows you to maintain control. Dubois shows how to manage them to force the opponent to weaken.",
+        "source": "Dubois, Game Sense, Ch. 6 — Reserve moves"
+      }
+    },
+
+    {
+      "id": "pion_arriere_suspendu",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["opening_general"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le pion arrière ou suspendu",
+        "text": "Un pion arrière est un pion qui ne peut plus être soutenu par ses voisins et qui est bloqué dans sa progression. Un pion suspendu est un pion avancé sans soutien dans le camp adverse. Les deux sont des faiblesses structurelles à exploiter activement par le camp adverse.",
+        "source": "Dubois, Sens du jeu, Ch. 7 — Les pions arrière et suspendus"
+      },
+      "en": {
+        "concept": "The backward and hanging pawn",
+        "text": "A backward pawn can no longer be supported by neighbours and is blocked in its advance. A hanging pawn is an advanced pawn with no support in enemy territory. Both are structural weaknesses to be actively exploited by the opponent.",
+        "source": "Dubois, Game Sense, Ch. 7 — Backward and hanging pawns"
+      }
+    },
+
+    {
+      "id": "liberte_mouvement",
+      "phase": ["middlegame"],
+      "conditions": ["balanced_material"],
+      "require_all": false,
+      "fr": {
+        "concept": "Liberté de mouvement relative",
+        "text": "La liberté de mouvement est relative : elle n'a de valeur que si l'adversaire est plus contraint. Limitez au maximum les possibilités adverses tout en conservant vos propres options. Les échanges doivent être évalués sur la position résultante, pas seulement le bilan matériel.",
+        "source": "Dubois, Sens du jeu, Ch. 3 — La liberté de mouvement relative"
+      },
+      "en": {
+        "concept": "Relative freedom of movement",
+        "text": "Freedom of movement is relative: it only has value if the opponent is more restricted. Limit the opponent's possibilities to the maximum while preserving your own options. Exchanges must be evaluated by the resulting position, not just the material count.",
+        "source": "Dubois, Game Sense, Ch. 3 — Relative freedom of movement"
+      }
+    },
+
+    {
+      "id": "temps_avance",
+      "phase": ["opening", "middlegame"],
+      "conditions": ["tempo_advantage"],
+      "require_all": false,
+      "fr": {
+        "concept": "Les temps d'avance",
+        "text": "Un temps d'avance au jeu de dames est précieux : il permet de prendre l'initiative et de dicter le rythme de la partie. Exploitez cette avance en forçant l'adversaire à réagir, et choisissez le moment opportun pour déclencher les hostilités.",
+        "source": "Dubois, Sens du jeu, Ch. 5 — Les temps d'avance"
+      },
+      "en": {
+        "concept": "Tempo advantage",
+        "text": "A tempo advantage in draughts is precious: it allows you to seize the initiative and dictate the game's rhythm. Exploit this lead by forcing the opponent to react, and choose the right moment to open hostilities.",
+        "source": "Dubois, Game Sense, Ch. 5 — Tempo advantage"
+      }
+    },
+
     {
       "id": "notion_espace",
       "phase": ["opening"],
@@ -311,14 +948,407 @@
       "require_all": false,
       "fr": {
         "concept": "La notion d'espace",
-        "text": "Le jeu de dames est avant tout un jeu d'occupation territoriale. Dès l'ouverture, les cases occupées, les formations de pions et la flexibilité déterminent qui contrôle le jeu. L'objectif est de placer ses pions dans la zone intermédiaire offensive tout en contenant l'expansion adverse.",
+        "text": "Le jeu de dames est avant tout un jeu d'occupation territoriale. L'objectif est de placer ses pions dans la zone intermédiaire offensive tout en contenant l'expansion adverse. Plus vous occupez de cases dans cette zone, plus votre liberté de jeu est grande.",
         "source": "Dubois, Sens du jeu, Ch. 1 — La notion d'espace"
       },
       "en": {
         "concept": "The notion of space",
-        "text": "Draughts is above all a game of territorial occupation. From the opening, the squares occupied, pawn formations and flexibility determine who controls the game. The objective is to place your pawns in the offensive intermediate zone while containing the opponent's expansion.",
+        "text": "Draughts is above all a game of territorial occupation. The objective is to place your pawns in the offensive intermediate zone while containing the opponent's expansion. The more squares you occupy in this zone, the greater your freedom of play.",
         "source": "Dubois, Game Sense, Ch. 1 — The notion of space"
       }
+    },
+
+
+    {
+      "id": "coup_express",
+      "phase": ["middlegame"],
+      "conditions": ["promotion_possible", "capture_possible"],
+      "require_all": true,
+      "fr": {
+        "concept": "Le coup de l'Express",
+        "text": "Le coup de l'Express est une combinaison en 4 temps où l'on envoie d'abord un pion en dame pour déclencher une rafle décisive. Ce mécanisme surprenant brise les défenses adverses en combinant l'envoi à dame avec une prise multiple.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 13 — Le coup de l'Express"
+      },
+      "en": {
+        "concept": "The Express move",
+        "text": "The Express move is a 4-move combination where a pawn is first promoted to trigger a decisive capture. This surprising mechanism breaks opponent defences by combining a promotion with a multiple capture.",
+        "source": "Dubois, Learning Combinations, Ch. 13 — The Express move"
+      }
+    },
+
+    {
+      "id": "coup_napoleon",
+      "phase": ["middlegame"],
+      "conditions": ["many_captures", "piece_in_corner"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup Napoléon",
+        "text": "Le coup Napoléon est une combinaison en 4 temps caractérisée par l'utilisation d'un angle du damier comme point d'appui. Le pion est sacrifié vers l'angle pour forcer une prise majoritaire décisive qui capture plusieurs pièces adverses.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 17 — Le coup Napoléon"
+      },
+      "en": {
+        "concept": "The Napoleon move",
+        "text": "The Napoleon move is a 4-move combination characterised by using a corner of the board as a fulcrum. A pawn is sacrificed toward the corner to force a decisive majority capture that takes several opponent pieces.",
+        "source": "Dubois, Learning Combinations, Ch. 17 — The Napoleon move"
+      }
+    },
+
+    {
+      "id": "coup_philippe",
+      "phase": ["middlegame"],
+      "conditions": ["many_captures", "formation_33_38"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup Philippe",
+        "text": "Le coup Philippe est une combinaison qui exploite une structure de pions spécifique pour déclencher une rafle sur plusieurs cases via un sacrifice initial. Les pions de la formation flèche (33-38-42) sont souvent le support de cette combinaison.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 20 — Le coup Philippe"
+      },
+      "en": {
+        "concept": "The Philippe move",
+        "text": "The Philippe move is a combination that exploits a specific pawn structure to trigger a multi-square capture via an initial sacrifice. The arrow formation pawns (33-38-42) are often the support for this combination.",
+        "source": "Dubois, Learning Combinations, Ch. 20 — The Philippe move"
+      }
+    },
+
+    {
+      "id": "coup_raichenbach",
+      "phase": ["middlegame"],
+      "conditions": ["many_captures", "formation_45_40"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup Raichenbach",
+        "text": "Le coup Raichenbach est une combinaison associée à des structures de pions sur l'aile droite. Il exploite la position des pions 45-40 pour créer un sacrifice inattendu qui débouche sur une rafle décisive sur l'aile.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 32 — Le coup Raichenbach"
+      },
+      "en": {
+        "concept": "The Raichenbach move",
+        "text": "The Raichenbach move is a combination associated with pawn structures on the right wing. It exploits the position of pawns 45-40 to create an unexpected sacrifice that leads to a decisive capture on the wing.",
+        "source": "Dubois, Learning Combinations, Ch. 32 — The Raichenbach move"
+      }
+    },
+
+    {
+      "id": "coup_springer",
+      "phase": ["middlegame"],
+      "conditions": ["many_captures", "pion_avance_noir"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup Springer",
+        "text": "Le coup Springer est une combinaison avancée qui utilise des sauts multiples pour capturer des pièces dans des positions apparemment solides. Cette technique nécessite une vision de 5-6 coups et exploite souvent des pions avancés comme tremplin.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 24 — Le coup Springer"
+      },
+      "en": {
+        "concept": "The Springer move",
+        "text": "The Springer move is an advanced combination using multiple jumps to capture pieces in seemingly solid positions. This technique requires 5-6 move vision and often exploits advanced pawns as springboards.",
+        "source": "Dubois, Learning Combinations, Ch. 24 — The Springer move"
+      }
+    },
+
+    {
+      "id": "coup_bombe",
+      "phase": ["middlegame"],
+      "conditions": ["many_captures", "pion_avance_blanc"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup de la Bombe",
+        "text": "Le coup de la Bombe est une combinaison spectaculaire où un sacrifice massif de pions permet une rafle dévastatrice. Ce mécanisme utilise souvent plusieurs pions comme sacrifices successifs pour débloquer une voie de capture décisive.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 23 — Le coup de la bombe"
+      },
+      "en": {
+        "concept": "The Bomb move",
+        "text": "The Bomb move is a spectacular combination where a massive pawn sacrifice enables a devastating capture. This mechanism often uses several successive pawn sacrifices to open a decisive capture route.",
+        "source": "Dubois, Learning Combinations, Ch. 23 — The Bomb move"
+      }
+    },
+
+    {
+      "id": "coup_espagnol",
+      "phase": ["middlegame"],
+      "conditions": ["many_captures", "white_on_36"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup de l'Espagnol",
+        "text": "Le coup de l'Espagnol est une combinaison liée à des structures de pions sur l'aile droite impliquant le pion 36. Il utilise un sacrifice inattendu pour créer une rafle en plusieurs étapes qui déroute complètement l'adversaire.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 33 — Le coup de l'Espagnol"
+      },
+      "en": {
+        "concept": "The Spanish move",
+        "text": "The Spanish move is a combination linked to right-wing pawn structures involving pawn 36. It uses an unexpected sacrifice to create a multi-step capture that completely wrong-foots the opponent.",
+        "source": "Dubois, Learning Combinations, Ch. 33 — The Spanish move"
+      }
+    },
+
+    {
+      "id": "coup_raphael",
+      "phase": ["middlegame"],
+      "conditions": ["many_captures", "formation_34_39"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup Raphaël",
+        "text": "Le coup Raphaël est une combinaison associée à la formation 34-39-43. Elle exploite la tension créée par ces pions avancés pour déclencher une rafle en 4 temps avec un sacrifice de dame ou d'envoi à dame.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 34 — Le coup Raphaël"
+      },
+      "en": {
+        "concept": "The Raphaël move",
+        "text": "The Raphaël move is a combination associated with the 34-39-43 formation. It exploits the tension created by these advanced pawns to trigger a 4-move capture with a queen sacrifice or forced promotion.",
+        "source": "Dubois, Learning Combinations, Ch. 34 — The Raphaël move"
+      }
+    },
+
+    {
+      "id": "methode_dpa",
+      "phase": ["middlegame"],
+      "conditions": ["many_captures", "many_contacts"],
+      "require_all": true,
+      "fr": {
+        "concept": "La méthode D-P-A",
+        "text": "La méthode DPA (Déblaiement-Positionnement-Acheminement) est une approche systématique pour les combinaisons complexes. Elle décompose la rafle en 3 phases : dégager les pièces gênantes, positionner la pièce de rafle, puis l'acheminer vers la case d'arrivée.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 22 — La méthode D-P-A"
+      },
+      "en": {
+        "concept": "The D-P-A method",
+        "text": "The DPA method (Clearance-Positioning-Routing) is a systematic approach for complex combinations. It breaks down the capture into 3 phases: clear blocking pieces, position the capturing piece, then route it to the landing square.",
+        "source": "Dubois, Learning Combinations, Ch. 22 — The D-P-A method"
+      }
+    },
+
+    {
+      "id": "coup_avid",
+      "phase": ["endgame"],
+      "conditions": ["capture_possible", "few_pieces"],
+      "require_all": true,
+      "fr": {
+        "concept": "Le coup Avid",
+        "text": "Le coup Avid est une combinaison de finale qui exploite un positionnement précis de la dame pour créer une rafle apparemment impossible. Ce mécanisme surprenant démontre l'importance de la vision en profondeur même avec peu de pièces.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 25 — Le coup Avid"
+      },
+      "en": {
+        "concept": "The Avid move",
+        "text": "The Avid move is an endgame combination that exploits precise king positioning to create a seemingly impossible capture. This surprising mechanism demonstrates the importance of deep vision even with few pieces.",
+        "source": "Dubois, Learning Combinations, Ch. 25 — The Avid move"
+      }
+    },
+
+    {
+      "id": "coup_trappe",
+      "phase": ["middlegame"],
+      "conditions": ["capture_possible", "pion_avance_blanc"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup de la Trappe",
+        "text": "Le coup de la Trappe combine le mécanisme du pion 35 avec une rafle finale. Un sacrifice inattendu force l'adversaire dans une position de prise où il pensait être en sécurité. La trappe est souvent invisible car elle utilise des pions apparemment inoffensifs.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 18, 35 — Le coup de la trappe et le pion 35"
+      },
+      "en": {
+        "concept": "The Trap move",
+        "text": "The Trap move combines the pawn 35 mechanism with a final capture. An unexpected sacrifice forces the opponent into a capture position where they thought they were safe. The trap is often invisible as it uses apparently harmless pawns.",
+        "source": "Dubois, Learning Combinations, Ch. 18, 35 — The Trap and the pawn 35"
+      }
+    },
+
+    {
+      "id": "coup_croc",
+      "phase": ["middlegame", "endgame"],
+      "conditions": ["capture_possible", "kings_present"],
+      "require_all": true,
+      "fr": {
+        "concept": "Le coup de Croc",
+        "text": "Le coup de Croc est une combinaison utilisant la dame pour effectuer un crochet sur une case de promotion. Ce mécanisme est fondamental en finale : la dame se déplace en deux temps pour bloquer la promotion adverse ou capturer un pion passé.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 26 — Le coup de croc"
+      },
+      "en": {
+        "concept": "The Hook move",
+        "text": "The Hook move is a combination using the king to perform a hook on a promotion square. This mechanism is fundamental in the endgame: the king moves in two steps to block an opponent's promotion or capture a passed pawn.",
+        "source": "Dubois, Learning Combinations, Ch. 26 — The hook move"
+      }
+    },
+
+    {
+      "id": "fourchette",
+      "phase": ["middlegame"],
+      "conditions": ["capture_possible", "black_on_22"],
+      "require_all": false,
+      "fr": {
+        "concept": "La fourchette",
+        "text": "La fourchette est une attaque simultanée de deux pièces adverses par un seul pion. Elle force la prise d'une pièce et permet de capturer l'autre. Les cases centrales 22-23-27-28 sont les lieux les plus fréquents de ce mécanisme au jeu de dames.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 28 — La fourchette"
+      },
+      "en": {
+        "concept": "The fork",
+        "text": "A fork simultaneously attacks two opponent pieces with a single pawn. It forces the capture of one piece and allows the other to be taken. Central squares 22-23-27-28 are the most frequent locations for this mechanism in draughts.",
+        "source": "Dubois, Learning Combinations, Ch. 28 — The fork"
+      }
+    },
+
+    {
+      "id": "coup_ricochet",
+      "phase": ["middlegame"],
+      "conditions": ["capture_possible", "white_on_29"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup de Ricochet",
+        "text": "Le coup de Ricochet est une combinaison en 4 temps où un pion rebondit sur plusieurs cases intermédiaires avant de capturer la pièce cible. Ce mécanisme exploite des positions en zigzag qui ne sont visibles qu'avec une vision de 4 coups.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 14 — Le coup de ricochet"
+      },
+      "en": {
+        "concept": "The Ricochet move",
+        "text": "The Ricochet move is a 4-move combination where a pawn bounces off several intermediate squares before capturing the target piece. This mechanism exploits zigzag positions only visible with 4-move vision.",
+        "source": "Dubois, Learning Combinations, Ch. 14 — The ricochet move"
+      }
+    },
+
+    {
+      "id": "coup_rappel",
+      "phase": ["middlegame"],
+      "conditions": ["capture_possible", "white_on_27"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup de Rappel",
+        "text": "Le coup de Rappel est une combinaison en 4 temps qui rappelle (ramène) une pièce adverse vers une case spécifique pour ensuite la capturer. La première prise force l'adversaire à reprendre vers la case prévue, déclenchant la rafle finale.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 15 — Le coup de rappel"
+      },
+      "en": {
+        "concept": "The Recall move",
+        "text": "The Recall move is a 4-move combination that 'recalls' (draws) an opponent piece to a specific square before capturing it. The first capture forces the opponent to recapture toward the planned square, triggering the final capture.",
+        "source": "Dubois, Learning Combinations, Ch. 15 — The recall move"
+      }
+    },
+
+    {
+      "id": "coup_renverse",
+      "phase": ["middlegame"],
+      "conditions": ["capture_possible", "balanced_material"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup Renversé",
+        "text": "Le coup Renversé est une combinaison en 4 temps qui utilise une prise dans le sens inverse de ce qu'attend l'adversaire. Ce coup contre-intuitif déroute la défense et force une position perdante là où l'adversaire pensait être protégé.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 16 — Le coup renversé"
+      },
+      "en": {
+        "concept": "The Reversed move",
+        "text": "The Reversed move is a 4-move combination that captures in the opposite direction from what the opponent expects. This counter-intuitive move disrupts the defence and forces a losing position where the opponent thought they were protected.",
+        "source": "Dubois, Learning Combinations, Ch. 16 — The reversed move"
+      }
+    },
+
+    {
+      "id": "coup_talon",
+      "phase": ["middlegame"],
+      "conditions": ["capture_possible", "restricted_side"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le coup de Talon",
+        "text": "Le coup de Talon est une combinaison où un pion est sacrifié «par derrière» pour créer un contact forcé qui déclenche une rafle. Ce mécanisme exploite la géométrie arrière du damier, souvent visible uniquement avec une vision précise des diagonales.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 19 — Le coup de talon"
+      },
+      "en": {
+        "concept": "The Heel move",
+        "text": "The Heel move is a combination where a pawn is sacrificed 'from behind' to create a forced contact that triggers a capture. This mechanism exploits the board's rear geometry, often visible only with precise diagonal vision.",
+        "source": "Dubois, Learning Combinations, Ch. 19 — The heel move"
+      }
+    },
+
+    {
+      "id": "collage",
+      "phase": ["middlegame"],
+      "conditions": ["capture_possible"],
+      "require_all": false,
+      "fr": {
+        "concept": "Le collage",
+        "text": "Le collage est un mécanisme fondamental : on positionne un pion en contact direct avec un pion adverse pour le «coller» et le forcer à rester sur place. Cette immobilisation crée un point d'appui fixe sur lequel on peut construire une combinaison.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 6 — Le déplacement des points d'appui par collage"
+      },
+      "en": {
+        "concept": "The sticking mechanism",
+        "text": "Sticking is a fundamental mechanism: position a pawn in direct contact with an opponent pawn to 'stick' it and force it to stay in place. This immobilisation creates a fixed fulcrum on which to build a combination.",
+        "source": "Dubois, Learning Combinations, Ch. 6 — Moving fulcrum points by sticking"
+      }
+    },
+
+    {
+      "id": "temps_repos_attaque",
+      "phase": ["middlegame"],
+      "conditions": ["capture_possible"],
+      "require_all": false,
+      "fr": {
+        "concept": "Les temps de repos par attaque",
+        "text": "Un temps de repos est créé quand une attaque force l'adversaire à répondre immédiatement, ce qui «suspend» son plan. Dubois montre comment créer ces temps de repos par des attaques à contretemps pour gagner un coup décisif dans l'exécution d'une combinaison.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 8-9 — Les temps de repos"
+      },
+      "en": {
+        "concept": "Rest tempi through attack",
+        "text": "A rest tempo is created when an attack forces the opponent to respond immediately, 'suspending' their plan. Dubois shows how to create these rest tempi through counter-timing attacks to gain a decisive move in a combination.",
+        "source": "Dubois, Learning Combinations, Ch. 8-9 — Rest tempi"
+      }
+    },
+
+    {
+      "id": "combinaisons_actives",
+      "phase": ["middlegame"],
+      "conditions": ["many_captures"],
+      "require_all": false,
+      "fr": {
+        "concept": "Recherche de combinaisons",
+        "text": "La partie est tactiquement riche. La méthode Dubois : cherchez d'abord la rafle finale (point d'appui + case d'arrivée), puis identifiez les mécanismes pour la rendre possible — collage, envoi à dame, prise majoritaire. Examinez tous les coups, même les plus inattendus.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 2 — Méthode d'identification de la rafle"
+      },
+      "en": {
+        "concept": "Combination opportunities",
+        "text": "The game is tactically rich. Dubois's method: first seek the final capture (fulcrum + landing square), then identify mechanisms to make it possible — sticking, promotion sacrifice, majority capture. Examine every move, even the most unexpected.",
+        "source": "Dubois, Learning Combinations, Ch. 2 — Method for identifying captures"
+      }
+    },
+
+    {
+      "id": "combinaisons_2_temps",
+      "phase": ["middlegame", "endgame"],
+      "conditions": ["capture_possible"],
+      "require_all": false,
+      "fr": {
+        "concept": "Combinaisons en 2 temps",
+        "text": "Au jeu de dames, on ne voit que ce que l'on regarde : il est indispensable d'examiner tous les coups. Le premier coup provoque un contact ; le coup adverse est une prise ; le second coup est la rafle décisive. Même les coups les moins naturels peuvent être des solutions.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 1 — Les combinaisons en 2 temps"
+      },
+      "en": {
+        "concept": "Two-move combinations",
+        "text": "In draughts, you only see what you look for: every playable move must be examined. The first move creates contact; the opponent's reply is a capture; the second move is the decisive capture. Even the least natural moves can be the solution.",
+        "source": "Dubois, Learning Combinations, Ch. 1 — Two-move combinations"
+      }
+    },
+
+    {
+      "id": "envoi_dame_mecanisme",
+      "phase": ["middlegame"],
+      "conditions": ["promotion_possible"],
+      "require_all": false,
+      "fr": {
+        "concept": "L'envoi à dame",
+        "text": "L'envoi à dame est l'un des mécanismes les plus surprenants : on envoie délibérément un pion damer pour récupérer la dame adverse avec avantage, ou pour créer un collage décisif. Ce sacrifice apparent peut déboucher sur une rafle spectaculaire en 4+ temps.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 4 — L'envoi à dame"
+      },
+      "en": {
+        "concept": "Forced promotion sacrifice",
+        "text": "The promotion sacrifice is one of the most surprising mechanisms: a pawn is deliberately promoted to enable recapturing the opponent's king with advantage, or to create a decisive pin. This apparent sacrifice can lead to a spectacular 4+ move capture.",
+        "source": "Dubois, Learning Combinations, Ch. 4 — The promotion sacrifice"
+      }
+    },
+
+    {
+      "id": "points_contact",
+      "phase": ["middlegame"],
+      "conditions": ["many_contacts"],
+      "require_all": false,
+      "fr": {
+        "concept": "La méthode des points de contact",
+        "text": "Lorsque la rafle finale n'est pas évidente, identifiez les points de contact entre les pions des deux camps, puis sacrifiez mentalement les pièces pour explorer les mécanismes. Cette méthode complémentaire révèle souvent des combinaisons que la recherche systématique ne trouve pas.",
+        "source": "Dubois, Apprendre les combinaisons, Ch. 5 — La méthode des points de contact"
+      },
+      "en": {
+        "concept": "Contact points method",
+        "text": "When the final capture is not obvious, identify contact points between both sides' pieces, then mentally sacrifice pieces to explore mechanisms. This complementary method often reveals combinations that systematic search misses.",
+        "source": "Dubois, Learning Combinations, Ch. 5 — The contact points method"
+      }
     }
+
   ]
 }
