@@ -97,6 +97,19 @@ async def _require_auth(
     data = _decode_token(credentials.credentials)
     return {"id": int(data["sub"]), "email": data["email"]}
 
+
+async def _optional_auth(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
+) -> Optional[Dict[str, Any]]:
+    if not credentials:
+        return None
+    try:
+        data = _decode_token(credentials.credentials)
+        return {"id": int(data["sub"]), "email": data["email"]}
+    except Exception:
+        return None
+
+
 app = FastAPI(title="AI-Draught API", version="1.0.0")
 
 app.add_middleware(
@@ -494,18 +507,6 @@ def _reconstruct_state(initial_fen: str, solution: List[Optional[str]], move_cou
             return None
         state = apply_move(state, move)
     return state
-
-
-async def _optional_auth(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
-) -> Optional[Dict[str, Any]]:
-    if not credentials:
-        return None
-    try:
-        data = _decode_token(credentials.credentials)
-        return {"id": int(data["sub"]), "email": data["email"]}
-    except Exception:
-        return None
 
 
 @app.post("/api/exercises/{exercise_id}/check", response_model=ExerciseCheckResponse)
