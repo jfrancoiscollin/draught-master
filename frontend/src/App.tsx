@@ -723,6 +723,84 @@ export default function App() {
 
 
 
+  const playAnnotationPanel = moveHistory.length >= 2 ? (
+    <div className="flex flex-col gap-2">
+      {!playAnnotating && !playGameStats && (
+        <button
+          onClick={handleAnnotatePlayedGame}
+          className="w-full text-sm font-semibold bg-blue-700 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition-colors"
+        >
+          Coup par coup
+        </button>
+      )}
+      {playAnnotating && (
+        <div className="bg-gray-800 rounded-lg px-3 py-2 flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-blue-400">
+              {playAnnotationProgress === 0 && playAnnotationTotal > 0 ? '⚡ Analyse serveur…' : 'Analyse en cours…'}
+            </span>
+            <span className="text-gray-400">{playAnnotationProgress}/{playAnnotationTotal}</span>
+          </div>
+          {playAnnotationTotal > 0 && (
+            <div className="w-full bg-gray-700 rounded-full h-1.5">
+              <div
+                className="bg-blue-500 h-1.5 rounded-full transition-all"
+                style={{ width: `${(playAnnotationProgress / playAnnotationTotal) * 100}%` }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+      {playLastCacheHits && !playAnnotating && (
+        <div className="text-xs text-center text-gray-500">
+          {playLastCacheHits.hits > 0
+            ? `⚡ ${playLastCacheHits.hits}/${playLastCacheHits.total} positions depuis le cache`
+            : `Cache : 0/${playLastCacheHits.total}`}
+        </div>
+      )}
+      {playGameStats && !playAnnotating && (
+        <>
+          <div className="grid grid-cols-2 gap-px bg-gray-800 rounded-lg overflow-hidden text-xs">
+            {(['white', 'black'] as const).map(color => {
+              const acpl = color === 'white' ? playGameStats.whiteAcpl : playGameStats.blackAcpl
+              const counts = color === 'white' ? playGameStats.whiteCounts : playGameStats.blackCounts
+              return (
+                <div key={color} className="bg-gray-950 px-3 py-2 flex flex-col gap-1">
+                  <span>{color === 'white' ? '⬜ Blancs' : '⬛ Noirs'}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500">Moy.</span>
+                    <span className="font-mono font-bold text-gray-200">{acpl} cp</span>
+                  </div>
+                  <div className="flex gap-2">
+                    {counts.blunder > 0 && <span className="font-bold" style={{ color: VERDICT_COLOR.blunder }}>{counts.blunder}??</span>}
+                    {counts.mistake > 0 && <span className="font-bold" style={{ color: VERDICT_COLOR.mistake }}>{counts.mistake}?</span>}
+                    {counts.inaccuracy > 0 && <span className="font-bold" style={{ color: VERDICT_COLOR.inaccuracy }}>{counts.inaccuracy}?!</span>}
+                    {counts.blunder + counts.mistake + counts.inaccuracy === 0 && <span className="text-green-500">Parfait ✓</span>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleAnnotatePlayedGame}
+              className="text-xs text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 px-2 py-1.5 rounded transition-colors"
+            >
+              Relancer
+            </button>
+            <button
+              onClick={() => setPlayPanelMode('learn')}
+              disabled={playAnnotations.filter(a => a.verdict).length === 0}
+              className="flex-1 text-sm font-semibold bg-purple-700 hover:bg-purple-600 text-white px-3 py-2 rounded-lg transition-colors disabled:opacity-40"
+            >
+              Apprendre de ses erreurs
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  ) : null
+
   return (
     <div className="bg-gray-900 text-gray-100 flex flex-col h-full">
       {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
@@ -837,6 +915,17 @@ export default function App() {
         {/* PLAY TAB */}
         {tab === 'play' && (
           <>
+            {/* Learn from mistakes full-screen overlay */}
+            {playPanelMode === 'learn' && playAnnotations.length > 0 && (
+              <LearnFromMistakes
+                positions={buildPdnPositions(fenHistory, moveHistory)}
+                annotations={playAnnotations}
+                playerColor={bothSides ? null : 'white'}
+                onClose={() => setPlayPanelMode('game')}
+              />
+            )}
+            {playPanelMode === 'game' && (
+              <>
             {/* Result flash overlay */}
             {resultFlash && (
               <div style={{
@@ -943,6 +1032,7 @@ export default function App() {
                       </div>
                     )}
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
+                    {playAnnotationPanel}
                   </div>
                 </>
               ) : (
@@ -1004,6 +1094,7 @@ export default function App() {
                         onMoveClick={handleAnalysisMoveClick}
                       />
                       <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
+                      {playAnnotationPanel}
                     </div>
                   </div>
                 </>
@@ -1103,6 +1194,7 @@ export default function App() {
                       disabled={isAiThinking}
                     />
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
+                    {playAnnotationPanel}
                   </div>
                 </div>
               )}
@@ -1128,6 +1220,7 @@ export default function App() {
               {analysisExpanded && (
                 <div style={{ gridColumn: '1', gridRow: '3' }} className="min-w-0">
                   <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
+                  {playAnnotationPanel}
                 </div>
               )}
 
@@ -1146,6 +1239,8 @@ export default function App() {
                 </div>
               )}
             </div>
+              </>
+            )}
           </>
         )}
 
