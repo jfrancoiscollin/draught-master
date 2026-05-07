@@ -965,7 +965,7 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     positions = body.get("positions", [])
     ms_per_move = min(max(int(body.get("ms_per_move", 200)), 50), 8000)
 
-    engine = _get_engine()
+    engine = _get_engine(use_book=False)  # no opening book so positions get real scores
     if engine is None:
         return {"evaluations": None, "available": False}
 

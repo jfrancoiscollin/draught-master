@@ -45,8 +45,9 @@ def _build_pos(state: GameState) -> str:
 class ScanEngine:
     """Long-running Scan subprocess communicating via Hub protocol v2."""
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, use_book: bool = True) -> None:
         import subprocess
+        self._use_book = use_book
         # CWD must be the backend dir so Scan finds data/eval relative to itself
         cwd = os.path.dirname(os.path.abspath(__file__))
 
@@ -121,12 +122,15 @@ class ScanEngine:
         if result is None:
             raise RuntimeError("Scan did not send 'wait' during handshake")
         self._send("set-param name=variant value=normal")
-        self._send("set-param name=book value=true")
+        # The book must be set BEFORE init — set-param after init does NOT unload
+        # an already-loaded book, so book positions still return score=0.
+        self._send(f"set-param name=book value={'true' if self._use_book else 'false'}")
         self._send("set-param name=bb-size value=0")
         self._send("init")
         result = self._wait_for("ready", timeout=10.0)
         if result is None:
             raise RuntimeError("Scan did not send 'ready' after init")
+        logger.info("Scan ready (use_book=%s)", self._use_book)
 
     def best_move(self, pos: str, movetime_s: float) -> Optional[str]:
         with self._lock:
@@ -160,8 +164,6 @@ class ScanEngine:
                 except queue.Empty:
                     break
 
-            # Disable book so we always get a search-based score
-            self._send("set-param name=book value=false")
             self._send(f"pos pos={pos}")
             self._send("go analyze")
 
@@ -189,7 +191,6 @@ class ScanEngine:
                         score_m = re.search(r'\bscore=\s*([+-]?\d+)', line)
                         final_score = int(score_m.group(1)) if score_m else last_score
                         final_move = (move_m.group(1) if move_m else None) or last_best
-                        self._send("set-param name=book value=true")
                         logger.info("evaluate_pos done early: score=%d best=%s", final_score, final_move)
                         return {"bestMove": final_move, "score": final_score}
                 except queue.Empty:
@@ -217,14 +218,11 @@ class ScanEngine:
                         score_m = re.search(r'\bscore=\s*([+-]?\d+)', line)
                         final_score = int(score_m.group(1)) if score_m else last_score
                         final_move = (move_m.group(1) if move_m else None) or last_best
-                        self._send("set-param name=book value=true")
                         logger.info("evaluate_pos done: score=%d best=%s", final_score, final_move)
                         return {"bestMove": final_move, "score": final_score}
                 except queue.Empty:
                     pass
 
-            # Re-enable book even on timeout
-            self._send("set-param name=book value=true")
             logger.warning("evaluate_pos: no done received, last_score=%d", last_score)
             return {"bestMove": last_best, "score": last_score}
 
@@ -232,29 +230,41 @@ class ScanEngine:
         return self._proc.poll() is None
 
 
-# ── Singleton ──────────────────────────────────────────────────────────────
+# ── Singletons ─────────────────────────────────────────────────────────────
 
-_engine: Optional[ScanEngine] = None
-_engine_unavailable = False  # set after first failure to avoid retrying every move
+_engine: Optional[ScanEngine] = None          # with book  — used for best_move()
+_eval_engine: Optional[ScanEngine] = None     # no book    — used for evaluate_pos()
+_engine_unavailable = False
 _engine_lock = threading.Lock()
 
 
-def _get_engine() -> Optional[ScanEngine]:
-    global _engine, _engine_unavailable
+def _get_engine(use_book: bool = True) -> Optional[ScanEngine]:
+    global _engine, _eval_engine, _engine_unavailable
     if _engine_unavailable:
         return None
     if not os.path.isfile(SCAN_PATH) or os.path.getsize(SCAN_PATH) < 1000:
         return None
     with _engine_lock:
-        if _engine is None or not _engine.alive():
-            try:
-                _engine = ScanEngine(SCAN_PATH)
-                logger.info("Scan engine started at %s", SCAN_PATH)
-            except Exception as exc:
-                logger.warning("Could not start Scan engine: %s", exc)
-                _engine = None
-                _engine_unavailable = True  # don't block future moves with retries
-        return _engine
+        if use_book:
+            if _engine is None or not _engine.alive():
+                try:
+                    _engine = ScanEngine(SCAN_PATH, use_book=True)
+                    logger.info("Scan engine (with book) started at %s", SCAN_PATH)
+                except Exception as exc:
+                    logger.warning("Could not start Scan engine: %s", exc)
+                    _engine = None
+                    _engine_unavailable = True
+            return _engine
+        else:
+            if _eval_engine is None or not _eval_engine.alive():
+                try:
+                    _eval_engine = ScanEngine(SCAN_PATH, use_book=False)
+                    logger.info("Scan eval engine (no book) started at %s", SCAN_PATH)
+                except Exception as exc:
+                    logger.warning("Could not start Scan eval engine: %s", exc)
+                    _eval_engine = None
+                    _engine_unavailable = True
+            return _eval_engine
 
 
 # ── Move parsing ───────────────────────────────────────────────────────────
