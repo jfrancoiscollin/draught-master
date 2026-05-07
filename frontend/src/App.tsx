@@ -72,6 +72,39 @@ function applyMoveLocally(board: number[], move: MoveData): number[] {
   return newBoard
 }
 
+// Builds intermediate board states for a multi-hop capture sequence.
+// Returns one board per hop (path.length-1 entries); empty if single hop.
+function buildCaptureSteps(initialBoard: number[], move: MoveData): number[][] {
+  if (move.path.length < 3) return []
+  const steps: number[][] = []
+  const piece = initialBoard[move.path[0]]
+  let board = [...initialBoard]
+  board[move.path[0]] = EMPTY
+  for (let i = 0; i < move.path.length - 1; i++) {
+    const from = move.path[i]
+    const to   = move.path[i + 1]
+    const step = [...board]
+    step[to] = piece
+    const [r1, c1] = sqToRowCol(from)
+    const [r2, c2] = sqToRowCol(to)
+    const dr = Math.sign(r2 - r1)
+    const dc = Math.sign(c2 - c1)
+    let r = r1 + dr, c = c1 + dc
+    while (r !== r2 || c !== c2) {
+      const sq = rcToSq(r, c)
+      if (sq !== null && step[sq] !== EMPTY) { step[sq] = EMPTY; break }
+      r += dr; c += dc
+    }
+    steps.push(step)
+    board = step
+  }
+  const dest = move.path[move.path.length - 1]
+  const last = steps[steps.length - 1]
+  if (last[dest] === WHITE_MAN && dest <= 5) last[dest] = WHITE_KING
+  if (last[dest] === BLACK_MAN && dest >= 46) last[dest] = BLACK_KING
+  return steps
+}
+
 function pdnToMoveData(pdn: string, board: number[]): MoveData | null {
   if (pdn.includes('x')) {
     const path = pdn.split('x').map(Number)
@@ -144,6 +177,8 @@ export default function App() {
   const [analysisExpanded, setAnalysisExpanded] = useState(false)
   const [fullSpeaking, setFullSpeaking] = useState(false)
   const [replayingPosition, setReplayingPosition] = useState<{ board: number[], label: string } | null>(null)
+  const [captureAnimBoard, setCaptureAnimBoard] = useState<number[] | null>(null)
+  const captureAnimTimers = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const [exerciseGameState, setExerciseGameState] = useState<{
     board: number[]
@@ -270,14 +305,45 @@ export default function App() {
     setSelectedSquare(sq)
   }, [gameState, bothSides])
 
+  // Animate a multi-hop capture: steps through intermediate boards at delayMs per hop.
+  // Resolves when the last board is cleared (captureAnimBoard → null).
+  const animateCaptures = useCallback((board: number[], move: MoveData, delayMs = 380): Promise<void> => {
+    captureAnimTimers.current.forEach(clearTimeout)
+    captureAnimTimers.current = []
+    const steps = buildCaptureSteps(board, move)
+    if (steps.length === 0) return Promise.resolve()
+    return new Promise(resolve => {
+      setCaptureAnimBoard(steps[0])
+      playMoveSound()
+      for (let i = 1; i < steps.length; i++) {
+        const t = setTimeout(() => {
+          setCaptureAnimBoard(steps[i])
+          playMoveSound()
+        }, i * delayMs)
+        captureAnimTimers.current.push(t)
+      }
+      captureAnimTimers.current.push(setTimeout(() => {
+        setCaptureAnimBoard(null)
+        resolve()
+      }, steps.length * delayMs))
+    })
+  }, [])
+
   const handleMove = useCallback(async (move: MoveData) => {
     if (!gameState || gameState.result || isAiThinking) return
     setSelectedSquare(null)
     setBestMoveArrow(null)
     setIsAiThinking(true)
 
-    // Optimistic update: show player's move immediately
-    playMoveSound()
+    // For multi-hop captures animate each jump; otherwise play sound immediately.
+    // The API call runs in parallel so total wait = max(animation, network).
+    const isMultiCapture = move.path.length > 2
+    const playerAnimPromise = isMultiCapture
+      ? animateCaptures(gameState.board, move)
+      : null
+    if (!isMultiCapture) playMoveSound()
+
+    // Optimistic update so displayBoard shows the final state once animation ends
     const optimisticBoard = applyMoveLocally(gameState.board, move)
     const nextTurn = gameState.turn === 'white' ? 'black' : 'white'
     setGameState(prev => prev ? { ...prev, board: optimisticBoard, turn: nextTurn, last_move: move, legal_moves: [] } : prev)
@@ -286,6 +352,7 @@ export default function App() {
       if (bothSides) {
         // Both-sides mode: just apply the move, no AI
         const response = await makeMove(gameState.game_id, move, aiDepth, true)
+        if (playerAnimPromise) await playerAnimPromise
         setGameState({
           game_id: response.game_id,
           board: response.board,
@@ -300,8 +367,10 @@ export default function App() {
         setMoveHistory(prev => [...prev, response.player_move])
         setFenHistory(prev => [...prev, response.fen])
       } else {
-        // Play-alone mode: apply player's move then use WASM for AI
-        const playerResp = await makeMove(gameState.game_id, move, aiDepth, true)
+        // Play-alone mode: fire API call in parallel with player animation
+        const playerApiPromise = makeMove(gameState.game_id, move, aiDepth, true)
+        if (playerAnimPromise) await playerAnimPromise
+        const playerResp = await playerApiPromise
         setMoveHistory(prev => [...prev, playerResp.player_move])
         setFenHistory(prev => [...prev, playerResp.fen])
 
@@ -320,17 +389,20 @@ export default function App() {
           })
         } else {
           // AI's turn — use WASM engine
-          const wasmMs = Math.max(200, aiDepth * 250)  // 250–2000 ms depending on level
+          const wasmMs = Math.max(200, aiDepth * 250)
           const engine = getScanEngine()
           const hubMove = await engine.getMove(playerResp.fen, wasmMs)
 
           let aiMoveData: MoveData | null = null
-          if (hubMove) {
-            aiMoveData = matchHubMove(hubMove, playerResp.legal_moves)
-          }
+          if (hubMove) aiMoveData = matchHubMove(hubMove, playerResp.legal_moves)
 
-          const applyAiResp = (resp: typeof playerResp, aiMove: MoveData) => {
-            playMoveSound()
+          // Animate AI multi-capture from the board state before AI moved (playerResp.board)
+          const applyAiResp = async (resp: typeof playerResp, aiMove: MoveData) => {
+            if (aiMove.path.length > 2) {
+              await animateCaptures(playerResp.board, aiMove)
+            } else {
+              playMoveSound()
+            }
             setGameState({
               game_id: resp.game_id,
               board: resp.board,
@@ -347,18 +419,15 @@ export default function App() {
           }
 
           if (aiMoveData) {
-            // WASM gave a valid move — apply it
             const aiResp = await makeMove(gameState.game_id, aiMoveData, aiDepth, true)
-            applyAiResp(aiResp, aiMoveData)
+            await applyAiResp(aiResp, aiMoveData)
           } else {
-            // WASM not ready yet — ask server Scan to compute AI move only
-            // (player's move is already committed, so we only need the AI's response)
+            // WASM not ready — ask server Scan
             const serverAiMove = await getAiMove(gameState.game_id, aiDepth)
             if (serverAiMove) {
               const aiResp = await makeMove(gameState.game_id, serverAiMove, aiDepth, true)
-              applyAiResp(aiResp, serverAiMove)
+              await applyAiResp(aiResp, serverAiMove)
             } else {
-              // No AI move (game ended or error) — show current state
               setGameState({
                 game_id: playerResp.game_id,
                 board: playerResp.board,
@@ -377,11 +446,14 @@ export default function App() {
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } } }
       showToast(err?.response?.data?.detail || 'Coup illégal ou erreur serveur.')
+      setCaptureAnimBoard(null)
+      captureAnimTimers.current.forEach(clearTimeout)
+      captureAnimTimers.current = []
       setGameState(prev => prev ? { ...prev, board: gameState.board, turn: 'white', last_move: gameState.last_move, legal_moves: gameState.legal_moves } : prev)
     } finally {
       setIsAiThinking(false)
     }
-  }, [gameState, aiDepth, isAiThinking, bothSides])
+  }, [gameState, aiDepth, isAiThinking, bothSides, animateCaptures])
 
   const handleResign = useCallback(async () => {
     if (!gameState || isAiThinking || gameState.result) return
@@ -719,7 +791,7 @@ export default function App() {
   }, [moveMap, boardPositions])
 
   const currentBoard = gameState?.board || new Array(51).fill(EMPTY)
-  const displayBoard = replayingPosition?.board ?? currentBoard
+  const displayBoard = captureAnimBoard ?? replayingPosition?.board ?? currentBoard
   const isWhiteTurn = gameState?.turn === 'white'
   const boardDisabled = !!replayingPosition || !gameState || !!gameState.result || isAiThinking || (!isWhiteTurn && !bothSides)
   const legalMoves = boardDisabled ? [] : (gameState?.legal_moves ?? [])
