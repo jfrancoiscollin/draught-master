@@ -93,6 +93,7 @@ class AnalysisResponse(BaseModel):
     best_moves: List[str]
     key_squares: List[int]
     strategic_advice: str
+    move_annotations: Optional[List[Dict[str, Any]]] = None
 
 
 class HistoryItem(BaseModel):

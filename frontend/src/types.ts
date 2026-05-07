@@ -64,11 +64,24 @@ export interface ExerciseCheckResponse {
   next_legal_moves?: { path: number[]; captures: number[] }[]
 }
 
+export interface MoveAnnotationItem {
+  move_number: number
+  color: 'white' | 'black'
+  move_pdn: string
+  verdict: 'blunder' | 'mistake' | 'inaccuracy' | null
+  score_before: number
+  score_after: number
+  loss_cp: number
+  best_move: string | null
+  book_tip: { concept: string; source: string } | null
+}
+
 export interface AnalysisResponse {
   analysis: string
   best_moves: string[]
   key_squares: number[]
   strategic_advice: string
+  move_annotations?: MoveAnnotationItem[]
 }
 
 export interface HistoryItem {

@@ -13,10 +13,12 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import math
 import os
 from game_engine import (
     GameState, get_legal_moves, apply_move, board_to_fen, move_to_pdn,
     WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING, EMPTY,
+    initial_state as _initial_state,
 )
 
 logger = logging.getLogger(__name__)
@@ -450,6 +452,120 @@ def _fmt_pdn(moves: list[str]) -> str:
     return " ".join(parts)
 
 
+# ── Move-by-move annotation ───────────────────────────────────────────────────
+
+def _win_chance(cp: int) -> float:
+    """Sigmoid mapping from Scan score (side-to-move) to win probability shift."""
+    return 2 / (1 + math.exp(-0.04 * cp)) - 1
+
+
+def _annotate_game_moves_sync(
+    move_history: list,   # list[Move]
+    language: str,
+    ms_per_move: float = 300,
+) -> list[dict]:
+    """Replay game move-by-move and annotate each with Scan evaluation.
+
+    Returns a list of annotation dicts, one per move. Only blunders / mistakes /
+    inaccuracies receive a knowledge-base tip; other moves have book_tip=None.
+    """
+    try:
+        from scan_engine import _get_engine, _build_pos
+        from opening_eval_db import lookup as _cached_lookup
+    except ImportError:
+        return []
+
+    engine = _get_engine()
+    if engine is None:
+        return []
+
+    n = len(move_history)
+    if n == 0:
+        return []
+
+    # Adaptive timing: keep total ≤ 20 s regardless of game length
+    budget_ms = 20_000.0
+    ms_each = min(ms_per_move, budget_ms / max(n + 1, 1))
+
+    def _eval_pos(st: GameState) -> dict:
+        fen = board_to_fen(st)
+        hit = _cached_lookup(fen)
+        if hit:
+            return {"score": hit["score"], "bestMove": hit["bestMove"]}
+        try:
+            hub = _build_pos(st)
+            res = engine.evaluate_pos(hub, ms_each / 1000.0) or {}
+            return {"score": res.get("score", 0), "bestMove": res.get("bestMove")}
+        except Exception:
+            return {"score": 0, "bestMove": None}
+
+    state = _initial_state()
+    ev_before = _eval_pos(state)
+    score_before = ev_before["score"]
+    best_move_before = ev_before["bestMove"]
+
+    annotations: list[dict] = []
+
+    for i, move in enumerate(move_history):
+        if isinstance(move, str):
+            break  # can't replay PDN-only history
+
+        move_pdn_str = move_to_pdn(move)
+        try:
+            state_after = apply_move(state, move)
+        except Exception:
+            break
+
+        ev_after = _eval_pos(state_after)
+        score_after = ev_after["score"]
+
+        # rawLoss: if both scores are positive, the mover lost ground.
+        raw_loss = score_before + score_after
+        loss_cp = min(1000, max(0, raw_loss))
+
+        dwc = _win_chance(score_before) + _win_chance(score_after)
+        delta = max(0.0, dwc)
+
+        if delta >= 0.30:
+            verdict = "blunder"
+        elif delta >= 0.15:
+            verdict = "mistake"
+        elif delta >= 0.075:
+            verdict = "inaccuracy"
+        else:
+            verdict = None
+
+        color = "white" if i % 2 == 0 else "black"
+        move_number = i // 2 + 1
+
+        book_tip = None
+        if verdict in ("blunder", "mistake"):
+            counts_b = _piece_counts(state)
+            phase_b  = _phase(_total_pieces(counts_b))
+            legal_cnt = len(get_legal_moves(state_after))
+            tip = _select_book_tip(state, counts_b, phase_b, [], best_move_before, language, legal_cnt)
+            if tip:
+                book_tip = {"concept": tip.get("concept", ""), "source": tip.get("source", "")}
+
+        annotations.append({
+            "move_number": move_number,
+            "color": color,
+            "move_pdn": move_pdn_str,
+            "verdict": verdict,
+            "score_before": score_before,
+            "score_after": score_after,
+            "loss_cp": loss_cp,
+            "best_move": best_move_before,
+            "book_tip": book_tip,
+        })
+
+        state = state_after
+        score_before = score_after
+        best_move_before = ev_after["bestMove"]
+
+    return annotations
+
+
 # ── Public API — matches signatures used in main.py ──────────────────────────
 
 async def analyze_position(
@@ -629,9 +745,21 @@ async def analyze_full_game(
     move_history,          # list[Move]
     language: str = "fr",
 ) -> dict:
-    """Deterministic full-game summary (replaces claude_advisor.analyze_full_game)."""
+    """Deterministic full-game summary with move-by-move annotations."""
     pdn_list = [move_to_pdn(m) if not isinstance(m, str) else m for m in move_history]
-    return await _full_game_common(state, pdn_list, language)
+    result = await _full_game_common(state, pdn_list, language)
+
+    # Move-by-move annotation — run in thread executor to avoid blocking
+    if move_history and not isinstance(move_history[0], str):
+        loop = asyncio.get_event_loop()
+        n = len(move_history)
+        ms_each = 200.0 if n > 40 else 300.0
+        move_annotations = await loop.run_in_executor(
+            None, _annotate_game_moves_sync, list(move_history), language, ms_each
+        )
+        result["move_annotations"] = move_annotations
+
+    return result
 
 
 async def analyze_full_game_pdn(

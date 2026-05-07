@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import Board from './components/Board'
 import type { Arrow } from './components/Board'
-import AnalysisPanel from './components/AnalysisPanel'
+import AnalysisPanel, { MoveAnnotationsTable } from './components/AnalysisPanel'
 import AnalysisText from './components/AnalysisText'
 import GameControls from './components/GameControls'
 import MoveList from './components/MoveList'
@@ -1020,6 +1020,14 @@ export default function App() {
                         />
                       </div>
                     )}
+                    {analysis?.move_annotations && analysis.move_annotations.length > 0 && (
+                      <div className="panel">
+                        <div className="text-xs text-gray-400 uppercase font-semibold mb-2">
+                          {language === 'fr' ? 'Analyse coup par coup' : 'Move-by-move analysis'}
+                        </div>
+                        <MoveAnnotationsTable annotations={analysis.move_annotations} language={language} />
+                      </div>
+                    )}
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                     {playAnnotationPanel}
                   </div>
@@ -1211,6 +1219,14 @@ export default function App() {
                     </div>
                     <AnalysisText text={analysis.analysis} onMoveClick={handleAnalysisMoveClick} className="text-gray-200 leading-relaxed text-sm whitespace-pre-wrap" />
                   </div>
+                  {analysis.move_annotations && analysis.move_annotations.length > 0 && (
+                    <div className="panel mt-3">
+                      <div className="text-xs text-gray-400 uppercase font-semibold mb-2">
+                        {language === 'fr' ? 'Analyse coup par coup' : 'Move-by-move analysis'}
+                      </div>
+                      <MoveAnnotationsTable annotations={analysis.move_annotations} language={language} />
+                    </div>
+                  )}
                 </div>
               )}
 
