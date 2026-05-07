@@ -195,11 +195,18 @@ class ScanEngineWorker {
         if (this.activegen !== myGen) return
         if (info.pv.length > 0) { localBest = info.pv[0]; this.bestSoFar = info.pv[0] }
         localScore = info.score
-        if (info.done) finish(info.score, info.bestMove ?? localBest)
+        if (info.done) {
+          // Re-enable book before finishing so subsequent getMove() uses it
+          this.send('set-param name=book value=true')
+          finish(info.score, info.bestMove ?? localBest)
+        }
       }
       this.lastInfo = {}
       this.bestSoFar = null
       this.analyzing = true
+      // Disable the opening book so Scan always produces a real search score
+      // (book positions return score=0 which breaks the blunder-detection formula)
+      this.send('set-param name=book value=false')
       this.send(`pos pos=${fenToHubPos(fen)}`)
       this.send('go analyze')
 
@@ -208,6 +215,8 @@ class ScanEngineWorker {
           this.activegen++
           this.stopSearch()
           this.currentCb = null
+          // Re-enable book for subsequent move generation
+          this.send('set-param name=book value=true')
           finish(localScore, localBest)
         }
       }, ms)

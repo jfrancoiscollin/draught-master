@@ -136,11 +136,14 @@ export async function annotateGame(
   if (signal.aborted) { engine.unlock(); return { annotations: [], cacheHits: 0 } }
 
   const evals: PositionEval[] = []
+  // Use the same adaptive timing as the server (total ≤ 30 s), min 800 ms so
+  // the WASM engine has time to produce at least a couple of info lines on mobile.
+  const wasmMs = Math.max(800, Math.floor(30000 / positions.length))
 
   try {
     for (let i = 0; i < positions.length; i++) {
       if (signal.aborted) break
-      const res = await engine.evaluate(positions[i].fen, msPerMove)
+      const res = await engine.evaluate(positions[i].fen, wasmMs)
       evals.push(res ?? { score: 0, bestMove: null })
       onProgress(i + 1, positions.length)
     }

@@ -972,7 +972,12 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     movetime_s = ms_per_move / 1000.0
 
     def run_batch() -> tuple:
-        from opening_book_db import lookup as cached_lookup
+        try:
+            from opening_book_db import lookup as cached_lookup
+        except Exception as exc:
+            logging.warning("opening_book_db unavailable: %s", exc)
+            cached_lookup = lambda _fen: None  # noqa: E731
+
         results = []
         cache_hits = 0
         for i, pos_data in enumerate(positions):
@@ -981,15 +986,19 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
                 results.append({"score": 0, "bestMove": None})
                 continue
             # Check pre-computed cache first (populated by /api/opening-book/precompute)
-            hit = cached_lookup(fen)
-            if hit:
-                results.append({"score": hit["score"], "bestMove": hit["bestMove"]})
+            try:
+                hit = cached_lookup(fen)
+            except Exception:
+                hit = None
+            if hit and hit.get("score") is not None:
+                results.append({"score": hit["score"], "bestMove": hit.get("bestMove")})
                 cache_hits += 1
                 continue
             state = fen_to_board(fen)
             hub_pos = _build_pos(state)
             result = engine.evaluate_pos(hub_pos, movetime_s)
             ev = result or {"score": 0, "bestMove": None}
+            logging.debug("annotate pos %d/%d fen=%s score=%d", i+1, len(positions), fen[:30], ev["score"])
             results.append(ev)
         return results, cache_hits
 

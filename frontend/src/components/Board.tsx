@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react'
+import React, { useCallback, useState, useLayoutEffect, useRef } from 'react'
 import { rcToSq, EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING } from '../types'
 import type { MoveData } from '../types'
 
@@ -30,15 +30,15 @@ interface BoardProps {
 function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boolean; selected: boolean }) {
   const isWhite = piece === WHITE_MAN || piece === WHITE_KING
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
-  const scale   = selected ? 1.08 : moveable ? 1.02 : 1
+  const scale   = selected ? 1.05 : moveable ? 1.01 : 1
   const pfx     = isWhite ? 'pw' : 'pb'
 
-  // Shared geometry (both colors now identical structure)
-  const ry         = 40    // face ellipse ry — more inclined/round
-  const sideEndY   = 130   // side wall bottom y
-  const sidePath   = `M 20,90 A 80,${ry} 0 0,0 180,90 L 180,${sideEndY} A 80,${ry} 0 0,1 20,${sideEndY} Z`
+  // rx=96 → piece spans x:4–196, filling 96% of the 200-unit viewBox
+  // Combined with SVG at 100% of cell this puts the lateral edges nearly flush
+  const ry       = 40
+  const sideEndY = 130
+  const sidePath = `M 4,90 A 96,${ry} 0 0,0 196,90 L 196,${sideEndY} A 96,${ry} 0 0,1 4,${sideEndY} Z`
 
-  // Color parameters per piece color
   const sideStops  = isWhite
     ? ['#a8a8a8', '#dcdcdc', '#f0f0f0']
     : ['#000000', '#2a2a2a', '#4a4a4a']
@@ -48,7 +48,7 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const shdOpacity = isWhite ? 0.25 : 0.30
   const sideStroke = isWhite ? '#9a9a9a' : '#000000'
   const topStroke  = isWhite ? '#b0b0b0' : '#000000'
-  const hlRy       = isWhite ? 10 : 9
+  const hlRy       = isWhite ? 12 : 11
   const hlOpacity  = isWhite ? 0.55 : 0.40
   const hlColor    = isWhite ? '#ffffff' : '#888888'
   const kingColor  = isWhite ? 'rgba(100,60,0,0.85)' : 'rgba(200,140,0,0.85)'
@@ -56,7 +56,7 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   return (
     <svg
       viewBox="0 0 200 200"
-      style={{ width: '92%', height: '92%', transform: `scale(${scale})`, transition: 'transform 0.12s ease' }}
+      style={{ width: '100%', height: '100%', transform: `scale(${scale})`, transition: 'transform 0.12s ease' }}
     >
       <defs>
         <linearGradient id={`${pfx}-side`} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -76,26 +76,26 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
       </defs>
 
       {/* Ombre portée */}
-      <ellipse cx="90" cy="170" rx="75" ry="7" fill={`url(#${pfx}-shd)`}/>
+      <ellipse cx="100" cy="170" rx="90" ry="9" fill={`url(#${pfx}-shd)`}/>
 
       {/* Tranche */}
       <path d={sidePath} fill={`url(#${pfx}-side)`} stroke={sideStroke} strokeWidth="0.5"/>
 
       {/* Face du dessus */}
-      <ellipse cx="100" cy="90" rx="80" ry={ry}
+      <ellipse cx="100" cy="90" rx="96" ry={ry}
         fill={`url(#${pfx}-top)`} stroke={topStroke} strokeWidth="0.5"/>
 
       {/* Reflet */}
-      <ellipse cx="115" cy="75" rx="35" ry={hlRy} fill={hlColor} opacity={hlOpacity}/>
+      <ellipse cx="118" cy="75" rx="42" ry={hlRy} fill={hlColor} opacity={hlOpacity}/>
 
       {/* Anneau sélection */}
       {selected && (
-        <ellipse cx="100" cy="90" rx="80" ry={ry}
+        <ellipse cx="100" cy="90" rx="96" ry={ry}
           fill="none" stroke="#D4A017" strokeWidth="8"/>
       )}
       {/* Anneau jouable — très discret */}
       {!selected && moveable && (
-        <ellipse cx="100" cy="90" rx="80" ry={ry}
+        <ellipse cx="100" cy="90" rx="96" ry={ry}
           fill="none"
           stroke={isWhite ? 'rgba(80,80,80,0.30)' : 'rgba(212,160,23,0.30)'}
           strokeWidth="3"
@@ -104,7 +104,7 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
 
       {/* Anneau dame */}
       {isKing && (
-        <ellipse cx="100" cy="90" rx="50" ry={Math.round(ry * 0.55)}
+        <ellipse cx="100" cy="90" rx="60" ry={Math.round(ry * 0.55)}
           fill="none" stroke={kingColor} strokeWidth="5"/>
       )}
     </svg>
@@ -144,7 +144,10 @@ export default function Board({
   const prevLastMoveRef               = useRef<MoveData | null | undefined>(undefined)
   const animTimerRef                  = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => {
+  // useLayoutEffect fires synchronously before the browser paints.
+  // This prevents the one-frame flash where the piece appears at the destination
+  // before being hidden — which caused the "B→A→B" reversal on white moves.
+  useLayoutEffect(() => {
     if (lastMove === prevLastMoveRef.current) return
     prevLastMoveRef.current = lastMove
     if (!lastMove) { setAnimVisible(false); return }
@@ -159,7 +162,7 @@ export default function Board({
 
     if (animTimerRef.current) clearTimeout(animTimerRef.current)
 
-    // Place overlay at source with no transition
+    // Place overlay at source with no transition (synchronously, before paint)
     setAnimPiece(piece)
     setAnimX(src.x)
     setAnimY(src.y)
@@ -167,7 +170,7 @@ export default function Board({
     setAnimMoving(false)
     setAnimVisible(true)
 
-    // Two rAFs ensure the browser commits the initial position before transitioning
+    // Two rAFs ensure the browser paints the initial position before transitioning
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setAnimX(dst.x)
