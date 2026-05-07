@@ -32,38 +32,58 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
   const scale   = selected ? 1.08 : moveable ? 1.02 : 1
 
-  // Flat disc: solid face + thick border (rim) + offset shadow simulating disc side edge
-  const faceColor = isWhite ? '#C8A050' : '#3C1A08'
-  const rimColor  = isWhite ? '#6B3E0A' : '#0D0402'
-
-  const selRing = selected
-    ? `, 0 0 0 3px #D4A017`
-    : moveable
-    ? `, 0 0 0 2px rgba(212,160,23,0.55)`
-    : ''
+  // Two-ellipse SVG disc: oval face (foreshortened = clearly NOT a sphere)
+  // + visible cylindrical rim below = genuine 3D checker piece appearance
+  const faceColor = isWhite ? '#D4AA58' : '#3E1A08'
+  const rimColor  = isWhite ? '#7A4A0C' : '#140503'
+  const rimShade  = isWhite ? '#5A3208' : '#0A0302'
 
   return (
-    <div style={{
-      width: '86%',
-      height: '86%',
-      borderRadius: '50%',
-      transform: `scale(${scale})`,
-      transition: 'transform 0.12s ease',
-      position: 'relative',
-      backgroundColor: faceColor,
-      border: `3px solid ${rimColor}`,
-      // 0 4px 0 rimColor = visible disc side edge below the face
-      boxShadow: `0 4px 0 ${rimColor}, 0 6px 10px rgba(0,0,0,0.50)${selRing}`,
-    }}>
-      {isKing && (
-        <div style={{
-          position: 'absolute',
-          top: '22%', left: '22%', right: '22%', bottom: '22%',
-          borderRadius: '50%',
-          border: `2.5px solid ${isWhite ? 'rgba(80,45,0,0.75)' : 'rgba(200,140,0,0.80)'}`,
-        }}/>
+    <svg
+      viewBox="0 0 100 106"
+      style={{
+        width: '90%',
+        height: '90%',
+        transform: `scale(${scale})`,
+        transition: 'transform 0.12s ease',
+        overflow: 'visible',
+      }}
+    >
+      {/* Cast shadow on board surface */}
+      <ellipse cx="53" cy="103" rx="36" ry="5" fill="rgba(0,0,0,0.32)" />
+
+      {/* Rim back edge (darkest — bottom of cylinder) */}
+      <ellipse cx="50" cy="74" rx="43" ry="13" fill={rimShade} />
+
+      {/* Rim front face (slightly lighter — visible cylinder wall) */}
+      <ellipse cx="50" cy="70" rx="43" ry="13" fill={rimColor} />
+
+      {/* Top face — oval, not circle: foreshortening gives the tilt illusion */}
+      <ellipse cx="50" cy="44" rx="43" ry="27" fill={faceColor} />
+
+      {/* Subtle shadow at bottom edge of face (face-rim junction) */}
+      <ellipse cx="50" cy="68" rx="43" ry="9" fill="rgba(0,0,0,0.18)" />
+
+      {/* Selection / moveable ring */}
+      {(selected || moveable) && (
+        <ellipse
+          cx="50" cy="44" rx="43" ry="27"
+          fill="none"
+          stroke={selected ? '#D4A017' : 'rgba(212,160,23,0.65)'}
+          strokeWidth={selected ? 4 : 2.5}
+        />
       )}
-    </div>
+
+      {/* King inner ring */}
+      {isKing && (
+        <ellipse
+          cx="50" cy="44" rx="27" ry="17"
+          fill="none"
+          stroke={isWhite ? 'rgba(75,42,0,0.85)' : 'rgba(210,148,0,0.85)'}
+          strokeWidth="3.5"
+        />
+      )}
+    </svg>
   )
 }
 
