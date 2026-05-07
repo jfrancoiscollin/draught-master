@@ -1219,6 +1219,30 @@ async def opening_book_stats() -> Dict[str, Any]:
     return stats()
 
 
+@app.get("/api/opening-book/db-info")
+async def opening_book_db_info() -> Dict[str, Any]:
+    """Return the DB path, file size, and row counts so you can verify
+    that the Railway volume is correctly mounted and populated."""
+    import os as _os
+    from opening_book_db import _DB_PATH, stats as db_stats
+    abs_path = _os.path.abspath(_DB_PATH)
+    try:
+        file_size = _os.path.getsize(abs_path)
+    except FileNotFoundError:
+        file_size = None
+    try:
+        book_stats = db_stats()
+    except Exception as exc:
+        book_stats = {"error": str(exc)}
+    return {
+        "db_path": abs_path,
+        "env_override": _os.environ.get("OPENING_BOOK_DB") is not None,
+        "file_exists": file_size is not None,
+        "file_size_bytes": file_size,
+        **book_stats,
+    }
+
+
 @app.post("/api/opening-book/migrate-json")
 async def opening_book_migrate_json() -> Dict[str, Any]:
     """One-time migration from the old opening_eval_cache.json file."""
