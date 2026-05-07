@@ -955,8 +955,8 @@ export default function App() {
                         onCollapse={() => setAnalysisExpanded(false)}
                         aiThinking={isAiThinking}
                         onMoveClick={handleAnalysisMoveClick}
-                        onAnnotate={moveHistory.length >= 2 ? handleAnnotatePlayedGame : undefined}
-                        onLearn={moveHistory.length >= 2 ? handleLearnPlayedGame : undefined}
+                        onAnnotate={handleAnnotatePlayedGame}
+                        onLearn={handleLearnPlayedGame}
                         annotating={playAnnotating}
                       />
                     </div>
@@ -1081,8 +1081,8 @@ export default function App() {
                         onCollapse={() => setAnalysisExpanded(false)}
                         aiThinking={isAiThinking}
                         onMoveClick={handleAnalysisMoveClick}
-                        onAnnotate={moveHistory.length >= 2 ? handleAnnotatePlayedGame : undefined}
-                        onLearn={moveHistory.length >= 2 ? handleLearnPlayedGame : undefined}
+                        onAnnotate={handleAnnotatePlayedGame}
+                        onLearn={handleLearnPlayedGame}
                         annotating={playAnnotating}
                       />
                       <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
@@ -1159,8 +1159,8 @@ export default function App() {
                     onCollapse={() => setAnalysisExpanded(false)}
                     aiThinking={isAiThinking}
                     onMoveClick={handleAnalysisMoveClick}
-                    onAnnotate={moveHistory.length >= 2 ? handleAnnotatePlayedGame : undefined}
-                    onLearn={moveHistory.length >= 2 ? handleLearnPlayedGame : undefined}
+                    onAnnotate={handleAnnotatePlayedGame}
+                    onLearn={handleLearnPlayedGame}
                     annotating={playAnnotating}
                   />
                 </div>
@@ -1178,8 +1178,8 @@ export default function App() {
                       onCollapse={() => setAnalysisExpanded(false)}
                       aiThinking={isAiThinking}
                       onMoveClick={handleAnalysisMoveClick}
-                      onAnnotate={moveHistory.length >= 2 ? handleAnnotatePlayedGame : undefined}
-                      onLearn={moveHistory.length >= 2 ? handleLearnPlayedGame : undefined}
+                      onAnnotate={handleAnnotatePlayedGame}
+                      onLearn={handleLearnPlayedGame}
                       annotating={playAnnotating}
                     />
                     <GameControls

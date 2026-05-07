@@ -204,7 +204,7 @@ export default function AnalysisPanel({
         {onAnnotate && (
           <button
             onClick={onAnnotate}
-            disabled={annotating || aiThinking}
+            disabled={!gameId || annotating || aiThinking}
             className="btn-secondary text-sm col-span-1 disabled:opacity-40"
           >
             {annotating ? (
@@ -218,7 +218,7 @@ export default function AnalysisPanel({
         {onLearn && (
           <button
             onClick={onLearn}
-            disabled={annotating || aiThinking}
+            disabled={!gameId || annotating || aiThinking}
             className="btn-secondary text-sm col-span-1 disabled:opacity-40"
           >
             📚 Apprendre
