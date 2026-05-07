@@ -31,7 +31,6 @@ from game_engine import (
 from ai_engine import get_best_move
 from scan_engine import get_scan_move
 from scan_advisor import analyze_position, analyze_full_game, analyze_full_game_pdn, explain_best_move_concise
-from claude_advisor import suggest_exercises
 from database import (
     init_db, save_game, get_games, get_game,
     get_exercises, get_exercise, record_progress,
