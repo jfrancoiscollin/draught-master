@@ -963,7 +963,7 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     movetime_s = ms_per_move / 1000.0
 
     def run_batch() -> tuple:
-        from opening_eval_db import lookup as cached_lookup
+        from opening_book_db import lookup as cached_lookup
         results = []
         cache_hits = 0
         for i, pos_data in enumerate(positions):
@@ -997,7 +997,7 @@ async def precompute_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     Uses more time per position than the live annotate endpoint so Scan reaches
     higher depth. Cached results are reused instantly on future annotation calls."""
     from scan_engine import _get_engine, _build_pos
-    from opening_eval_db import lookup as cached_lookup, store as cache_store, size as cache_size
+    from opening_book_db import lookup as cached_lookup, store as cache_store, size as cache_size
     import asyncio
 
     positions = body.get("positions", [])
@@ -1088,7 +1088,7 @@ async def start_cache_build(body: Dict[str, Any]) -> Dict[str, Any]:
 async def get_cache_build_status() -> Dict[str, Any]:
     """Poll the status of the background opening cache build job."""
     import cache_builder
-    from opening_eval_db import size as cache_size
+    from opening_book_db import size as cache_size
     status = cache_builder.get_status()
     status["cache_size"] = cache_size()
     return status
@@ -1097,7 +1097,7 @@ async def get_cache_build_status() -> Dict[str, Any]:
 @app.get("/api/opening-book/continuations")
 async def get_opening_continuations(fen: str = Query(...)) -> Dict[str, Any]:
     """Return sorted continuation moves for a given FEN with frequency and eval."""
-    from opening_eval_db import lookup
+    from opening_book_db import lookup
     entry = lookup(fen)
     if not entry:
         return {"fen": fen, "total_games": 0, "continuations": [],
@@ -1172,6 +1172,42 @@ async def start_eval(body: Dict[str, Any]) -> Dict[str, Any]:
             return {"started": False, "message": "Un calcul est déjà en cours"}
         return {"started": False, "message": "Aucune position en attente d'évaluation"}
     return {"started": True, "message": "Évaluation Scan démarrée en arrière-plan"}
+
+
+@app.post("/api/opening-book/cleanup")
+async def opening_book_cleanup(body: Dict[str, Any] = {}) -> Dict[str, Any]:
+    """Remove low-quality positions from the opening book.
+
+    Parameters (all optional):
+      min_games       int   default 3   — drop positions seen in fewer games
+      max_depth       int   default 40  — drop positions deeper than N half-moves
+      min_cont_pct    float default 0.03 — drop moves with < 3% frequency
+      min_cont_count  int   default 2   — drop moves seen fewer than N times
+    """
+    from opening_book_db import cleanup
+    result = cleanup(
+        min_games=int(body.get("min_games", 3)),
+        max_depth=int(body.get("max_depth", 40)),
+        min_cont_pct=float(body.get("min_cont_pct", 0.03)),
+        min_cont_count=int(body.get("min_cont_count", 2)),
+    )
+    return result
+
+
+@app.get("/api/opening-book/stats")
+async def opening_book_stats() -> Dict[str, Any]:
+    """Return summary statistics about the opening book."""
+    from opening_book_db import stats
+    return stats()
+
+
+@app.post("/api/opening-book/migrate-json")
+async def opening_book_migrate_json() -> Dict[str, Any]:
+    """One-time migration from the old opening_eval_cache.json file."""
+    from opening_book_db import migrate_from_json
+    import os as _os
+    json_path = _os.path.join(_os.path.dirname(__file__), "opening_eval_cache.json")
+    return migrate_from_json(json_path)
 
 
 async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:

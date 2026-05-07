@@ -471,7 +471,7 @@ def _annotate_game_moves_sync(
     """
     try:
         from scan_engine import _get_engine, _build_pos
-        from opening_eval_db import lookup as _cached_lookup
+        from opening_book_db import lookup as _cached_lookup
     except ImportError:
         return []
 
