@@ -61,6 +61,10 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     file_size_bytes: number | null; positions: number; evaluated: number;
   } | null>(null)
   const [dbInfoLoading, setDbInfoLoading] = useState(false)
+  const [migrating, setMigrating] = useState(false)
+  const [migrateResult, setMigrateResult] = useState<{
+    status: string; source_positions?: number; new_positions_added?: number; continuations_merged?: number; message?: string;
+  } | null>(null)
 
   const checkDbInfo = async () => {
     setDbInfoLoading(true)
@@ -69,6 +73,22 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
       if (res.ok) setDbInfo(await res.json())
     } catch { /* ignore */ } finally {
       setDbInfoLoading(false)
+    }
+  }
+
+  const migrateLocalDb = async () => {
+    setMigrating(true)
+    setMigrateResult(null)
+    try {
+      const res = await fetch('/api/opening-book/migrate-local-db', { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        setMigrateResult(data)
+        // Refresh db-info to show updated counts
+        await checkDbInfo()
+      }
+    } catch { /* ignore */ } finally {
+      setMigrating(false)
     }
   }
 
@@ -251,10 +271,39 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full flex-shrink-0 bg-amber-400" />
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dbInfo.positions > 0 ? 'bg-green-400' : 'bg-amber-400'}`} />
                 <span className="text-gray-400">Positions :</span>
-                <span className="text-amber-300">{dbInfo.positions.toLocaleString()} ({dbInfo.evaluated.toLocaleString()} évaluées)</span>
+                <span className={dbInfo.positions > 0 ? 'text-green-300' : 'text-amber-300'}>
+                  {dbInfo.positions.toLocaleString()} ({dbInfo.evaluated.toLocaleString()} évaluées)
+                </span>
               </div>
+            </div>
+          )}
+
+          {/* Migration from old local DB */}
+          {dbInfo && dbInfo.env_override && (
+            <div className="border-t border-gray-700 pt-2 mt-1 flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400">Récupérer l'ancienne DB locale&nbsp;→&nbsp;volume</span>
+                <button
+                  onClick={migrateLocalDb}
+                  disabled={migrating}
+                  className="text-xs px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                  {migrating ? 'Migration…' : '📦 Migrer'}
+                </button>
+              </div>
+              {migrateResult && (
+                <div className="text-xs font-mono">
+                  {migrateResult.status === 'ok' ? (
+                    <span className="text-green-300">
+                      ✓ {migrateResult.source_positions?.toLocaleString()} positions source · +{migrateResult.new_positions_added?.toLocaleString()} nouvelles · {migrateResult.continuations_merged?.toLocaleString()} continuations
+                    </span>
+                  ) : (
+                    <span className="text-yellow-300">{migrateResult.message ?? migrateResult.status}</span>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

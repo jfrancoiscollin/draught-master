@@ -1252,6 +1252,61 @@ async def opening_book_migrate_json() -> Dict[str, Any]:
     return migrate_from_json(json_path)
 
 
+@app.post("/api/opening-book/migrate-local-db")
+async def opening_book_migrate_local_db() -> Dict[str, Any]:
+    """One-time migration from the old local opening_book.db (ephemeral FS)
+    to the current DB path (Railway volume). Safe to call if already migrated."""
+    import os as _os
+    import sqlite3 as _sqlite3
+    from opening_book_db import _DB_PATH, store, store_continuations
+
+    local_path = _os.path.join(_os.path.dirname(__file__), "opening_book.db")
+    abs_local = _os.path.abspath(local_path)
+    abs_target = _os.path.abspath(_DB_PATH)
+
+    if abs_local == abs_target:
+        return {"status": "same_path", "message": "Source and target are the same DB — nothing to migrate."}
+
+    if not _os.path.exists(abs_local):
+        return {"status": "no_source", "message": f"Local DB not found at {abs_local}"}
+
+    try:
+        src = _sqlite3.connect(abs_local)
+        src.row_factory = _sqlite3.Row
+        rows = src.execute(
+            "SELECT fen, score, best_move, games_seen, depth FROM opening_book"
+        ).fetchall()
+        cont_rows = src.execute(
+            "SELECT fen, move, count FROM opening_continuations"
+        ).fetchall()
+        src.close()
+    except Exception as exc:
+        return {"status": "error", "message": f"Could not read source DB: {exc}"}
+
+    entries = [
+        {"fen": r["fen"], "score": r["score"], "bestMove": r["best_move"], "depth": r["depth"]}
+        for r in rows
+    ]
+    added = store(entries)
+
+    # Rebuild cont_map from source continuations
+    cont_map: Dict[str, Dict[str, int]] = {}
+    fen_depths: Dict[str, int] = {r["fen"]: r["depth"] for r in rows}
+    for r in cont_rows:
+        cont_map.setdefault(r["fen"], {})[r["move"]] = r["count"]
+    if cont_map:
+        store_continuations(cont_map, fen_depths)
+
+    return {
+        "status": "ok",
+        "source": abs_local,
+        "target": abs_target,
+        "source_positions": len(entries),
+        "new_positions_added": added,
+        "continuations_merged": len(cont_rows),
+    }
+
+
 async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
     fen = body.get("fen", "")
     question = body.get("question") or None
