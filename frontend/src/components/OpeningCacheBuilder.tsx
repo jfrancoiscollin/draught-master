@@ -83,9 +83,12 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
   }
 
+  const [cacheSize, setCacheSize] = useState<number | null>(null)
+
   useEffect(() => {
     getOpeningCacheBuildStatus().then(s => {
-      if (s.status === 'running' || s.status === 'done') setStatus(s)
+      setCacheSize(s.cache_size)
+      if (s.status === 'running' || s.status === 'done' || s.status === 'error') setStatus(s)
     })
     return stopPolling
   }, [])
@@ -95,6 +98,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     pollRef.current = setInterval(async () => {
       const s = await getOpeningCacheBuildStatus()
       setStatus(s)
+      setCacheSize(s.cache_size)
       if (s.status === 'done' || s.status === 'error') stopPolling()
     }, 2000)
   }
@@ -209,7 +213,13 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     <div className="flex flex-col h-full bg-gray-900 text-gray-100">
       <div className="flex items-center gap-3 px-4 py-3 bg-gray-800 border-b border-gray-700 flex-shrink-0">
         <button onClick={onClose} className="text-gray-400 hover:text-amber-500 text-2xl w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors">←</button>
-        <h2 className="font-bold text-amber-500 text-base">Base de connaissances ouvertures</h2>
+        <h2 className="font-bold text-amber-500 text-base flex-1">Base de connaissances ouvertures</h2>
+        {cacheSize !== null && (
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cacheSize > 0 ? 'bg-green-900/60 text-green-300' : 'bg-gray-700 text-gray-400'}`}>
+            <span className={`w-2 h-2 rounded-full ${cacheSize > 0 ? 'bg-green-400' : 'bg-gray-500'}`} />
+            {cacheSize > 0 ? `${cacheSize.toLocaleString()} pos. en cache` : 'Cache vide'}
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
@@ -382,16 +392,22 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
         </button>
 
         {/* Status */}
-        {status && (
+        {(status || cacheSize !== null) && (
           <div className="bg-gray-800 rounded-xl p-4 flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              {isRunning && <span className="w-3 h-3 rounded-full bg-indigo-400 animate-pulse flex-shrink-0" />}
-              {isDone && <span className="text-green-400">✓</span>}
-              {isError && <span className="text-red-400">✗</span>}
-              <p className={`text-sm font-medium ${isDone ? 'text-green-300' : isError ? 'text-red-300' : 'text-gray-200'}`}>
-                {status.message}
-              </p>
-            </div>
+            {status && (
+              <div className="flex items-center gap-2">
+                {isRunning && <span className="w-3 h-3 rounded-full bg-indigo-400 animate-pulse flex-shrink-0" />}
+                {isDone && <span className="text-green-400">✓</span>}
+                {isError && <span className="text-red-400">✗</span>}
+                {!isRunning && !isDone && !isError && <span className="text-gray-500">○</span>}
+                <p className={`text-sm font-medium ${isDone ? 'text-green-300' : isError ? 'text-red-300' : 'text-gray-200'}`}>
+                  {status.message || (cacheSize !== null && cacheSize > 0 ? `Cache actif — ${cacheSize.toLocaleString()} positions stockées` : 'Prêt')}
+                </p>
+              </div>
+            )}
+            {!status && cacheSize !== null && cacheSize > 0 && (
+              <p className="text-sm font-medium text-green-300">✓ {cacheSize.toLocaleString()} positions en cache (serveur redémarré)</p>
+            )}
             {progress !== null && (
               <div>
                 <div className="flex justify-between text-xs text-gray-400 mb-1">
@@ -404,15 +420,15 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
               </div>
             )}
             <div className="grid grid-cols-2 gap-2 text-xs">
-              {[
-                ['Parties téléchargées', status.fetched_games, 'text-white'],
-                ['Positions uniques', status.unique_positions, 'text-white'],
-                ['Calculées', status.computed, 'text-indigo-300'],
-                ['Cache total', status.cache_size, 'text-amber-300'],
-              ].map(([label, value, color]) => (
-                <div key={label as string} className="bg-gray-900 rounded-lg px-3 py-2">
+              {([
+                ['Parties téléchargées', status?.fetched_games ?? '—', 'text-white'],
+                ['Positions uniques', status?.unique_positions ?? '—', 'text-white'],
+                ['Calculées', status?.computed ?? '—', 'text-indigo-300'],
+                ['Cache total', cacheSize ?? status?.cache_size ?? '—', 'text-amber-300'],
+              ] as [string, number | string, string][]).map(([label, value, color]) => (
+                <div key={label} className="bg-gray-900 rounded-lg px-3 py-2">
                   <div className="text-gray-500">{label}</div>
-                  <div className={`font-bold text-base ${color}`}>{value}</div>
+                  <div className={`font-bold text-base ${color}`}>{typeof value === 'number' ? value.toLocaleString() : value}</div>
                 </div>
               ))}
             </div>
