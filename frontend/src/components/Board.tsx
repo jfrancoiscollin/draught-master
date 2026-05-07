@@ -30,108 +30,70 @@ interface BoardProps {
 function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boolean; selected: boolean }) {
   const isWhite = piece === WHITE_MAN || piece === WHITE_KING
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
-  const scale = selected ? 1.08 : moveable ? 1.02 : 1
+  const scale   = selected ? 1.08 : moveable ? 1.02 : 1
 
-  // ── Flat wooden checker disc — Lidraughts style ──────────────────────────
-  // Top face: uniform warm colour, very slightly lighter at top-left corner.
-  // NO pure white; NO huge specular blob → looks like wood, not glass.
-  const topBg = isWhite
-    ? 'radial-gradient(ellipse 65% 60% at 40% 34%, #e8dcc8 0%, #d8cbb0 40%, #c8b898 75%, #bca888 100%)'
-    : 'radial-gradient(ellipse 65% 60% at 40% 34%, #4a2414 0%, #301408 40%, #1e0c04 75%, #140804 100%)'
-
-  // Small, soft specular glint — upper-left, semi-transparent only
-  const glint = isWhite
-    ? 'radial-gradient(ellipse 38% 28% at 30% 24%, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.18) 50%, transparent 72%)'
-    : 'radial-gradient(ellipse 38% 28% at 30% 24%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 50%, transparent 72%)'
-
-  // Rim (disc thickness) — darker than face, subtle bevel
-  const rimBg = isWhite
-    ? 'linear-gradient(180deg, #b8a888 0%, #a09070 55%, #b0a080 100%)'
-    : 'linear-gradient(180deg, #2a1208 0%, #160804 55%, #200e06 100%)'
-
-  // Selection / moveable ring
-  const ring = selected
-    ? '0 0 0 2.5px #d4a017, 0 0 8px rgba(212,160,23,0.50)'
-    : moveable
-      ? '0 0 0 2px rgba(212,160,23,0.65)'
-      : undefined
-
-  // Subtle edge darkening on the face (bevel, not dome)
-  const edgeShadow = isWhite
-    ? 'inset 0 0 0 1.5px rgba(0,0,0,0.12), inset 0 -2px 5px rgba(0,0,0,0.10)'
-    : 'inset 0 0 0 1.5px rgba(0,0,0,0.25), inset 0 -2px 5px rgba(0,0,0,0.25)'
-
-  const faceShadow = [ring, edgeShadow].filter(Boolean).join(', ')
+  // Gradient IDs shared across pieces of the same colour — identical defs,
+  // browser uses the first occurrence in document order, which is fine.
+  const gid = isWhite ? 'pcw' : 'pcb'
+  const ringColor = selected ? '#d4a017' : moveable ? 'rgba(212,160,23,0.65)' : null
 
   return (
-    <div style={{
-      width: '88%',
-      height: '88%',
-      position: 'relative',
-      flexShrink: 0,
-      transform: `scale(${scale})`,
-      transition: 'transform 0.12s ease',
-    }}>
-      {/* Drop shadow — soft, slightly offset */}
-      <div style={{
-        position: 'absolute',
-        bottom: '-8%',
-        left: '8%',
-        right: '5%',
-        height: '20%',
-        borderRadius: '50%',
-        background: isWhite
-          ? 'radial-gradient(ellipse, rgba(0,0,0,0.30) 0%, transparent 70%)'
-          : 'radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 70%)',
-        filter: 'blur(4px)',
-      }} />
+    <div style={{ width: '88%', height: '88%', transform: `scale(${scale})`, transition: 'transform 0.12s ease' }}>
+      <svg viewBox="0 0 100 100" width="100%" height="100%"
+           style={{ display: 'block', overflow: 'visible' }}>
+        <defs>
+          {/* Sphere body: radial gradient simulating top-left lighting */}
+          <radialGradient id={gid} cx="38%" cy="30%" r="70%">
+            {isWhite ? <>
+              <stop offset="0%"   stopColor="#f8f0dc"/>
+              <stop offset="35%"  stopColor="#e0cda8"/>
+              <stop offset="72%"  stopColor="#bfa878"/>
+              <stop offset="100%" stopColor="#9c8458"/>
+            </> : <>
+              <stop offset="0%"   stopColor="#6b3820"/>
+              <stop offset="30%"  stopColor="#3c1a08"/>
+              <stop offset="68%"  stopColor="#1e0d04"/>
+              <stop offset="100%" stopColor="#0e0602"/>
+            </>}
+          </radialGradient>
 
-      {/* RIM — disc thickness, ~18% of total height */}
-      <div style={{
-        position: 'absolute',
-        top: '82%',
-        left: '2%',
-        right: '2%',
-        bottom: 0,
-        borderRadius: '50%',
-        background: rimBg,
-      }} />
+          {/* Specular highlight — small bright spot top-left */}
+          <radialGradient id={`${gid}s`} cx="32%" cy="26%" r="34%">
+            <stop offset="0%"   stopColor={isWhite ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.28)'}/>
+            <stop offset="55%"  stopColor={isWhite ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.05)'}/>
+            <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+          </radialGradient>
+        </defs>
 
-      {/* TOP FACE */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: '18%',
-        borderRadius: '50%',
-        background: topBg,
-        boxShadow: faceShadow,
-        overflow: 'hidden',
-      }}>
-        {/* Small glint — the only highlight, subtle */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          borderRadius: '50%',
-          background: glint,
-          pointerEvents: 'none',
-        }} />
+        {/* Cast shadow — ellipse below the sphere, slightly offset right */}
+        <ellipse cx="53" cy="92" rx="34" ry="6.5"
+          fill={isWhite ? 'rgba(0,0,0,0.38)' : 'rgba(0,0,0,0.55)'}/>
+
+        {/* Main sphere */}
+        <circle cx="50" cy="46" r="42" fill={`url(#${gid})`}/>
+
+        {/* Thick outer stroke — darkens the edge and fakes spherical roundness,
+            no separate rim element needed (eliminates the "flat line" artefact) */}
+        <circle cx="50" cy="46" r="42" fill="none"
+          stroke={isWhite ? 'rgba(0,0,0,0.20)' : 'rgba(0,0,0,0.55)'}
+          strokeWidth="9"/>
+
+        {/* Specular highlight layer */}
+        <circle cx="50" cy="46" r="42" fill={`url(#${gid}s)`}/>
+
+        {/* Selection / moveable ring */}
+        {ringColor && (
+          <circle cx="50" cy="46" r="44" fill="none"
+            stroke={ringColor} strokeWidth={selected ? 3.5 : 2.5}/>
+        )}
 
         {/* King crown ring */}
         {isKing && (
-          <div style={{
-            position: 'absolute',
-            top: '26%',
-            left: '26%',
-            right: '26%',
-            bottom: '26%',
-            borderRadius: '50%',
-            border: `2px solid ${isWhite ? 'rgba(160,100,0,0.80)' : 'rgba(210,155,0,0.80)'}`,
-            pointerEvents: 'none',
-          }} />
+          <circle cx="50" cy="46" r="18" fill="none"
+            stroke={isWhite ? 'rgba(140,85,0,0.85)' : 'rgba(210,155,0,0.88)'}
+            strokeWidth="3.5"/>
         )}
-      </div>
+      </svg>
     </div>
   )
 }
