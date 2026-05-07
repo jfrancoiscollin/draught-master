@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
 import { getExercises, getUserProgress, getLessonTitles, getReadLessons } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
@@ -50,6 +50,7 @@ export default function ExercisePanel({
   const [solvedIds, setSolvedIds] = useState<Set<number>>(new Set())
   const [openChapters, setOpenChapters] = useState<Set<number>>(new Set())
   const [selected, setSelected] = useState<ExerciseResponse | null>(null)
+  const activeRowRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -83,6 +84,12 @@ export default function ExercisePanel({
     const ex = allExercises.find(e => e.id === currentExerciseId)
     if (ex?.chapter) setOpenChapters(prev => new Set([...prev, ex.chapter!]))
   }, [currentExerciseId, allExercises])
+
+  // Scroll the active exercise row into view once its chapter is open
+  useEffect(() => {
+    if (!activeRowRef.current) return
+    setTimeout(() => activeRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80)
+  }, [currentExerciseId, openChapters])
 
   const handleSelect = (ex: ExerciseResponse) => {
     setSelected(ex)
@@ -171,6 +178,7 @@ export default function ExercisePanel({
                         return (
                           <button
                             key={ex.id}
+                            ref={isActive ? activeRowRef : null}
                             onClick={() => handleSelect(ex)}
                             className={[
                               'w-full flex items-center gap-2 px-3 py-2 text-left border-0 cursor-pointer',

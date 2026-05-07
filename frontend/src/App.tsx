@@ -587,8 +587,11 @@ export default function App() {
     }
   }, [playGameStats, handleAnnotatePlayedGame])
 
+  const [lastExerciseId, setLastExerciseId] = useState<number | null>(null)
+
   const handleExerciseLoad = useCallback(async (fen: string, exerciseId: number) => {
     const gen = ++exerciseLoadGenRef.current
+    setLastExerciseId(exerciseId)
     setExerciseGameState({ board: fenToBoard(fen), fen, exerciseId })
     setExerciseLegalMoves([])
     setExerciseSelectedSquare(null)
@@ -1359,7 +1362,7 @@ export default function App() {
               <ExercisePanel
                 onExerciseLoad={handleExerciseLoad}
                 onLessonOpen={(chapter, fen) => setLessonOpen({ chapter, fen })}
-                currentExerciseId={null}
+                currentExerciseId={lastExerciseId}
                 feedback={null}
                 compact={false}
                 readChapters={readChapters}
