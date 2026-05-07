@@ -894,9 +894,6 @@ export default function App() {
                 🏠
               </button>
             )}
-            {tab === 'play' && bothSides && (
-              <span className="text-lg" title={t('playBothSides')}>⚔</span>
-            )}
             {isAiThinking && (
               <span className="flex items-center gap-1 text-yellow-400 text-xs">
                 <div className="spinner" style={{ width: 12, height: 12 }} />
