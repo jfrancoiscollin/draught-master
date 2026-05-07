@@ -10,6 +10,7 @@ import ExerciseLibraryPage from './components/ExerciseLibraryPage'
 import LessonPanel from './components/LessonPanel'
 import ImportGamePanel from './components/ImportGamePanel'
 import OpeningCacheBuilder from './components/OpeningCacheBuilder'
+import LearnFromMistakes from './components/LearnFromMistakes'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
 import Logo from './components/Logo'
@@ -30,7 +31,13 @@ import {
   getAiMove,
   getReadLessons,
 } from './api/client'
+import type { PdnPosition } from './api/client'
 import { getScanEngine, matchHubMove } from './lib/scanEngine'
+import {
+  annotateGame, computeStats,
+  type MoveAnnotation, type GameStats,
+  VERDICT_SYMBOL, VERDICT_COLOR,
+} from './lib/gameAnnotations'
 import {
   EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
   sqToRowCol, rcToSq,
@@ -169,6 +176,17 @@ export default function App() {
   const [readChapters, setReadChapters] = useState<Set<number>>(new Set())
   const [resultFlash, setResultFlash] = useState<string | null>(null)
 
+  // ── Game annotation (coup par coup) ──────────────────────────
+  const [fenHistory, setFenHistory] = useState<string[]>([])
+  const [playAnnotations, setPlayAnnotations] = useState<MoveAnnotation[]>([])
+  const [playGameStats, setPlayGameStats] = useState<GameStats | null>(null)
+  const [playAnnotating, setPlayAnnotating] = useState(false)
+  const [playAnnotationProgress, setPlayAnnotationProgress] = useState(0)
+  const [playAnnotationTotal, setPlayAnnotationTotal] = useState(0)
+  const playAnnotationAbortRef = useRef<AbortController | null>(null)
+  const [playLastCacheHits, setPlayLastCacheHits] = useState<{ hits: number; total: number } | null>(null)
+  const [playPanelMode, setPlayPanelMode] = useState<'game' | 'learn'>('game')
+
   useEffect(() => {
     if (!user) { setReadChapters(new Set()); return }
     getReadLessons().then(chapters => setReadChapters(new Set(chapters))).catch(() => {})
@@ -183,6 +201,24 @@ export default function App() {
   const [replayDetail, setReplayDetail] = useState<GameDetailResponse | null>(null)
 
   const showToast = (msg: string) => setToastMsg(msg)
+
+  function buildPdnPositions(fens: string[], moves: MoveData[]): PdnPosition[] {
+    if (!fens.length) return []
+    const positions: PdnPosition[] = [{ fen: fens[0], notation: '', move_number: 0, color: 'white' }]
+    for (let i = 0; i < moves.length && i + 1 < fens.length; i++) {
+      const m = moves[i]
+      const notation = m.captures.length > 0
+        ? m.path.join('x')
+        : `${m.path[0]}-${m.path[m.path.length - 1]}`
+      positions.push({
+        fen: fens[i + 1],
+        notation,
+        move_number: Math.floor(i / 2) + 1,
+        color: i % 2 === 0 ? 'white' : 'black',
+      })
+    }
+    return positions
+  }
 
   const resetExerciseState = useCallback(() => {
     setExerciseGameState(null)
@@ -204,6 +240,11 @@ export default function App() {
       setAnalysis(null)
       setAnalysisExpanded(false)
       setReplayingPosition(null)
+      setFenHistory([state.fen])
+      setPlayAnnotations([])
+      setPlayGameStats(null)
+      setPlayLastCacheHits(null)
+      setPlayPanelMode('game')
     } catch {
       showToast(t('errorCreatingGame'))
     } finally {
@@ -251,10 +292,12 @@ export default function App() {
           legal_moves: response.legal_moves ?? [],
         })
         setMoveHistory(prev => [...prev, response.player_move])
+        setFenHistory(prev => [...prev, response.fen])
       } else {
         // Play-alone mode: apply player's move then use WASM for AI
         const playerResp = await makeMove(gameState.game_id, move, aiDepth, true)
         setMoveHistory(prev => [...prev, playerResp.player_move])
+        setFenHistory(prev => [...prev, playerResp.fen])
 
         if (playerResp.result) {
           // Game already ended after player's move
@@ -294,6 +337,7 @@ export default function App() {
               legal_moves: resp.legal_moves ?? [],
             })
             setMoveHistory(prev => [...prev, aiMove])
+            setFenHistory(prev => [...prev, resp.fen])
           }
 
           if (aiMoveData) {
@@ -420,6 +464,41 @@ export default function App() {
       setAnalysisLoading(false)
     }
   }, [gameState, language, aiDepth, t])
+
+  const handleAnnotatePlayedGame = useCallback(async () => {
+    if (!fenHistory.length || !moveHistory.length) return
+    const positions = buildPdnPositions(fenHistory, moveHistory)
+    if (positions.length < 2) return
+
+    playAnnotationAbortRef.current?.abort()
+    const ctrl = new AbortController()
+    playAnnotationAbortRef.current = ctrl
+
+    setPlayAnnotating(true)
+    setPlayAnnotations([])
+    setPlayGameStats(null)
+    setPlayAnnotationProgress(0)
+    setPlayAnnotationTotal(positions.length)
+
+    try {
+      const { annotations: anns, cacheHits } = await annotateGame(
+        positions,
+        500,
+        (done, total) => {
+          setPlayAnnotationProgress(done)
+          setPlayAnnotationTotal(total)
+        },
+        ctrl.signal,
+      )
+      if (!ctrl.signal.aborted) {
+        setPlayAnnotations(anns)
+        setPlayGameStats(computeStats(anns))
+        setPlayLastCacheHits({ hits: cacheHits, total: positions.length })
+      }
+    } finally {
+      setPlayAnnotating(false)
+    }
+  }, [fenHistory, moveHistory])
 
   const handleExerciseLoad = useCallback(async (fen: string, exerciseId: number) => {
     const gen = ++exerciseLoadGenRef.current
