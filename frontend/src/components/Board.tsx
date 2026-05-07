@@ -72,13 +72,13 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
       {/* Ombre portée */}
       <ellipse cx="100" cy="155" rx="80" ry="12" fill={`url(#${pfx}-shd)`}/>
 
-      {/* Tranche (côté visible) */}
+      {/* Tranche (côté visible) — plus épaisse : y=100→138 */}
       <path
-        d="M 20,100 A 80,22 0 0,0 180,100 L 180,125 A 80,22 0 0,1 20,125 Z"
+        d="M 20,100 A 80,22 0 0,0 180,100 L 180,138 A 80,22 0 0,1 20,138 Z"
         fill={`url(#${pfx}-side)`} stroke={sideStroke} strokeWidth="0.5"
       />
-      <path d="M 20,108 A 80,22 0 0,0 180,108" fill="none" stroke={reliefClr} strokeWidth="0.5" opacity={reliefOp}/>
-      <path d="M 20,118 A 80,22 0 0,0 180,118" fill="none" stroke={reliefClr} strokeWidth="0.5" opacity={reliefOp}/>
+      <path d="M 20,112 A 80,22 0 0,0 180,112" fill="none" stroke={reliefClr} strokeWidth="0.5" opacity={reliefOp}/>
+      <path d="M 20,126 A 80,22 0 0,0 180,126" fill="none" stroke={reliefClr} strokeWidth="0.5" opacity={reliefOp}/>
 
       {/* Face du dessus */}
       <ellipse cx="100" cy="100" rx="80" ry="22"
@@ -87,12 +87,18 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
       {/* Reflet brillant */}
       <ellipse cx="80" cy="92" rx="35" ry={hlRy} fill={hlColor} opacity={hlOpacity}/>
 
-      {/* Anneau sélection / déplaçable */}
-      {(selected || moveable) && (
+      {/* Anneau sélection : doré visible */}
+      {selected && (
+        <ellipse cx="100" cy="100" rx="80" ry="22"
+          fill="none" stroke="#D4A017" strokeWidth="8"
+        />
+      )}
+      {/* Anneau jouable : très discret (gris sur blancs, quasi-invisible sur noirs) */}
+      {!selected && moveable && (
         <ellipse cx="100" cy="100" rx="80" ry="22"
           fill="none"
-          stroke={selected ? '#D4A017' : 'rgba(212,160,23,0.65)'}
-          strokeWidth={selected ? 8 : 5}
+          stroke={isWhite ? 'rgba(80,80,80,0.35)' : 'rgba(212,160,23,0.30)'}
+          strokeWidth="3"
         />
       )}
 
