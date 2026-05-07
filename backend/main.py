@@ -1066,6 +1066,58 @@ async def get_cache_build_status() -> Dict[str, Any]:
     return status
 
 
+@app.get("/api/opening-book/continuations")
+async def get_opening_continuations(fen: str = Query(...)) -> Dict[str, Any]:
+    """Return sorted continuation moves for a given FEN with frequency and eval."""
+    from opening_eval_db import lookup
+    entry = lookup(fen)
+    if not entry:
+        return {"fen": fen, "total_games": 0, "continuations": [],
+                "engine_best": None, "engine_score": 0}
+
+    raw_cont: dict = entry.get("cont", {})
+    total_games = sum(raw_cont.values()) if raw_cont else 0
+
+    if not raw_cont:
+        return {"fen": fen, "total_games": 0, "continuations": [],
+                "engine_best": entry.get("bestMove"), "engine_score": entry.get("score", 0)}
+
+    try:
+        state = fen_to_board(fen)
+        legal = get_legal_moves(state)
+    except Exception:
+        return {"fen": fen, "total_games": 0, "continuations": [],
+                "engine_best": entry.get("bestMove"), "engine_score": entry.get("score", 0)}
+
+    continuations = []
+    for move_pdn, freq in sorted(raw_cont.items(), key=lambda x: -x[1]):
+        move_obj = _find_move_by_pdn(move_pdn, legal)
+        score = None
+        if move_obj:
+            try:
+                next_state = apply_move(state, move_obj)
+                next_fen = board_to_fen(next_state)
+                next_entry = lookup(next_fen)
+                if next_entry and next_entry.get("score") is not None:
+                    score = -next_entry["score"]  # negate: opponent's score → our score
+            except Exception:
+                pass
+        continuations.append({
+            "move": move_pdn,
+            "frequency": freq,
+            "pct": round(freq / total_games * 100) if total_games else 0,
+            "score": score,
+        })
+
+    return {
+        "fen": fen,
+        "total_games": total_games,
+        "continuations": continuations,
+        "engine_best": entry.get("bestMove"),
+        "engine_score": entry.get("score", 0),
+    }
+
+
 @app.post("/api/opening-book/ingest")
 async def ingest_pdn(body: Dict[str, Any]) -> Dict[str, Any]:
     """Receive one player's raw PDN or NDJSON text, extract FENs into pending pool."""

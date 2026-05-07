@@ -69,8 +69,13 @@ def _find_move(pdn_str: str, legal_moves) -> Optional[object]:
     return None
 
 
-def extract_fens(pdn_text: str, max_moves: int) -> list[str]:
-    """Replay a single-game PDN and return FENs for positions 0..max_moves."""
+def extract_positions(pdn_text: str, max_moves: int) -> tuple[list[str], list[tuple[str, str]]]:
+    """Replay a single-game PDN.
+
+    Returns:
+        fens: list of FEN strings for positions 0..max_moves
+        pairs: list of (fen_before, move_pdn) — one entry per move played
+    """
     text = re.sub(r'\[.*?\]', '', pdn_text, flags=re.DOTALL)
     text = re.sub(r'\{[^}]*\}', '', text)
     text = re.sub(r';[^\n]*', '', text)
@@ -85,18 +90,27 @@ def extract_fens(pdn_text: str, max_moves: int) -> list[str]:
             tokens.append(tok)
 
     if not tokens:
-        return []
+        return [], []
 
     state = initial_state()
     fens = [board_to_fen(state)]
+    pairs: list[tuple[str, str]] = []
     for tok in tokens[:max_moves]:
+        fen_before = board_to_fen(state)
         legal = get_legal_moves(state)
         move = _find_move(tok, legal)
         if move is None:
             break
+        move_pdn_str = move_to_pdn(move)
         state = apply_move(state, move)
         fens.append(board_to_fen(state))
-    return fens
+        pairs.append((fen_before, move_pdn_str))
+    return fens, pairs
+
+
+def extract_fens(pdn_text: str, max_moves: int) -> list[str]:
+    """Backward-compat wrapper — returns only FENs."""
+    return extract_positions(pdn_text, max_moves)[0]
 
 
 # ── Background task ────────────────────────────────────────────────────────────
@@ -121,9 +135,15 @@ def run_build(
     movetime_s = ms_per_position / 1000.0
 
     try:
-        # ── Phase 1: collect unique FENs ──────────────────────────────────────
+        # ── Phase 1: collect unique FENs + continuations ──────────────────────
         all_fens: set[str] = set()
+        all_cont: dict[str, dict[str, int]] = {}  # fen → {move: count}
         total_games = 0
+
+        def _merge_pairs(pairs: list[tuple[str, str]]) -> None:
+            for fen_b, move_p in pairs:
+                bucket = all_cont.setdefault(fen_b, {})
+                bucket[move_p] = bucket.get(move_p, 0) + 1
 
         if pdn_texts:
             # Data already downloaded by the browser — parse PDN or NDJSON
@@ -142,8 +162,9 @@ def run_build(
                      message=f"{total_games} parties reçues ({i+1}/{len(pdn_texts)} joueurs)…")
                 for game_pdn in games:
                     try:
-                        fens = extract_fens(game_pdn, max_moves)
+                        fens, pairs = extract_positions(game_pdn, max_moves)
                         all_fens.update(fens)
+                        _merge_pairs(pairs)
                     except Exception:
                         _inc("errors")
         else:
@@ -161,12 +182,18 @@ def run_build(
                      message=f"{total_games} parties chargées ({i+1}/{len(usernames)} joueurs)…")
                 for game_pdn in games:
                     try:
-                        fens = extract_fens(game_pdn, max_moves)
+                        fens, pairs = extract_positions(game_pdn, max_moves)
                         all_fens.update(fens)
+                        _merge_pairs(pairs)
                     except Exception:
                         _inc("errors")
                 if i < len(usernames) - 1:
                     time.sleep(2)
+
+        # ── Phase 1b: persist continuation frequencies immediately ────────────
+        from opening_eval_db import store_continuations as db_store_cont
+        db_store_cont(all_cont)
+        logger.info("cache_builder: stored continuations for %d positions", len(all_cont))
 
         # ── Phase 2: filter already-cached positions ───────────────────────
         new_fens = [f for f in all_fens if not db_lookup(f)]
@@ -229,12 +256,13 @@ def run_build(
 
 _pending_fens: set = set()
 _pending_games: int = 0
+_pending_cont: dict[str, dict[str, int]] = {}
 
 
 def ingest_raw(raw: str, max_moves: int) -> dict:
     """Parse one player's raw PDN or NDJSON text. Adds extracted FENs to the
     pending pool. Returns {games: N, fens_added: N, format: str}."""
-    global _pending_fens, _pending_games
+    global _pending_fens, _pending_games, _pending_cont
     from lidraughts_fetcher import _ndjson_to_pdn, split_pdn_games
 
     if not raw or not raw.strip():
@@ -250,10 +278,14 @@ def ingest_raw(raw: str, max_moves: int) -> dict:
 
     games = split_pdn_games(pdn_bulk)
     new_fens: set = set()
+    new_cont: dict[str, dict[str, int]] = {}
     for game_pdn in games:
         try:
-            fens = extract_fens(game_pdn, max_moves)
+            fens, pairs = extract_positions(game_pdn, max_moves)
             new_fens.update(fens)
+            for fen_b, move_p in pairs:
+                bucket = new_cont.setdefault(fen_b, {})
+                bucket[move_p] = bucket.get(move_p, 0) + 1
         except Exception:
             pass
 
@@ -261,6 +293,10 @@ def ingest_raw(raw: str, max_moves: int) -> dict:
         before = len(_pending_fens)
         _pending_fens.update(new_fens)
         _pending_games += len(games)
+        for fen_b, moves in new_cont.items():
+            bucket = _pending_cont.setdefault(fen_b, {})
+            for m, c in moves.items():
+                bucket[m] = bucket.get(m, 0) + c
         added = len(_pending_fens) - before
 
     logger.info("ingest_raw: fmt=%s games=%d fens=%d added=%d pending_total=%d",
@@ -270,15 +306,25 @@ def ingest_raw(raw: str, max_moves: int) -> dict:
 
 def start_eval(ms_per_position: int) -> bool:
     """Start Scan evaluation on all pending FENs. Returns False if already running."""
-    global _pending_fens, _pending_games
+    global _pending_fens, _pending_games, _pending_cont
 
     with _lock:
         if _job.get("status") == "running":
             return False
         fens = list(_pending_fens)
         games = _pending_games
+        cont = dict(_pending_cont)
         _pending_fens = set()
         _pending_games = 0
+        _pending_cont = {}
+
+    if not fens and not cont:
+        return False
+
+    # Persist continuations immediately (before eval, which may take hours)
+    if cont:
+        from opening_eval_db import store_continuations as _sc
+        _sc(cont)
 
     if not fens:
         return False

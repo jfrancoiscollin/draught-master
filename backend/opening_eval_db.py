@@ -1,6 +1,6 @@
 """JSON-file cache for pre-computed Scan position evaluations.
 
-Positions are keyed by FEN string and store {score, bestMove, depth}.
+Positions are keyed by FEN string and store {score, bestMove, cont}.
 The file path can be overridden with the OPENING_EVAL_CACHE env var so that
 a Railway volume mount makes the cache persistent across redeploys.
 """
@@ -43,8 +43,15 @@ def _load_from_disk() -> dict:
     return {}
 
 
+def _flush() -> None:
+    """Write in-memory cache to disk (must be called under _lock)."""
+    os.makedirs(os.path.dirname(os.path.abspath(_CACHE_PATH)), exist_ok=True)
+    with open(_CACHE_PATH, "w") as f:
+        json.dump(_mem_cache, f, separators=(",", ":"))
+
+
 def lookup(fen: str) -> dict | None:
-    """Return cached {score, bestMove} or None if not in cache."""
+    """Return cached entry {score, bestMove, cont?} or None if not in cache."""
     with _lock:
         return _get_cache().get(fen)
 
@@ -59,16 +66,35 @@ def store(entries: list[dict]) -> int:
             fen = e.get("fen")
             if not fen:
                 continue
-            cache[fen] = {
-                "score": e.get("score", 0),
-                "bestMove": e.get("bestMove"),
-            }
-        os.makedirs(os.path.dirname(os.path.abspath(_CACHE_PATH)), exist_ok=True)
-        with open(_CACHE_PATH, "w") as f:
-            json.dump(cache, f, separators=(",", ":"))
+            existing = cache.get(fen, {})
+            existing["score"] = e.get("score", 0)
+            existing["bestMove"] = e.get("bestMove")
+            cache[fen] = existing
+        _flush()
         new_count = len(cache) - before
         logger.info("opening_eval_cache: +%d new entries (%d total)", new_count, len(cache))
         return new_count
+
+
+def store_continuations(cont_map: dict[str, dict[str, int]]) -> None:
+    """Merge continuation frequency data into the cache.
+
+    cont_map: {fen: {move_pdn: count}}
+    Creates skeleton entries for FENs not yet evaluated (score=0, bestMove=None).
+    """
+    global _mem_cache
+    if not cont_map:
+        return
+    with _lock:
+        cache = _get_cache()
+        for fen, moves in cont_map.items():
+            entry = cache.setdefault(fen, {"score": 0, "bestMove": None})
+            existing: dict[str, int] = entry.get("cont", {})
+            for move, cnt in moves.items():
+                existing[move] = existing.get(move, 0) + cnt
+            entry["cont"] = existing
+        _flush()
+    logger.info("store_continuations: updated %d positions", len(cont_map))
 
 
 def size() -> int:

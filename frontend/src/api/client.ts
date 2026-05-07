@@ -296,3 +296,27 @@ export async function analyzePositionsBatch(
     return null
   }
 }
+
+export interface OpeningContinuation {
+  move: string
+  frequency: number
+  pct: number
+  score: number | null
+}
+
+export interface OpeningExplorerData {
+  fen: string
+  total_games: number
+  continuations: OpeningContinuation[]
+  engine_best: string | null
+  engine_score: number
+}
+
+export async function getContinuations(fen: string): Promise<OpeningExplorerData | null> {
+  try {
+    const res = await api.get('/opening-book/continuations', { params: { fen } })
+    return res.data as OpeningExplorerData
+  } catch {
+    return null
+  }
+}

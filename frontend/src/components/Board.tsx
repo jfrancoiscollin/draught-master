@@ -5,6 +5,9 @@ import type { MoveData } from '../types'
 export interface Arrow {
   from: number
   to: number
+  color?: string     // CSS color, default '#9CA3AF'
+  opacity?: number   // 0-1, default 0.85
+  width?: number     // strokeWidth, default 2.2
 }
 
 interface BoardProps {
@@ -336,8 +339,9 @@ export default function Board({
           }}
         >
           <defs>
+            {/* context-stroke makes the arrowhead inherit the line colour */}
             <marker id="bm-arrow" markerWidth="3.5" markerHeight="3" refX="3.2" refY="1.5" orient="auto">
-              <polygon points="0 0, 3.5 1.5, 0 3" fill="#9CA3AF" />
+              <polygon points="0 0, 3.5 1.5, 0 3" fill="context-stroke" />
             </marker>
           </defs>
           {arrows.map((arrow, i) => {
@@ -353,14 +357,17 @@ export default function Board({
             const y1 = f.y + uy * 3.8
             const x2 = t.x - ux * 4.2
             const y2 = t.y - uy * 4.2
+            const color   = arrow.color   ?? '#9CA3AF'
+            const opacity = arrow.opacity ?? 0.85
+            const width   = arrow.width   ?? 2.2
             return (
               <line
                 key={i}
                 x1={x1} y1={y1} x2={x2} y2={y2}
-                stroke="#9CA3AF"
-                strokeWidth="2.2"
+                stroke={color}
+                strokeWidth={width}
                 strokeLinecap="round"
-                opacity="0.85"
+                opacity={opacity}
                 markerEnd="url(#bm-arrow)"
               />
             )

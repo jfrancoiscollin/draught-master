@@ -10,6 +10,7 @@ import ExerciseLibraryPage from './components/ExerciseLibraryPage'
 import LessonPanel from './components/LessonPanel'
 import ImportGamePanel from './components/ImportGamePanel'
 import OpeningCacheBuilder from './components/OpeningCacheBuilder'
+import OpeningExplorer from './components/OpeningExplorer'
 import LearnFromMistakes from './components/LearnFromMistakes'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
@@ -135,6 +136,7 @@ export default function App() {
   const [analysisLoading, setAnalysisLoading] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [bestMoveArrow, setBestMoveArrow] = useState<Arrow | null>(null)
+  const [explorerArrows, setExplorerArrows] = useState<Arrow[]>([])
   const [isAiThinking, setIsAiThinking] = useState(false)
   const [bothSides, setBothSides] = useState(false)
   const [spokenSquares, setSpokenSquares] = useState<number[]>([])
@@ -248,6 +250,7 @@ export default function App() {
       setPlayGameStats(null)
       setPlayLastCacheHits(null)
       setPlayPanelMode('game')
+      setExplorerArrows([])
     } catch {
       showToast(t('errorCreatingGame'))
     } finally {
@@ -973,7 +976,7 @@ export default function App() {
                         disabled={boardDisabled}
                         lastMove={gameState?.last_move}
                         spokenSquares={spokenSquares}
-                        arrows={bestMoveArrow ? [bestMoveArrow] : []}
+                        arrows={bestMoveArrow ? [bestMoveArrow, ...explorerArrows] : explorerArrows}
                       />
                       {gameState && (
                         <div style={{ alignSelf: 'stretch', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -1029,6 +1032,7 @@ export default function App() {
                       </div>
                     )}
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
+                    <OpeningExplorer fen={gameState?.fen ?? null} onArrows={setExplorerArrows} />
                     {playAnnotationPanel}
                   </div>
                 </>
@@ -1045,7 +1049,7 @@ export default function App() {
                       disabled={boardDisabled}
                       lastMove={gameState?.last_move}
                       spokenSquares={spokenSquares}
-                      arrows={bestMoveArrow ? [bestMoveArrow] : []}
+                      arrows={bestMoveArrow ? [bestMoveArrow, ...explorerArrows] : explorerArrows}
                     />
                     {gameState && (
                       <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1093,6 +1097,7 @@ export default function App() {
                         onLearn={handleLearnPlayedGame}
                         annotating={playAnnotating}
                       />
+                      <OpeningExplorer fen={gameState?.fen ?? null} onArrows={setExplorerArrows} />
                       <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                       {playAnnotationPanel}
                     </div>
@@ -1199,6 +1204,7 @@ export default function App() {
                       onAiDepthChange={setAiDepth}
                       disabled={isAiThinking}
                     />
+                    <OpeningExplorer fen={gameState?.fen ?? null} onArrows={setExplorerArrows} />
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                     {playAnnotationPanel}
                   </div>
@@ -1233,6 +1239,7 @@ export default function App() {
               {/* Move list */}
               {analysisExpanded && (
                 <div style={{ gridColumn: '1', gridRow: '3' }} className="min-w-0">
+                  <OpeningExplorer fen={gameState?.fen ?? null} onArrows={setExplorerArrows} />
                   <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                   {playAnnotationPanel}
                 </div>
