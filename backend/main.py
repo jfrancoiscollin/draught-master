@@ -990,7 +990,7 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
                 hit = cached_lookup(fen)
             except Exception:
                 hit = None
-            if hit and hit.get("score") is not None:
+            if hit and hit.get("score") is not None and hit["score"] != 0:
                 results.append({"score": hit["score"], "bestMove": hit.get("bestMove")})
                 cache_hits += 1
                 continue
@@ -998,7 +998,8 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
             hub_pos = _build_pos(state)
             result = engine.evaluate_pos(hub_pos, movetime_s)
             ev = result or {"score": 0, "bestMove": None}
-            logging.debug("annotate pos %d/%d fen=%s score=%d", i+1, len(positions), fen[:30], ev["score"])
+            logging.info("annotate pos %d/%d fen=%s score=%d best=%s",
+                         i+1, len(positions), fen[:40], ev["score"], ev.get("bestMove"))
             results.append(ev)
         return results, cache_hits
 
@@ -1006,7 +1007,8 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     non_zero = sum(1 for e in evaluations if e["score"] != 0)
     logging.info("annotate done: %d positions, %d cache hits, %d non-zero scores",
                  len(evaluations), cache_hits, non_zero)
-    return {"evaluations": evaluations, "available": True, "cache_hits": cache_hits}
+    return {"evaluations": evaluations, "available": True, "cache_hits": cache_hits,
+            "debug": {"non_zero_scores": non_zero, "total": len(evaluations)}}
 
 
 @app.post("/api/opening-book/precompute")

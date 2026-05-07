@@ -149,7 +149,7 @@ class ScanEngine:
         return None
 
     def evaluate_pos(self, pos: str, movetime_s: float) -> Optional[dict]:
-        """Evaluate using 'go think' so Scan manages the time budget internally.
+        """Evaluate using 'go analyze' + manual stop (same pattern as the WASM client).
         Book is disabled so every position gets a real search score (book positions
         return score=0 which breaks the blunder-detection formula).
         Returns {"score": int, "bestMove": str|None}."""
@@ -163,21 +163,19 @@ class ScanEngine:
             # Disable book so we always get a search-based score
             self._send("set-param name=book value=false")
             self._send(f"pos pos={pos}")
-            self._send(f"level move-time={movetime_s:.3f}")
-            self._send("go think")
+            self._send("go analyze")
 
             last_score = 0
             last_best: Optional[str] = None
-            deadline = time.monotonic() + movetime_s + 15.0
+            deadline = time.monotonic() + movetime_s
 
-            while True:
+            # Collect info lines until time expires
+            while time.monotonic() < deadline:
                 remaining = deadline - time.monotonic()
-                if remaining <= 0:
-                    break
                 try:
-                    line = self._q.get(timeout=min(0.1, remaining))
+                    line = self._q.get(timeout=min(0.05, remaining))
                     if line.startswith("info "):
-                        s = re.search(r'\bscore=([+-]?\d+)', line)
+                        s = re.search(r'\bscore=\s*([+-]?\d+)', line)
                         p = re.search(r'\bpv="([^"]*)"', line)
                         if s:
                             last_score = int(s.group(1))
@@ -185,14 +183,42 @@ class ScanEngine:
                             words = p.group(1).strip().split()
                             if words:
                                 last_best = words[0]
-                    elif line.startswith("done"):
+                    elif line.startswith("done ") or line == "done":
+                        # Search ended on its own (e.g. terminal position)
                         move_m = re.search(r'\bmove=(\S+)', line)
-                        score_m = re.search(r'\bscore=([+-]?\d+)', line)
+                        score_m = re.search(r'\bscore=\s*([+-]?\d+)', line)
                         final_score = int(score_m.group(1)) if score_m else last_score
                         final_move = (move_m.group(1) if move_m else None) or last_best
-                        logger.info("evaluate_pos done: score=%d best=%s", final_score, final_move)
-                        # Re-enable book for best_move() calls
                         self._send("set-param name=book value=true")
+                        logger.info("evaluate_pos done early: score=%d best=%s", final_score, final_move)
+                        return {"bestMove": final_move, "score": final_score}
+                except queue.Empty:
+                    pass
+
+            # Time's up: send stop and wait for the done acknowledgement
+            self._send("stop")
+
+            stop_deadline = time.monotonic() + 5.0
+            while time.monotonic() < stop_deadline:
+                remaining = stop_deadline - time.monotonic()
+                try:
+                    line = self._q.get(timeout=min(0.05, remaining))
+                    if line.startswith("info "):
+                        s = re.search(r'\bscore=\s*([+-]?\d+)', line)
+                        p = re.search(r'\bpv="([^"]*)"', line)
+                        if s:
+                            last_score = int(s.group(1))
+                        if p:
+                            words = p.group(1).strip().split()
+                            if words:
+                                last_best = words[0]
+                    elif line.startswith("done ") or line == "done":
+                        move_m = re.search(r'\bmove=(\S+)', line)
+                        score_m = re.search(r'\bscore=\s*([+-]?\d+)', line)
+                        final_score = int(score_m.group(1)) if score_m else last_score
+                        final_move = (move_m.group(1) if move_m else None) or last_best
+                        self._send("set-param name=book value=true")
+                        logger.info("evaluate_pos done: score=%d best=%s", final_score, final_move)
                         return {"bestMove": final_move, "score": final_score}
                 except queue.Empty:
                     pass
