@@ -28,24 +28,28 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const isWhite = piece === WHITE_MAN || piece === WHITE_KING
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
 
-  const scale = selected ? 1.11 : moveable ? 1.04 : 1
+  const scale = selected ? 1.10 : moveable ? 1.03 : 1
 
-  // Tranche visible sous la face → illusion de volume
+  // Warm wooden tones, flat rim (only 8% height)
   const rimBg = isWhite
-    ? 'linear-gradient(to bottom, #b0b0b0 0%, #888 100%)'
-    : 'linear-gradient(to bottom, #1c1c1c 0%, #050505 100%)'
+    ? 'linear-gradient(to bottom, #c8b898 0%, #a89070 100%)'
+    : 'linear-gradient(to bottom, #2a1a0e 0%, #140a04 100%)'
 
-  // Gradient radial sur la face supérieure
+  // Top face — warm wood gradient, light from top-left
   const topBg = isWhite
-    ? 'radial-gradient(circle at 38% 32%, #fff 0%, #f5f5f5 25%, #e0e0e0 55%, #c8c8c8 80%, #b8b8b8 100%)'
-    : 'radial-gradient(circle at 38% 32%, #555 0%, #2a2a2a 30%, #141414 62%, #060606 85%, #000 100%)'
+    ? 'radial-gradient(ellipse at 36% 28%, #fff8f0 0%, #ede0cc 28%, #d8c8a8 58%, #c4b090 85%, #b8a080 100%)'
+    : 'radial-gradient(ellipse at 36% 28%, #6a3e22 0%, #3e2010 32%, #1e0e06 64%, #0e0604 85%, #080402 100%)'
 
-  // Couleur du reflet spéculaire
+  // Specular highlight — simulates top-lit lacquered wood
   const specular = isWhite
-    ? 'radial-gradient(ellipse at 42% 38%, rgba(255,255,255,0.88) 0%, transparent 62%)'
-    : 'radial-gradient(ellipse at 42% 38%, rgba(255,255,255,0.22) 0%, transparent 60%)'
+    ? 'radial-gradient(ellipse at 35% 25%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.35) 28%, transparent 58%)'
+    : 'radial-gradient(ellipse at 35% 25%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.08) 30%, transparent 58%)'
 
-  // Glow de sélection / déplaçable sur la face
+  // Subtle sheen on lower-right (rim reflection)
+  const rimSheen = isWhite
+    ? 'radial-gradient(ellipse at 62% 78%, rgba(255,255,255,0.45) 0%, transparent 50%)'
+    : 'radial-gradient(ellipse at 62% 78%, rgba(255,255,255,0.12) 0%, transparent 50%)'
+
   const faceGlow = selected
     ? '0 0 0 3px rgba(212,160,23,0.95)'
     : moveable
@@ -53,50 +57,51 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
       : 'none'
 
   return (
+    // perspective + rotateX gives the "coin viewed from above" flat inclined look
     <div style={{
-      width: '79%',
-      height: '79%',
+      width: '86%',
+      height: '86%',
       position: 'relative',
       flexShrink: 0,
-      transform: `scale(${scale})`,
+      transform: `perspective(280px) rotateX(16deg) scale(${scale})`,
       transition: 'transform 0.12s ease',
     }}>
-      {/* Ombre portée au sol */}
+      {/* Drop shadow — elliptical, offset downward for depth */}
       <div style={{
         position: 'absolute',
-        bottom: '-7%',
-        left: '10%',
-        right: '10%',
-        height: '16%',
+        bottom: '-10%',
+        left: '8%',
+        right: '8%',
+        height: '22%',
         borderRadius: '50%',
-        background: `radial-gradient(ellipse, ${isWhite ? 'rgba(0,0,0,0.38)' : 'rgba(0,0,0,0.65)'} 0%, transparent 80%)`,
-        filter: 'blur(2px)',
+        background: `radial-gradient(ellipse, ${isWhite ? 'rgba(0,0,0,0.32)' : 'rgba(0,0,0,0.58)'} 0%, transparent 78%)`,
+        filter: 'blur(3px)',
       }} />
 
-      {/* Tranche (épaisseur de la pièce) */}
+      {/* Thin rim — only 8% of height, warm wood side */}
       <div style={{
         position: 'absolute',
-        top: '18%',
-        left: '2%',
-        right: '2%',
+        top: '92%',
+        left: '3%',
+        right: '3%',
         bottom: 0,
         borderRadius: '50%',
         background: rimBg,
       }} />
 
-      {/* Face supérieure */}
+      {/* Top face */}
       <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        bottom: '18%',
+        bottom: '8%',
         borderRadius: '50%',
         background: topBg,
         boxShadow: faceGlow,
         overflow: 'hidden',
       }}>
-        {/* Reflet spéculaire */}
+        {/* Primary specular */}
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -105,19 +110,28 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
           pointerEvents: 'none',
         }} />
 
-        {/* Couronne (dame) */}
+        {/* Secondary rim sheen */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: '50%',
+          background: rimSheen,
+          pointerEvents: 'none',
+        }} />
+
+        {/* King marker */}
         {isKing && (
           <div style={{
             position: 'absolute',
-            top: '22%',
-            left: '22%',
-            right: '22%',
-            bottom: '22%',
+            top: '24%',
+            left: '24%',
+            right: '24%',
+            bottom: '24%',
             borderRadius: '50%',
-            border: `2.5px solid ${isWhite ? 'rgba(185,125,0,0.95)' : 'rgba(220,170,0,0.95)'}`,
+            border: `2px solid ${isWhite ? 'rgba(180,120,0,0.9)' : 'rgba(215,165,0,0.9)'}`,
             boxShadow: isWhite
-              ? 'inset 0 0 6px rgba(185,125,0,0.5)'
-              : 'inset 0 0 6px rgba(220,170,0,0.6)',
+              ? 'inset 0 0 5px rgba(185,125,0,0.45), 0 0 4px rgba(185,125,0,0.3)'
+              : 'inset 0 0 5px rgba(220,170,0,0.5), 0 0 4px rgba(220,170,0,0.35)',
             pointerEvents: 'none',
           }} />
         )}

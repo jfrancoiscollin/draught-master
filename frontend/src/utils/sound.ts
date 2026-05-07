@@ -18,44 +18,74 @@ export function playMoveSound() {
   try {
     const now = ctx.currentTime
 
-    // Noise burst — the "clac" of the piece hitting the board
-    const bufSize = Math.floor(ctx.sampleRate * 0.08)
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate)
-    const data = buf.getChannelData(0)
-    for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1
+    // ── Impact transient: sharp white-noise burst filtered through wood resonance ──
+    const impactBufSize = Math.floor(ctx.sampleRate * 0.025)
+    const impactBuf = ctx.createBuffer(1, impactBufSize, ctx.sampleRate)
+    const impactData = impactBuf.getChannelData(0)
+    for (let i = 0; i < impactBufSize; i++) {
+      const env = Math.exp(-i / (impactBufSize * 0.18))
+      impactData[i] = (Math.random() * 2 - 1) * env
+    }
 
-    const noise = ctx.createBufferSource()
-    noise.buffer = buf
+    const impact = ctx.createBufferSource()
+    impact.buffer = impactBuf
 
-    const bandpass = ctx.createBiquadFilter()
-    bandpass.type = 'bandpass'
-    bandpass.frequency.value = 900
-    bandpass.Q.value = 2.5
+    // Bandpass around wood's fundamental frequency (300 Hz)
+    const bp1 = ctx.createBiquadFilter()
+    bp1.type = 'bandpass'
+    bp1.frequency.value = 300
+    bp1.Q.value = 1.8
 
-    const noiseGain = ctx.createGain()
-    noiseGain.gain.setValueAtTime(0.45, now)
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07)
+    const impactGain = ctx.createGain()
+    impactGain.gain.setValueAtTime(0.9, now)
+    impactGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025)
 
-    noise.connect(bandpass)
-    bandpass.connect(noiseGain)
-    noiseGain.connect(ctx.destination)
-    noise.start(now)
-    noise.stop(now + 0.08)
+    impact.connect(bp1)
+    bp1.connect(impactGain)
+    impactGain.connect(ctx.destination)
+    impact.start(now)
+    impact.stop(now + 0.025)
 
-    // Low thud — body resonance of the wooden piece
-    const osc = ctx.createOscillator()
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(160, now)
-    osc.frequency.exponentialRampToValueAtTime(55, now + 0.07)
+    // ── Body resonance: low woody thud that fades quickly ──
+    const thud = ctx.createOscillator()
+    thud.type = 'sine'
+    thud.frequency.setValueAtTime(220, now)
+    thud.frequency.exponentialRampToValueAtTime(90, now + 0.055)
 
-    const oscGain = ctx.createGain()
-    oscGain.gain.setValueAtTime(0.35, now)
-    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07)
+    const thudGain = ctx.createGain()
+    thudGain.gain.setValueAtTime(0.28, now)
+    thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.055)
 
-    osc.connect(oscGain)
-    oscGain.connect(ctx.destination)
-    osc.start(now)
-    osc.stop(now + 0.08)
+    thud.connect(thudGain)
+    thudGain.connect(ctx.destination)
+    thud.start(now)
+    thud.stop(now + 0.06)
+
+    // ── High click: the hard wooden surface "tap" ──
+    const tapBufSize = Math.floor(ctx.sampleRate * 0.012)
+    const tapBuf = ctx.createBuffer(1, tapBufSize, ctx.sampleRate)
+    const tapData = tapBuf.getChannelData(0)
+    for (let i = 0; i < tapBufSize; i++) {
+      tapData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (tapBufSize * 0.12))
+    }
+
+    const tap = ctx.createBufferSource()
+    tap.buffer = tapBuf
+
+    const hp = ctx.createBiquadFilter()
+    hp.type = 'highpass'
+    hp.frequency.value = 1800
+
+    const tapGain = ctx.createGain()
+    tapGain.gain.setValueAtTime(0.18, now)
+    tapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.012)
+
+    tap.connect(hp)
+    hp.connect(tapGain)
+    tapGain.connect(ctx.destination)
+    tap.start(now)
+    tap.stop(now + 0.012)
+
   } catch {
     // Audio not supported — fail silently
   }
