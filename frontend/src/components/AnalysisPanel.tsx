@@ -298,6 +298,19 @@ export default function AnalysisPanel({
           ) : t('explainMove')}
         </button>
 
+        {onAnnotate && (
+          <button
+            onClick={onAnnotate}
+            disabled={!gameId || annotating || aiThinking}
+            className="btn-secondary text-sm col-span-1 disabled:opacity-40"
+          >
+            {annotating ? (
+              <span className="flex items-center gap-2 justify-center">
+                <div className="spinner" style={{ width: 14, height: 14 }} />
+              </span>
+            ) : '⚙ Coup par coup'}
+          </button>
+        )}
 
         {onLearn && (
           <button
