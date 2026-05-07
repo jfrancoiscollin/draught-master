@@ -12,6 +12,7 @@ import ImportGamePanel from './components/ImportGamePanel'
 import OpeningCacheBuilder from './components/OpeningCacheBuilder'
 import OpeningExplorer from './components/OpeningExplorer'
 import LearnFromMistakes from './components/LearnFromMistakes'
+import EvalBar from './components/EvalBar'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
 import Logo from './components/Logo'
@@ -1047,6 +1048,7 @@ export default function App() {
                       style={{ gridColumn: '2', gridRow: '1', width: 'min(42vw, 200px)' }}
                       className="flex flex-col items-center"
                     >
+                      <div style={{ display: 'flex', gap: 4, width: '100%', alignItems: 'stretch' }}>
                       <Board
                         board={displayBoard}
                         legalMoves={legalMoves}
@@ -1058,6 +1060,8 @@ export default function App() {
                         spokenSquares={spokenSquares}
                         arrows={bestMoveArrow ? [bestMoveArrow, ...explorerArrows] : explorerArrows}
                       />
+                      <EvalBar fen={isAiThinking ? null : (gameState?.fen ?? null)} />
+                      </div>
                       {gameState && (
                         <div style={{ alignSelf: 'stretch', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <button onClick={handleUndo} disabled={isAiThinking || !moveHistory.length || !!gameState.result}
@@ -1120,6 +1124,7 @@ export default function App() {
                 <>
                   {/* Board full width */}
                   <div className="flex-shrink-0 flex flex-col items-center px-2 pt-2" style={{ width: '100%', maxWidth: '560px', alignSelf: 'center' }}>
+                    <div style={{ display: 'flex', gap: 4, width: '100%', alignItems: 'stretch' }}>
                     <Board
                       board={displayBoard}
                       legalMoves={legalMoves}
@@ -1131,6 +1136,8 @@ export default function App() {
                       spokenSquares={spokenSquares}
                       arrows={bestMoveArrow ? [bestMoveArrow, ...explorerArrows] : explorerArrows}
                     />
+                    <EvalBar fen={isAiThinking ? null : (gameState?.fen ?? null)} />
+                    </div>
                     {gameState && (
                       <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <button onClick={handleUndo} disabled={isAiThinking || !moveHistory.length || !!gameState.result}
@@ -1199,6 +1206,7 @@ export default function App() {
                 className={analysisExpanded ? 'self-start sticky top-0 flex flex-col items-center' : 'flex-shrink-0 flex flex-col items-center'}
                 style={analysisExpanded ? { gridColumn: '2', gridRow: '1 / span 10' } : { width: '100%', maxWidth: '560px' }}
               >
+                <div style={{ display: 'flex', gap: 4, width: '100%', alignItems: 'stretch' }}>
                 <Board
                   board={displayBoard}
                   legalMoves={legalMoves}
@@ -1209,6 +1217,8 @@ export default function App() {
                   lastMove={gameState?.last_move}
                   spokenSquares={spokenSquares}
                 />
+                <EvalBar fen={isAiThinking ? null : (gameState?.fen ?? null)} />
+                </div>
                 {gameState && (
                   <div style={{ alignSelf: 'stretch', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button onClick={handleUndo} disabled={isAiThinking || !moveHistory.length || !!gameState.result}
@@ -1382,27 +1392,31 @@ export default function App() {
 
         {tab === 'exercises' && exerciseGameState && (
           <div className="h-full flex flex-col items-center px-2 pt-2 lg:px-4 lg:pt-4">
-            {/* Board wrapper — overlay shown on success */}
-            <div className="relative w-full" style={{ maxWidth: '560px' }}>
-              <Board
-                board={exerciseGameState.board}
-                legalMoves={exerciseLegalMoves}
-                onMove={handleExerciseMove}
-                selectedSquare={exerciseSelectedSquare}
-                onSelectSquare={handleExerciseSelectSquare}
-                disabled={exerciseSolved}
-                freeSelectSquares={exerciseFreeSelectSquares}
-                flipped={exerciseGameState.fen.startsWith('B:')}
-              />
-              {showSolvedOverlay && (
-                <div
-                  className="absolute inset-0 flex flex-col items-center justify-center rounded"
-                  style={{ background: 'rgba(0,0,0,0.55)', zIndex: 5 }}
-                >
-                  <span style={{ fontSize: '5rem', lineHeight: 1 }} className="text-green-400">✓</span>
-                  <span className="text-white text-xl font-bold mt-2">{t('wellDone')}</span>
-                </div>
-              )}
+            {/* Board + eval bar row */}
+            <div style={{ display: 'flex', gap: 4, width: '100%', maxWidth: '560px', alignItems: 'stretch' }}>
+              {/* Board wrapper — overlay shown on success */}
+              <div className="relative flex-1">
+                <Board
+                  board={exerciseGameState.board}
+                  legalMoves={exerciseLegalMoves}
+                  onMove={handleExerciseMove}
+                  selectedSquare={exerciseSelectedSquare}
+                  onSelectSquare={handleExerciseSelectSquare}
+                  disabled={exerciseSolved}
+                  freeSelectSquares={exerciseFreeSelectSquares}
+                  flipped={exerciseGameState.fen.startsWith('B:')}
+                />
+                {showSolvedOverlay && (
+                  <div
+                    className="absolute inset-0 flex flex-col items-center justify-center rounded"
+                    style={{ background: 'rgba(0,0,0,0.55)', zIndex: 5 }}
+                  >
+                    <span style={{ fontSize: '5rem', lineHeight: 1 }} className="text-green-400">✓</span>
+                    <span className="text-white text-xl font-bold mt-2">{t('wellDone')}</span>
+                  </div>
+                )}
+              </div>
+              <EvalBar fen={exerciseGameState.fen} />
             </div>
 
             {/* Below-board row: back arrow left, perspective center, loading right */}
