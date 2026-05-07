@@ -55,6 +55,23 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
 
   const [cacheSize, setCacheSize] = useState<number | null>(null)
 
+  // DB volume info
+  const [dbInfo, setDbInfo] = useState<{
+    db_path: string; env_override: boolean; file_exists: boolean;
+    file_size_bytes: number | null; positions: number; evaluated: number;
+  } | null>(null)
+  const [dbInfoLoading, setDbInfoLoading] = useState(false)
+
+  const checkDbInfo = async () => {
+    setDbInfoLoading(true)
+    try {
+      const res = await fetch('/api/opening-book/db-info')
+      if (res.ok) setDbInfo(await res.json())
+    } catch { /* ignore */ } finally {
+      setDbInfoLoading(false)
+    }
+  }
+
   useEffect(() => {
     getOpeningCacheBuildStatus().then(s => {
       setCacheSize(s.cache_size)
@@ -197,6 +214,50 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+
+        {/* DB volume check */}
+        <div className="bg-gray-800 rounded-lg p-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-300">Volume Railway (SQLite)</span>
+            <button
+              onClick={checkDbInfo}
+              disabled={dbInfoLoading}
+              className="text-xs px-2.5 py-1 rounded bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 transition-colors"
+            >
+              {dbInfoLoading ? 'Vérification…' : 'Vérifier'}
+            </button>
+          </div>
+          {dbInfo && (
+            <div className="text-xs font-mono space-y-1">
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dbInfo.env_override ? 'bg-green-400' : 'bg-yellow-400'}`} />
+                <span className="text-gray-400">Chemin :</span>
+                <span className="text-white break-all">{dbInfo.db_path}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dbInfo.file_exists ? 'bg-green-400' : 'bg-red-400'}`} />
+                <span className="text-gray-400">Fichier :</span>
+                <span className={dbInfo.file_exists ? 'text-green-300' : 'text-red-300'}>
+                  {dbInfo.file_exists
+                    ? `${((dbInfo.file_size_bytes ?? 0) / 1024).toFixed(0)} Ko`
+                    : 'introuvable'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dbInfo.env_override ? 'bg-green-400' : 'bg-yellow-400'}`} />
+                <span className="text-gray-400">Variable OPENING_BOOK_DB :</span>
+                <span className={dbInfo.env_override ? 'text-green-300' : 'text-yellow-300'}>
+                  {dbInfo.env_override ? 'définie ✓' : 'non définie (chemin par défaut)'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full flex-shrink-0 bg-amber-400" />
+                <span className="text-gray-400">Positions :</span>
+                <span className="text-amber-300">{dbInfo.positions.toLocaleString()} ({dbInfo.evaluated.toLocaleString()} évaluées)</span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Mode toggle */}
         <div className="flex gap-1 bg-gray-800 p-1 rounded-lg">
