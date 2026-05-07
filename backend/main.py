@@ -1023,7 +1023,7 @@ async def precompute_positions(body: Dict[str, Any]) -> Dict[str, Any]:
 async def find_players_by_rating(
     rating_min: int = Query(1600, ge=500, le=2800),
     rating_max: int = Query(2200, ge=500, le=2800),
-    count: int = Query(10, ge=1, le=50),
+    count: int = Query(10, ge=1, le=500),
     perf_type: str = Query("standard"),
 ) -> Dict[str, Any]:
     """Return randomly-sampled Lidraughts players within a rating range."""

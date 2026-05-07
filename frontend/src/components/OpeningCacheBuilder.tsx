@@ -303,7 +303,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
                   type="number"
                   value={playerCount}
                   onChange={e => setPlayerCount(Number(e.target.value))}
-                  min={1} max={50}
+                  min={1} max={500}
                   className="w-full bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
                 />
               </div>
