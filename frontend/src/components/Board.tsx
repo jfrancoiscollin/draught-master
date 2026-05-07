@@ -35,65 +35,64 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const gid = isWhite ? 'pcw' : 'pcb'
   const ringColor = selected ? '#d4a017' : moveable ? 'rgba(212,160,23,0.65)' : null
 
+  // Two circles: rim (lower) + face (higher).
+  // The rim pokes out as a dark crescent at the bottom → visible disc thickness.
+  const R  = 42
+  const FY = 43   // face centre y
+  const RY = 51   // rim centre y  (8 px lower → ~6 px crescent at bottom)
+
+  const faceColor    = isWhite ? '#dfc890' : '#3a1a06'
+  const rimColor     = isWhite ? '#7a5820' : '#0d0603'
+  const strokeColor  = isWhite ? 'rgba(70,45,10,0.65)' : 'rgba(0,0,0,0.80)'
+  const highlightCol = isWhite ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.10)'
+
   return (
     <div style={{ width: '88%', height: '88%', transform: `scale(${scale})`, transition: 'transform 0.12s ease' }}>
       <svg viewBox="0 0 100 100" width="100%" height="100%"
            style={{ display: 'block', overflow: 'visible' }}>
         <defs>
-          {/* Disc surface: centre-to-edge gradient, slight top-left bias */}
-          <radialGradient id={gid} cx="42%" cy="36%" r="60%">
+          {/* Face gradient: very subtle top-left lighting — keeps it flat-looking */}
+          <radialGradient id={gid} cx="40%" cy="35%" r="65%">
             {isWhite ? <>
-              <stop offset="0%"   stopColor="#f5ecd4"/>
-              <stop offset="55%"  stopColor="#d9c28a"/>
-              <stop offset="100%" stopColor="#b89858"/>
+              <stop offset="0%"   stopColor="#f0dda8"/>
+              <stop offset="60%"  stopColor="#d4b870"/>
+              <stop offset="100%" stopColor="#b89448"/>
             </> : <>
-              <stop offset="0%"   stopColor="#7a3e18"/>
-              <stop offset="45%"  stopColor="#3d1c08"/>
-              <stop offset="100%" stopColor="#1c0c03"/>
+              <stop offset="0%"   stopColor="#5c2a0e"/>
+              <stop offset="55%"  stopColor="#2e1206"/>
+              <stop offset="100%" stopColor="#1a0a03"/>
             </>}
-          </radialGradient>
-
-          {/* Rim vignette: transparent centre → dark edge, simulates raised rim */}
-          <radialGradient id={`${gid}v`} cx="50%" cy="50%" r="50%">
-            <stop offset="62%" stopColor="rgba(0,0,0,0)"/>
-            <stop offset="100%" stopColor={isWhite ? 'rgba(0,0,0,0.42)' : 'rgba(0,0,0,0.68)'}/>
-          </radialGradient>
-
-          {/* Highlight: small diffuse ellipse top-left, disc reflection */}
-          <radialGradient id={`${gid}h`} cx="38%" cy="32%" r="38%">
-            <stop offset="0%"   stopColor={isWhite ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.20)'}/>
-            <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
           </radialGradient>
         </defs>
 
-        {/* Drop shadow — flat ellipse, slightly offset for perspective */}
-        <ellipse cx="52" cy="94" rx="36" ry="7"
-          fill={isWhite ? 'rgba(0,0,0,0.32)' : 'rgba(0,0,0,0.50)'}/>
+        {/* Drop shadow on the board */}
+        <ellipse cx="52" cy="96" rx="38" ry="6"
+          fill={isWhite ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.46)'}/>
 
-        {/* Disc body */}
-        <circle cx="50" cy="47" r="42" fill={`url(#${gid})`}/>
+        {/* Rim circle — lower, darker; visible as crescent at bottom = disc thickness */}
+        <circle cx="50" cy={RY} r={R} fill={rimColor}/>
 
-        {/* Rim vignette overlay */}
-        <circle cx="50" cy="47" r="42" fill={`url(#${gid}v)`}/>
+        {/* Top face — covers rim except the bottom crescent */}
+        <circle cx="50" cy={FY} r={R} fill={`url(#${gid})`}/>
 
-        {/* Hard rim stroke — defines the disc edge clearly */}
-        <circle cx="50" cy="47" r="42" fill="none"
-          stroke={isWhite ? 'rgba(90,65,20,0.70)' : 'rgba(0,0,0,0.80)'}
-          strokeWidth="4.5"/>
+        {/* Face edge stroke */}
+        <circle cx="50" cy={FY} r={R} fill="none"
+          stroke={strokeColor} strokeWidth="3.5"/>
 
-        {/* Diffuse top-left reflection */}
-        <circle cx="50" cy="47" r="42" fill={`url(#${gid}h)`}/>
+        {/* Small diffuse highlight — top-left, subtle */}
+        <ellipse cx="37" cy="31" rx="14" ry="9"
+          fill={highlightCol} transform="rotate(-18,37,31)"/>
 
-        {/* King inner ring */}
+        {/* King ring */}
         {isKing && (
-          <circle cx="50" cy="47" r="22" fill="none"
-            stroke={isWhite ? 'rgba(130,80,0,0.90)' : 'rgba(210,150,0,0.90)'}
+          <circle cx="50" cy={FY} r="21" fill="none"
+            stroke={isWhite ? 'rgba(130,80,0,0.92)' : 'rgba(215,155,0,0.92)'}
             strokeWidth="4"/>
         )}
 
         {/* Selection / moveable ring */}
         {ringColor && (
-          <circle cx="50" cy="47" r="45" fill="none"
+          <circle cx="50" cy={FY} r={R + 3} fill="none"
             stroke={ringColor} strokeWidth={selected ? 4 : 2.5}/>
         )}
       </svg>
