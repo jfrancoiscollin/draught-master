@@ -285,12 +285,14 @@ export async function analyzePositionsBatch(
   msPerMove: number = 200,
 ): Promise<PositionEval[] | null> {
   try {
-    const res = await api.post<{ evaluations: PositionEval[] | null; available: boolean }>(
+    const res = await api.post<{ evaluations: PositionEval[] | null; available: boolean; cache_hits?: number }>(
       '/pdn/annotate',
       { positions, ms_per_move: msPerMove },
       { timeout: 300000 },
     )
     if (!res.data.available || !res.data.evaluations) return null
+    const hits = res.data.cache_hits ?? 0
+    console.log(`[annotate] ${res.data.evaluations.length} positions, ${hits} cache hits (${Math.round(hits / res.data.evaluations.length * 100)}%)`)
     return res.data.evaluations
   } catch {
     return null

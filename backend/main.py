@@ -862,7 +862,7 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
 
     movetime_s = ms_per_move / 1000.0
 
-    def run_batch() -> list:
+    def run_batch() -> tuple:
         from opening_eval_db import lookup as cached_lookup
         results = []
         cache_hits = 0
@@ -875,7 +875,6 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
             hit = cached_lookup(fen)
             if hit:
                 results.append({"score": hit["score"], "bestMove": hit["bestMove"]})
-                logging.info("annotate pos %d/%d: CACHED score=%d best=%s", i, len(positions)-1, hit["score"], hit["bestMove"])
                 cache_hits += 1
                 continue
             state = fen_to_board(fen)
@@ -883,13 +882,13 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
             result = engine.evaluate_pos(hub_pos, movetime_s)
             ev = result or {"score": 0, "bestMove": None}
             results.append(ev)
-            logging.info("annotate pos %d/%d: score=%d best=%s", i, len(positions)-1, ev["score"], ev["bestMove"])
-        return results
+        return results, cache_hits
 
-    evaluations = await asyncio.get_event_loop().run_in_executor(None, run_batch)
+    evaluations, cache_hits = await asyncio.get_event_loop().run_in_executor(None, run_batch)
     non_zero = sum(1 for e in evaluations if e["score"] != 0)
-    logging.info("annotate done: %d positions, %d non-zero scores", len(evaluations), non_zero)
-    return {"evaluations": evaluations, "available": True}
+    logging.info("annotate done: %d positions, %d cache hits, %d non-zero scores",
+                 len(evaluations), cache_hits, non_zero)
+    return {"evaluations": evaluations, "available": True, "cache_hits": cache_hits}
 
 
 @app.post("/api/opening-book/precompute")

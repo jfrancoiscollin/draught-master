@@ -19,12 +19,25 @@ _CACHE_PATH = os.environ.get(
 )
 _lock = threading.Lock()
 
+# In-memory cache — loaded once at first access, updated on every store()
+_mem_cache: dict | None = None
 
-def _load() -> dict:
+
+def _get_cache() -> dict:
+    """Return the in-memory cache, loading from disk if not yet loaded."""
+    global _mem_cache
+    if _mem_cache is None:
+        _mem_cache = _load_from_disk()
+    return _mem_cache
+
+
+def _load_from_disk() -> dict:
     if os.path.isfile(_CACHE_PATH):
         try:
             with open(_CACHE_PATH) as f:
-                return json.load(f)
+                data = json.load(f)
+                logger.info("opening_eval_cache: loaded %d entries from disk", len(data))
+                return data
         except Exception as exc:
             logger.warning("opening_eval_cache load error: %s", exc)
     return {}
@@ -32,13 +45,15 @@ def _load() -> dict:
 
 def lookup(fen: str) -> dict | None:
     """Return cached {score, bestMove} or None if not in cache."""
-    return _load().get(fen)
+    with _lock:
+        return _get_cache().get(fen)
 
 
 def store(entries: list[dict]) -> int:
     """Persist a list of {fen, score, bestMove}. Returns number of new entries."""
+    global _mem_cache
     with _lock:
-        cache = _load()
+        cache = _get_cache()
         before = len(cache)
         for e in entries:
             fen = e.get("fen")
@@ -57,4 +72,5 @@ def store(entries: list[dict]) -> int:
 
 
 def size() -> int:
-    return len(_load())
+    with _lock:
+        return len(_get_cache())
