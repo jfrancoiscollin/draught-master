@@ -5,18 +5,40 @@ interface EvalBarProps {
   fen: string | null
 }
 
+// Material balance from FEN: man=100cp, king=150cp, positive=white
+function materialCp(fen: string): number {
+  let score = 0
+  const parts = fen.split(':')
+  for (let i = 1; i < parts.length; i++) {
+    const section = parts[i]
+    if (!section) continue
+    const sign = section[0] === 'W' ? 1 : -1
+    for (const token of section.slice(1).split(',')) {
+      if (!token) continue
+      score += sign * (token.startsWith('K') ? 150 : 100)
+    }
+  }
+  return score
+}
+
+const toPct = (cp: number) => Math.round((2 / (1 + Math.exp(-0.015 * cp)) - 1 + 1) / 2 * 100)
+
 export default function EvalBar({ fen }: EvalBarProps) {
   const [whitePct, setWhitePct] = useState(50)
 
   useEffect(() => {
     if (!fen) { setWhitePct(50); return }
+
+    // Immediate: material balance (instant, always reliable)
+    const mat = materialCp(fen)
+    setWhitePct(toPct(mat))
+
+    // Async: engine positional evaluation (overrides material only when nonzero)
     let cancelled = false
-    getScanEngine().evaluate(fen, 200).then(res => {
-      if (cancelled || !res) return
-      // Scan score is from side-to-move perspective; convert to white's
+    getScanEngine().evaluate(fen, 1500).then(res => {
+      if (cancelled || !res || res.score === 0) return
       const cp = fen.startsWith('B:') ? -res.score : res.score
-      const wc = 2 / (1 + Math.exp(-0.015 * cp)) - 1  // [-1,+1], positive = white
-      setWhitePct(Math.round((wc + 1) / 2 * 100))
+      setWhitePct(toPct(cp))
     })
     return () => { cancelled = true }
   }, [fen])
