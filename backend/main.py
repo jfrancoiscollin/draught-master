@@ -279,9 +279,13 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
 
     state = apply_move(state, player_move)
     entry["state"] = state
-    entry["fen_positions"].append(board_to_fen(state))
+    _cur_fen = board_to_fen(state)
+    entry["fen_positions"].append(_cur_fen)
 
-    result = game_result(state)
+    if entry["fen_positions"].count(_cur_fen) >= 3:
+        result = "draw"
+    else:
+        result = game_result(state)
     ai_move_data = None
 
     if not req.both_sides and result is None and state.turn == "black":
@@ -305,9 +309,13 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
             entry["state_history"].append((state, len(entry["fen_positions"])))
             state = apply_move(state, ai_move)
             entry["state"] = state
-            entry["fen_positions"].append(board_to_fen(state))
+            _ai_fen = board_to_fen(state)
+            entry["fen_positions"].append(_ai_fen)
             ai_move_data = {"path": ai_move.path, "captures": ai_move.captures}
-            result = game_result(state)
+            if entry["fen_positions"].count(_ai_fen) >= 3:
+                result = "draw"
+            else:
+                result = game_result(state)
 
     if result is not None:
         pdn = _build_pdn(state.move_history)

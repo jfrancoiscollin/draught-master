@@ -268,7 +268,8 @@ def apply_move(state: GameState, move: Move) -> GameState:
         board[to_sq] = WHITE_KING
     elif piece == BLACK_MAN and to_sq in range(46, 51):
         board[to_sq] = BLACK_KING
-    if move.captures:
+    # Reset on capture OR man move (FMJD rule: clock counts king-only quiet moves)
+    if move.captures or piece in (WHITE_MAN, BLACK_MAN):
         new_state.half_move_clock = 0
     else:
         new_state.half_move_clock += 1
@@ -283,14 +284,20 @@ def game_result(state: GameState) -> Optional[str]:
         if state.turn == 'white':
             return 'black'
         return 'white'
-    if state.half_move_clock >= 50:
-        return 'draw'
     whites = sum(1 for sq in range(1, 51) if state.board[sq] in (WHITE_MAN, WHITE_KING))
     blacks = sum(1 for sq in range(1, 51) if state.board[sq] in (BLACK_MAN, BLACK_KING))
     if whites == 0:
         return 'black'
     if blacks == 0:
         return 'white'
+    has_men = any(
+        state.board[sq] in (WHITE_MAN, BLACK_MAN) for sq in range(1, 51)
+    )
+    # Kings-only endgame: draw after 32 half-moves (16 full moves) without capture
+    # Normal game: draw after 50 half-moves (25 full moves) without capture
+    draw_threshold = 50 if has_men else 32
+    if state.half_move_clock >= draw_threshold:
+        return 'draw'
     return None
 
 

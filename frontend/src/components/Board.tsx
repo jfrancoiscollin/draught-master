@@ -32,23 +32,15 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
   const scale   = selected ? 1.08 : moveable ? 1.02 : 1
 
-  // Ring via box-shadow spread (works perfectly with border-radius 50%)
-  const ring = selected
-    ? ', 0 0 0 3px #d4a017'
-    : moveable
-    ? ', 0 0 0 2px rgba(212,160,23,0.60)'
-    : ''
+  // Flat disc: solid face + thick border (rim) + offset shadow simulating disc side edge
+  const faceColor = isWhite ? '#C8A050' : '#3C1A08'
+  const rimColor  = isWhite ? '#6B3E0A' : '#0D0402'
 
-  // Linear gradient = flat disc under directional light (radial = sphere, always)
-  const css: React.CSSProperties = isWhite ? {
-    background: 'linear-gradient(145deg, #f2e2b0 0%, #d8bc72 50%, #b89840 100%)',
-    border: '3px solid rgba(80,52,8,0.60)',
-    boxShadow: `0 4px 7px rgba(0,0,0,0.32), inset 0 2px 5px rgba(255,255,255,0.40), inset 0 -3px 5px rgba(0,0,0,0.18)${ring}`,
-  } : {
-    background: 'linear-gradient(145deg, #5c2a0e 0%, #2e1206 52%, #160703 100%)',
-    border: '3px solid rgba(0,0,0,0.70)',
-    boxShadow: `0 4px 7px rgba(0,0,0,0.50), inset 0 2px 3px rgba(255,255,255,0.10), inset 0 -3px 5px rgba(0,0,0,0.36)${ring}`,
-  }
+  const selRing = selected
+    ? `, 0 0 0 3px #D4A017`
+    : moveable
+    ? `, 0 0 0 2px rgba(212,160,23,0.55)`
+    : ''
 
   return (
     <div style={{
@@ -58,14 +50,17 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
       transform: `scale(${scale})`,
       transition: 'transform 0.12s ease',
       position: 'relative',
-      ...css,
+      backgroundColor: faceColor,
+      border: `3px solid ${rimColor}`,
+      // 0 4px 0 rimColor = visible disc side edge below the face
+      boxShadow: `0 4px 0 ${rimColor}, 0 6px 10px rgba(0,0,0,0.50)${selRing}`,
     }}>
       {isKing && (
         <div style={{
           position: 'absolute',
-          top: '23%', left: '23%', right: '23%', bottom: '23%',
+          top: '22%', left: '22%', right: '22%', bottom: '22%',
           borderRadius: '50%',
-          border: `3px solid ${isWhite ? 'rgba(120,72,0,0.88)' : 'rgba(210,148,0,0.88)'}`,
+          border: `2.5px solid ${isWhite ? 'rgba(80,45,0,0.75)' : 'rgba(200,140,0,0.80)'}`,
         }}/>
       )}
     </div>
