@@ -32,56 +32,71 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
   const scale   = selected ? 1.08 : moveable ? 1.02 : 1
 
-  // Geometry: front face + back rim
-  const FCX = 50, FCY = 30, FRX = 43, FRY = 26   // front face ellipse
-  const BCX = 50, BCY = 58, BRX = 43, BRY = 18   // back rim ellipse
-  const LX  = FCX - FRX  // 7  — left edge shared by both
-  const RX  = FCX + FRX  // 93 — right edge shared by both
+  // Gradient ID prefix — 'pw' for white, 'pb' for black (same color = same gradient, no conflict)
+  const pfx = isWhite ? 'pw' : 'pb'
 
-  // Side wall: lower arc of face → straight sides → upper arc of back rim
-  const sideWall =
-    `M ${LX} ${FCY} A ${FRX} ${FRY} 0 0 1 ${RX} ${FCY}` +
-    ` L ${RX} ${BCY} A ${BRX} ${BRY} 0 0 0 ${LX} ${BCY} Z`
-
-  const face = isWhite ? '#F2EEE0' : '#181412'
-  const side = isWhite ? '#C0A850' : '#0E0A06'
-  const back = isWhite ? '#867228' : '#060402'
+  const sideStops  = isWhite ? ['#e8e8e8', '#b8b8b8', '#7a7a7a'] : ['#3a3a3a', '#1a1a1a', '#080808']
+  const topStops   = isWhite ? ['#ffffff', '#f0f0f0', '#c8c8c8'] : ['#2a2a2a', '#151515', '#060606']
+  const sideStroke = isWhite ? '#5a5a5a' : '#1a1a1a'
+  const reliefClr  = isWhite ? '#888888' : '#333333'
+  const topStroke  = isWhite ? '#999999' : '#1a1a1a'
+  const hlColor    = isWhite ? '#ffffff'  : '#555555'
+  const hlOpacity  = isWhite ? 0.6        : 0.35
+  const kingColor  = isWhite ? 'rgba(100,60,0,0.85)' : 'rgba(200,140,0,0.85)'
 
   return (
     <svg
-      viewBox={`0 0 100 ${BCY + BRY + 4}`}
-      style={{
-        width: '92%',
-        height: '92%',
-        transform: `scale(${scale})`,
-        transition: 'transform 0.12s ease',
-      }}
+      viewBox="0 0 200 200"
+      style={{ width: '92%', height: '92%', transform: `scale(${scale})`, transition: 'transform 0.12s ease' }}
     >
-      {/* Back rim — bottom face of the disc */}
-      <ellipse cx={BCX} cy={BCY} rx={BRX} ry={BRY} fill={back} />
+      <defs>
+        <linearGradient id={`${pfx}-side`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor={sideStops[0]}/>
+          <stop offset="50%"  stopColor={sideStops[1]}/>
+          <stop offset="100%" stopColor={sideStops[2]}/>
+        </linearGradient>
+        <radialGradient id={`${pfx}-top`} cx="50%" cy="35%" r="65%">
+          <stop offset="0%"   stopColor={topStops[0]}/>
+          <stop offset="60%"  stopColor={topStops[1]}/>
+          <stop offset="100%" stopColor={topStops[2]}/>
+        </radialGradient>
+        <radialGradient id={`${pfx}-shd`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stopColor="#000000" stopOpacity="0.4"/>
+          <stop offset="100%" stopColor="#000000" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
 
-      {/* Cylindrical side wall connecting face to rim */}
-      <path d={sideWall} fill={side} />
+      {/* Ombre portée */}
+      <ellipse cx="100" cy="155" rx="80" ry="12" fill={`url(#${pfx}-shd)`}/>
 
-      {/* Front face */}
-      <ellipse cx={FCX} cy={FCY} rx={FRX} ry={FRY} fill={face} />
+      {/* Tranche (côté visible) */}
+      <path
+        d="M 20,100 A 80,22 0 0,0 180,100 L 180,125 A 80,22 0 0,1 20,125 Z"
+        fill={`url(#${pfx}-side)`} stroke={sideStroke} strokeWidth="0.5"
+      />
+      <path d="M 20,108 A 80,22 0 0,0 180,108" fill="none" stroke={reliefClr} strokeWidth="0.5" opacity="0.5"/>
+      <path d="M 20,118 A 80,22 0 0,0 180,118" fill="none" stroke={reliefClr} strokeWidth="0.5" opacity="0.5"/>
 
-      {/* Selection / moveable ring */}
+      {/* Face du dessus */}
+      <ellipse cx="100" cy="100" rx="80" ry="22"
+        fill={`url(#${pfx}-top)`} stroke={topStroke} strokeWidth="0.5"/>
+
+      {/* Reflet brillant */}
+      <ellipse cx="80" cy="92" rx="35" ry="6" fill={hlColor} opacity={hlOpacity}/>
+
+      {/* Anneau sélection / déplaçable */}
       {(selected || moveable) && (
-        <ellipse cx={FCX} cy={FCY} rx={FRX} ry={FRY}
+        <ellipse cx="100" cy="100" rx="80" ry="22"
           fill="none"
           stroke={selected ? '#D4A017' : 'rgba(212,160,23,0.65)'}
-          strokeWidth={selected ? 4 : 2.5}
+          strokeWidth={selected ? 8 : 5}
         />
       )}
 
-      {/* King inner ring */}
+      {/* Anneau dame */}
       {isKing && (
-        <ellipse cx={FCX} cy={FCY} rx={27} ry={16}
-          fill="none"
-          stroke={isWhite ? 'rgba(100,60,0,0.85)' : 'rgba(200,140,0,0.85)'}
-          strokeWidth="3"
-        />
+        <ellipse cx="100" cy="100" rx="50" ry="14"
+          fill="none" stroke={kingColor} strokeWidth="5"/>
       )}
     </svg>
   )
