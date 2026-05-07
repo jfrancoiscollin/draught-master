@@ -32,70 +32,42 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
   const scale   = selected ? 1.08 : moveable ? 1.02 : 1
 
-  const gid = isWhite ? 'pcw' : 'pcb'
-  const ringColor = selected ? '#d4a017' : moveable ? 'rgba(212,160,23,0.65)' : null
+  // Ring via box-shadow spread (works perfectly with border-radius 50%)
+  const ring = selected
+    ? ', 0 0 0 3px #d4a017'
+    : moveable
+    ? ', 0 0 0 2px rgba(212,160,23,0.60)'
+    : ''
 
-  // Two circles: rim (lower) + face (higher).
-  // The rim pokes out as a dark crescent at the bottom → visible disc thickness.
-  const R  = 42
-  const FY = 43   // face centre y
-  const RY = 51   // rim centre y  (8 px lower → ~6 px crescent at bottom)
-
-  const faceColor    = isWhite ? '#dfc890' : '#3a1a06'
-  const rimColor     = isWhite ? '#7a5820' : '#0d0603'
-  const strokeColor  = isWhite ? 'rgba(70,45,10,0.65)' : 'rgba(0,0,0,0.80)'
-  const highlightCol = isWhite ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.10)'
+  // Linear gradient = flat disc under directional light (radial = sphere, always)
+  const css: React.CSSProperties = isWhite ? {
+    background: 'linear-gradient(145deg, #f2e2b0 0%, #d8bc72 50%, #b89840 100%)',
+    border: '3px solid rgba(80,52,8,0.60)',
+    boxShadow: `0 4px 7px rgba(0,0,0,0.32), inset 0 2px 5px rgba(255,255,255,0.40), inset 0 -3px 5px rgba(0,0,0,0.18)${ring}`,
+  } : {
+    background: 'linear-gradient(145deg, #5c2a0e 0%, #2e1206 52%, #160703 100%)',
+    border: '3px solid rgba(0,0,0,0.70)',
+    boxShadow: `0 4px 7px rgba(0,0,0,0.50), inset 0 2px 3px rgba(255,255,255,0.10), inset 0 -3px 5px rgba(0,0,0,0.36)${ring}`,
+  }
 
   return (
-    <div style={{ width: '88%', height: '88%', transform: `scale(${scale})`, transition: 'transform 0.12s ease' }}>
-      <svg viewBox="0 0 100 100" width="100%" height="100%"
-           style={{ display: 'block', overflow: 'visible' }}>
-        <defs>
-          {/* Face gradient: very subtle top-left lighting — keeps it flat-looking */}
-          <radialGradient id={gid} cx="40%" cy="35%" r="65%">
-            {isWhite ? <>
-              <stop offset="0%"   stopColor="#f0dda8"/>
-              <stop offset="60%"  stopColor="#d4b870"/>
-              <stop offset="100%" stopColor="#b89448"/>
-            </> : <>
-              <stop offset="0%"   stopColor="#5c2a0e"/>
-              <stop offset="55%"  stopColor="#2e1206"/>
-              <stop offset="100%" stopColor="#1a0a03"/>
-            </>}
-          </radialGradient>
-        </defs>
-
-        {/* Drop shadow on the board */}
-        <ellipse cx="52" cy="96" rx="38" ry="6"
-          fill={isWhite ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.46)'}/>
-
-        {/* Rim circle — lower, darker; visible as crescent at bottom = disc thickness */}
-        <circle cx="50" cy={RY} r={R} fill={rimColor}/>
-
-        {/* Top face — covers rim except the bottom crescent */}
-        <circle cx="50" cy={FY} r={R} fill={`url(#${gid})`}/>
-
-        {/* Face edge stroke */}
-        <circle cx="50" cy={FY} r={R} fill="none"
-          stroke={strokeColor} strokeWidth="3.5"/>
-
-        {/* Small diffuse highlight — top-left, subtle */}
-        <ellipse cx="37" cy="31" rx="14" ry="9"
-          fill={highlightCol} transform="rotate(-18,37,31)"/>
-
-        {/* King ring */}
-        {isKing && (
-          <circle cx="50" cy={FY} r="21" fill="none"
-            stroke={isWhite ? 'rgba(130,80,0,0.92)' : 'rgba(215,155,0,0.92)'}
-            strokeWidth="4"/>
-        )}
-
-        {/* Selection / moveable ring */}
-        {ringColor && (
-          <circle cx="50" cy={FY} r={R + 3} fill="none"
-            stroke={ringColor} strokeWidth={selected ? 4 : 2.5}/>
-        )}
-      </svg>
+    <div style={{
+      width: '86%',
+      height: '86%',
+      borderRadius: '50%',
+      transform: `scale(${scale})`,
+      transition: 'transform 0.12s ease',
+      position: 'relative',
+      ...css,
+    }}>
+      {isKing && (
+        <div style={{
+          position: 'absolute',
+          top: '23%', left: '23%', right: '23%', bottom: '23%',
+          borderRadius: '50%',
+          border: `3px solid ${isWhite ? 'rgba(120,72,0,0.88)' : 'rgba(210,148,0,0.88)'}`,
+        }}/>
+      )}
     </div>
   )
 }
