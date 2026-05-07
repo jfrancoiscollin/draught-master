@@ -11,13 +11,141 @@ using rule-based templates, similar to Lichess / chess.com game reports.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import os
 from game_engine import (
     GameState, get_legal_moves, apply_move, board_to_fen, move_to_pdn,
     WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING, EMPTY,
 )
 
 logger = logging.getLogger(__name__)
+
+# ── Knowledge base ────────────────────────────────────────────────────────────
+
+_KB: list[dict] | None = None
+
+def _load_kb() -> list[dict]:
+    global _KB
+    if _KB is None:
+        kb_path = os.path.join(os.path.dirname(__file__), "knowledge_base.json")
+        try:
+            with open(kb_path, encoding="utf-8") as f:
+                _KB = json.load(f)["tips"]
+        except Exception as exc:
+            logger.warning("knowledge_base.json not loaded: %s", exc)
+            _KB = []
+    return _KB
+
+
+def _board_features(state: GameState, counts: dict, phase: str,
+                    pdn_list: list[str], best_move: str | None) -> set[str]:
+    """Extract boolean features from the position for knowledge-base matching."""
+    b = state.board
+    feats: set[str] = set()
+
+    # Center squares
+    if b[27] in (WHITE_MAN, WHITE_KING):  feats.add("white_on_27")
+    if b[28] in (WHITE_MAN, WHITE_KING):  feats.add("white_on_28")
+    if b[23] in (BLACK_MAN, BLACK_KING):  feats.add("black_on_23")
+    if b[24] in (BLACK_MAN, BLACK_KING):  feats.add("black_on_24")
+    if b[26] in (BLACK_MAN, BLACK_KING):  feats.add("black_on_26")
+    if b[36] in (WHITE_MAN, WHITE_KING):  feats.add("white_on_36")
+    if b[46] in (WHITE_MAN, WHITE_KING):  feats.add("white_on_46")
+
+    # Marchand de bois core
+    if (b[27] in (WHITE_MAN, WHITE_KING) and
+            b[32] in (WHITE_MAN, WHITE_KING) and
+            b[38] in (WHITE_MAN, WHITE_KING)):
+        feats.add("white_on_32")
+        feats.add("white_on_38")
+
+    # Capture / tactical richness
+    n_moves = len(pdn_list)
+    n_cap = _count_captures_in_pdn(pdn_list)
+    if n_moves > 4 and n_cap / max(n_moves, 1) > 0.25:
+        feats.add("many_captures")
+    if best_move and ("x" in best_move or "×" in best_move):
+        feats.add("capture_possible")
+
+    # Promotion possible for active side
+    if best_move:
+        try:
+            dest = int(best_move.split("x")[-1].split("-")[-1])
+            if state.turn == "white" and dest <= 5:
+                feats.add("promotion_possible")
+            elif state.turn == "black" and dest >= 46:
+                feats.add("promotion_possible")
+        except Exception:
+            pass
+
+    # Endgame patterns
+    total = _total_pieces(counts)
+    if phase == "endgame":
+        feats.add("few_pieces")
+        if counts["wk"] > 0 or counts["bk"] > 0:
+            feats.add("kings_present")
+        # King vs pawns
+        if counts["wk"] >= 1 and counts["bk"] == 0 and counts["bm"] <= 3:
+            feats.add("king_vs_pawns")
+        if counts["bk"] >= 1 and counts["wk"] == 0 and counts["wm"] <= 3:
+            feats.add("king_vs_pawns")
+        # 1 king vs 2 pawns specifically
+        if ((counts["wk"] == 1 and counts["wm"] == 0 and counts["bm"] == 2 and counts["bk"] == 0) or
+                (counts["bk"] == 1 and counts["bm"] == 0 and counts["wm"] == 2 and counts["wk"] == 0)):
+            feats.add("dame_vs_two_pawns")
+        # Corner pieces
+        corner_sqs = {1, 5, 46, 50}
+        if any(b[sq] != EMPTY for sq in corner_sqs):
+            feats.add("piece_in_corner")
+        # Equal endgame
+        mat = _material_value(counts)
+        if abs(mat["diff"]) <= 1 and total <= 8:
+            feats.add("equal_endgame")
+
+    # Middlegame features
+    if phase == "middlegame":
+        mat = _material_value(counts)
+        if abs(mat["diff"]) <= 1:
+            feats.add("balanced_material")
+        # Approximate "many contacts": pieces in rows 4-7 (squares 16-35)
+        contacts = sum(1 for sq in range(16, 36) if b[sq] != EMPTY)
+        if contacts >= 10:
+            feats.add("many_contacts")
+        # Restricted side: one side has very few legal moves (approximation via material diff)
+
+    # Opening general
+    if phase == "opening":
+        feats.add("opening_general")
+
+    return feats
+
+
+def _select_book_tip(state: GameState, counts: dict, phase: str,
+                     pdn_list: list[str], best_move: str | None,
+                     lang: str) -> dict | None:
+    """Return the best matching knowledge-base tip for the current position."""
+    tips = _load_kb()
+    feats = _board_features(state, counts, phase, pdn_list, best_move)
+
+    for tip in tips:
+        # Phase filter
+        if phase not in tip.get("phase", []):
+            continue
+        # Condition matching
+        conds = tip.get("conditions", [])
+        require_all = tip.get("require_all", False)
+        if require_all:
+            if not all(c in feats for c in conds):
+                continue
+        else:
+            if not any(c in feats for c in conds):
+                continue
+        # Return localised version
+        loc = tip.get(lang) or tip.get("fr") or {}
+        return loc
+
+    return None
 
 # ── Scan evaluation ───────────────────────────────────────────────────────────
 
@@ -349,6 +477,19 @@ async def analyze_position(
         lines.append("")
         lines.append("Strategic advice: " + adv_text)
 
+    # ── Book tip ──────────────────────────────────────────────────────────────
+    pdn_list = [move_to_pdn(m) if not isinstance(m, str) else m
+                for m in (move_history or [])]
+    tip = _select_book_tip(state, counts, phase, pdn_list, best_move, language)
+    if tip:
+        sep = "\n\n─────────────────────"
+        fr = language == "fr"
+        label = "📚 À approfondir" if fr else "📚 Further reading"
+        lines.append(sep)
+        lines.append(f"{label} — {tip['concept']}")
+        lines.append(tip["text"])
+        lines.append(f"→ {tip['source']}")
+
     return {
         "analysis": "\n".join(lines),
         "best_moves": [best_move] if best_move else [],
@@ -397,10 +538,19 @@ async def explain_best_move_concise(
         ]
 
     adv_text = _advice(phase, score_w, counts, language)
-    analysis = "\n".join(lines)
+
+    tip = _select_book_tip(state, counts, phase, [], best_move, language)
+    if tip:
+        fr = language == "fr"
+        label = "📚 À approfondir" if fr else "📚 Further reading"
+        lines.append("")
+        lines.append("─────────────────────")
+        lines.append(f"{label} — {tip['concept']}")
+        lines.append(tip["text"])
+        lines.append(f"→ {tip['source']}")
 
     return {
-        "analysis": analysis,
+        "analysis": "\n".join(lines),
         "best_moves": [best_move],
         "key_squares": _key_squares(best_move),
         "strategic_advice": adv_text,
@@ -531,6 +681,17 @@ async def _full_game_common(
 
         lines.append("")
         lines.append("Advice: " + adv_text)
+
+    # ── Book tip ──────────────────────────────────────────────────────────────
+    tip = _select_book_tip(state, counts, phase, pdn_list, None, lang)
+    if tip:
+        fr = lang == "fr"
+        label = "📚 À approfondir" if fr else "📚 Further reading"
+        lines.append("")
+        lines.append("─────────────────────")
+        lines.append(f"{label} — {tip['concept']}")
+        lines.append(tip["text"])
+        lines.append(f"→ {tip['source']}")
 
     return {
         "analysis": "\n".join(lines),
