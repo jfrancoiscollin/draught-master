@@ -27,105 +27,91 @@ interface BoardProps {
 function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boolean; selected: boolean }) {
   const isWhite = piece === WHITE_MAN || piece === WHITE_KING
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
-  const scale = selected ? 1.10 : moveable ? 1.03 : 1
+  const scale = selected ? 1.08 : moveable ? 1.02 : 1
 
-  // Coin side edge — visible thickness like a real checker
-  const rimBg = isWhite
-    ? 'linear-gradient(180deg, #cfc0a0 0%, #b0a080 50%, #c0b090 100%)'
-    : 'linear-gradient(180deg, #3c2010 0%, #1c0c06 50%, #2a1408 100%)'
-
-  // Top face — lacquered wood, light from top-left
+  // ── Flat wooden checker disc — Lidraughts style ──────────────────────────
+  // Top face: uniform warm colour, very slightly lighter at top-left corner.
+  // NO pure white; NO huge specular blob → looks like wood, not glass.
   const topBg = isWhite
-    ? 'radial-gradient(ellipse 78% 72% at 38% 32%, #ffffff 0%, #f2e4cc 16%, #ddc8a8 42%, #c8b090 68%, #b4987a 88%, #a08868 100%)'
-    : 'radial-gradient(ellipse 78% 72% at 38% 32%, #7a3e1e 0%, #4e2210 22%, #2e1208 48%, #1a0806 74%, #0e0402 90%, #080402 100%)'
+    ? 'radial-gradient(ellipse 65% 60% at 40% 34%, #e8dcc8 0%, #d8cbb0 40%, #c8b898 75%, #bca888 100%)'
+    : 'radial-gradient(ellipse 65% 60% at 40% 34%, #4a2414 0%, #301408 40%, #1e0c04 75%, #140804 100%)'
 
-  // Strong specular blob — clear 3D sheen
-  const specular = isWhite
-    ? 'radial-gradient(ellipse 50% 42% at 37% 30%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.80) 20%, rgba(255,255,255,0.30) 50%, transparent 68%)'
-    : 'radial-gradient(ellipse 50% 42% at 37% 30%, rgba(255,255,255,0.58) 0%, rgba(255,255,255,0.30) 22%, rgba(255,255,255,0.07) 52%, transparent 70%)'
+  // Small, soft specular glint — upper-left, semi-transparent only
+  const glint = isWhite
+    ? 'radial-gradient(ellipse 38% 28% at 30% 24%, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.18) 50%, transparent 72%)'
+    : 'radial-gradient(ellipse 38% 28% at 30% 24%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 50%, transparent 72%)'
 
-  // Secondary bounce light on lower-right
-  const rimSheen = isWhite
-    ? 'radial-gradient(ellipse at 65% 76%, rgba(255,255,255,0.40) 0%, transparent 48%)'
-    : 'radial-gradient(ellipse at 65% 76%, rgba(255,255,255,0.10) 0%, transparent 48%)'
+  // Rim (disc thickness) — darker than face, subtle bevel
+  const rimBg = isWhite
+    ? 'linear-gradient(180deg, #b8a888 0%, #a09070 55%, #b0a080 100%)'
+    : 'linear-gradient(180deg, #2a1208 0%, #160804 55%, #200e06 100%)'
 
-  const selectionRing = selected
-    ? '0 0 0 3px #d4a017, 0 0 10px rgba(212,160,23,0.55)'
+  // Selection / moveable ring
+  const ring = selected
+    ? '0 0 0 2.5px #d4a017, 0 0 8px rgba(212,160,23,0.50)'
     : moveable
-      ? '0 0 0 2px rgba(212,160,23,0.72)'
+      ? '0 0 0 2px rgba(212,160,23,0.65)'
       : undefined
 
-  // Inner shadow on face gives dome curvature
-  const faceInner = isWhite
-    ? 'inset 0 -5px 12px rgba(0,0,0,0.20), inset 0 3px 7px rgba(255,255,255,0.45)'
-    : 'inset 0 -5px 12px rgba(0,0,0,0.45), inset 0 3px 7px rgba(255,255,255,0.06)'
+  // Subtle edge darkening on the face (bevel, not dome)
+  const edgeShadow = isWhite
+    ? 'inset 0 0 0 1.5px rgba(0,0,0,0.12), inset 0 -2px 5px rgba(0,0,0,0.10)'
+    : 'inset 0 0 0 1.5px rgba(0,0,0,0.25), inset 0 -2px 5px rgba(0,0,0,0.25)'
 
-  const faceShadow = [selectionRing, faceInner].filter(Boolean).join(', ')
+  const faceShadow = [ring, edgeShadow].filter(Boolean).join(', ')
 
   return (
     <div style={{
-      width: '86%',
-      height: '86%',
+      width: '88%',
+      height: '88%',
       position: 'relative',
       flexShrink: 0,
       transform: `scale(${scale})`,
       transition: 'transform 0.12s ease',
     }}>
-      {/* Drop shadow — asymmetric offset for lifted 3D look */}
+      {/* Drop shadow — soft, slightly offset */}
       <div style={{
         position: 'absolute',
-        bottom: '-14%',
-        left: '10%',
-        right: '6%',
-        height: '26%',
+        bottom: '-8%',
+        left: '8%',
+        right: '5%',
+        height: '20%',
         borderRadius: '50%',
         background: isWhite
-          ? 'radial-gradient(ellipse, rgba(0,0,0,0.40) 0%, transparent 72%)'
-          : 'radial-gradient(ellipse, rgba(0,0,0,0.70) 0%, transparent 72%)',
-        filter: 'blur(5px)',
+          ? 'radial-gradient(ellipse, rgba(0,0,0,0.30) 0%, transparent 70%)'
+          : 'radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 70%)',
+        filter: 'blur(4px)',
       }} />
 
-      {/* RIM — visible side of the coin (20 % of height) */}
+      {/* RIM — disc thickness, ~18% of total height */}
       <div style={{
         position: 'absolute',
-        top: '80%',
+        top: '82%',
         left: '2%',
         right: '2%',
         bottom: 0,
         borderRadius: '50%',
         background: rimBg,
-        boxShadow: isWhite
-          ? 'inset 0 3px 5px rgba(255,255,255,0.35), inset 0 -2px 6px rgba(0,0,0,0.28)'
-          : 'inset 0 3px 5px rgba(80,40,10,0.35), inset 0 -2px 6px rgba(0,0,0,0.45)',
       }} />
 
-      {/* TOP FACE — sits above the rim */}
+      {/* TOP FACE */}
       <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        bottom: '20%',
+        bottom: '18%',
         borderRadius: '50%',
         background: topBg,
         boxShadow: faceShadow,
         overflow: 'hidden',
       }}>
-        {/* Primary specular highlight */}
+        {/* Small glint — the only highlight, subtle */}
         <div style={{
           position: 'absolute',
           inset: 0,
           borderRadius: '50%',
-          background: specular,
-          pointerEvents: 'none',
-        }} />
-
-        {/* Secondary bounce light */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          borderRadius: '50%',
-          background: rimSheen,
+          background: glint,
           pointerEvents: 'none',
         }} />
 
@@ -133,15 +119,12 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
         {isKing && (
           <div style={{
             position: 'absolute',
-            top: '24%',
-            left: '24%',
-            right: '24%',
-            bottom: '24%',
+            top: '26%',
+            left: '26%',
+            right: '26%',
+            bottom: '26%',
             borderRadius: '50%',
-            border: `2px solid ${isWhite ? 'rgba(180,120,0,0.9)' : 'rgba(215,165,0,0.9)'}`,
-            boxShadow: isWhite
-              ? 'inset 0 0 5px rgba(185,125,0,0.45), 0 0 4px rgba(185,125,0,0.3)'
-              : 'inset 0 0 5px rgba(220,170,0,0.5), 0 0 4px rgba(220,170,0,0.35)',
+            border: `2px solid ${isWhite ? 'rgba(160,100,0,0.80)' : 'rgba(210,155,0,0.80)'}`,
             pointerEvents: 'none',
           }} />
         )}
