@@ -31,20 +31,28 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const isWhite = piece === WHITE_MAN || piece === WHITE_KING
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
   const scale   = selected ? 1.08 : moveable ? 1.02 : 1
+  const pfx     = isWhite ? 'pw' : 'pb'
 
-  // Gradient ID prefix — 'pw' for white, 'pb' for black (same color = same gradient, no conflict)
-  const pfx = isWhite ? 'pw' : 'pb'
-
-  const sideStops  = isWhite ? ['#e8e8e8', '#b8b8b8', '#7a7a7a'] : ['#4a4a4a', '#2a2a2a', '#000000']
-  const topStops   = isWhite ? ['#ffffff', '#f0f0f0', '#c8c8c8'] : ['#5a5a5a', '#2a2a2a', '#000000']
-  const shdOpacity = isWhite ? 0.4 : 0.5
-  const sideStroke = isWhite ? '#5a5a5a' : '#000000'
-  const reliefClr  = isWhite ? '#888888' : '#1a1a1a'
-  const reliefOp   = isWhite ? 0.5       : 0.7
-  const topStroke  = isWhite ? '#999999' : '#000000'
-  const hlColor    = isWhite ? '#ffffff'  : '#888888'
-  const hlOpacity  = isWhite ? 0.6        : 0.4
-  const hlRy       = isWhite ? 6          : 5
+  // White: horizontal side gradient (left dark → right light), right-shifted top radial
+  // Black: same geometry, dark color stops
+  const sideX2     = '100%'   // horizontal gradient direction (x-axis)
+  const sideStops  = isWhite
+    ? ['#a8a8a8', '#dcdcdc', '#f0f0f0']
+    : ['#000000', '#2a2a2a', '#4a4a4a']
+  const side2ndOff = '40%'
+  const topCx      = '65%'; const topCy = '40%'
+  const topStops   = isWhite
+    ? ['#ffffff', '#f0f0f0', '#d0d0d0']
+    : ['#5a5a5a', '#2a2a2a', '#0a0a0a']
+  const top2ndOff  = '70%'
+  const shdCx      = '90';  const shdCy = '170'; const shdRx = '75'; const shdRy = '8'
+  const shdOpacity = isWhite ? 0.25 : 0.30
+  const sideStroke = isWhite ? '#9a9a9a' : '#000000'
+  const topStroke  = isWhite ? '#b0b0b0' : '#000000'
+  const hlCx       = '115'; const hlCy = '83'; const hlRx = '35'
+  const hlRy       = isWhite ? 6 : 5
+  const hlColor    = isWhite ? '#ffffff' : '#888888'
+  const hlOpacity  = isWhite ? 0.6 : 0.4
   const kingColor  = isWhite ? 'rgba(100,60,0,0.85)' : 'rgba(200,140,0,0.85)'
 
   return (
@@ -53,15 +61,15 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
       style={{ width: '92%', height: '92%', transform: `scale(${scale})`, transition: 'transform 0.12s ease' }}
     >
       <defs>
-        <linearGradient id={`${pfx}-side`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%"   stopColor={sideStops[0]}/>
-          <stop offset="50%"  stopColor={sideStops[1]}/>
-          <stop offset="100%" stopColor={sideStops[2]}/>
+        <linearGradient id={`${pfx}-side`} x1="0%" y1="0%" x2={sideX2} y2="0%">
+          <stop offset="0%"        stopColor={sideStops[0]}/>
+          <stop offset={side2ndOff} stopColor={sideStops[1]}/>
+          <stop offset="100%"      stopColor={sideStops[2]}/>
         </linearGradient>
-        <radialGradient id={`${pfx}-top`} cx="50%" cy="35%" r="65%">
-          <stop offset="0%"   stopColor={topStops[0]}/>
-          <stop offset="60%"  stopColor={topStops[1]}/>
-          <stop offset="100%" stopColor={topStops[2]}/>
+        <radialGradient id={`${pfx}-top`} cx={topCx} cy={topCy} r="70%">
+          <stop offset="0%"       stopColor={topStops[0]}/>
+          <stop offset={top2ndOff} stopColor={topStops[1]}/>
+          <stop offset="100%"     stopColor={topStops[2]}/>
         </radialGradient>
         <radialGradient id={`${pfx}-shd`} cx="50%" cy="50%" r="50%">
           <stop offset="0%"   stopColor="#000000" stopOpacity={shdOpacity}/>
@@ -70,41 +78,38 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
       </defs>
 
       {/* Ombre portée */}
-      <ellipse cx="100" cy="155" rx="80" ry="12" fill={`url(#${pfx}-shd)`}/>
+      <ellipse cx={shdCx} cy={shdCy} rx={shdRx} ry={shdRy} fill={`url(#${pfx}-shd)`}/>
 
-      {/* Tranche (côté visible) — plus épaisse : y=100→138 */}
+      {/* Tranche */}
       <path
-        d="M 20,100 A 80,22 0 0,0 180,100 L 180,138 A 80,22 0 0,1 20,138 Z"
+        d="M 20,90 A 80,22 0 0,0 180,90 L 180,145 A 80,22 0 0,1 20,145 Z"
         fill={`url(#${pfx}-side)`} stroke={sideStroke} strokeWidth="0.5"
       />
-      <path d="M 20,112 A 80,22 0 0,0 180,112" fill="none" stroke={reliefClr} strokeWidth="0.5" opacity={reliefOp}/>
-      <path d="M 20,126 A 80,22 0 0,0 180,126" fill="none" stroke={reliefClr} strokeWidth="0.5" opacity={reliefOp}/>
 
       {/* Face du dessus */}
-      <ellipse cx="100" cy="100" rx="80" ry="22"
+      <ellipse cx="100" cy="90" rx="80" ry="22"
         fill={`url(#${pfx}-top)`} stroke={topStroke} strokeWidth="0.5"/>
 
-      {/* Reflet brillant */}
-      <ellipse cx="80" cy="92" rx="35" ry={hlRy} fill={hlColor} opacity={hlOpacity}/>
+      {/* Reflet */}
+      <ellipse cx={hlCx} cy={hlCy} rx={hlRx} ry={hlRy} fill={hlColor} opacity={hlOpacity}/>
 
-      {/* Anneau sélection : doré visible */}
+      {/* Anneau sélection */}
       {selected && (
-        <ellipse cx="100" cy="100" rx="80" ry="22"
-          fill="none" stroke="#D4A017" strokeWidth="8"
-        />
+        <ellipse cx="100" cy="90" rx="80" ry="22"
+          fill="none" stroke="#D4A017" strokeWidth="8"/>
       )}
-      {/* Anneau jouable : très discret (gris sur blancs, quasi-invisible sur noirs) */}
+      {/* Anneau jouable — très discret */}
       {!selected && moveable && (
-        <ellipse cx="100" cy="100" rx="80" ry="22"
+        <ellipse cx="100" cy="90" rx="80" ry="22"
           fill="none"
-          stroke={isWhite ? 'rgba(80,80,80,0.35)' : 'rgba(212,160,23,0.30)'}
+          stroke={isWhite ? 'rgba(80,80,80,0.30)' : 'rgba(212,160,23,0.30)'}
           strokeWidth="3"
         />
       )}
 
       {/* Anneau dame */}
       {isKing && (
-        <ellipse cx="100" cy="100" rx="50" ry="14"
+        <ellipse cx="100" cy="90" rx="50" ry="14"
           fill="none" stroke={kingColor} strokeWidth="5"/>
       )}
     </svg>
