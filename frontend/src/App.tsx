@@ -503,6 +503,14 @@ export default function App() {
     }
   }, [fenHistory, moveHistory])
 
+  const handleLearnPlayedGame = useCallback(() => {
+    if (playGameStats !== null) {
+      setPlayPanelMode('learn')
+    } else {
+      handleAnnotatePlayedGame()
+    }
+  }, [playGameStats, handleAnnotatePlayedGame])
+
   const handleExerciseLoad = useCallback(async (fen: string, exerciseId: number) => {
     const gen = ++exerciseLoadGenRef.current
     setExerciseGameState({ board: fenToBoard(fen), fen, exerciseId })
@@ -726,16 +734,8 @@ export default function App() {
 
 
 
-  const playAnnotationPanel = moveHistory.length >= 2 ? (
+  const playAnnotationPanel = (playAnnotating || playGameStats || playLastCacheHits) ? (
     <div className="flex flex-col gap-2">
-      {!playAnnotating && !playGameStats && (
-        <button
-          onClick={handleAnnotatePlayedGame}
-          className="w-full text-sm font-semibold bg-blue-700 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition-colors"
-        >
-          Coup par coup
-        </button>
-      )}
       {playAnnotating && (
         <div className="bg-gray-800 rounded-lg px-3 py-2 flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-xs">
@@ -762,44 +762,27 @@ export default function App() {
         </div>
       )}
       {playGameStats && !playAnnotating && (
-        <>
-          <div className="grid grid-cols-2 gap-px bg-gray-800 rounded-lg overflow-hidden text-xs">
-            {(['white', 'black'] as const).map(color => {
-              const acpl = color === 'white' ? playGameStats.whiteAcpl : playGameStats.blackAcpl
-              const counts = color === 'white' ? playGameStats.whiteCounts : playGameStats.blackCounts
-              return (
-                <div key={color} className="bg-gray-950 px-3 py-2 flex flex-col gap-1">
-                  <span>{color === 'white' ? '⬜ Blancs' : '⬛ Noirs'}</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">Moy.</span>
-                    <span className="font-mono font-bold text-gray-200">{acpl} cp</span>
-                  </div>
-                  <div className="flex gap-2">
-                    {counts.blunder > 0 && <span className="font-bold" style={{ color: VERDICT_COLOR.blunder }}>{counts.blunder}??</span>}
-                    {counts.mistake > 0 && <span className="font-bold" style={{ color: VERDICT_COLOR.mistake }}>{counts.mistake}?</span>}
-                    {counts.inaccuracy > 0 && <span className="font-bold" style={{ color: VERDICT_COLOR.inaccuracy }}>{counts.inaccuracy}?!</span>}
-                    {counts.blunder + counts.mistake + counts.inaccuracy === 0 && <span className="text-green-500">Parfait ✓</span>}
-                  </div>
+        <div className="grid grid-cols-2 gap-px bg-gray-800 rounded-lg overflow-hidden text-xs">
+          {(['white', 'black'] as const).map(color => {
+            const acpl = color === 'white' ? playGameStats.whiteAcpl : playGameStats.blackAcpl
+            const counts = color === 'white' ? playGameStats.whiteCounts : playGameStats.blackCounts
+            return (
+              <div key={color} className="bg-gray-950 px-3 py-2 flex flex-col gap-1">
+                <span>{color === 'white' ? '⬜ Blancs' : '⬛ Noirs'}</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-500">Moy.</span>
+                  <span className="font-mono font-bold text-gray-200">{acpl} cp</span>
                 </div>
-              )
-            })}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleAnnotatePlayedGame}
-              className="text-xs text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 px-2 py-1.5 rounded transition-colors"
-            >
-              Relancer
-            </button>
-            <button
-              onClick={() => setPlayPanelMode('learn')}
-              disabled={playAnnotations.filter(a => a.verdict).length === 0}
-              className="flex-1 text-sm font-semibold bg-purple-700 hover:bg-purple-600 text-white px-3 py-2 rounded-lg transition-colors disabled:opacity-40"
-            >
-              Apprendre de ses erreurs
-            </button>
-          </div>
-        </>
+                <div className="flex gap-2">
+                  {counts.blunder > 0 && <span className="font-bold" style={{ color: VERDICT_COLOR.blunder }}>{counts.blunder}??</span>}
+                  {counts.mistake > 0 && <span className="font-bold" style={{ color: VERDICT_COLOR.mistake }}>{counts.mistake}?</span>}
+                  {counts.inaccuracy > 0 && <span className="font-bold" style={{ color: VERDICT_COLOR.inaccuracy }}>{counts.inaccuracy}?!</span>}
+                  {counts.blunder + counts.mistake + counts.inaccuracy === 0 && <span className="text-green-500">Parfait ✓</span>}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       )}
     </div>
   ) : null
@@ -972,6 +955,9 @@ export default function App() {
                         onCollapse={() => setAnalysisExpanded(false)}
                         aiThinking={isAiThinking}
                         onMoveClick={handleAnalysisMoveClick}
+                        onAnnotate={moveHistory.length >= 2 ? handleAnnotatePlayedGame : undefined}
+                        onLearn={moveHistory.length >= 2 ? handleLearnPlayedGame : undefined}
+                        annotating={playAnnotating}
                       />
                     </div>
                     <div
@@ -1095,6 +1081,9 @@ export default function App() {
                         onCollapse={() => setAnalysisExpanded(false)}
                         aiThinking={isAiThinking}
                         onMoveClick={handleAnalysisMoveClick}
+                        onAnnotate={moveHistory.length >= 2 ? handleAnnotatePlayedGame : undefined}
+                        onLearn={moveHistory.length >= 2 ? handleLearnPlayedGame : undefined}
+                        annotating={playAnnotating}
                       />
                       <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                       {playAnnotationPanel}
@@ -1170,6 +1159,9 @@ export default function App() {
                     onCollapse={() => setAnalysisExpanded(false)}
                     aiThinking={isAiThinking}
                     onMoveClick={handleAnalysisMoveClick}
+                    onAnnotate={moveHistory.length >= 2 ? handleAnnotatePlayedGame : undefined}
+                    onLearn={moveHistory.length >= 2 ? handleLearnPlayedGame : undefined}
+                    annotating={playAnnotating}
                   />
                 </div>
               ) : (
@@ -1186,6 +1178,9 @@ export default function App() {
                       onCollapse={() => setAnalysisExpanded(false)}
                       aiThinking={isAiThinking}
                       onMoveClick={handleAnalysisMoveClick}
+                      onAnnotate={moveHistory.length >= 2 ? handleAnnotatePlayedGame : undefined}
+                      onLearn={moveHistory.length >= 2 ? handleLearnPlayedGame : undefined}
+                      annotating={playAnnotating}
                     />
                     <GameControls
                       result={gameState?.result || null}
