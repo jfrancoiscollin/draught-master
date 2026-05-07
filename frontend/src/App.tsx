@@ -187,6 +187,9 @@ export default function App() {
   const [playLastCacheHits, setPlayLastCacheHits] = useState<{ hits: number; total: number } | null>(null)
   const [playPanelMode, setPlayPanelMode] = useState<'game' | 'learn'>('game')
 
+  // Pre-load WASM engine on startup so it's ready before the user requests analysis
+  useEffect(() => { getScanEngine() }, [])
+
   useEffect(() => {
     if (!user) { setReadChapters(new Set()); return }
     getReadLessons().then(chapters => setReadChapters(new Set(chapters))).catch(() => {})

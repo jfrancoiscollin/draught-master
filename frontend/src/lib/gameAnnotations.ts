@@ -105,8 +105,9 @@ export async function annotateGame(
   onProgress(0, positions.length)
 
   // ── Try server-side batch analysis first (native Scan binary: faster & deeper) ──
-  // Adaptive time budget: up to 5 s/position, capped so total stays under 240 s.
-  const adaptiveMs = Math.min(5000, Math.floor(240000 / positions.length))
+  // Keep total under ~25 s so Railway's 30 s HTTP proxy timeout is not exceeded.
+  // Cache hits are instant, so the real bottleneck is only uncached positions.
+  const adaptiveMs = Math.max(200, Math.floor(25000 / positions.length))
   if (!signal.aborted) {
     const serverResult = await analyzePositionsBatch(positions, adaptiveMs)
     if (serverResult && serverResult.evals.length === positions.length) {

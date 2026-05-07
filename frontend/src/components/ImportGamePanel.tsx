@@ -74,6 +74,9 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
 
   // ── Auto-scroll active move row ───────────────────────────────
   const activeRowRef = useRef<HTMLTableRowElement | null>(null)
+  // Pre-load WASM engine as soon as the panel opens so it's ready if server-side fails
+  useEffect(() => { getScanEngine() }, [])
+
   useEffect(() => {
     activeRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [currentIdx])
