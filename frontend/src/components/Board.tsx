@@ -33,25 +33,7 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const scale   = selected ? 1.05 : moveable ? 1.01 : 1
   const pfx     = isWhite ? 'pw' : 'pb'
 
-  // rx=96 → piece spans x:4–196, filling 96% of the 200-unit viewBox
-  // Combined with SVG at 100% of cell this puts the lateral edges nearly flush
-  const ry       = 40
-  const sideEndY = 130
-  const sidePath = `M 4,90 A 96,${ry} 0 0,0 196,90 L 196,${sideEndY} A 96,${ry} 0 0,1 4,${sideEndY} Z`
-
-  const sideStops  = isWhite
-    ? ['#a8a8a8', '#dcdcdc', '#f0f0f0']
-    : ['#000000', '#2a2a2a', '#4a4a4a']
-  const topStops   = isWhite
-    ? ['#ffffff', '#f0f0f0', '#d0d0d0']
-    : ['#5a5a5a', '#2a2a2a', '#0a0a0a']
-  const shdOpacity = isWhite ? 0.25 : 0.30
-  const sideStroke = isWhite ? '#9a9a9a' : '#000000'
-  const topStroke  = isWhite ? '#b0b0b0' : '#000000'
-  const hlRy       = isWhite ? 12 : 11
-  const hlOpacity  = isWhite ? 0.55 : 0.40
-  const hlColor    = isWhite ? '#ffffff' : '#888888'
-  const kingColor  = isWhite ? 'rgba(100,60,0,0.85)' : 'rgba(200,140,0,0.85)'
+  const kingColor = isWhite ? 'rgba(100,60,0,0.85)' : 'rgba(200,140,0,0.85)'
 
   return (
     <svg
@@ -59,52 +41,81 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
       style={{ width: '100%', height: '100%', transform: `scale(${scale})`, transition: 'transform 0.12s ease' }}
     >
       <defs>
-        <linearGradient id={`${pfx}-side`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor={sideStops[0]}/>
-          <stop offset="40%"  stopColor={sideStops[1]}/>
-          <stop offset="100%" stopColor={sideStops[2]}/>
-        </linearGradient>
-        <radialGradient id={`${pfx}-top`} cx="65%" cy="40%" r="70%">
-          <stop offset="0%"   stopColor={topStops[0]}/>
-          <stop offset="70%"  stopColor={topStops[1]}/>
-          <stop offset="100%" stopColor={topStops[2]}/>
-        </radialGradient>
-        <radialGradient id={`${pfx}-shd`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%"   stopColor="#000000" stopOpacity={shdOpacity}/>
-          <stop offset="100%" stopColor="#000000" stopOpacity="0"/>
-        </radialGradient>
+        {isWhite ? (
+          <>
+            <linearGradient id={`${pfx}-side`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#9a9a9a"/>
+              <stop offset="15%"  stopColor="#c8c8c8"/>
+              <stop offset="35%"  stopColor="#ececec"/>
+              <stop offset="60%"  stopColor="#fafafa"/>
+              <stop offset="100%" stopColor="#ffffff"/>
+            </linearGradient>
+            <linearGradient id={`${pfx}-top`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#f5f5f5"/>
+              <stop offset="100%" stopColor="#ffffff"/>
+            </linearGradient>
+            <radialGradient id={`${pfx}-shd`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stopColor="#000000" stopOpacity="0.2"/>
+              <stop offset="100%" stopColor="#000000" stopOpacity="0"/>
+            </radialGradient>
+          </>
+        ) : (
+          <>
+            <linearGradient id={`${pfx}-side`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#000000"/>
+              <stop offset="45%"  stopColor="#2a2a2a"/>
+              <stop offset="78%"  stopColor="#6a6a6a"/>
+              <stop offset="92%"  stopColor="#a8a8a8"/>
+              <stop offset="98%"  stopColor="#c8c8c8"/>
+              <stop offset="100%" stopColor="#5a5a5a"/>
+            </linearGradient>
+            <linearGradient id={`${pfx}-top`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#1a1a1a"/>
+              <stop offset="100%" stopColor="#2a2a2a"/>
+            </linearGradient>
+            <radialGradient id={`${pfx}-shd`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stopColor="#000000" stopOpacity="0.3"/>
+              <stop offset="100%" stopColor="#000000" stopOpacity="0"/>
+            </radialGradient>
+          </>
+        )}
       </defs>
 
       {/* Ombre portée */}
-      <ellipse cx="100" cy="170" rx="90" ry="9" fill={`url(#${pfx}-shd)`}/>
+      <ellipse cx="90" cy="170" rx="75" ry={isWhite ? 6 : 7} fill={`url(#${pfx}-shd)`}/>
 
       {/* Tranche */}
-      <path d={sidePath} fill={`url(#${pfx}-side)`} stroke={sideStroke} strokeWidth="0.5"/>
+      <path
+        d="M 20,90 A 80,40 0 0,0 180,90 L 180,130 A 80,40 0 0,1 20,130 Z"
+        fill={`url(#${pfx}-side)`}
+        stroke={isWhite ? '#a0a0a0' : '#000000'}
+        strokeWidth="1.5"
+      />
 
       {/* Face du dessus */}
-      <ellipse cx="100" cy="90" rx="96" ry={ry}
-        fill={`url(#${pfx}-top)`} stroke={topStroke} strokeWidth="0.5"/>
-
-      {/* Reflet */}
-      <ellipse cx="118" cy="75" rx="42" ry={hlRy} fill={hlColor} opacity={hlOpacity}/>
+      <ellipse cx="100" cy="90" rx="80" ry="40"
+        fill={`url(#${pfx}-top)`}
+        stroke={isWhite ? '#a8a8a8' : '#000000'}
+        strokeWidth="1.5"
+      />
 
       {/* Anneau sélection */}
       {selected && (
-        <ellipse cx="100" cy="90" rx="96" ry={ry}
+        <ellipse cx="100" cy="90" rx="80" ry="40"
           fill="none" stroke="#D4A017" strokeWidth="8"/>
       )}
       {/* Anneau jouable — très discret */}
       {!selected && moveable && (
-        <ellipse cx="100" cy="90" rx="96" ry={ry}
+        <ellipse cx="100" cy="90" rx="80" ry="40"
           fill="none"
-          stroke={isWhite ? 'rgba(80,80,80,0.30)' : 'rgba(212,160,23,0.30)'}
-          strokeWidth="3"
+          stroke={isWhite ? 'rgba(80,80,80,0.35)' : 'rgba(212,160,23,0.35)'}
+          strokeWidth="4"
         />
       )}
 
       {/* Anneau dame */}
       {isKing && (
-        <ellipse cx="100" cy="90" rx="60" ry={Math.round(ry * 0.55)}
+        <ellipse cx="100" cy="90" rx="50" ry="22"
           fill="none" stroke={kingColor} strokeWidth="5"/>
       )}
     </svg>
