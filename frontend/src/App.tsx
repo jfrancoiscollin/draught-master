@@ -13,6 +13,7 @@ import OpeningCacheBuilder from './components/OpeningCacheBuilder'
 import OpeningExplorer from './components/OpeningExplorer'
 import LearnFromMistakes from './components/LearnFromMistakes'
 import EvalBar from './components/EvalBar'
+import UserStatsCard from './components/UserStatsCard'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
 import Logo from './components/Logo'
@@ -32,6 +33,7 @@ import {
   resignGame,
   getAiMove,
   getReadLessons,
+  saveGameAnnotations,
 } from './api/client'
 import type { PdnPosition } from './api/client'
 import { getScanEngine, matchHubMove } from './lib/scanEngine'
@@ -535,6 +537,9 @@ export default function App() {
       setAnalysis(result)
       setAnalysisExpanded(true)
       setReplayingPosition(null)
+      if (mode === 'full_game' && result.move_annotations?.length && user) {
+        saveGameAnnotations(gameState.game_id, result.move_annotations).catch(() => {})
+      }
       return result
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } } }
@@ -543,7 +548,7 @@ export default function App() {
     } finally {
       setAnalysisLoading(false)
     }
-  }, [gameState, language, aiDepth, t])
+  }, [gameState, language, aiDepth, t, user])
 
   const handleAnnotatePlayedGame = useCallback(async () => {
     if (!fenHistory.length || !moveHistory.length) return
@@ -978,6 +983,9 @@ export default function App() {
                 <span className="text-lg font-bold text-white">Base ouvertures</span>
                 <span className="text-sm text-gray-400 text-center">Pré-calcule les positions depuis Lidraughts</span>
               </button>
+            </div>
+            <div className="w-full max-w-2xl mt-6">
+              <UserStatsCard />
             </div>
           </div>
         )}

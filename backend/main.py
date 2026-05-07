@@ -32,7 +32,8 @@ from ai_engine import get_best_move
 from scan_engine import get_scan_move
 from scan_advisor import analyze_position, analyze_full_game, analyze_full_game_pdn, explain_best_move_concise
 from database import (
-    init_db, save_game, get_games, get_game,
+    init_db, save_game, save_game_annotations, get_user_stats,
+    get_games, get_game,
     save_active_game, load_active_game, delete_active_game,
     get_exercises, get_exercise, record_progress,
     create_user, get_user_by_email, get_user_by_id,
@@ -159,6 +160,7 @@ def _serialize_entry(entry: dict) -> str:
         "black_player": entry["black_player"],
         "ai_depth": entry.get("ai_depth", 4),
         "fen_positions": entry["fen_positions"],
+        "user_id": entry.get("user_id"),
         "state": ser_state(entry["state"]),
         "state_history": [
             {"state": ser_state(s), "fen_len": fl}
@@ -184,6 +186,7 @@ def _deserialize_entry(raw: str) -> dict:
         "black_player": d["black_player"],
         "ai_depth": d.get("ai_depth", 4),
         "fen_positions": d["fen_positions"],
+        "user_id": d.get("user_id"),
         "state": deser_state(d["state"]),
         "state_history": [
             (deser_state(sh["state"]), sh["fen_len"])
@@ -205,7 +208,10 @@ async def _get_game_entry(game_id: str) -> Optional[dict]:
 
 
 @app.post("/api/game/new", response_model=GameStateResponse)
-async def new_game(req: NewGameRequest) -> GameStateResponse:
+async def new_game(
+    req: NewGameRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(_optional_auth),
+) -> GameStateResponse:
     game_id = str(uuid.uuid4())
     state = initial_state()
     entry = {
@@ -216,6 +222,7 @@ async def new_game(req: NewGameRequest) -> GameStateResponse:
         "fen_positions": [board_to_fen(state)],
         "date": datetime.utcnow().isoformat(),
         "state_history": [],
+        "user_id": current_user["id"] if current_user else None,
     }
     game_store[game_id] = entry
     await save_active_game(game_id, _serialize_entry(entry))
@@ -300,6 +307,7 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
             pdn=pdn,
             fen_positions=entry["fen_positions"],
             move_count=len(state.move_history),
+            user_id=entry.get("user_id"),
         )
         await delete_active_game(game_id)
     else:
@@ -338,6 +346,7 @@ async def resign_game(game_id: str) -> Dict[str, Any]:
         pdn=pdn,
         fen_positions=entry["fen_positions"],
         move_count=len(state.move_history),
+        user_id=entry.get("user_id"),
     )
     await delete_active_game(game_id)
     return {"result": "black"}
@@ -768,6 +777,25 @@ async def auth_me(current_user: Dict[str, Any] = Depends(_require_auth)) -> User
 async def auth_me_progress(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
     solved_ids = await get_user_solved_exercise_ids(current_user["id"])
     return {"solved_exercise_ids": solved_ids}
+
+
+@app.get("/api/auth/me/stats")
+async def auth_me_stats(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
+    stats = await get_user_stats(current_user["id"])
+    return stats
+
+
+@app.post("/api/history/{game_id}/annotations")
+async def save_annotations(
+    game_id: str,
+    body: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(_require_auth),
+) -> Dict[str, Any]:
+    annotations = body.get("annotations")
+    if not isinstance(annotations, list):
+        raise HTTPException(status_code=400, detail="annotations doit être une liste")
+    await save_game_annotations(game_id, current_user["id"], annotations)
+    return {"ok": True}
 
 
 @app.post("/api/position/legal-moves")

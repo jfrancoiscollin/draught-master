@@ -103,6 +103,7 @@ export const translations: Record<Language, Record<string, string>> = {
     chooseBook: "Choisissez un livre pour accéder à ses exercices",
     comingSoon: "Bientôt",
     exercisesAvailable: "Exercices disponibles",
+    myStats: "Mes statistiques",
   },
   en: {
     appSubtitle: "International draughts training (100 squares)",
@@ -206,5 +207,6 @@ export const translations: Record<Language, Record<string, string>> = {
     chooseBook: "Choose a book to access its exercises",
     comingSoon: "Soon",
     exercisesAvailable: "Exercises available",
+    myStats: "My statistics",
   },
 }

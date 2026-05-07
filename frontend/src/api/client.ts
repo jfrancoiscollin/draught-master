@@ -161,6 +161,38 @@ export async function markLessonRead(chapter: number): Promise<void> {
   await api.post(`/auth/me/lessons/${chapter}/read`)
 }
 
+export interface UserStats {
+  total_games: number
+  total_moves: number
+  blunders: number
+  mistakes: number
+  inaccuracies: number
+  accuracy_pct: number
+  recent_games: Array<{
+    id: string
+    date: string
+    white_player: string
+    black_player: string
+    result: string | null
+    move_count: number
+    blunders: number
+    mistakes: number
+    inaccuracies: number
+  }>
+}
+
+export async function getUserStats(): Promise<UserStats> {
+  const res = await api.get<UserStats>('/auth/me/stats')
+  return res.data
+}
+
+export async function saveGameAnnotations(
+  gameId: string,
+  annotations: Array<{ move_number: number; color?: string; classification?: string; comment?: string }>,
+): Promise<void> {
+  await api.post(`/history/${gameId}/annotations`, { annotations })
+}
+
 export async function getPositionLegalMoves(fen: string): Promise<MoveData[]> {
   const res = await api.post<{ moves: MoveData[] }>('/position/legal-moves', { fen })
   return res.data.moves
