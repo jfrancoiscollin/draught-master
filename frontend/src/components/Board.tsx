@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState, useEffect, useRef } from 'react'
 import { rcToSq, EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING } from '../types'
 import type { MoveData } from '../types'
 
@@ -134,6 +134,55 @@ export default function Board({
     const c = flipped ? 9 - col : col
     return { x: (c + 0.5) * 10, y: (r + 0.5) * 10 }
   }
+  // ── Smooth piece movement overlay ───────────────────────────────────────
+  const [animPiece,   setAnimPiece]   = useState<number>(EMPTY)
+  const [animX,       setAnimX]       = useState(0)
+  const [animY,       setAnimY]       = useState(0)
+  const [animVisible, setAnimVisible] = useState(false)
+  const [animHideSq,  setAnimHideSq]  = useState<number | null>(null)
+  const [animMoving,  setAnimMoving]  = useState(false)
+  const prevLastMoveRef               = useRef<MoveData | null | undefined>(undefined)
+  const animTimerRef                  = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (lastMove === prevLastMoveRef.current) return
+    prevLastMoveRef.current = lastMove
+    if (!lastMove) { setAnimVisible(false); return }
+
+    const from  = lastMove.path[0]
+    const to    = lastMove.path[lastMove.path.length - 1]
+    const piece = board[to]
+    if (piece === EMPTY) { setAnimVisible(false); return }
+
+    const src = sqCenter(from)
+    const dst = sqCenter(to)
+
+    if (animTimerRef.current) clearTimeout(animTimerRef.current)
+
+    // Place overlay at source with no transition
+    setAnimPiece(piece)
+    setAnimX(src.x)
+    setAnimY(src.y)
+    setAnimHideSq(to)
+    setAnimMoving(false)
+    setAnimVisible(true)
+
+    // Two rAFs ensure the browser commits the initial position before transitioning
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setAnimX(dst.x)
+        setAnimY(dst.y)
+        setAnimMoving(true)
+      })
+    })
+
+    animTimerRef.current = setTimeout(() => {
+      setAnimVisible(false)
+      setAnimHideSq(null)
+    }, 380)
+  }, [lastMove]) // eslint-disable-line react-hooks/exhaustive-deps
+  // ────────────────────────────────────────────────────────────────────────
+
   const legalTargets = useCallback((): Set<number> => {
     if (selectedSquare === null) return new Set()
     const targets = new Set<number>()
@@ -255,8 +304,8 @@ export default function Board({
             </div>
           )}
 
-          {/* Piece */}
-          {isDark && sq !== null && piece !== EMPTY && (
+          {/* Piece — hidden at animation destination while overlay is in flight */}
+          {isDark && sq !== null && piece !== EMPTY && sq !== animHideSq && (
             <PieceDisc piece={piece} moveable={isMoveable} selected={isSelected} />
           )}
 
@@ -299,6 +348,29 @@ export default function Board({
       boxShadow: '0 8px 32px rgba(0,0,0,0.55)',
     }}>
       {cells}
+
+      {/* Moving piece overlay */}
+      {animVisible && (
+        <div
+          style={{
+            position: 'absolute',
+            left:   `${animX - 5}%`,
+            top:    `${animY - 5}%`,
+            width:  '10%',
+            height: '10%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 20,
+            transition: animMoving
+              ? 'left 0.28s cubic-bezier(0.25,0,0.35,1), top 0.28s cubic-bezier(0.25,0,0.35,1)'
+              : 'none',
+          }}
+        >
+          <PieceDisc piece={animPiece} moveable={false} selected={false} />
+        </div>
+      )}
 
       {/* Arrow overlay */}
       {arrows.length > 0 && (
