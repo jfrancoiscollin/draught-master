@@ -432,7 +432,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
                 </div>
               ))}
             </div>
-            {status.errors > 0 && <p className="text-xs text-red-400">{status.errors} erreur(s) ignorée(s)</p>}
+            {status && status.errors > 0 && <p className="text-xs text-red-400">{status.errors} erreur(s) ignorée(s)</p>}
           </div>
         )}
 
