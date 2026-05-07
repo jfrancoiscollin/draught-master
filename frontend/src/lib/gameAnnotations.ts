@@ -101,17 +101,17 @@ export async function annotateGame(
   msPerMove: number = 500,
   onProgress: (done: number, total: number) => void,
   signal: AbortSignal,
-): Promise<MoveAnnotation[]> {
+): Promise<{ annotations: MoveAnnotation[]; cacheHits: number }> {
   onProgress(0, positions.length)
 
   // ── Try server-side batch analysis first (native Scan binary: faster & deeper) ──
   // Adaptive time budget: up to 5 s/position, capped so total stays under 240 s.
   const adaptiveMs = Math.min(5000, Math.floor(240000 / positions.length))
   if (!signal.aborted) {
-    const serverEvals = await analyzePositionsBatch(positions, adaptiveMs)
-    if (serverEvals && serverEvals.length === positions.length) {
+    const serverResult = await analyzePositionsBatch(positions, adaptiveMs)
+    if (serverResult && serverResult.evals.length === positions.length) {
       onProgress(positions.length, positions.length)
-      return buildAnnotations(positions, serverEvals)
+      return { annotations: buildAnnotations(positions, serverResult.evals), cacheHits: serverResult.cacheHits }
     }
   }
 
@@ -120,7 +120,7 @@ export async function annotateGame(
   // If WASM is still initialising (downloading), wait up to 90s for it
   if (!engine.ready) {
     const ok = await engine.waitReady(90000)
-    if (!ok) return []
+    if (!ok) return { annotations: [], cacheHits: 0 }
   }
 
   // Stop any ongoing search and lock the engine so that external callers
@@ -132,7 +132,7 @@ export async function annotateGame(
   // stopped search are processed (and discarded) before we start evaluating.
   await new Promise(r => setTimeout(r, 100))
 
-  if (signal.aborted) { engine.unlock(); return [] }
+  if (signal.aborted) { engine.unlock(); return { annotations: [], cacheHits: 0 } }
 
   const evals: PositionEval[] = []
 
@@ -141,15 +141,14 @@ export async function annotateGame(
       if (signal.aborted) break
       const res = await engine.evaluate(positions[i].fen, msPerMove)
       evals.push(res ?? { score: 0, bestMove: null })
-      console.log(`[annotate:wasm] pos ${i} score=${evals[i].score} best=${evals[i].bestMove}`)
       onProgress(i + 1, positions.length)
     }
   } finally {
     engine.unlock()
   }
 
-  if (signal.aborted) return []
-  return buildAnnotations(positions, evals)
+  if (signal.aborted) return { annotations: [], cacheHits: 0 }
+  return { annotations: buildAnnotations(positions, evals), cacheHits: 0 }
 }
 
 export const VERDICT_SYMBOL: Record<NonNullable<Verdict>, string> = {

@@ -60,6 +60,7 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
 
   // ── Deep pre-computation ──────────────────────────────────────
   const [precomputing, setPrecomputing] = useState(false)
+  const [lastCacheHits, setLastCacheHits] = useState<{ hits: number; total: number } | null>(null)
 
   // ── Mode: review or learn ─────────────────────────────────────
   const [panelMode, setPanelMode] = useState<PanelMode>('review')
@@ -209,7 +210,7 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
     setAnnotationTotal(result.positions.length)
 
     try {
-      const anns = await annotateGame(
+      const { annotations: anns, cacheHits } = await annotateGame(
         result.positions,
         500,
         (done, total) => {
@@ -221,6 +222,7 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
       if (!ctrl.signal.aborted) {
         setAnnotations(anns)
         setGameStats(computeStats(anns))
+        setLastCacheHits({ hits: cacheHits, total: result.positions.length })
         if (autoLearnRef.current) {
           autoLearnRef.current = false
           setPanelMode('learn')
@@ -456,6 +458,14 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
           )}
 
           {/* Stats (shown after annotation) */}
+          {lastCacheHits && !annotating && (
+            <div className="text-xs text-center text-gray-500 -mb-1">
+              {lastCacheHits.hits > 0
+                ? `⚡ ${lastCacheHits.hits}/${lastCacheHits.total} positions depuis le cache`
+                : `Cache : 0/${lastCacheHits.total} — aucune position en mémoire`}
+            </div>
+          )}
+
           {gameStats && !annotating && (
             <div className="grid grid-cols-2 gap-px bg-gray-800 rounded-lg overflow-hidden text-xs">
               {(['white', 'black'] as const).map(color => {

@@ -283,7 +283,7 @@ export async function precomputePositions(
 export async function analyzePositionsBatch(
   positions: PdnPosition[],
   msPerMove: number = 200,
-): Promise<PositionEval[] | null> {
+): Promise<{ evals: PositionEval[]; cacheHits: number } | null> {
   try {
     const res = await api.post<{ evaluations: PositionEval[] | null; available: boolean; cache_hits?: number }>(
       '/pdn/annotate',
@@ -291,9 +291,7 @@ export async function analyzePositionsBatch(
       { timeout: 300000 },
     )
     if (!res.data.available || !res.data.evaluations) return null
-    const hits = res.data.cache_hits ?? 0
-    console.log(`[annotate] ${res.data.evaluations.length} positions, ${hits} cache hits (${Math.round(hits / res.data.evaluations.length * 100)}%)`)
-    return res.data.evaluations
+    return { evals: res.data.evaluations, cacheHits: res.data.cache_hits ?? 0 }
   } catch {
     return null
   }
