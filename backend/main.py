@@ -33,6 +33,7 @@ from scan_engine import get_scan_move
 from scan_advisor import analyze_position, analyze_full_game, analyze_full_game_pdn, explain_best_move_concise
 from database import (
     init_db, save_game, get_games, get_game,
+    save_active_game, load_active_game, delete_active_game,
     get_exercises, get_exercise, record_progress,
     create_user, get_user_by_email, get_user_by_id,
     create_reset_token, get_reset_token, consume_reset_token,
@@ -141,27 +142,92 @@ def _build_pdn(history: List[Move]) -> str:
     return " ".join(parts)
 
 
+import json as _json_mod
+
+
+def _serialize_entry(entry: dict) -> str:
+    def ser_state(s: GameState) -> dict:
+        return {
+            "board": s.board,
+            "turn": s.turn,
+            "half_move_clock": s.half_move_clock,
+            "move_history": [{"path": m.path, "captures": m.captures} for m in s.move_history],
+        }
+    return _json_mod.dumps({
+        "date": entry["date"],
+        "white_player": entry["white_player"],
+        "black_player": entry["black_player"],
+        "ai_depth": entry.get("ai_depth", 4),
+        "fen_positions": entry["fen_positions"],
+        "state": ser_state(entry["state"]),
+        "state_history": [
+            {"state": ser_state(s), "fen_len": fl}
+            for s, fl in entry["state_history"]
+        ],
+    })
+
+
+def _deserialize_entry(raw: str) -> dict:
+    d = _json_mod.loads(raw)
+
+    def deser_state(sd: dict) -> GameState:
+        return GameState(
+            board=sd["board"],
+            turn=sd["turn"],
+            half_move_clock=sd.get("half_move_clock", 0),
+            move_history=[Move(path=m["path"], captures=m["captures"]) for m in sd.get("move_history", [])],
+        )
+
+    return {
+        "date": d["date"],
+        "white_player": d["white_player"],
+        "black_player": d["black_player"],
+        "ai_depth": d.get("ai_depth", 4),
+        "fen_positions": d["fen_positions"],
+        "state": deser_state(d["state"]),
+        "state_history": [
+            (deser_state(sh["state"]), sh["fen_len"])
+            for sh in d.get("state_history", [])
+        ],
+    }
+
+
+async def _get_game_entry(game_id: str) -> Optional[dict]:
+    """Return game entry from RAM cache, restoring from DB if needed."""
+    if game_id in game_store:
+        return game_store[game_id]
+    raw = await load_active_game(game_id)
+    if raw is None:
+        return None
+    entry = _deserialize_entry(raw)
+    game_store[game_id] = entry
+    return entry
+
+
 @app.post("/api/game/new", response_model=GameStateResponse)
 async def new_game(req: NewGameRequest) -> GameStateResponse:
     game_id = str(uuid.uuid4())
     state = initial_state()
-    game_store[game_id] = {
+    entry = {
         "state": state,
         "white_player": req.white_player,
         "black_player": req.black_player,
         "ai_depth": req.ai_depth,
         "fen_positions": [board_to_fen(state)],
         "date": datetime.utcnow().isoformat(),
-        "state_history": [],   # list of (GameState, fen_positions_len) for undo
+        "state_history": [],
     }
+    game_store[game_id] = entry
+    await save_active_game(game_id, _serialize_entry(entry))
     return _state_to_response(game_id, state)
 
 
 @app.get("/api/game/{game_id}/legal-moves", response_model=LegalMovesResponse)
 async def legal_moves(game_id: str, from_sq: Optional[int] = Query(None)) -> LegalMovesResponse:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    state: GameState = game_store[game_id]["state"]
+    state: GameState = entry["state"]
     all_moves = get_legal_moves(state)
     if from_sq is not None:
         filtered = [m for m in all_moves if m.path[0] == from_sq]
@@ -173,10 +239,9 @@ async def legal_moves(game_id: str, from_sq: Optional[int] = Query(None)) -> Leg
 
 @app.post("/api/game/{game_id}/move", response_model=MoveResponse)
 async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-
-    entry = game_store[game_id]
     state: GameState = entry["state"]
 
     if game_result(state) is not None:
@@ -236,6 +301,9 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
             fen_positions=entry["fen_positions"],
             move_count=len(state.move_history),
         )
+        await delete_active_game(game_id)
+    else:
+        await save_active_game(game_id, _serialize_entry(entry))
 
     final_legal = get_legal_moves(state) if result is None else []
     return MoveResponse(
@@ -254,9 +322,9 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
 
 @app.post("/api/game/{game_id}/resign")
 async def resign_game(game_id: str) -> Dict[str, Any]:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    entry = game_store[game_id]
     state: GameState = entry["state"]
     if game_result(state) is not None:
         raise HTTPException(status_code=400, detail="La partie est déjà terminée")
@@ -271,19 +339,21 @@ async def resign_game(game_id: str) -> Dict[str, Any]:
         fen_positions=entry["fen_positions"],
         move_count=len(state.move_history),
     )
+    await delete_active_game(game_id)
     return {"result": "black"}
 
 
 @app.post("/api/game/{game_id}/undo", response_model=GameStateResponse)
 async def undo_move(game_id: str) -> GameStateResponse:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    entry = game_store[game_id]
     if not entry["state_history"]:
         raise HTTPException(status_code=400, detail="Aucun coup à annuler")
     state, fen_len = entry["state_history"].pop()
     entry["state"] = state
     entry["fen_positions"] = entry["fen_positions"][:fen_len]
+    await save_active_game(game_id, _serialize_entry(entry))
     return _state_to_response(game_id, state)
 
 
@@ -291,9 +361,10 @@ async def undo_move(game_id: str) -> GameStateResponse:
 async def get_ai_move_suggestion(
     game_id: str, depth: int = Query(4)
 ) -> Dict[str, Any]:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    state: GameState = game_store[game_id]["state"]
+    state: GameState = entry["state"]
     move = get_best_move(state, depth=depth)
     if move is None:
         return {"move": None}
@@ -302,9 +373,10 @@ async def get_ai_move_suggestion(
 
 @app.post("/api/game/{game_id}/analyze", response_model=AnalysisResponse)
 async def analyze(game_id: str, req: AnalyzeRequest) -> AnalysisResponse:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    state: GameState = game_store[game_id]["state"]
+    state: GameState = entry["state"]
     try:
         if req.mode == 'full_game':
             result = await analyze_full_game(state, state.move_history, req.language)

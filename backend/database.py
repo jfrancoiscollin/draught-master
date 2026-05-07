@@ -3760,6 +3760,13 @@ async def init_db() -> None:
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS active_games (
+                id TEXT PRIMARY KEY,
+                state_json TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        """)
         await db.commit()
 
         # Always upsert exercises with fixed IDs so Railway's persistent DB
@@ -3842,6 +3849,29 @@ async def get_game(game_id: str) -> Optional[Dict[str, Any]]:
             data["fen_positions"] = json.loads(data["fen_positions"])
             return data
         return None
+
+
+async def save_active_game(game_id: str, state_json: str) -> None:
+    from datetime import datetime as _dt
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT OR REPLACE INTO active_games (id, state_json, updated_at) VALUES (?, ?, ?)",
+            (game_id, state_json, _dt.utcnow().isoformat()),
+        )
+        await db.commit()
+
+
+async def load_active_game(game_id: str) -> Optional[str]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("SELECT state_json FROM active_games WHERE id = ?", (game_id,))
+        row = await cursor.fetchone()
+        return row[0] if row else None
+
+
+async def delete_active_game(game_id: str) -> None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("DELETE FROM active_games WHERE id = ?", (game_id,))
+        await db.commit()
 
 
 async def get_exercises(
