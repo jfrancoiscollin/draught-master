@@ -189,6 +189,7 @@ export default function App() {
   const [exerciseSelectedSquare, setExerciseSelectedSquare] = useState<number | null>(null)
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseCheckResponse | null>(null)
   const [exerciseSolved, setExerciseSolved] = useState(false)
+  const [showSolvedOverlay, setShowSolvedOverlay] = useState(false)
   const [exerciseStep, setExerciseStep] = useState(0)
   const [exerciseMovesLoading, setExerciseMovesLoading] = useState(false)
   const exerciseLoadGenRef = useRef(0)
@@ -728,6 +729,13 @@ export default function App() {
       showToast(t('errorVerification'))
     }
   }, [exerciseGameState, exerciseSolved, exerciseStep, t])
+
+  useEffect(() => {
+    if (!exerciseSolved) { setShowSolvedOverlay(false); return }
+    setShowSolvedOverlay(true)
+    const t = setTimeout(() => setShowSolvedOverlay(false), 1000)
+    return () => clearTimeout(t)
+  }, [exerciseSolved])
 
   const handleExerciseSelectSquare = useCallback((sq: number | null) => {
     if (exerciseSolved) return
@@ -1386,7 +1394,7 @@ export default function App() {
                 freeSelectSquares={exerciseFreeSelectSquares}
                 flipped={exerciseGameState.fen.startsWith('B:')}
               />
-              {exerciseSolved && (
+              {showSolvedOverlay && (
                 <div
                   className="absolute inset-0 flex flex-col items-center justify-center rounded"
                   style={{ background: 'rgba(0,0,0,0.55)', zIndex: 5 }}
