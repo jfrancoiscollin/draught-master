@@ -991,17 +991,6 @@ export default function App() {
                 <span className="text-4xl group-hover:scale-110 transition-transform duration-200">📂</span>
                 <span className="text-base font-bold text-white">{t('tabImport')}</span>
               </button>
-              {/* Opening cache builder */}
-              <button
-                onClick={() => setTab('opening-builder')}
-                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-indigo-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
-              >
-                <span className="text-4xl group-hover:scale-110 transition-transform duration-200">🔬</span>
-                <span className="text-base font-bold text-white">Base ouvertures</span>
-              </button>
-            </div>
-            <div className="w-full max-w-2xl mt-6">
-              <UserStatsCard />
             </div>
           </div>
         )}
@@ -1536,6 +1525,21 @@ export default function App() {
             explorerMaxMoves={explorerMaxMoves}
             onExplorerMaxMovesChange={changeExplorerMaxMoves}
           />
+        </div>
+        {/* ── Base ouvertures ── */}
+        <div className="mt-4">
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">Base ouvertures</h4>
+          <button
+            onClick={() => { setShowControls(false); setTab('opening-builder') }}
+            className="w-full flex items-center gap-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 hover:border-indigo-500 rounded-xl px-4 py-3 transition-colors"
+          >
+            <span className="text-2xl">🔬</span>
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-semibold text-white">Ouvrir la base d'ouvertures</span>
+              <span className="text-xs text-gray-400">Pré-calcule les positions depuis Lidraughts</span>
+            </div>
+            <span className="ml-auto text-gray-400">›</span>
+          </button>
         </div>
       </BottomSheet>
 
