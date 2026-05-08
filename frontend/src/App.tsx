@@ -311,7 +311,10 @@ export default function App() {
   const changePlayerSide = useCallback((side: PlayerSide) => {
     setPlayerSide(side)
     try { localStorage.setItem('playerSide', side) } catch {}
-  }, [])
+    const resolved = side === 'random' ? (Math.random() < 0.5 ? 'white' : 'black') : side
+    setHumanColor(resolved)
+    startNewGame()
+  }, [startNewGame])
 
   const handleGoToPlay = useCallback((bothSidesMode = false) => {
     setBothSides(bothSidesMode)
@@ -1582,7 +1585,7 @@ export default function App() {
             explorerMaxMoves={explorerMaxMoves}
             onExplorerMaxMovesChange={changeExplorerMaxMoves}
             playerSide={playerSide}
-            onPlayerSideChange={changePlayerSide}
+            onPlayerSideChange={(side) => { changePlayerSide(side); setShowControls(false) }}
           />
         </div>
         {/* ── Base ouvertures ── */}
