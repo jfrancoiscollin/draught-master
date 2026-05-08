@@ -957,52 +957,47 @@ export default function App() {
 
         {/* HOME SCREEN */}
         {tab === 'home' && (
-          <div className="h-full flex flex-col items-center justify-center px-4 py-8 overflow-y-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+          <div className="h-full flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
               {/* Play */}
               <button
                 onClick={() => handleGoToPlay(false)}
-                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
               >
-                <img src={logoPlaySrc} alt="" className="w-16 h-16 group-hover:scale-110 transition-transform duration-200" style={{ objectFit: 'contain' }} />
-                <span className="text-lg font-bold text-white">{t('tabPlay')}</span>
-                <span className="text-sm text-gray-400 text-center">{t('playDesc')}</span>
+                <img src={logoPlaySrc} alt="" className="w-12 h-12 group-hover:scale-110 transition-transform duration-200" style={{ objectFit: 'contain' }} />
+                <span className="text-base font-bold text-white">{t('tabPlay')}</span>
               </button>
               {/* Play both sides */}
               <button
                 onClick={() => handleGoToPlay(true)}
-                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
               >
-                <img src={logoBothSrc} alt="" className="w-16 h-16 group-hover:scale-110 transition-transform duration-200" style={{ objectFit: 'contain' }} />
-                <span className="text-lg font-bold text-white">{t('playBothSides')}</span>
-                <span className="text-sm text-gray-400 text-center">{t('playBothSidesDesc')}</span>
+                <img src={logoBothSrc} alt="" className="w-12 h-12 group-hover:scale-110 transition-transform duration-200" style={{ objectFit: 'contain' }} />
+                <span className="text-base font-bold text-white">{t('playBothSides')}</span>
               </button>
               {/* Exercises */}
               <button
                 onClick={() => setTab('exercise-library')}
-                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
               >
-                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">📖</span>
-                <span className="text-lg font-bold text-white">{t('tabExercises')}</span>
-                <span className="text-sm text-gray-400 text-center">{t('exercisesDesc')}</span>
+                <span className="text-4xl group-hover:scale-110 transition-transform duration-200">📖</span>
+                <span className="text-base font-bold text-white">{t('tabExercises')}</span>
               </button>
               {/* Import & Analyze */}
               <button
                 onClick={() => setTab('import-game')}
-                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
               >
-                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">📂</span>
-                <span className="text-lg font-bold text-white">{t('tabImport')}</span>
-                <span className="text-sm text-gray-400 text-center">{t('importDesc')}</span>
+                <span className="text-4xl group-hover:scale-110 transition-transform duration-200">📂</span>
+                <span className="text-base font-bold text-white">{t('tabImport')}</span>
               </button>
               {/* Opening cache builder */}
               <button
                 onClick={() => setTab('opening-builder')}
-                className="group flex flex-col items-center gap-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-indigo-600 rounded-xl p-8 transition-all duration-200 cursor-pointer"
+                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-indigo-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
               >
-                <span className="text-5xl group-hover:scale-110 transition-transform duration-200">🔬</span>
-                <span className="text-lg font-bold text-white">Base ouvertures</span>
-                <span className="text-sm text-gray-400 text-center">Pré-calcule les positions depuis Lidraughts</span>
+                <span className="text-4xl group-hover:scale-110 transition-transform duration-200">🔬</span>
+                <span className="text-base font-bold text-white">Base ouvertures</span>
               </button>
             </div>
             <div className="w-full max-w-2xl mt-6">
