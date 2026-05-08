@@ -399,12 +399,6 @@ export default function Board({
             zIndex: 10,
           }}
         >
-          <defs>
-            {/* context-stroke makes the arrowhead inherit the line colour */}
-            <marker id="bm-arrow" markerWidth="3.5" markerHeight="3" refX="3.2" refY="1.5" orient="auto">
-              <polygon points="0 0, 3.5 1.5, 0 3" fill="context-stroke" />
-            </marker>
-          </defs>
           {arrows.map((arrow, i) => {
             const f = sqCenter(arrow.from)
             const t = sqCenter(arrow.to)
@@ -412,24 +406,41 @@ export default function Board({
             const dy = t.y - f.y
             const len = Math.sqrt(dx * dx + dy * dy)
             if (len < 1) return null
-            const ux = dx / len
-            const uy = dy / len
-            const x1 = f.x + ux * 3.8
-            const y1 = f.y + uy * 3.8
-            const x2 = t.x - ux * 4.2
-            const y2 = t.y - uy * 4.2
+
+            const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI
+            const scale     = (arrow.width ?? 2.2) / 2.2
+
+            // Arrow path pointing rightward from origin: shaft + chevron head
+            const start    = 2.5              // gap from source center
+            const headLen  = 4.0 * scale
+            const headHalf = 3.2 * scale
+            const shaftH   = 1.1 * scale
+            const xh       = len - headLen
+
+            const d = [
+              `M ${start} ${-shaftH}`,
+              `L ${xh}    ${-shaftH}`,
+              `L ${xh}    ${-headHalf}`,
+              `L ${len}   0`,
+              `L ${xh}    ${headHalf}`,
+              `L ${xh}    ${shaftH}`,
+              `L ${start} ${shaftH}`,
+              'Z',
+            ].join(' ')
+
             const color   = arrow.color   ?? '#9CA3AF'
             const opacity = arrow.opacity ?? 0.85
-            const width   = arrow.width   ?? 2.2
+
             return (
-              <line
+              <path
                 key={i}
-                x1={x1} y1={y1} x2={x2} y2={y2}
-                stroke={color}
-                strokeWidth={width}
-                strokeLinecap="round"
+                d={d}
+                fill={color}
+                stroke="rgba(0,0,0,0.28)"
+                strokeWidth={0.5}
+                strokeLinejoin="round"
                 opacity={opacity}
-                markerEnd="url(#bm-arrow)"
+                transform={`translate(${f.x},${f.y}) rotate(${angleDeg})`}
               />
             )
           })}
