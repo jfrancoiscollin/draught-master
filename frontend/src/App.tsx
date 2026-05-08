@@ -209,7 +209,9 @@ export default function App() {
   const [showSolvedOverlay, setShowSolvedOverlay] = useState(false)
   const [exerciseStep, setExerciseStep] = useState(0)
   const [exerciseMovesLoading, setExerciseMovesLoading] = useState(false)
+  const [exerciseLastMove, setExerciseLastMove] = useState<MoveData | null>(null)
   const exerciseLoadGenRef = useRef(0)
+  const exerciseAutoMoveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // When server doesn't provide legal moves, let the user click any piece of the
   // current side and any dark square as destination (server validates on submit).
@@ -286,6 +288,8 @@ export default function App() {
     setExerciseSelectedSquare(null)
     setExerciseStep(0)
     setExerciseMovesLoading(false)
+    setExerciseLastMove(null)
+    if (exerciseAutoMoveTimerRef.current) clearTimeout(exerciseAutoMoveTimerRef.current)
   }, [])
 
   const startNewGame = useCallback(async () => {
@@ -777,22 +781,29 @@ export default function App() {
         // Apply user's move to board
         const boardAfterUser = applyMoveLocally(exerciseGameState.board, fullMove)
 
-        // Apply opponent's auto-move if provided
-        let finalBoard = boardAfterUser
+        // Resolve auto-move data (opponent's response) if provided
+        let autoMoveData: MoveData | null = null
         if (result.auto_move_path && result.auto_move_path.length > 0) {
-          const autoData: MoveData = {
-            path: result.auto_move_path,
-            captures: result.auto_move_captures ?? [],
-          }
-          finalBoard = applyMoveLocally(boardAfterUser, autoData)
+          autoMoveData = { path: result.auto_move_path, captures: result.auto_move_captures ?? [] }
         } else if (result.auto_move) {
-          const autoData = pdnToMoveData(result.auto_move, boardAfterUser)
-          if (autoData) {
-            finalBoard = applyMoveLocally(boardAfterUser, autoData)
-          }
+          autoMoveData = pdnToMoveData(result.auto_move, boardAfterUser) ?? null
         }
+        const finalBoard = autoMoveData ? applyMoveLocally(boardAfterUser, autoMoveData) : boardAfterUser
 
-        setExerciseGameState(prev => prev ? { ...prev, board: finalBoard } : prev)
+        // Animate user's move first
+        if (exerciseAutoMoveTimerRef.current) clearTimeout(exerciseAutoMoveTimerRef.current)
+        setExerciseGameState(prev => prev ? { ...prev, board: boardAfterUser } : prev)
+        setExerciseLastMove(fullMove)
+
+        // After user animation completes, apply & animate opponent's response
+        const userSegMs = (fullMove.path.length - 1) === 1 ? 280 : 180
+        const userAnimMs = (fullMove.path.length - 1) * userSegMs + 120
+        exerciseAutoMoveTimerRef.current = setTimeout(() => {
+          if (autoMoveData) {
+            setExerciseGameState(prev => prev ? { ...prev, board: finalBoard } : prev)
+            setExerciseLastMove(autoMoveData)
+          }
+        }, autoMoveData ? userAnimMs : 0)
 
         if (result.in_progress) {
           const nextStep = exerciseStep + 1
@@ -1494,6 +1505,7 @@ export default function App() {
                   disabled={exerciseSolved}
                   freeSelectSquares={exerciseFreeSelectSquares}
                   flipped={exerciseGameState.fen.startsWith('B:')}
+                  lastMove={exerciseLastMove}
                 />
                 {showSolvedOverlay && (
                   <div
