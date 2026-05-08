@@ -59,8 +59,6 @@ export default function ExercisePanel({
       .then(([exercises, titles]) => {
         setAllExercises(exercises)
         setLessonTitles(titles)
-        const firstChapter = exercises.find(e => e.chapter)?.chapter
-        if (firstChapter) setOpenChapters(new Set([firstChapter]))
       })
       .catch(err => setLoadError(String(err?.message ?? err)))
       .finally(() => setLoading(false))
