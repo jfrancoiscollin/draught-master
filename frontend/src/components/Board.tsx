@@ -10,7 +10,50 @@ export interface Arrow {
   width?: number     // strokeWidth, default 2.2
 }
 
-export type BoardTheme = 'classic' | 'wood'
+export type BoardTheme = 'classic' | 'wood' | 'wood2'
+
+// SVG with feTurbulence wood-grain filter encoded as a CSS background data URI.
+// Using base64 avoids URL-encoding issues with '#' in color values.
+// Appending "0 0/100% 100%" to the url() sets position + size in the background shorthand.
+function _woodBg(svgContent: string): string {
+  return `url("data:image/svg+xml;base64,${btoa(svgContent)}") 0 0/100% 100%`
+}
+const _W2_LIGHT = _woodBg(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">` +
+  `<defs>` +
+  `<linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">` +
+  `<stop offset="0" stop-color="#fff3d6"/>` +
+  `<stop offset=".5" stop-color="#fae8c2"/>` +
+  `<stop offset="1" stop-color="#f0dcaa"/>` +
+  `</linearGradient>` +
+  `<filter id="g">` +
+  `<feTurbulence type="fractalNoise" baseFrequency="0.04 0.6" numOctaves="2" seed="3"/>` +
+  `<feColorMatrix values="0 0 0 0 0.7 0 0 0 0 0.55 0 0 0 0 0.32 0 0 0 0.1 0"/>` +
+  `<feComposite in2="SourceGraphic" operator="in"/>` +
+  `<feComposite in="SourceGraphic" operator="over"/>` +
+  `</filter>` +
+  `</defs>` +
+  `<rect width="100" height="100" fill="url(#lg)" filter="url(#g)"/>` +
+  `</svg>`
+)
+const _W2_DARK = _woodBg(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">` +
+  `<defs>` +
+  `<linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">` +
+  `<stop offset="0" stop-color="#a87148"/>` +
+  `<stop offset=".5" stop-color="#8e5a30"/>` +
+  `<stop offset="1" stop-color="#74471f"/>` +
+  `</linearGradient>` +
+  `<filter id="g">` +
+  `<feTurbulence type="fractalNoise" baseFrequency="0.04 0.6" numOctaves="2" seed="7"/>` +
+  `<feColorMatrix values="0 0 0 0 0.25 0 0 0 0 0.15 0 0 0 0 0.06 0 0 0 0.2 0"/>` +
+  `<feComposite in2="SourceGraphic" operator="in"/>` +
+  `<feComposite in="SourceGraphic" operator="over"/>` +
+  `</filter>` +
+  `</defs>` +
+  `<rect width="100" height="100" fill="url(#lg)" filter="url(#g)"/>` +
+  `</svg>`
+)
 
 const THEMES: Record<BoardTheme, {
   light: string
@@ -32,6 +75,14 @@ const THEMES: Record<BoardTheme, {
     light:       'linear-gradient(135deg,#fbecce 0%,#f3e1b8 50%,#e8d2a0 100%)',
     dark:        'linear-gradient(135deg,#dab084 0%,#c89868 50%,#b07f4a 100%)',
     border:      '#74471f',
+    selectedBg:  'rgba(255,255,255,0.48)',
+    lastMoveBg:  'rgba(255,255,255,0.28)',
+    highlightBg: 'rgba(255,255,255,0.16)',
+  },
+  wood2: {
+    light:       _W2_LIGHT,
+    dark:        _W2_DARK,
+    border:      '#3e1f08',
     selectedBg:  'rgba(255,255,255,0.48)',
     lastMoveBg:  'rgba(255,255,255,0.28)',
     highlightBg: 'rgba(255,255,255,0.16)',

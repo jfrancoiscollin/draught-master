@@ -1615,11 +1615,16 @@ export default function App() {
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1 mt-4">Personnalisation</h4>
           <div className="mb-4">
             <p className="text-xs text-gray-400 mb-3 px-1">Damier</p>
-            <div className="flex gap-4 px-1">
+            <div className="flex gap-3 px-1 flex-wrap">
               {([
-                { id: 'classic', label: 'Classique', light: '#F0CFA0', dark: '#9B6B4A', border: '#5C3317' },
-                { id: 'wood',    label: 'Bois',      light: '#f3e1b8', dark: '#c89868', border: '#74471f' },
-              ] as const).map(({ id, label, light, dark, border }) => (
+                { id: 'classic', label: 'Classique', light: '#F0CFA0',  dark: '#9B6B4A',  border: '#5C3317' },
+                { id: 'wood',    label: 'Bois',       light: '#f3e1b8',  dark: '#c89868',  border: '#74471f' },
+                { id: 'wood2',   label: 'Noyer',      light: '#fae8c2',  dark: '#8e5a30',  border: '#3e1f08',
+                  lightGrad: ['#fff3d6','#fae8c2','#f0dcaa'], darkGrad: ['#a87148','#8e5a30','#74471f'] },
+              ] as const).map(({ id, label, light, dark, border, ...extra }) => {
+                const lg = (extra as { lightGrad?: readonly string[] }).lightGrad
+                const dg = (extra as { darkGrad?: readonly string[] }).darkGrad
+                return (
                 <button
                   key={id}
                   onClick={() => {
@@ -1635,10 +1640,24 @@ export default function App() {
                     transition: 'border-color 0.15s',
                   }}>
                     <svg width="56" height="56" viewBox="0 0 10 10" style={{ display: 'block', borderRadius: 4, overflow: 'hidden' }}>
-                      <rect width="10" height="10" fill={light}/>
+                      {lg && dg && (
+                        <defs>
+                          <linearGradient id={`plg-${id}`} x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stopColor={lg[0]}/>
+                            <stop offset=".5" stopColor={lg[1]}/>
+                            <stop offset="1" stopColor={lg[2]}/>
+                          </linearGradient>
+                          <linearGradient id={`pdg-${id}`} x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stopColor={dg[0]}/>
+                            <stop offset=".5" stopColor={dg[1]}/>
+                            <stop offset="1" stopColor={dg[2]}/>
+                          </linearGradient>
+                        </defs>
+                      )}
+                      <rect width="10" height="10" fill={lg ? `url(#plg-${id})` : light}/>
                       {[0,1,2,3,4].flatMap(r =>
                         [0,1,2,3,4].map(c => ((r + c) % 2 === 1) ? (
-                          <rect key={`${r}-${c}`} x={c*2} y={r*2} width={2} height={2} fill={dark}/>
+                          <rect key={`${r}-${c}`} x={c*2} y={r*2} width={2} height={2} fill={dg ? `url(#pdg-${id})` : dark}/>
                         ) : null)
                       )}
                       <rect width="10" height="10" fill="none" stroke={border} strokeWidth="0.5"/>
@@ -1646,7 +1665,8 @@ export default function App() {
                   </div>
                   <span className="text-xs" style={{ color: boardTheme === id ? '#fbbf24' : '#6b7280' }}>{label}</span>
                 </button>
-              ))}
+                )
+              })}
             </div>
           </div>
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">Base ouvertures</h4>
