@@ -958,7 +958,6 @@ export default function App() {
         {/* HOME SCREEN */}
         {tab === 'home' && (
           <div className="h-full flex flex-col items-center justify-center px-4 py-8 overflow-y-auto">
-            <p className="text-gray-400 text-sm mb-10 text-center">{t('appSubtitle')}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
               {/* Play */}
               <button
