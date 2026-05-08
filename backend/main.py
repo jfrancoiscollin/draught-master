@@ -973,24 +973,27 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
 
     def run_batch() -> tuple:
         try:
-            from opening_book_db import lookup as cached_lookup
+            from opening_book_db import lookup as cached_lookup, store as book_store
         except Exception as exc:
             logging.warning("opening_book_db unavailable: %s", exc)
             cached_lookup = lambda _fen: None  # noqa: E731
+            book_store = lambda _entries: None  # noqa: E731
 
         results = []
         cache_hits = 0
+        to_save: list[dict] = []
+
         for i, pos_data in enumerate(positions):
             fen = pos_data.get("fen", "")
             if not fen:
                 results.append({"score": 0, "bestMove": None})
                 continue
-            # Check pre-computed cache first (populated by /api/opening-book/precompute)
+            # Check cache first (populated by past analyses or /api/opening-book/precompute)
             try:
                 hit = cached_lookup(fen)
             except Exception:
                 hit = None
-            if hit and hit.get("score") is not None and hit["score"] != 0:
+            if hit is not None:
                 results.append({"score": hit["score"], "bestMove": hit.get("bestMove")})
                 cache_hits += 1
                 continue
@@ -998,9 +1001,19 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
             hub_pos = _build_pos(state)
             result = engine.evaluate_pos(hub_pos, movetime_s)
             ev = result or {"score": 0, "bestMove": None}
-            logging.info("annotate pos %d/%d fen=%s score=%d best=%s",
+            logging.info("annotate pos %d/%d fen=%s score=%.3f best=%s",
                          i+1, len(positions), fen[:40], ev["score"], ev.get("bestMove"))
             results.append(ev)
+            # Save to cache so the next analysis of the same game is instant
+            to_save.append({"fen": fen, "score": ev["score"], "bestMove": ev.get("bestMove")})
+
+        if to_save:
+            try:
+                book_store(to_save)
+                logging.info("annotate: saved %d new positions to opening book cache", len(to_save))
+            except Exception as exc:
+                logging.warning("annotate: could not save to cache: %s", exc)
+
         return results, cache_hits
 
     evaluations, cache_hits = await asyncio.get_event_loop().run_in_executor(None, run_batch)

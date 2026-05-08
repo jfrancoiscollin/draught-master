@@ -47,7 +47,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS opening_book (
             fen        TEXT    PRIMARY KEY,
-            score      INTEGER NOT NULL DEFAULT 0,
+            score      REAL    NOT NULL DEFAULT 0,
             best_move  TEXT,
             games_seen INTEGER NOT NULL DEFAULT 0,
             depth      INTEGER NOT NULL DEFAULT 99,
@@ -160,7 +160,7 @@ def store(entries: list[dict], depth: int = 99) -> int:
             best = e.get("bestMove")
             if was_mirrored and best:
                 best = mirror_move(best)
-            score = int(e.get("score", 0))
+            score = float(e.get("score", 0))
             entry_depth = int(e.get("depth", depth))
 
             existing = conn.execute(
