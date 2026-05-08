@@ -914,7 +914,8 @@ export default function App() {
       if (p === WHITE_MAN || p === WHITE_KING) w++
       else if (p === BLACK_MAN || p === BLACK_KING) b++
     }
-    return w - b
+    // Show advantage from the human player's perspective
+    return (!bothSides && humanColor === 'black') ? b - w : w - b
   })()
 
 
