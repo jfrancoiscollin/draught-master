@@ -35,12 +35,16 @@ function AccuracyRing({ pct }: { pct: number }) {
   )
 }
 
-export default function UserStatsCard() {
+interface UserStatsCardProps {
+  defaultOpen?: boolean
+}
+
+export default function UserStatsCard({ defaultOpen = false }: UserStatsCardProps) {
   const { user } = useAuth()
   const { t } = useLanguage()
   const [stats, setStats] = useState<UserStats | null>(null)
   const [loading, setLoading] = useState(false)
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultOpen)
 
   useEffect(() => {
     if (!user || !open) return

@@ -1509,25 +1509,34 @@ export default function App() {
         )}
       </main>
 
-      {/* Controls bottom sheet — mobile only */}
+      {/* Settings bottom sheet — mobile only */}
       <BottomSheet
         open={showControls}
         onClose={() => setShowControls(false)}
-        title={t('controls')}
+        title={t('settings')}
       >
-        <GameControls
-          result={gameState?.result || null}
-          turn={gameState?.turn || 'white'}
-          moveCount={gameState?.move_count || 0}
-          aiDepth={aiDepth}
-          onNewGame={() => { startNewGame(); setShowControls(false) }}
-          onAiDepthChange={setAiDepth}
-          disabled={isAiThinking}
-          showExplorer={showExplorer}
-          onShowExplorerChange={toggleExplorer}
-          explorerMaxMoves={explorerMaxMoves}
-          onExplorerMaxMovesChange={changeExplorerMaxMoves}
-        />
+        {/* ── Profil ── */}
+        <div className="mb-4">
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">{t('profileSection')}</h4>
+          <UserStatsCard defaultOpen />
+        </div>
+        {/* ── Contrôles ── */}
+        <div>
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">{t('controls')}</h4>
+          <GameControls
+            result={gameState?.result || null}
+            turn={gameState?.turn || 'white'}
+            moveCount={gameState?.move_count || 0}
+            aiDepth={aiDepth}
+            onNewGame={() => { startNewGame(); setShowControls(false) }}
+            onAiDepthChange={setAiDepth}
+            disabled={isAiThinking}
+            showExplorer={showExplorer}
+            onShowExplorerChange={toggleExplorer}
+            explorerMaxMoves={explorerMaxMoves}
+            onExplorerMaxMovesChange={changeExplorerMaxMoves}
+          />
+        </div>
       </BottomSheet>
 
     </div>
