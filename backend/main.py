@@ -5,7 +5,9 @@ import os
 import secrets
 import smtplib
 import ssl
+import time
 import uuid
+from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from typing import Dict, Any, Optional, List
@@ -17,7 +19,7 @@ import hashlib
 import base64
 import json as _json
 from passlib.context import CryptContext
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, HTTPException, Query, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -170,9 +172,6 @@ def _build_pdn(history: List[Move]) -> str:
 
 
 import json as _json_mod
-import time
-from collections import defaultdict, deque
-from fastapi import Request
 
 
 class _RateLimiter:
