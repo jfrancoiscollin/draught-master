@@ -3,7 +3,7 @@ import Board from './components/Board'
 import type { Arrow } from './components/Board'
 import AnalysisPanel, { MoveAnnotationsTable } from './components/AnalysisPanel'
 import AnalysisText from './components/AnalysisText'
-import GameControls from './components/GameControls'
+import GameControls, { type PlayerSide } from './components/GameControls'
 import MoveList from './components/MoveList'
 import ExercisePanel from './components/ExercisePanel'
 import ExerciseLibraryPage from './components/ExerciseLibraryPage'
@@ -181,6 +181,11 @@ export default function App() {
   })
   const [isAiThinking, setIsAiThinking] = useState(false)
   const [bothSides, setBothSides] = useState(false)
+  const [playerSide, setPlayerSide] = useState<PlayerSide>(() => {
+    try { return (localStorage.getItem('playerSide') as PlayerSide) ?? 'white' } catch { return 'white' }
+  })
+  // Resolved color for the current game (random is resolved at game start)
+  const [humanColor, setHumanColor] = useState<'white' | 'black'>('white')
   const [spokenSquares, setSpokenSquares] = useState<number[]>([])
   const [showControls, setShowControls] = useState(false)
   const [analysisExpanded, setAnalysisExpanded] = useState(false)
@@ -303,17 +308,26 @@ export default function App() {
     }
   }, [aiDepth, t])
 
+  const changePlayerSide = useCallback((side: PlayerSide) => {
+    setPlayerSide(side)
+    try { localStorage.setItem('playerSide', side) } catch {}
+  }, [])
+
   const handleGoToPlay = useCallback((bothSidesMode = false) => {
     setBothSides(bothSidesMode)
+    const resolved = bothSidesMode ? 'white'
+      : playerSide === 'random' ? (Math.random() < 0.5 ? 'white' : 'black')
+      : playerSide
+    setHumanColor(resolved)
     setTab('play')
     startNewGame()
-  }, [startNewGame])
+  }, [startNewGame, playerSide])
 
   const handleSelectSquare = useCallback((sq: number | null) => {
     if (!gameState || gameState.result) return
-    if (gameState.turn !== 'white' && !bothSides) return
+    if (gameState.turn !== humanColor && !bothSides) return
     setSelectedSquare(sq)
-  }, [gameState, bothSides])
+  }, [gameState, bothSides, humanColor])
 
   // Animate a multi-hop capture: steps through intermediate boards at delayMs per hop.
   // Resolves when the last board is cleared (captureAnimBoard → null).
@@ -480,6 +494,47 @@ export default function App() {
       setIsAiThinking(false)
     }
   }, [gameState, aiDepth, isAiThinking, bothSides, animateCaptures])
+
+  // When human plays black, trigger AI's first move (white) at game start
+  const aiFirstMoveTriggered = React.useRef(false)
+  React.useEffect(() => {
+    if (bothSides || humanColor !== 'black') return
+    if (!gameState || gameState.result || isAiThinking) return
+    if (gameState.move_count !== 0) { aiFirstMoveTriggered.current = false; return }
+    if (aiFirstMoveTriggered.current) return
+    aiFirstMoveTriggered.current = true
+
+    const runAi = async () => {
+      setIsAiThinking(true)
+      try {
+        const wasmMs = Math.max(200, aiDepth * 250)
+        const engine = getScanEngine()
+        const hubMove = await engine.getMove(gameState.fen, wasmMs)
+        let aiMoveData: MoveData | null = null
+        if (hubMove) aiMoveData = matchHubMove(hubMove, gameState.legal_moves)
+        if (!aiMoveData) {
+          const serverMove = await getAiMove(gameState.game_id, aiDepth)
+          if (serverMove) aiMoveData = serverMove
+        }
+        if (aiMoveData) {
+          const aiResp = await makeMove(gameState.game_id, aiMoveData, aiDepth, true)
+          if (aiMoveData.path.length > 2) await animateCaptures(gameState.board, aiMoveData)
+          else playMoveSound()
+          setGameState({
+            game_id: aiResp.game_id, board: aiResp.board, turn: aiResp.turn,
+            half_move_clock: aiResp.half_move_clock, move_count: aiResp.move_count,
+            result: aiResp.result, fen: aiResp.fen,
+            last_move: aiMoveData, legal_moves: aiResp.legal_moves ?? [],
+          })
+          setMoveHistory(prev => [...prev, aiMoveData!])
+          setFenHistory(prev => [...prev, aiResp.fen])
+        }
+      } catch { /* silent */ }
+      finally { setIsAiThinking(false) }
+    }
+    runAi()
+  }, [gameState, humanColor, bothSides, isAiThinking, aiDepth, animateCaptures])
+
 
   const handleResign = useCallback(async () => {
     if (!gameState || isAiThinking || gameState.result) return
@@ -831,8 +886,7 @@ export default function App() {
 
   const currentBoard = gameState?.board || new Array(51).fill(EMPTY)
   const displayBoard = captureAnimBoard ?? replayingPosition?.board ?? currentBoard
-  const isWhiteTurn = gameState?.turn === 'white'
-  const boardDisabled = !!replayingPosition || !gameState || !!gameState.result || isAiThinking || (!isWhiteTurn && !bothSides)
+  const boardDisabled = !!replayingPosition || !gameState || !!gameState.result || isAiThinking || (gameState?.turn !== humanColor && !bothSides)
   const legalMoves = boardDisabled ? [] : (gameState?.legal_moves ?? [])
 
   const pieceDiff = (() => {
@@ -958,38 +1012,38 @@ export default function App() {
         {/* HOME SCREEN */}
         {tab === 'home' && (
           <div className="h-full flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+            <div className="flex flex-col gap-3 w-full max-w-lg">
               {/* Play */}
               <button
                 onClick={() => handleGoToPlay(false)}
-                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
+                className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <img src={logoPlaySrc} alt="" className="w-12 h-12 group-hover:scale-110 transition-transform duration-200" style={{ objectFit: 'contain' }} />
-                <span className="text-base font-bold text-white">{t('tabPlay')}</span>
+                <img src={logoPlaySrc} alt="" className="w-18 h-18 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 72, height: 72, objectFit: 'contain' }} />
+                <span className="text-lg font-bold text-white">{t('tabPlay')}</span>
               </button>
               {/* Play both sides */}
               <button
                 onClick={() => handleGoToPlay(true)}
-                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
+                className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <img src={logoBothSrc} alt="" className="w-12 h-12 group-hover:scale-110 transition-transform duration-200" style={{ objectFit: 'contain' }} />
-                <span className="text-base font-bold text-white">{t('playBothSides')}</span>
+                <img src={logoBothSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 72, height: 72, objectFit: 'contain' }} />
+                <span className="text-lg font-bold text-white">{t('playBothSides')}</span>
               </button>
               {/* Exercises */}
               <button
                 onClick={() => setTab('exercise-library')}
-                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
+                className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <span className="text-4xl group-hover:scale-110 transition-transform duration-200">📖</span>
-                <span className="text-base font-bold text-white">{t('tabExercises')}</span>
+                <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📖</span>
+                <span className="text-lg font-bold text-white">{t('tabExercises')}</span>
               </button>
               {/* Import & Analyze */}
               <button
                 onClick={() => setTab('import-game')}
-                className="group flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl p-4 transition-all duration-200 cursor-pointer"
+                className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <span className="text-4xl group-hover:scale-110 transition-transform duration-200">📂</span>
-                <span className="text-base font-bold text-white">{t('tabImport')}</span>
+                <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📂</span>
+                <span className="text-lg font-bold text-white">{t('tabImport')}</span>
               </button>
             </div>
           </div>
@@ -1072,6 +1126,7 @@ export default function App() {
                         lastMove={gameState?.last_move}
                         spokenSquares={spokenSquares}
                         arrows={bestMoveArrow ? [bestMoveArrow, ...explorerArrows] : explorerArrows}
+                        flipped={!bothSides && humanColor === 'black'}
                       />
                       <EvalBar fen={isAiThinking ? null : (gameState?.fen ?? null)} />
                       </div>
@@ -1310,6 +1365,8 @@ export default function App() {
                       onShowExplorerChange={toggleExplorer}
                       explorerMaxMoves={explorerMaxMoves}
                       onExplorerMaxMovesChange={changeExplorerMaxMoves}
+                      playerSide={playerSide}
+                      onPlayerSideChange={changePlayerSide}
                     />
                     <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
