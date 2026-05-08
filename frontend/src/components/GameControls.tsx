@@ -22,7 +22,7 @@ interface GameControlsProps {
 // Mini disc SVGs matching the board piece style
 function DiscWhite() {
   return (
-    <svg viewBox="0 0 40 28" width="36" height="25">
+    <svg viewBox="0 0 40 28" width="36" height="25" style={{ pointerEvents: 'none' }}>
       <defs>
         <linearGradient id="cw-side" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%"   stopColor="#9a9a9a"/>
@@ -45,7 +45,7 @@ function DiscWhite() {
 
 function DiscBlack() {
   return (
-    <svg viewBox="0 0 40 28" width="36" height="25">
+    <svg viewBox="0 0 40 28" width="36" height="25" style={{ pointerEvents: 'none' }}>
       <defs>
         <linearGradient id="cb-side" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%"   stopColor="#111"/>
@@ -66,7 +66,7 @@ function DiscBlack() {
 
 function DiscRandom() {
   return (
-    <svg viewBox="0 0 40 34" width="36" height="30">
+    <svg viewBox="0 0 40 34" width="36" height="30" style={{ pointerEvents: 'none' }}>
       <defs>
         <linearGradient id="cr-wside" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%"   stopColor="#9a9a9a"/>
@@ -142,7 +142,7 @@ export default function GameControls({
                 key={value}
                 onClick={() => onPlayerSideChange(value)}
                 title={label}
-                className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border transition-all"
+                className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border transition-all cursor-pointer"
                 style={{
                   background: active ? 'rgba(217,119,6,0.15)' : '#1f2937',
                   borderColor: active ? '#d97706' : '#374151',
