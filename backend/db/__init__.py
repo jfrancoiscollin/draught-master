@@ -1,0 +1,59 @@
+from .config import DB_PATH
+from .schema import init_db
+from .games import (
+    save_game,
+    save_game_annotations,
+    get_user_stats,
+    get_games,
+    get_game,
+    save_active_game,
+    load_active_game,
+    delete_active_game,
+)
+from .exercises import (
+    get_exercises,
+    get_exercise,
+    save_exercise,
+    record_progress,
+    mark_exercise_solved,
+    get_user_solved_exercise_ids,
+    _extract_chapter,
+)
+from .users import (
+    create_user,
+    get_user_by_email,
+    get_user_by_id,
+    create_reset_token,
+    get_reset_token,
+    consume_reset_token,
+    mark_lesson_read,
+    get_user_read_lesson_chapters,
+)
+
+__all__ = [
+    "DB_PATH",
+    "init_db",
+    "save_game",
+    "save_game_annotations",
+    "get_user_stats",
+    "get_games",
+    "get_game",
+    "save_active_game",
+    "load_active_game",
+    "delete_active_game",
+    "get_exercises",
+    "get_exercise",
+    "save_exercise",
+    "record_progress",
+    "mark_exercise_solved",
+    "get_user_solved_exercise_ids",
+    "_extract_chapter",
+    "create_user",
+    "get_user_by_email",
+    "get_user_by_id",
+    "create_reset_token",
+    "get_reset_token",
+    "consume_reset_token",
+    "mark_lesson_read",
+    "get_user_read_lesson_chapters",
+]

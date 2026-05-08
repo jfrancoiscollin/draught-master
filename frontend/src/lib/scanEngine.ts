@@ -2,7 +2,7 @@ import type { MoveData } from '../types'
 
 export interface ScanInfo {
   depth: number
-  score: number   // centipawns, positive = white advantage
+  score: number   // piece units, positive = white advantage (1.0 ≈ one-piece advantage)
   nodes: number
   nps: number
   pv: string[]    // principal variation in Hub notation
@@ -46,7 +46,7 @@ function parseInfo(msg: string): Partial<ScanInfo> {
   const npsM   = msg.match(/\bnps=(\d+)/)
   const pvM    = msg.match(/\bpv="([^"]*)"/)
   if (depthM) result.depth = parseInt(depthM[1])
-  if (scoreM) result.score = parseInt(scoreM[1])
+  if (scoreM) result.score = parseFloat(scoreM[1])
   if (nodesM) result.nodes = parseInt(nodesM[1])
   if (npsM)   result.nps   = parseInt(npsM[1])
   if (pvM)    result.pv    = pvM[1].trim().split(/\s+/).filter(Boolean)
