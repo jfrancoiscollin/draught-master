@@ -165,7 +165,6 @@ class ScanEngine:
                 except queue.Empty:
                     break
 
-            logger.warning("evaluate_pos: pos=%s movetime=%.2f use_book=%s", pos[:30], movetime_s, self._use_book)
             self._send(f"pos pos={pos}")
             self._send(f"level move-time={movetime_s}")
             self._send("go think")
@@ -206,7 +205,7 @@ class ScanEngine:
                         # forced=True when no info line had a score (Scan returned
                         # the move immediately without searching — forced capture)
                         forced = not had_info_score and score == 0.0
-                        logger.warning("evaluate_pos done: score=%.3f best=%s forced=%s", score, best, forced)
+                        logger.debug("evaluate_pos done: score=%.3f best=%s forced=%s", score, best, forced)
                         return {"bestMove": best, "score": score, "forced": forced}
                 except queue.Empty:
                     pass
