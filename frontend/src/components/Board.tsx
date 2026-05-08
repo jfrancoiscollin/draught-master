@@ -56,6 +56,26 @@ interface BoardProps {
   theme?: BoardTheme
 }
 
+function sqRowCol(sq: number): { row: number; col: number } {
+  const row = Math.floor((sq - 1) / 5)
+  const colInRow = (sq - 1) % 5
+  const col = colInRow * 2 + (row % 2 === 0 ? 1 : 0)
+  return { row, col }
+}
+
+// Returns the capture square (if any) that lies strictly between sq1 and sq2 on a diagonal
+function captureBetween(sq1: number, sq2: number, caps: number[]): number | null {
+  const { row: r1, col: c1 } = sqRowCol(sq1)
+  const { row: r2, col: c2 } = sqRowCol(sq2)
+  for (const cap of caps) {
+    const { row: rc, col: cc } = sqRowCol(cap)
+    const inRow = r1 < r2 ? rc > r1 && rc < r2 : rc > r2 && rc < r1
+    const inCol = c1 < c2 ? cc > c1 && cc < c2 : cc > c2 && cc < c1
+    if (inRow && inCol && Math.abs(rc - r1) === Math.abs(cc - c1)) return cap
+  }
+  return null
+}
+
 function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boolean; selected: boolean }) {
   const isWhite = piece === WHITE_MAN || piece === WHITE_KING
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
@@ -240,6 +260,7 @@ export default function Board({
   const [animVisible, setAnimVisible] = useState(false)
   const [animHideSq,  setAnimHideSq]  = useState<number | null>(null)
   const [animMoving,  setAnimMoving]  = useState(false)
+  const [animCaptureSq, setAnimCaptureSq] = useState<Set<number>>(new Set())
   const prevLastMoveRef               = useRef<MoveData | null | undefined>(undefined)
   const animTimerRef                  = useRef<ReturnType<typeof setTimeout> | null>(null)
   const segTimersRef                  = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -251,14 +272,14 @@ export default function Board({
   useLayoutEffect(() => {
     if (lastMove === prevLastMoveRef.current) return
     prevLastMoveRef.current = lastMove
-    if (!lastMove) { setAnimVisible(false); return }
+    if (!lastMove) { setAnimVisible(false); setAnimCaptureSq(new Set()); return }
 
     const path = lastMove.path
-    if (path.length < 2) { setAnimVisible(false); return }
+    if (path.length < 2) { setAnimVisible(false); setAnimCaptureSq(new Set()); return }
 
     const to    = path[path.length - 1]
     const piece = board[to]
-    if (piece === EMPTY) { setAnimVisible(false); return }
+    if (piece === EMPTY) { setAnimVisible(false); setAnimCaptureSq(new Set()); return }
 
     const nSegments = path.length - 1
     const segMs     = nSegments === 1 ? 280 : 180
@@ -269,6 +290,9 @@ export default function Board({
 
     // Pre-compute all positions using current sqCenter (captures current flipped)
     const positions = path.map(sq => sqCenter(sq))
+
+    // Show all captured pieces as ghosts; they'll vanish as the overlay passes over them
+    setAnimCaptureSq(new Set(lastMove.captures))
 
     // Place overlay at source with no transition (synchronously, before paint)
     setAnimPiece(piece)
@@ -296,9 +320,25 @@ export default function Board({
           segTimersRef.current.push(t)
         }
 
+        // Remove each captured piece as the overlay crosses it (midpoint of its segment)
+        for (let i = 0; i < nSegments; i++) {
+          const cap = captureBetween(path[i], path[i + 1], lastMove.captures)
+          if (cap !== null) {
+            const t = setTimeout(() => {
+              setAnimCaptureSq(prev => {
+                const next = new Set(prev)
+                next.delete(cap)
+                return next
+              })
+            }, Math.round((i + 0.5) * segMs))
+            segTimersRef.current.push(t)
+          }
+        }
+
         animTimerRef.current = setTimeout(() => {
           setAnimVisible(false)
           setAnimHideSq(null)
+          setAnimCaptureSq(new Set())
         }, nSegments * segMs + 80)
       })
     })
@@ -428,6 +468,15 @@ export default function Board({
           {/* Piece — hidden at animation destination while overlay is in flight */}
           {isDark && sq !== null && piece !== EMPTY && sq !== animHideSq && (
             <PieceDisc piece={piece} moveable={isMoveable} selected={isSelected} />
+          )}
+
+          {/* Ghost captured piece — visible until overlay crosses it */}
+          {isDark && sq !== null && animVisible && animCaptureSq.has(sq) && (
+            <PieceDisc
+              piece={(animPiece === WHITE_MAN || animPiece === WHITE_KING) ? BLACK_MAN : WHITE_MAN}
+              moveable={false}
+              selected={false}
+            />
           )}
 
           {/* Legal move dot */}
