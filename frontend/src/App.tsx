@@ -1019,7 +1019,7 @@ export default function App() {
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
                 <img src={logoPlaySrc} alt="" className="w-18 h-18 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 72, height: 72, objectFit: 'contain' }} />
-                <span className="text-lg font-bold text-white">{t('tabPlay')}</span>
+                <span className="flex-1 text-lg font-bold text-white text-right">{t('tabPlay')}</span>
               </button>
               {/* Play both sides */}
               <button
@@ -1027,7 +1027,7 @@ export default function App() {
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
                 <img src={logoBothSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 72, height: 72, objectFit: 'contain' }} />
-                <span className="text-lg font-bold text-white">{t('playBothSides')}</span>
+                <span className="flex-1 text-lg font-bold text-white text-right">{t('playBothSides')}</span>
               </button>
               {/* Exercises */}
               <button
@@ -1035,7 +1035,7 @@ export default function App() {
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
                 <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📖</span>
-                <span className="text-lg font-bold text-white">{t('tabExercises')}</span>
+                <span className="flex-1 text-lg font-bold text-white text-right">{t('tabExercises')}</span>
               </button>
               {/* Import & Analyze */}
               <button
@@ -1043,7 +1043,7 @@ export default function App() {
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
                 <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📂</span>
-                <span className="text-lg font-bold text-white">{t('tabImport')}</span>
+                <span className="flex-1 text-lg font-bold text-white text-right">{t('tabImport')}</span>
               </button>
             </div>
           </div>
