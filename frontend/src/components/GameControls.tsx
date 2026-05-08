@@ -138,19 +138,24 @@ export default function GameControls({
           {sides.map(({ value, label, disc }) => {
             const active = playerSide === value
             return (
-              <button
+              <div
                 key={value}
-                onClick={() => onPlayerSideChange(value)}
+                role="button"
+                tabIndex={0}
+                onPointerDown={() => onPlayerSideChange(value)}
+                onKeyDown={e => e.key === 'Enter' && onPlayerSideChange(value)}
                 title={label}
-                className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border transition-all cursor-pointer"
+                className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border transition-all cursor-pointer select-none"
                 style={{
                   background: active ? 'rgba(217,119,6,0.15)' : '#1f2937',
                   borderColor: active ? '#d97706' : '#374151',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
               >
                 {disc}
-                <span className="text-xs" style={{ color: active ? '#fbbf24' : '#6b7280' }}>{label}</span>
-              </button>
+                <span className="text-xs" style={{ color: active ? '#fbbf24' : '#6b7280', pointerEvents: 'none' }}>{label}</span>
+              </div>
             )
           })}
         </div>
