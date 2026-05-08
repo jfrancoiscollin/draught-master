@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 _KB: list[dict] | None = None
 
 def _load_kb() -> list[dict]:
+    """Lazy-load knowledge_base.json. Returns an empty list if the file is missing."""
     global _KB
     if _KB is None:
         kb_path = os.path.join(os.path.dirname(__file__), "knowledge_base.json")
@@ -245,6 +246,7 @@ async def _scan_eval(state: GameState, ms: float = 2.0) -> dict:
 # ── Board feature extraction ──────────────────────────────────────────────────
 
 def _piece_counts(state: GameState) -> dict:
+    """Return {wm, wk, bm, bk} piece counts for the current position."""
     wm = wk = bm = bk = 0
     for sq in range(1, 51):
         p = state.board[sq]
@@ -256,6 +258,7 @@ def _piece_counts(state: GameState) -> dict:
 
 
 def _total_pieces(c: dict) -> int:
+    """Sum all pieces on the board from a counts dict."""
     return c["wm"] + c["wk"] + c["bm"] + c["bk"]
 
 
@@ -267,17 +270,19 @@ def _material_value(c: dict) -> dict:
 
 
 def _phase(total: int) -> str:
+    """Classify game phase from total piece count: opening > 35, endgame ≤ 18."""
     if total > 35: return "opening"
     if total > 18: return "middlegame"
     return "endgame"
 
 
-def _score_from_white(score: int, turn: str) -> int:
+def _score_from_white(score: float, turn: str) -> float:
     """Scan score is side-to-move positive; convert to white-positive."""
     return score if turn == "white" else -score
 
 
 def _count_captures_in_pdn(pdn_list: list[str]) -> int:
+    """Count how many PDN move strings contain a capture (contain 'x')."""
     return sum(1 for m in pdn_list if "x" in m)
 
 
@@ -300,7 +305,8 @@ def _advancement(state: GameState) -> dict:
 
 # ── Score interpretation ──────────────────────────────────────────────────────
 
-def _score_label(score_white: int, lang: str) -> str:
+def _score_label(score_white: float, lang: str) -> str:
+    """Convert a white-perspective score (in centipawns) to a human-readable label."""
     if lang == "fr":
         if score_white >  700: return "avantage décisif pour les Blancs"
         if score_white >  280: return "avantage clair pour les Blancs"
@@ -326,6 +332,7 @@ _PHASE_EN = {"opening": "Opening", "middlegame": "Middlegame", "endgame": "Endga
 # ── Move description ──────────────────────────────────────────────────────────
 
 def _move_desc(move_pdn: str, state: GameState, lang: str) -> str:
+    """Build a natural-language description of a PDN move (e.g. 'double capture', 'promotion')."""
     is_capture = "x" in move_pdn
     sep = "x" if is_capture else "-"
     parts = move_pdn.split(sep)
@@ -385,7 +392,8 @@ def _move_desc(move_pdn: str, state: GameState, lang: str) -> str:
 
 # ── Strategic advice ──────────────────────────────────────────────────────────
 
-def _advice(phase: str, score_white: int, counts: dict, lang: str) -> str:
+def _advice(phase: str, score_white: float, counts: dict, lang: str) -> str:
+    """Return a one-sentence strategic tip tailored to phase, score, and material balance."""
     has_kings = counts["wk"] > 0 or counts["bk"] > 0
     if lang == "fr":
         if phase == "opening":
@@ -425,6 +433,7 @@ def _advice(phase: str, score_white: int, counts: dict, lang: str) -> str:
 # ── Key squares helper ────────────────────────────────────────────────────────
 
 def _key_squares(best_move: str | None) -> list[int]:
+    """Extract up to 4 square numbers from a PDN move string for board highlighting."""
     if not best_move:
         return []
     sqs = []
@@ -441,6 +450,7 @@ def _key_squares(best_move: str | None) -> list[int]:
 # ── PDN history formatter ─────────────────────────────────────────────────────
 
 def _fmt_pdn(moves: list[str]) -> str:
+    """Format a flat move list as '1. 32-28 17-21 2. ...' for display."""
     if not moves:
         return "Aucun coup joué." if True else "No moves."
     parts: list[str] = []

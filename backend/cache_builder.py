@@ -28,16 +28,19 @@ _job: dict = {
 
 
 def get_status() -> dict:
+    """Return a snapshot of the current job state (thread-safe)."""
     with _lock:
         return dict(_job)
 
 
 def _set(**kwargs) -> None:
+    """Overwrite specific job fields atomically."""
     with _lock:
         _job.update(kwargs)
 
 
 def _inc(key: str, by: int = 1) -> None:
+    """Atomically increment a numeric job field."""
     with _lock:
         _job[key] = _job.get(key, 0) + by
 
@@ -399,7 +402,11 @@ def start(
     ms_per_position: int = 5000,
     pdn_texts: list[str] | None = None,
 ) -> bool:
-    """Start the background build job. Returns False if already running."""
+    """Start the full background build job (fetch + extract + evaluate).
+
+    If pdn_texts is provided, skip the Lidraughts fetch and use those PDN
+    blobs directly. Returns False if a job is already running.
+    """
     with _lock:
         if _job.get("status") == "running":
             return False

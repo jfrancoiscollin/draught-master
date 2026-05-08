@@ -1,34 +1,129 @@
-# AI-Draught — Entraînement au jeu de dames international
+# Draught Master — Entraîneur au Jeu de Dames International
 
-Application web d'entraînement au jeu de dames international (100 cases, règles FMJD) avec IA minimax et analyse par Claude.
+Application web complète d'entraînement au **jeu de dames international** (10×10, règles FMJD) combinant un moteur IA natif (Scan), une analyse tactique par **Claude** (Anthropic) et un système de progression pédagogique.
+
+---
 
 ## Fonctionnalités
 
-- Plateau 10x10 interactif avec règles FMJD complètes (prise obligatoire, prise maximale)
-- IA minimax avec élagage alpha-bêta (profondeur configurable 1-8)
-- Analyse de position par Claude (claude-sonnet-4-6)
-- 13 exercices tactiques et stratégiques
-- Historique des parties avec relecture
-- Interface en français
+### Jouer contre l'IA
+- Plateau 10×10 interactif avec règles FMJD complètes
+- Prise obligatoire et prise maximale (règle du soufflage)
+- Moteur **Scan** (réseau de neurones, niveau club à expert selon la profondeur)
+- Niveaux 1 à 8 (de débutant à maître)
+- Choix de la couleur : Blancs, Noirs, ou Aléatoire
+- Damier inversé automatiquement quand on joue les Noirs
+- Annulation du dernier coup
+- Abandon de partie
 
-## Prérequis
+### Analyse coup par coup
+- Après chaque partie, analyse automatique de tous les coups
+- Verdict par coup : **Parfait ✓**, **Imprécision ?!**, **Erreur ?**, **Gaffe ??**
+- Score en centipions et variation de probabilité de victoire
+- Détection des coups forcés (capture unique obligatoire)
+- Cache intelligent : les positions déjà analysées sont servies instantanément
 
+### Analyse par Claude (IA)
+- Analyse de position en langage naturel (français/anglais)
+- Revue de partie complète : ouverture, milieu de jeu, fin de partie
+- Explication concise du meilleur coup
+- Identification des menaces, sacrifices et combinaisons tactiques
+
+### Explorateur d'ouvertures
+- Flèches sur le plateau indiquant les coups du livre d'ouvertures
+- Continuations les plus jouées avec fréquence de jeu
+- Paramétrable (nombre max de coups, activation/désactivation)
+
+### Exercices tactiques
+- Bibliothèque de puzzles classés par thème et difficulté
+- Livres inclus : Dubois Combinaisons, Perfectionnement, Ouvertures, Fins de parties
+- Affichage de l'indice et de la solution
+- Suivi de progression par utilisateur
+
+### Leçons interactives
+- Cours structurés avec positions clés et explications
+- Navigation coup par coup dans les variantes
+
+### Apprendre de ses erreurs
+- Revue des erreurs des parties précédentes
+- Proposition d'exercices ciblés sur les faiblesses détectées
+
+### Import de parties PDN
+- Coller un PDN pour analyser n'importe quelle partie
+- Compatible avec les parties Lidraughts et autres sources
+
+### Base d'ouvertures
+- Construction automatique d'une base d'évaluation depuis des parties réelles
+- Import de parties depuis **Lidraughts** par joueur, équipe ou tournoi
+- Précomputation des scores pour des réponses instantanées
+
+### Statistiques et profil
+- Nombre de parties jouées, gagnées, perdues
+- Exercices résolus
+- Score moyen de pertes (ACPL — Average Centipawn Loss)
+- Historique des gaffe et erreurs
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      Frontend (React)                    │
+│  Board · GameControls · AnalysisPanel · ExercisePanel   │
+│  ImportGame · OpeningExplorer · LessonPanel · Stats     │
+└───────────────────┬─────────────────────────────────────┘
+                    │ HTTP / REST
+┌───────────────────▼─────────────────────────────────────┐
+│                  Backend (FastAPI / Python)               │
+│                                                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐  │
+│  │game_engine│  │scan_engine│  │   claude_advisor     │  │
+│  │ Règles   │  │  Moteur  │  │   API Anthropic       │  │
+│  │  FMJD   │  │  Scan NN │  │   claude-opus-4-7     │  │
+│  └──────────┘  └──────────┘  └──────────────────────┘  │
+│                                                          │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │              database.py / opening_book_db.py    │   │
+│  │           SQLite (parties · exercices · book)    │   │
+│  └──────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Stack technique
+
+| Composant | Technologie |
+|-----------|-------------|
+| Frontend | React 18 + TypeScript + Vite + Tailwind CSS |
+| Backend | Python 3.11 + FastAPI + Uvicorn |
+| Base de données | SQLite (WAL mode) |
+| Moteur de jeu | Scan (réseau de neurones, Hub v2) |
+| IA d'analyse | Claude API (claude-opus-4-7) |
+| Déploiement | Railway (Docker) |
+
+---
+
+## Installation locale
+
+### Prérequis
 - Python 3.11+
 - Node.js 18+
-- Clé API Anthropic
-
-## Installation
+- Clé API Anthropic (`ANTHROPIC_API_KEY`)
+- Binaire Scan (optionnel — l'IA minimax Python est disponible en fallback)
 
 ### Backend
 
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate        # Windows : venv\Scripts\activate
 pip install -r requirements.txt
+
+# Configurer les variables d'environnement
 cp ../.env.example .env
-# Éditez .env et ajoutez votre ANTHROPIC_API_KEY
-uvicorn main:app --reload --port 8000
+# Éditer .env : ANTHROPIC_API_KEY, SECRET_KEY, DATABASE_URL
+
+uvicorn main:app --reload --port 8080
 ```
 
 ### Frontend
@@ -37,35 +132,280 @@ uvicorn main:app --reload --port 8000
 cd frontend
 npm install
 npm run dev
+# → http://localhost:5173
 ```
 
-L'application sera accessible sur http://localhost:5173
+### Variables d'environnement
+
+| Variable | Description | Défaut |
+|----------|-------------|--------|
+| `ANTHROPIC_API_KEY` | Clé API Anthropic | obligatoire |
+| `SECRET_KEY` | Clé JWT pour l'auth | obligatoire en production |
+| `DATABASE_URL` | Chemin SQLite | `./draught.db` |
+| `SCAN_PATH` | Chemin du binaire Scan | `/usr/local/bin/scan` |
+| `OPENING_BOOK_DB` | Chemin de la base d'ouvertures | `./opening_book.db` |
+
+---
 
 ## Structure du projet
 
 ```
 Ai-draught/
+│
 ├── backend/
-│   ├── game_engine.py      # Moteur de jeu (règles FMJD)
-│   ├── ai_engine.py        # IA minimax avec alpha-bêta
-│   ├── claude_advisor.py   # Intégration Claude API
-│   ├── database.py         # Base SQLite + exercices
-│   ├── models.py           # Schémas Pydantic
-│   ├── main.py             # API FastAPI
+│   ├── main.py                 # API FastAPI — tous les endpoints REST
+│   ├── game_engine.py          # Moteur de règles FMJD 10×10
+│   ├── ai_engine.py            # IA minimax alpha-bêta (fallback)
+│   ├── scan_engine.py          # Interface avec le moteur Scan (Hub v2)
+│   ├── scan_advisor.py         # Analyse de partie et détection d'erreurs
+│   ├── claude_advisor.py       # Intégration Claude API (analyse IA)
+│   ├── database.py             # Persistance SQLite + 13 exercices initiaux
+│   ├── models.py               # Schémas Pydantic (requêtes/réponses)
+│   ├── opening_book_db.py      # Base d'ouvertures (lookup + stockage)
+│   ├── opening_eval_db.py      # Cache d'évaluations de positions
+│   ├── cache_builder.py        # Construction de la base d'ouvertures
+│   ├── lidraughts_fetcher.py   # Import de parties depuis Lidraughts
 │   └── requirements.txt
+│
 ├── frontend/
 │   └── src/
-│       ├── components/     # Composants React
-│       ├── api/            # Client API
-│       ├── types.ts        # Types TypeScript
-│       └── App.tsx         # Application principale
+│       ├── App.tsx                     # Composant racine + routage
+│       ├── types.ts                    # Types TypeScript partagés
+│       ├── api/
+│       │   └── client.ts               # Client HTTP (axios)
+│       ├── components/
+│       │   ├── Board.tsx               # Plateau interactif 10×10
+│       │   ├── GameControls.tsx        # Contrôles de partie
+│       │   ├── AnalysisPanel.tsx       # Panneau d'analyse Claude
+│       │   ├── EvalBar.tsx             # Barre d'évaluation moteur
+│       │   ├── ExercisePanel.tsx       # Solveur d'exercices
+│       │   ├── ExerciseLibraryPage.tsx # Bibliothèque de puzzles
+│       │   ├── LessonPanel.tsx         # Leçons interactives
+│       │   ├── LearnFromMistakes.tsx   # Revue d'erreurs
+│       │   ├── GameHistory.tsx         # Historique des parties
+│       │   ├── ImportGamePanel.tsx     # Import PDN
+│       │   ├── OpeningCacheBuilder.tsx # Interface base d'ouvertures
+│       │   ├── UserStatsCard.tsx       # Statistiques utilisateur
+│       │   └── MoveList.tsx            # Liste des coups en notation PDN
+│       ├── lib/
+│       │   ├── gameAnnotations.ts      # Détection d'erreurs (winChance, verdicts)
+│       │   └── scanEngine.ts           # Interface WASM Scan (client)
+│       └── i18n/
+│           ├── translations.ts         # Traductions FR/EN
+│           └── LanguageContext.tsx     # Contexte React i18n
+│
+├── docs/
+│   ├── parties/                # Parties PDN de référence
+│   └── livres/                 # Livres de dames (PDF)
+│
+├── Dockerfile
+├── railway.json
 └── .env.example
 ```
 
-## Règles implémentées
+---
 
-- Prise obligatoire
-- Prise maximale (FMJD)
-- Dames se déplaçant sur toute la diagonale
-- Pièces capturées restant sur le plateau jusqu'à fin de séquence
-- Promotion aux rangées 1-5 (blancs) et 46-50 (noirs)
+## Modules backend détaillés
+
+### `game_engine.py` — Moteur de règles
+
+Implémente les règles FMJD du jeu de dames international 10×10 :
+
+- **Numérotation des cases** : cases 1–50 (cases sombres uniquement, de haut-gauche à bas-droite)
+- **Prise obligatoire** : si une prise est disponible, elle doit être jouée
+- **Prise maximale** : parmi les prises possibles, la plus longue doit être choisie
+- **Dames** : se déplacent sur toute la longueur d'une diagonale libre
+- **Promotion** : un pion atteignant la dernière rangée adverse devient dame
+
+Structures de données clés :
+```python
+@dataclass
+class GameState:
+    board: dict[int, int]   # case → type de pièce (0=vide, 1=pion blanc, ...)
+    turn: str               # 'white' | 'black'
+    half_move_clock: int    # compteur pour la règle des 50 coups
+    move_history: list      # historique pour détection de répétition
+
+@dataclass
+class Move:
+    path: list[int]         # séquence de cases traversées
+    captures: list[int]     # cases des pièces capturées
+```
+
+### `scan_engine.py` — Interface moteur Scan
+
+Scan est un moteur de jeu de dames basé sur un réseau de neurones (fichier `data/eval`). Il communique via le **protocole Hub v2** (stdio, commandes texte).
+
+Deux instances sont maintenues en parallèle :
+- `_engine` (avec livre d'ouvertures) — pour les coups de l'IA en partie
+- `_eval_engine` (sans livre) — pour l'évaluation des positions en analyse
+
+Le livre d'ouvertures est chargé à l'initialisation (`init`) et **ne peut pas être déchargé** à chaud — c'est pourquoi deux processus séparés sont nécessaires.
+
+Protocole Hub v2 (échanges avec le processus Scan) :
+```
+→ hub
+← wait
+→ set-param name=book value=false
+→ set-param name=bb-size value=0
+→ init
+← ready
+→ pos pos=<51 chars>        # W/B + 50×(e/w/W/b/B)
+→ level move-time=0.3
+→ go think
+← info depth=18 score=-1.22 pv="37-32 ..."
+← done move=37-32
+```
+
+### `scan_advisor.py` — Analyse et détection d'erreurs
+
+Orchestre l'analyse complète d'une partie :
+
+1. **Évaluation position par position** — appelle `scan_engine.evaluate_pos()` pour chaque état
+2. **Détection de coups forcés** — quand Scan retourne un coup sans score (une seule capture légale), le score est propagé depuis la position suivante via la relation negamax : `score(P) = -score(P_suivante)`
+3. **Calcul du verdict** — utilise une sigmoïde calibrée sur les unités Scan (1.0 ≈ un pion) :
+
+```python
+def winChance(score):
+    return 2 / (1 + exp(-2.0 * score)) - 1
+
+delta = winChance(score_avant) + winChance(score_après)
+# delta ≥ 0.30 → Gaffe
+# delta ≥ 0.15 → Erreur
+# delta ≥ 0.075 → Imprécision
+```
+
+4. **Cache** — les scores non-nuls sont sauvegardés dans `opening_book_db` pour être réutilisés immédiatement lors d'analyses futures
+
+### `claude_advisor.py` — Analyse par IA
+
+Construit un prompt structuré pour Claude incluant :
+- Représentation ASCII du plateau
+- Historique des coups en notation PDN
+- Meilleurs coups candidats (issus de Scan ou du moteur minimax)
+- Question de l'utilisateur (optionnelle)
+
+Modes d'analyse :
+| Mode | Description |
+|------|-------------|
+| `position` | Analyse la position actuelle, identifie les menaces |
+| `full_game` | Revue complète : ouverture → milieu → finale |
+| `best_move` | Explication concise du meilleur coup (2–3 phrases) |
+
+### `opening_book_db.py` — Base d'ouvertures
+
+- **Canonicalisation** : chaque position est stockée dans sa forme miroir lexicographiquement la plus petite, ce qui double la couverture (symétrie horizontale du damier)
+- **Stockage** : FEN → {score (float), meilleur coup, coups vus, profondeur}
+- **Lecture** : `lookup(fen)` retourne score + meilleur coup + continuations fréquentes
+
+---
+
+## Analyse coup par coup — Flux détaillé
+
+```
+Frontend                          Backend
+   │                                 │
+   │── POST /api/pdn/annotate ──────►│
+   │   {positions: [{fen, notation}]}│
+   │                                 │
+   │                         Pour chaque position :
+   │                         1. opening_book_db.lookup(fen)
+   │                            → cache hit si score ≠ 0
+   │                         2. scan_engine.evaluate_pos(hub, t)
+   │                            → go think → info score=X
+   │                            → forced=True si pas de score
+   │                         3. Post-traitement negamax
+   │                            forced[i].score = -score[i+1]
+   │                         4. Sauvegarde en cache (score ≠ 0)
+   │                                 │
+   │◄── {evaluations, cache_hits} ───│
+   │                                 │
+   │ buildAnnotations() [frontend]   │
+   │   rawLoss = score_avant + score_après
+   │   delta = winChance(avant) + winChance(après)
+   │   verdict = classify(delta)
+   │   lossCp = round(rawLoss * 100)
+   └─────────────────────────────────┘
+```
+
+---
+
+## Règles FMJD implémentées
+
+| Règle | Détail |
+|-------|--------|
+| Prise obligatoire | Si une capture est disponible, elle doit être jouée |
+| Prise maximale | La séquence de captures la plus longue est obligatoire |
+| Prise de la dame | La dame peut traverser des cases vides avant et après la prise |
+| Promotion | Pion atteignant la rangée 1–5 (blancs) ou 46–50 (noirs) |
+| Règle des 50 coups | Partie nulle si aucune prise ni promotion en 50 coups |
+| Pièces capturées | Restent sur le plateau jusqu'à la fin de la séquence de prise |
+
+---
+
+## Endpoints API principaux
+
+### Partie
+| Méthode | URL | Description |
+|---------|-----|-------------|
+| POST | `/api/game/new` | Créer une partie |
+| GET | `/api/game/{id}` | État de la partie |
+| POST | `/api/game/{id}/move` | Jouer un coup |
+| GET | `/api/game/{id}/ai-move` | Coup suggéré par l'IA |
+| POST | `/api/game/{id}/analyze` | Analyse Claude |
+| POST | `/api/game/{id}/undo` | Annuler le dernier coup |
+| POST | `/api/game/{id}/resign` | Abandonner |
+
+### Analyse
+| Méthode | URL | Description |
+|---------|-----|-------------|
+| POST | `/api/pdn/annotate` | Analyse coup par coup (batch) |
+| POST | `/api/pdn/import` | Importer un PDN |
+| POST | `/api/position/analyze` | Analyser une position FEN |
+
+### Exercices
+| Méthode | URL | Description |
+|---------|-----|-------------|
+| GET | `/api/exercises` | Liste des exercices |
+| GET | `/api/exercise/{id}` | Détail d'un exercice |
+| POST | `/api/exercise/{id}/check` | Vérifier une solution |
+
+### Base d'ouvertures
+| Méthode | URL | Description |
+|---------|-----|-------------|
+| GET | `/api/opening-book/continuations` | Coups du livre pour une position |
+| POST | `/api/opening-book/build` | Lancer la construction de la base |
+| GET | `/api/opening-book/players` | Chercher des joueurs sur Lidraughts |
+| GET | `/api/opening-book/stats` | Statistiques de la base |
+
+### Auth
+| Méthode | URL | Description |
+|---------|-----|-------------|
+| POST | `/api/auth/register` | Créer un compte |
+| POST | `/api/auth/login` | Connexion (retourne JWT) |
+| GET | `/api/auth/me` | Profil utilisateur |
+| GET | `/api/auth/me/stats` | Statistiques de jeu |
+
+---
+
+## Déploiement Railway
+
+Le projet est configuré pour Railway via `railway.json` et `Dockerfile` :
+
+```json
+{
+  "build": { "builder": "DOCKERFILE" },
+  "deploy": {
+    "startCommand": "uvicorn main:app --host 0.0.0.0 --port $PORT",
+    "healthcheckPath": "/api/health"
+  }
+}
+```
+
+Le frontend est buildé (Vite) et servi statiquement par le backend FastAPI depuis `/frontend/dist`.
+
+---
+
+## Licence
+
+Usage éducatif et personnel.

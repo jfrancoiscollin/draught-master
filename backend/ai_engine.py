@@ -1,3 +1,23 @@
+"""Python fallback AI engine: iterative-deepening alpha-beta with enhancements.
+
+Used when the Scan binary is unavailable. Significantly weaker than Scan but
+fully self-contained and requires no external process.
+
+Search features:
+- Negamax alpha-beta with Principal Variation Search (PVS / null-window re-search)
+- Late Move Reduction (LMR): quiets moves at depth ≥ 3 after position 4 are searched
+  at depth-2 first; only re-searched at full depth if they beat alpha
+- Quiescence search (up to 16 capture plies) to avoid the horizon effect
+- Transposition table (Zobrist hashing, up to 1M entries)
+- Killer heuristic (2 killers per ply)
+- History heuristic for quiet move ordering
+
+Evaluation features:
+- Material: men = 100 cp, kings = 325 cp
+- Advancement, centre control, back-row anchor, edge penalty, promotion proximity
+- King mobility bonus, endgame king bonus (grows as board empties)
+- Tempo bonus (+5 for side to move)
+"""
 from __future__ import annotations
 import random
 import time
@@ -135,6 +155,12 @@ def _order_moves(
 # ── Evaluation ────────────────────────────────────────────────────────────────
 
 def evaluate(state: GameState) -> float:
+    """Static evaluation from White's perspective (positive = White winning).
+
+    Terminal positions: ±100 000 (shifted by remaining depth to prefer faster wins).
+    Non-terminal: weighted sum of material + positional bonuses as described in the
+    module docstring.
+    """
     result = game_result(state)
     if result == 'white': return 100000.0
     if result == 'black': return -100000.0
@@ -230,6 +256,11 @@ def _quiescence(
     deadline: float,
     qdepth: int,
 ) -> float:
+    """Quiescence search: extend the tree through capture sequences only.
+
+    Stops and returns the static evaluation when there are no captures or when
+    the qdepth ceiling is reached, eliminating the horizon effect on captures.
+    """
     if time.monotonic() > deadline:
         raise _Timeout()
 
@@ -271,6 +302,12 @@ def _minimax(
     deadline: float,
     zhash: int,
 ) -> float:
+    """Alpha-beta search with TT, PVS, and LMR.
+
+    Raises _Timeout if time.monotonic() exceeds deadline, allowing the
+    iterative-deepening loop in get_best_move() to return the best move found
+    at the last completed depth.
+    """
     if time.monotonic() > deadline:
         raise _Timeout()
 
@@ -378,6 +415,12 @@ def _minimax(
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def get_best_move(state: GameState, depth: int = 6) -> Optional[Move]:
+    """Return the best move found by iterative-deepening alpha-beta up to `depth`.
+
+    Each iteration increases depth by 1. The search is cut off by a time limit
+    (TIME_LIMITS[depth]) and the best move from the last *completed* iteration
+    is returned.  Returns None only if there are no legal moves.
+    """
     moves = get_legal_moves(state)
     if not moves:
         return None

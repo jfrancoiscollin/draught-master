@@ -1,3 +1,15 @@
+"""
+Moteur de règles du jeu de dames international (FMJD, 10×10).
+
+Implémente les règles officielles :
+- Numérotation FMJD : cases 1–50 sur les cases sombres, de haut-gauche (1) à bas-droite (50)
+- Prise obligatoire : si une capture est disponible, un coup simple est interdit
+- Prise maximale : parmi toutes les captures légales, seule(s) la/les plus longue(s) est/sont légale(s)
+- Dames : se déplacent sur toute la longueur d'une diagonale libre (comme la tour aux échecs)
+- Prise de la dame : la dame saute par-dessus l'adversaire et peut atterrir sur n'importe quelle case libre derrière
+- Promotion : pion blanc atteignant la rangée 1–5, pion noir atteignant 46–50
+- Règle des 50 coups : nulle si 50 demi-coups sans capture ni déplacement de pion (32 en finale dame seule)
+"""
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple, Dict
@@ -11,6 +23,14 @@ BLACK_KING = 4
 
 
 def sq_to_rc(sq: int) -> Tuple[int, int]:
+    """Convertit un numéro de case FMJD (1–50) en coordonnées (ligne, colonne) 0-indexées.
+
+    Le plateau 10×10 n'utilise que les cases sombres. La numérotation part
+    de la case en haut à gauche (case 1) et va de gauche à droite, de haut
+    en bas.
+
+    Exemple : sq=1 → (0, 1), sq=5 → (0, 9), sq=6 → (1, 0)
+    """
     idx = sq - 1
     row = idx // 5
     col_in_row = idx % 5
@@ -19,6 +39,11 @@ def sq_to_rc(sq: int) -> Tuple[int, int]:
 
 
 def rc_to_sq(row: int, col: int) -> Optional[int]:
+    """Convertit des coordonnées (ligne, colonne) en numéro de case FMJD.
+
+    Retourne None si la case est hors du plateau ou sur une case claire
+    (les cases claires ne sont pas jouables au jeu de dames).
+    """
     if row < 0 or row > 9 or col < 0 or col > 9:
         return None
     if (row + col) % 2 == 0:
@@ -31,6 +56,11 @@ def rc_to_sq(row: int, col: int) -> Optional[int]:
 
 
 def _build_neighbors() -> Dict[int, Dict[Tuple[int, int], int]]:
+    """Précalcule pour chaque case ses voisins directs (distance 1) dans les 4 directions diagonales.
+
+    Résultat : {case: {(dr, dc): case_voisine}} — utilisé pour les déplacements de pions.
+    Calculé une seule fois au démarrage du module pour optimiser les performances.
+    """
     result: Dict[int, Dict[Tuple[int, int], int]] = {}
     for sq in range(1, 51):
         r, c = sq_to_rc(sq)
@@ -45,6 +75,12 @@ def _build_neighbors() -> Dict[int, Dict[Tuple[int, int], int]]:
 
 
 def _build_extended() -> Dict[int, Dict[Tuple[int, int], List[int]]]:
+    """Précalcule pour chaque case la liste ordonnée de toutes les cases sur chaque diagonale.
+
+    Résultat : {case: {(dr, dc): [case1, case2, ...]}} — utilisé pour les déplacements de dames.
+    Les listes sont ordonnées par distance croissante depuis la case source.
+    Calculé une seule fois au démarrage du module.
+    """
     result: Dict[int, Dict[Tuple[int, int], List[int]]] = {}
     for sq in range(1, 51):
         r, c = sq_to_rc(sq)
@@ -75,6 +111,20 @@ MAN_DIRS = {
 
 @dataclass
 class Move:
+    """Représente un coup : séquence de cases traversées + cases capturées.
+
+    Attributes:
+        path: Liste des cases traversées, de la case de départ (path[0]) à
+              la case d'arrivée (path[-1]). Pour une capture multiple, inclut
+              les cases intermédiaires d'atterrissage.
+        captures: Cases des pièces adverses capturées (restent sur le plateau
+                  jusqu'à la fin de la séquence en FMJD).
+
+    Notation PDN :
+        - Déplacement simple : "32-27" → path=[32,27], captures=[]
+        - Capture simple : "32x21" → path=[32,21], captures=[26]  (pièce en 26 capturée)
+        - Capture multiple : "32x21x12" → path=[32,21,12], captures=[26,16]
+    """
     path: List[int]
     captures: List[int] = field(default_factory=list)
 
@@ -89,12 +139,24 @@ class Move:
 
 @dataclass
 class GameState:
+    """État complet d'une partie à un instant donné.
+
+    Attributes:
+        board: Tableau indexé 0–50. L'index 0 est inutilisé ; les index 1–50
+               correspondent aux cases FMJD. Valeurs : EMPTY, WHITE_MAN,
+               WHITE_KING, BLACK_MAN, BLACK_KING.
+        turn: Joueur qui doit jouer : 'white' ou 'black'.
+        half_move_clock: Nombre de demi-coups depuis la dernière capture ou
+                         avance de pion. Déclenche la règle de nulle à 50 (ou 32).
+        move_history: Historique des coups joués depuis la position de départ.
+    """
     board: List[int]
     turn: str
     half_move_clock: int = 0
     move_history: List[Move] = field(default_factory=list)
 
     def copy(self) -> 'GameState':
+        """Retourne une copie indépendante de l'état (copie superficielle du board)."""
         return GameState(
             board=self.board[:],
             turn=self.turn,
@@ -104,6 +166,7 @@ class GameState:
 
 
 def initial_board() -> List[int]:
+    """Retourne le plateau en position initiale : noirs sur les cases 1–20, blancs sur 31–50."""
     board = [EMPTY] * 51
     for sq in range(1, 21):
         board[sq] = BLACK_MAN
@@ -113,6 +176,7 @@ def initial_board() -> List[int]:
 
 
 def initial_state() -> GameState:
+    """Retourne l'état initial d'une partie (blancs commencent)."""
     return GameState(board=initial_board(), turn='white')
 
 
@@ -147,6 +211,15 @@ def _capture_sequences_man(
     captured_so_far: frozenset,
     path: List[int],
 ) -> List[Move]:
+    """Génère récursivement toutes les séquences de captures possibles pour un pion.
+
+    Un pion capture en sautant par-dessus un ennemi adjacent vers la case libre
+    derrière lui. La récursion continue depuis la case d'atterrissage pour
+    trouver les captures multiples.
+
+    Note FMJD : une pièce déjà capturée (dans captured_so_far) ne peut pas être
+    sautée une seconde fois dans la même séquence.
+    """
     results: List[Move] = []
     for dr, dc in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
         nbrs = NEIGHBORS.get(sq, {})
@@ -181,6 +254,11 @@ def _capture_sequences_king(
     captured_so_far: frozenset,
     path: List[int],
 ) -> List[Move]:
+    """Génère récursivement toutes les séquences de captures possibles pour une dame.
+
+    La dame peut traverser autant de cases vides qu'elle veut avant et après
+    la pièce capturée, et peut changer de direction après chaque prise.
+    """
     results: List[Move] = []
     for dr, dc in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
         line = EXTENDED.get(sq, {}).get((dr, dc), [])
@@ -210,6 +288,7 @@ def _capture_sequences_king(
 
 
 def _all_captures(state: GameState) -> List[Move]:
+    """Retourne toutes les séquences de captures disponibles pour le joueur actif."""
     moves: List[Move] = []
     for sq in range(1, 51):
         piece = state.board[sq]
@@ -224,6 +303,7 @@ def _all_captures(state: GameState) -> List[Move]:
 
 
 def _all_simple_moves(state: GameState) -> List[Move]:
+    """Retourne tous les déplacements simples (sans capture) pour le joueur actif."""
     moves: List[Move] = []
     for sq in range(1, 51):
         piece = state.board[sq]
@@ -247,6 +327,17 @@ def _all_simple_moves(state: GameState) -> List[Move]:
 
 
 def get_legal_moves(state: GameState) -> List[Move]:
+    """Retourne la liste des coups légaux selon les règles FMJD.
+
+    Applique dans l'ordre :
+    1. Si une capture est possible → seules les captures sont légales
+    2. Parmi les captures → seules les plus longues (maximum de pièces capturées)
+    3. Sinon → tous les déplacements simples
+
+    La règle de prise maximale est stricte : jouer une capture sous-optimale
+    est une infraction (soufflage). Cette fonction n'expose que les coups
+    conformes à cette règle.
+    """
     captures = _all_captures(state)
     if captures:
         max_len = max(len(m.captures) for m in captures)
@@ -255,6 +346,17 @@ def get_legal_moves(state: GameState) -> List[Move]:
 
 
 def apply_move(state: GameState, move: Move) -> GameState:
+    """Applique un coup et retourne le nouvel état de la partie.
+
+    Effets :
+    - Déplace la pièce de path[0] à path[-1]
+    - Supprime les pièces capturées du plateau
+    - Promeut un pion en dame s'il atteint la dernière rangée adverse
+    - Remet le compteur de demi-coups à zéro en cas de capture ou de déplacement de pion
+    - Bascule le tour de jeu
+
+    Note : crée une copie de l'état (pas de modification en place).
+    """
     new_state = state.copy()
     board = new_state.board
     from_sq = move.path[0]
@@ -279,6 +381,14 @@ def apply_move(state: GameState, move: Move) -> GameState:
 
 
 def game_result(state: GameState) -> Optional[str]:
+    """Retourne le résultat de la partie, ou None si elle est en cours.
+
+    Returns:
+        'white' si les blancs ont gagné
+        'black' si les noirs ont gagné
+        'draw'  si la partie est nulle (règle des 50 coups ou 32 en finale de dames)
+        None    si la partie continue
+    """
     legal = get_legal_moves(state)
     if not legal:
         if state.turn == 'white':
@@ -302,6 +412,13 @@ def game_result(state: GameState) -> Optional[str]:
 
 
 def board_to_fen(state: GameState) -> str:
+    """Sérialise la position au format FEN de jeu de dames.
+
+    Format : "<tour>:W<pièces_blanches>:B<pièces_noires>"
+    Exemple : "W:W32,33,K34:B15,16,K7"
+
+    Les dames sont préfixées par 'K'. Les blancs sont listés en premier.
+    """
     turn_char = 'W' if state.turn == 'white' else 'B'
     white_men = []
     white_kings = []
@@ -325,6 +442,14 @@ def board_to_fen(state: GameState) -> str:
 
 
 def fen_to_board(fen: str) -> GameState:
+    """Désérialise un FEN en GameState.
+
+    Format attendu : "<tour>:W<pièces_blanches>:B<pièces_noires>"
+    Tolère les espaces superflus. Les tokens mal formés sont ignorés.
+
+    Raises:
+        Ne lève pas d'exception — retourne un état vide si le FEN est invalide.
+    """
     board = [EMPTY] * 51
     parts = fen.strip().split(':')
     turn_char = parts[0].strip()
@@ -356,6 +481,11 @@ def fen_to_board(fen: str) -> GameState:
 
 
 def move_to_pdn(move: Move) -> str:
+    """Convertit un Move en notation PDN (Portable Draughts Notation).
+
+    Déplacement simple : "32-27"
+    Capture : "32x21" ou "32x21x12" (cases d'atterrissage séparées par 'x')
+    """
     if move.captures:
         return 'x'.join(str(s) for s in move.path)
     return '-'.join(str(s) for s in move.path)

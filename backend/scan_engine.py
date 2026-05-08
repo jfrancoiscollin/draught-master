@@ -43,9 +43,34 @@ def _build_pos(state: GameState) -> str:
 
 
 class ScanEngine:
-    """Long-running Scan subprocess communicating via Hub protocol v2."""
+    """Long-running Scan subprocess communicating via Hub protocol v2.
+
+    Spawns a single persistent process and keeps it alive for the lifetime
+    of the application. All communication is line-delimited text over stdin/
+    stdout; a background thread drains stdout into a thread-safe queue so the
+    main thread never blocks on I/O.
+
+    Two singletons are maintained at module level:
+      - _engine       (use_book=True)  — used for best_move() calls
+      - _eval_engine  (use_book=False) — used for evaluate_pos() calls
+
+    The book cannot be disabled at runtime via set-param once Scan has loaded
+    it, so the two instances must be separate processes.
+    """
 
     def __init__(self, path: str, use_book: bool = True) -> None:
+        """Launch the Scan subprocess and complete the Hub v2 handshake.
+
+        Sends: hub → set-param variant=normal → set-param book → set-param bb-size=0 → init
+        Waits for: 'wait' (after hub) and 'ready' (after init).
+
+        Args:
+            path: Absolute path to the Scan binary.
+            use_book: Whether to enable the built-in opening book.
+
+        Raises:
+            RuntimeError: If the process exits immediately or the handshake times out.
+        """
         import subprocess
         self._use_book = use_book
         # CWD must be the backend dir so Scan finds data/eval relative to itself
@@ -133,6 +158,18 @@ class ScanEngine:
         logger.info("Scan ready (use_book=%s)", self._use_book)
 
     def best_move(self, pos: str, movetime_s: float) -> Optional[str]:
+        """Ask Scan for the best move and return the Hub notation string.
+
+        Sends: pos pos=<pos> → level move-time=<t> → go think
+        Waits for a 'done move=...' response.
+
+        Args:
+            pos: 51-char Hub position string (turn char + 50 piece chars).
+            movetime_s: Maximum thinking time in seconds.
+
+        Returns:
+            Hub move notation such as '37-32' or '26x17x8', or None on timeout.
+        """
         with self._lock:
             # Drain any stale output from a previous search
             while True:
@@ -226,6 +263,12 @@ _engine_lock = threading.Lock()
 
 
 def _get_engine(use_book: bool = True) -> Optional[ScanEngine]:
+    """Return the appropriate engine singleton, creating it if necessary.
+
+    Returns None when Scan is unavailable (binary missing, too small, or
+    previously crashed). The _engine_unavailable flag prevents repeated
+    startup attempts after a confirmed failure.
+    """
     global _engine, _eval_engine, _engine_unavailable
     if _engine_unavailable:
         return None
