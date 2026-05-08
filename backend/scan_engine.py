@@ -170,7 +170,7 @@ class ScanEngine:
             self._send(f"level move-time={movetime_s}")
             self._send("go think")
 
-            last_score = 0
+            last_score: float = 0.0
             last_best: Optional[str] = None
             deadline = time.monotonic() + movetime_s + 10.0
             raw_lines: list[str] = []
@@ -183,20 +183,20 @@ class ScanEngine:
                     line = self._q.get(timeout=min(0.05, remaining))
                     raw_lines.append(line)
                     if line.startswith("info "):
-                        s = re.search(r'\bscore=\s*([+-]?\d+)', line)
+                        s = re.search(r'\bscore=\s*([+-]?\d+(?:\.\d+)?)', line)
                         p = re.search(r'\bpv="([^"]*)"', line)
                         if s:
-                            last_score = int(s.group(1))
+                            last_score = float(s.group(1))
                         if p:
                             words = p.group(1).strip().split()
                             if words:
                                 last_best = words[0]
                     elif line.startswith("done") and (len(line) == 4 or line[4] == ' '):
                         move_m = re.search(r'\bmove=(\S+)', line)
-                        score_m = re.search(r'\bscore=\s*([+-]?\d+)', line)
+                        score_m = re.search(r'\bscore=\s*([+-]?\d+(?:\.\d+)?)', line)
                         best = (move_m.group(1) if move_m else None) or last_best
-                        score = int(score_m.group(1)) if score_m else last_score
-                        logger.warning("evaluate_pos done: score=%d best=%s raw_lines=%s", score, best, raw_lines[-3:])
+                        score = float(score_m.group(1)) if score_m else last_score
+                        logger.warning("evaluate_pos done: score=%.3f best=%s raw_lines=%s", score, best, raw_lines[-3:])
                         return {"bestMove": best, "score": score}
                 except queue.Empty:
                     pass

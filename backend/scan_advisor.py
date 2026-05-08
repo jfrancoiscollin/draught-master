@@ -454,9 +454,10 @@ def _fmt_pdn(moves: list[str]) -> str:
 
 # ── Move-by-move annotation ───────────────────────────────────────────────────
 
-def _win_chance(cp: int) -> float:
-    """Sigmoid mapping from Scan score (side-to-move) to win probability shift."""
-    return 2 / (1 + math.exp(-0.04 * cp)) - 1
+def _win_chance(cp: float) -> float:
+    """Sigmoid mapping from Scan score (side-to-move, in piece units) to win probability shift.
+    k=2.0 calibrated for Scan's piece-unit scale where 1.0 ≈ one-piece advantage."""
+    return 2 / (1 + math.exp(-2.0 * cp)) - 1
 
 
 def _annotate_game_moves_sync(
@@ -519,9 +520,10 @@ def _annotate_game_moves_sync(
         ev_after = _eval_pos(state_after)
         score_after = ev_after["score"]
 
-        # rawLoss: if both scores are positive, the mover lost ground.
+        # rawLoss: both scores from side-to-move perspective in piece units;
+        # positive sum means the mover lost ground. Convert ×100 for cp display.
         raw_loss = score_before + score_after
-        loss_cp = min(1000, max(0, raw_loss))
+        loss_cp = min(1000, max(0, round(raw_loss * 100)))
 
         dwc = _win_chance(score_before) + _win_chance(score_after)
         delta = max(0.0, dwc)
