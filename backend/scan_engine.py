@@ -153,9 +153,10 @@ class ScanEngine:
         return None
 
     def evaluate_pos(self, pos: str, movetime_s: float) -> Optional[dict]:
-        """Evaluate a position using 'go think' (same engine path as best_move).
-        'go analyze' returns score=0 immediately for book positions; 'go think'
-        forces a real search and always returns a score in the 'done' line.
+        """Evaluate a position using 'go think'.
+        'go think' forces a real neural-network search unlike 'go analyze' which
+        returns score=0 for book positions. The score comes from 'info' lines;
+        the best move comes from the final 'done' line.
         Returns {"score": int, "bestMove": str|None}."""
         with self._lock:
             while True:
@@ -168,14 +169,34 @@ class ScanEngine:
             self._send(f"level move-time={movetime_s}")
             self._send("go think")
 
-            resp = self._wait_for("done ", timeout=movetime_s + 10.0)
-            if resp:
-                move_m = re.search(r'\bmove=(\S+)', resp)
-                score_m = re.search(r'\bscore=\s*([+-]?\d+)', resp)
-                score = int(score_m.group(1)) if score_m else 0
-                best = move_m.group(1) if move_m else None
-                logger.info("evaluate_pos done: score=%d best=%s", score, best)
-                return {"bestMove": best, "score": score}
+            last_score = 0
+            last_best: Optional[str] = None
+            deadline = time.monotonic() + movetime_s + 10.0
+
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                try:
+                    line = self._q.get(timeout=min(0.05, remaining))
+                    if line.startswith("info "):
+                        s = re.search(r'\bscore=\s*([+-]?\d+)', line)
+                        p = re.search(r'\bpv="([^"]*)"', line)
+                        if s:
+                            last_score = int(s.group(1))
+                        if p:
+                            words = p.group(1).strip().split()
+                            if words:
+                                last_best = words[0]
+                    elif line.startswith("done") and (len(line) == 4 or line[4] == ' '):
+                        move_m = re.search(r'\bmove=(\S+)', line)
+                        score_m = re.search(r'\bscore=\s*([+-]?\d+)', line)
+                        best = (move_m.group(1) if move_m else None) or last_best
+                        score = int(score_m.group(1)) if score_m else last_score
+                        logger.info("evaluate_pos done: score=%d best=%s", score, best)
+                        return {"bestMove": best, "score": score}
+                except queue.Empty:
+                    pass
 
         logger.warning("evaluate_pos: no done received for pos=%s", pos[:40])
         return None
