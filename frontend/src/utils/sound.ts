@@ -11,10 +11,7 @@ function getCtx(): AudioContext | null {
   }
 }
 
-export function playMoveSound() {
-  const ctx = getCtx()
-  if (!ctx) return
-
+function _doPlay(ctx: AudioContext) {
   try {
     const now = ctx.currentTime
 
@@ -98,4 +95,17 @@ export function playMoveSound() {
   } catch {
     // Audio not supported — fail silently
   }
+}
+
+export function playMoveSound() {
+  const ctx = getCtx()
+  if (!ctx) return
+
+  // Browsers suspend AudioContext until a user gesture; resume then play
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(() => _doPlay(ctx)).catch(() => {})
+    return
+  }
+
+  _doPlay(ctx)
 }
