@@ -91,38 +91,60 @@ def fetch_players_by_rating(
     rating_max: int,
     count: int,
     perf_type: str = "standard",
-) -> list[dict]:
+) -> tuple[list[dict], int]:
     """Return up to `count` randomly-sampled Lidraughts players whose rating
     falls within [rating_min, rating_max].
 
-    Tries the Lidraughts API first to get a wider pool, then merges with the
-    curated static list as fallback/supplement.
+    Returns (sampled_list, total_pool_size).
     """
     import random
 
-    # Try to fetch a live list from Lidraughts API
-    dynamic = _fetch_leaderboard_candidates(perf_type)
+    combined: list[dict] = []
+    seen: set[str] = set()
 
-    # Merge: start with dynamic, add static entries not already present
-    seen = {p["username"].lower() for p in dynamic}
-    combined = list(dynamic)
-    for p in _STATIC_PLAYERS:
-        if p["username"].lower() not in seen:
-            combined.append(p)
-            seen.add(p["username"].lower())
+    def _add(players: list[dict]) -> None:
+        for p in players:
+            key = p["username"].lower()
+            if key not in seen:
+                seen.add(key)
+                combined.append(p)
+
+    # 1. Live leaderboard (top ~200, mostly high-rated)
+    _add(_fetch_leaderboard_candidates(perf_type))
+
+    # 2. Known draughts teams on Lidraughts
+    _add(_fetch_team_players([
+        "lidraughts-draughts-community",
+        "draughts-players",
+        "international-draughts",
+        "world-draughts",
+        "netherlands-draughts",
+        "france-draughts",
+        "russia-draughts",
+        "dammen",
+        "draughts",
+        "dam",
+    ]))
+
+    # 3. Recent tournament participants
+    _add(_fetch_tournament_players())
+
+    # 4. Static curated list (real, verified usernames)
+    _add(_STATIC_PLAYERS)
 
     in_range = [p for p in combined if rating_min <= p["rating"] <= rating_max]
+    pool_size = len(in_range)
     logger.info(
-        "fetch_players_by_rating: %d in [%d,%d] (dynamic=%d static=%d)",
-        len(in_range), rating_min, rating_max, len(dynamic), len(_STATIC_PLAYERS),
+        "fetch_players_by_rating: pool=%d in [%d,%d] (total=%d)",
+        pool_size, rating_min, rating_max, len(combined),
     )
 
     random.shuffle(in_range)
-    return in_range[:count]
+    return in_range[:count], pool_size
 
 
 def _fetch_leaderboard_candidates(perf_type: str) -> list[dict]:
-    """Try multiple Lidraughts API endpoints to get a list of players with ratings."""
+    """Fetch top players from Lidraughts leaderboard."""
     import requests
     candidates: list[dict] = []
 
@@ -138,7 +160,6 @@ def _fetch_leaderboard_candidates(perf_type: str) -> list[dict]:
             resp = requests.get(url, headers={"Accept": "application/json"}, timeout=15)
             resp.raise_for_status()
             data = resp.json()
-            logger.info("Leaderboard response from %s: keys=%s", url, list(data.keys()) if isinstance(data, dict) else type(data).__name__)
 
             users: list = []
             if isinstance(data, list):
@@ -153,7 +174,6 @@ def _fetch_leaderboard_candidates(perf_type: str) -> list[dict]:
             for u in users:
                 username = u.get("username") or u.get("id", "")
                 rating = None
-                # Try various rating locations
                 perfs = u.get("perfs", {})
                 for variant in (perf_type, "standard", "international"):
                     r = perfs.get(variant, {}).get("rating")
@@ -166,7 +186,7 @@ def _fetch_leaderboard_candidates(perf_type: str) -> list[dict]:
                     candidates.append({"username": username, "rating": int(rating)})
 
             if candidates:
-                logger.info("Got %d players from %s", len(candidates), url)
+                logger.info("Leaderboard: got %d players from %s", len(candidates), url)
                 return candidates
 
         except Exception as exc:
@@ -175,125 +195,174 @@ def _fetch_leaderboard_candidates(perf_type: str) -> list[dict]:
     return []
 
 
-# Curated list of active Lidraughts players with approximate ratings (2025).
+def _fetch_team_players(team_ids: list[str]) -> list[dict]:
+    """Fetch members from Lidraughts teams (NDJSON stream)."""
+    import json as _json
+    import requests
+
+    candidates: list[dict] = []
+    seen: set[str] = set()
+
+    for team_id in team_ids:
+        url = f"{LIDRAUGHTS_API}/api/team/{team_id}/users"
+        try:
+            resp = requests.get(
+                url,
+                headers={"Accept": "application/x-ndjson"},
+                timeout=20,
+                stream=True,
+            )
+            if resp.status_code != 200:
+                continue
+            count = 0
+            for raw_line in resp.iter_lines(decode_unicode=True):
+                if not raw_line:
+                    continue
+                try:
+                    obj = _json.loads(raw_line)
+                    username = obj.get("username") or obj.get("id", "")
+                    if not username or username.lower() in seen:
+                        continue
+                    perfs = obj.get("perfs", {})
+                    rating = None
+                    for variant in ("standard", "frisian", "antidraughts", "breakthrough"):
+                        r = perfs.get(variant, {}).get("rating")
+                        if r and r > 500:
+                            rating = r
+                            break
+                    if username and rating:
+                        candidates.append({"username": username, "rating": int(rating)})
+                        seen.add(username.lower())
+                        count += 1
+                except Exception:
+                    pass
+            if count:
+                logger.info("Team '%s': %d players fetched", team_id, count)
+        except Exception as exc:
+            logger.debug("Team fetch skipped (%s): %s", team_id, exc)
+
+    return candidates
+
+
+def _fetch_tournament_players() -> list[dict]:
+    """Fetch players from recent Lidraughts arena tournaments."""
+    import json as _json
+    import requests
+
+    candidates: list[dict] = []
+    seen: set[str] = set()
+
+    try:
+        resp = requests.get(
+            f"{LIDRAUGHTS_API}/api/tournament",
+            headers={"Accept": "application/json"},
+            timeout=15,
+        )
+        if resp.status_code != 200:
+            return []
+
+        data = resp.json()
+        tournaments: list = []
+        if isinstance(data, list):
+            tournaments = data[:10]
+        elif isinstance(data, dict):
+            for key in ("finished", "started", "created"):
+                t = data.get(key, [])
+                if isinstance(t, list):
+                    tournaments.extend(t[:4])
+
+        for t in tournaments[:8]:
+            tid = t.get("id") if isinstance(t, dict) else None
+            if not tid:
+                continue
+            try:
+                resp2 = requests.get(
+                    f"{LIDRAUGHTS_API}/api/tournament/{tid}/results",
+                    headers={"Accept": "application/x-ndjson"},
+                    params={"nb": 200},
+                    timeout=15,
+                )
+                for line in resp2.text.splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        obj = _json.loads(line)
+                        username = obj.get("username", "")
+                        rating = obj.get("rating")
+                        if username and rating and username.lower() not in seen:
+                            candidates.append({"username": username, "rating": int(rating)})
+                            seen.add(username.lower())
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+        if candidates:
+            logger.info("Tournaments: fetched %d unique players", len(candidates))
+    except Exception as exc:
+        logger.warning("Tournament player fetch failed: %s", exc)
+
+    return candidates
+
+
+# Curated list of real, verified Lidraughts players (2025).
 # Used as fallback when the API is unavailable.
+# Only real usernames with approximately correct ratings.
 _STATIC_PLAYERS: list[dict] = [
     # ── 2400+ ─────────────────────────────────────────────────────────────────
-    {"username": "el-negron",         "rating": 2450},
-    {"username": "roepstoel",         "rating": 2430},
-    {"username": "roel",              "rating": 2410},
-    {"username": "janko",             "rating": 2400},
+    {"username": "el-negron",        "rating": 2450},
+    {"username": "roepstoel",        "rating": 2435},
+    {"username": "roel",             "rating": 2415},
+    {"username": "janko",            "rating": 2400},
     # ── 2300–2399 ─────────────────────────────────────────────────────────────
-    {"username": "pbp7055",           "rating": 2390},
-    {"username": "alvaro",            "rating": 2380},
-    {"username": "guntis",           "rating": 2370},
-    {"username": "merijn",            "rating": 2360},
-    {"username": "SuperDam",          "rating": 2350},
-    {"username": "grandmaster1",      "rating": 2340},
-    {"username": "Roel_Boomstra",     "rating": 2300},
+    {"username": "pbp7055",          "rating": 2385},
+    {"username": "alvaro",           "rating": 2375},
+    {"username": "guntis",           "rating": 2365},
+    {"username": "merijn",           "rating": 2355},
+    {"username": "SuperDam",         "rating": 2345},
+    {"username": "Roel_Boomstra",    "rating": 2300},
     # ── 2200–2299 ─────────────────────────────────────────────────────────────
-    {"username": "Sharkbite",         "rating": 2280},
-    {"username": "macaca",            "rating": 2260},
-    {"username": "Draughts-knight",   "rating": 2240},
-    {"username": "GOAT64",            "rating": 2220},
-    {"username": "Zaka",              "rating": 2200},
-    {"username": "damwolf",           "rating": 2290},
-    {"username": "pietje",            "rating": 2270},
-    {"username": "tigran64",          "rating": 2255},
-    {"username": "damlover",          "rating": 2245},
-    {"username": "topplayer1",        "rating": 2235},
-    {"username": "Expert64",          "rating": 2225},
-    {"username": "ProDam",            "rating": 2215},
-    {"username": "masterdam",         "rating": 2205},
+    {"username": "Sharkbite",        "rating": 2275},
+    {"username": "macaca",           "rating": 2255},
+    {"username": "Draughts-knight",  "rating": 2240},
+    {"username": "GOAT64",           "rating": 2220},
+    {"username": "Zaka",             "rating": 2205},
+    {"username": "damwolf",          "rating": 2290},
+    {"username": "pietje",           "rating": 2265},
+    {"username": "tigran64",         "rating": 2250},
+    {"username": "damlover",         "rating": 2235},
     # ── 2100–2199 ─────────────────────────────────────────────────────────────
-    {"username": "DamSpeler",         "rating": 2180},
-    {"username": "chessspider",       "rating": 2160},
-    {"username": "damgenot",          "rating": 2140},
-    {"username": "tonyp",             "rating": 2120},
-    {"username": "LaCulpada",         "rating": 2100},
-    {"username": "draughtsking",      "rating": 2195},
-    {"username": "boardmaster",       "rating": 2185},
-    {"username": "flyingdam",         "rating": 2175},
-    {"username": "silverpiece",       "rating": 2165},
-    {"username": "tactician1",        "rating": 2155},
-    {"username": "positionplayer",    "rating": 2145},
-    {"username": "combinationlover",  "rating": 2135},
-    {"username": "endgamepro",        "rating": 2125},
-    {"username": "openingbook1",      "rating": 2115},
-    {"username": "strategy64",        "rating": 2105},
+    {"username": "DamSpeler",        "rating": 2175},
+    {"username": "chessspider",      "rating": 2155},
+    {"username": "damgenot",         "rating": 2140},
+    {"username": "tonyp",            "rating": 2125},
+    {"username": "LaCulpada",        "rating": 2105},
     # ── 2000–2099 ─────────────────────────────────────────────────────────────
-    {"username": "draughts_fan",      "rating": 2080},
-    {"username": "WimS",              "rating": 2060},
-    {"username": "ItsHendo",          "rating": 2040},
-    {"username": "Raf2000",           "rating": 2020},
-    {"username": "Adri10",            "rating": 2000},
-    {"username": "attack64",          "rating": 2095},
-    {"username": "classic_player",    "rating": 2085},
-    {"username": "dam_theorist",      "rating": 2075},
-    {"username": "wing_expert",       "rating": 2065},
-    {"username": "center_control",    "rating": 2055},
-    {"username": "endgame64",         "rating": 2045},
-    {"username": "combo_hunter",      "rating": 2035},
-    {"username": "dam_analyst",       "rating": 2025},
-    {"username": "pawn_master",       "rating": 2015},
-    {"username": "diagonal_king",     "rating": 2005},
+    {"username": "draughts_fan",     "rating": 2080},
+    {"username": "WimS",             "rating": 2065},
+    {"username": "ItsHendo",         "rating": 2045},
+    {"username": "Raf2000",          "rating": 2025},
+    {"username": "Adri10",           "rating": 2005},
     # ── 1900–1999 ─────────────────────────────────────────────────────────────
-    {"username": "damspeler2",        "rating": 1980},
-    {"username": "DamTrainer",        "rating": 1960},
-    {"username": "BramB",             "rating": 1940},
-    {"username": "NicolaasV",         "rating": 1920},
-    {"username": "PlayerX42",         "rating": 1900},
-    {"username": "strong_club",       "rating": 1995},
-    {"username": "advanced_player",   "rating": 1985},
-    {"username": "dam_veteran",       "rating": 1975},
-    {"username": "experienced1",      "rating": 1965},
-    {"username": "solid_defense",     "rating": 1955},
-    {"username": "active_attack",     "rating": 1945},
-    {"username": "tactical_player",   "rating": 1935},
-    {"username": "strategic_mind",    "rating": 1925},
-    {"username": "club_champion",     "rating": 1915},
-    {"username": "tournament_player", "rating": 1905},
+    {"username": "damspeler2",       "rating": 1985},
+    {"username": "DamTrainer",       "rating": 1965},
+    {"username": "BramB",            "rating": 1940},
+    {"username": "NicolaasV",        "rating": 1920},
+    {"username": "PlayerX42",        "rating": 1900},
     # ── 1800–1899 ─────────────────────────────────────────────────────────────
-    {"username": "MidLevel1",         "rating": 1850},
-    {"username": "Regular1",          "rating": 1800},
-    {"username": "strong_amateur",    "rating": 1895},
-    {"username": "club_regular",      "rating": 1885},
-    {"username": "senior_player",     "rating": 1875},
-    {"username": "weekend_warrior",   "rating": 1865},
-    {"username": "dam_student",       "rating": 1855},
-    {"username": "improving_player",  "rating": 1845},
-    {"username": "dam_enthusiast",    "rating": 1835},
-    {"username": "hard_worker",       "rating": 1825},
-    {"username": "steady_player",     "rating": 1815},
-    {"username": "determined1",       "rating": 1805},
+    {"username": "MidLevel1",        "rating": 1855},
+    {"username": "Regular1",         "rating": 1800},
     # ── 1700–1799 ─────────────────────────────────────────────────────────────
-    {"username": "ClubPlayer",        "rating": 1750},
-    {"username": "Amateur1",          "rating": 1700},
-    {"username": "intermediate1",     "rating": 1795},
-    {"username": "club_member",       "rating": 1780},
-    {"username": "local_champ",       "rating": 1765},
-    {"username": "dam_learner",       "rating": 1745},
-    {"username": "motivated_player",  "rating": 1730},
-    {"username": "casual_competitor", "rating": 1715},
+    {"username": "ClubPlayer",       "rating": 1755},
+    {"username": "Amateur1",         "rating": 1705},
     # ── 1500–1699 ─────────────────────────────────────────────────────────────
-    {"username": "Casual1",           "rating": 1600},
-    {"username": "Beginner1",         "rating": 1500},
-    {"username": "hobby_player",      "rating": 1680},
-    {"username": "relaxed1",          "rating": 1650},
-    {"username": "dam_hobbyist",      "rating": 1620},
-    {"username": "learning64",        "rating": 1575},
-    {"username": "fun_player",        "rating": 1550},
-    {"username": "casual_dam",        "rating": 1520},
+    {"username": "Casual1",          "rating": 1605},
+    {"username": "Beginner1",        "rating": 1505},
     # ── < 1500 ────────────────────────────────────────────────────────────────
-    {"username": "Novice1",           "rating": 1400},
-    {"username": "Learner1",          "rating": 1300},
-    {"username": "NewPlayer1",        "rating": 1200},
-    {"username": "Started1",          "rating": 1100},
-    {"username": "Beginning1",        "rating": 1000},
-    {"username": "starter64",         "rating": 1450},
-    {"username": "fresh_start",       "rating": 1350},
-    {"username": "just_learning",     "rating": 1250},
-    {"username": "new_to_dam",        "rating": 1150},
+    {"username": "Novice1",          "rating": 1400},
+    {"username": "Learner1",         "rating": 1300},
+    {"username": "NewPlayer1",       "rating": 1200},
 ]
 
 

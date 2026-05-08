@@ -9,7 +9,7 @@ type SelectionMode = 'manual' | 'elo'
 
 async function fetchPlayersByRating(
   min: number, max: number, count: number
-): Promise<{ username: string; rating: number }[]> {
+): Promise<{ players: { username: string; rating: number }[]; pool_size: number }> {
   const params = new URLSearchParams({
     rating_min: String(min),
     rating_max: String(max),
@@ -18,7 +18,10 @@ async function fetchPlayersByRating(
   const res = await fetch(`/api/opening-book/players?${params}`)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const data = await res.json()
-  return (data.players ?? []) as { username: string; rating: number }[]
+  return {
+    players: (data.players ?? []) as { username: string; rating: number }[],
+    pool_size: data.pool_size ?? data.found ?? 0,
+  }
 }
 
 export default function OpeningCacheBuilder({ onClose }: Props) {
@@ -32,6 +35,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const [ratingMax, setRatingMax] = useState(2300)
   const [playerCount, setPlayerCount] = useState(10)
   const [foundPlayers, setFoundPlayers] = useState<{ username: string; rating: number }[]>([])
+  const [poolSize, setPoolSize] = useState<number | null>(null)
   const [searchDone, setSearchDone] = useState(false)
 
   // Shared config
@@ -113,11 +117,14 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const handleSearch = async () => {
     setSearchDone(false)
     setFoundPlayers([])
+    setPoolSize(null)
     try {
-      const players = await fetchPlayersByRating(ratingMin, ratingMax, playerCount)
+      const { players, pool_size } = await fetchPlayersByRating(ratingMin, ratingMax, playerCount)
       setFoundPlayers(players)
+      setPoolSize(pool_size)
     } catch {
       setFoundPlayers([])
+      setPoolSize(0)
     }
     setSearchDone(true)
   }
@@ -407,7 +414,21 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
 
             {foundPlayers.length > 0 && (
               <div className="bg-gray-800 rounded-xl p-3 flex flex-col gap-2">
-                <p className="text-xs text-gray-400">{foundPlayers.length} joueur(s) sélectionné(s) aléatoirement :</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-400">
+                    {foundPlayers.length} joueur(s) sélectionné(s) aléatoirement
+                  </p>
+                  {poolSize !== null && (
+                    <span className="text-xs text-gray-500">
+                      pool : {poolSize} joueurs
+                    </span>
+                  )}
+                </div>
+                {poolSize !== null && poolSize < playerCount && (
+                  <p className="text-xs text-amber-400">
+                    ⚠️ Seulement {poolSize} joueurs disponibles dans cette tranche — agrandis la plage Elo ou réduis le nombre demandé.
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-1.5">
                   {foundPlayers.map(p => (
                     <span key={p.username} className="bg-gray-700 rounded-full px-2.5 py-0.5 text-xs text-white flex items-center gap-1">

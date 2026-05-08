@@ -1078,8 +1078,8 @@ async def find_players_by_rating(
     from lidraughts_fetcher import fetch_players_by_rating
     if rating_min >= rating_max:
         raise HTTPException(status_code=400, detail="rating_min doit être < rating_max")
-    players = fetch_players_by_rating(rating_min, rating_max, count, perf_type)
-    return {"players": players, "found": len(players)}
+    players, pool_size = fetch_players_by_rating(rating_min, rating_max, count, perf_type)
+    return {"players": players, "found": len(players), "pool_size": pool_size}
 
 
 @app.post("/api/opening-book/build")
