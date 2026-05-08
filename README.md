@@ -247,11 +247,20 @@ class Move:
 
 Scan est un moteur de jeu de dames basé sur un réseau de neurones (fichier `data/eval`). Il communique via le **protocole Hub v2** (stdio, commandes texte).
 
-Deux instances sont maintenues en parallèle :
-- `_engine` (avec livre d'ouvertures) — pour les coups de l'IA en partie
-- `_eval_engine` (sans livre) — pour l'évaluation des positions en analyse
+> **Deux livres d'ouvertures distincts coexistent dans le projet :**
+> - Le **livre interne de Scan** (`set-param name=book value=true/false`) : base théorique embarquée dans le binaire Scan. Quand il est actif, Scan court-circuite la recherche et retourne `score=0` pour les positions du livre.
+> - **Notre base custom** (`opening_book_db.py`) : positions extraites de vraies parties Lidraughts avec scores Scan pré-calculés, utilisée comme cache dans `scan_advisor.py`.
 
-Le livre d'ouvertures est chargé à l'initialisation (`init`) et **ne peut pas être déchargé** à chaud — c'est pourquoi deux processus séparés sont nécessaires.
+Deux instances du processus Scan sont maintenues en parallèle, car le livre interne ne peut pas être activé/désactivé à chaud après `init` :
+
+| Instance | Livre interne Scan | Rôle |
+|----------|--------------------|------|
+| `_engine` | **activé** | Coups de l'IA en partie (joue la théorie d'ouverture) |
+| `_eval_engine` | **désactivé** | Évaluation de positions pour l'analyse — le livre renverrait `score=0`, ce qui casse la détection des gaffes |
+
+Notre base Lidraughts est elle utilisée **en amont** dans `scan_advisor.py` : si la position est déjà dans le cache SQLite, `_eval_engine` n'est pas appelé du tout.
+
+Le livre interne est chargé à l'initialisation (`init`) et **ne peut pas être déchargé** à chaud — c'est pourquoi deux processus séparés sont nécessaires.
 
 Protocole Hub v2 (échanges avec le processus Scan) :
 ```
