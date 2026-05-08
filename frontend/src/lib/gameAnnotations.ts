@@ -22,10 +22,10 @@ export interface GameStats {
   blackCounts: Record<NonNullable<Verdict>, number>
 }
 
-// Scan uses a compressed score scale (~30 units ≈ one man, vs Stockfish's 100 cp = one pawn).
-// Coefficient 0.04 is calibrated so: inaccuracy ≥ 4 pts, mistake ≥ 8 pts, blunder ≥ 20 pts.
+// Scan returns scores in piece units (1.0 ≈ one-man advantage, floats like 1.23).
+// k=2.0 calibrated for this scale: winChance(1.0) ≈ 0.76, winChance(0.5) ≈ 0.46.
 function winChance(cp: number): number {
-  return 2 / (1 + Math.exp(-0.04 * cp)) - 1
+  return 2 / (1 + Math.exp(-2.0 * cp)) - 1
 }
 
 function classify(dwc: number): Verdict {
@@ -72,7 +72,8 @@ function buildAnnotations(positions: PdnPosition[], evals: PositionEval[]): Move
     // scoreAfter:  from opponent's perspective after the move (positive = opponent is ahead)
     // Perfect move: scoreBefore + scoreAfter ≈ 0 (signs cancel). Blunder: both positive = large loss.
     const rawLoss = scoreBefore + scoreAfter
-    const lossCp = Math.min(1000, Math.max(0, rawLoss))
+    // Convert piece units to centipawns for display (1 piece ≈ 100 cp)
+    const lossCp = Math.min(1000, Math.max(0, Math.round(rawLoss * 100)))
 
     const dwc = winChance(scoreBefore) + winChance(scoreAfter)
     const deltaWinChance = Math.max(0, dwc)
