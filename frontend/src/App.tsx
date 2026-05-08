@@ -1581,6 +1581,8 @@ export default function App() {
             onShowExplorerChange={toggleExplorer}
             explorerMaxMoves={explorerMaxMoves}
             onExplorerMaxMovesChange={changeExplorerMaxMoves}
+            playerSide={playerSide}
+            onPlayerSideChange={changePlayerSide}
           />
         </div>
         {/* ── Base ouvertures ── */}
