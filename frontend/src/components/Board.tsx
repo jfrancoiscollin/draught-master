@@ -471,7 +471,7 @@ export default function Board({
       const isSelected    = sq !== null && sq === selectedSquare
       const isLegalTarget = sq !== null && targets.has(sq)
       const isMoveable    = sq !== null && (froms.has(sq) || (freeSelectSquares ? freeSelectSquares.has(sq) : false))
-      const isLastMove    = sq !== null && lastMovePath.has(sq)
+      const isLastMove    = sq !== null && lastMovePath.has(sq) && !animVisible
       const isHighlighted = sq !== null && highlightSquares.includes(sq)
       const isSpoken      = sq !== null && spokenSquares.includes(sq)
 
