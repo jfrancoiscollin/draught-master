@@ -1124,7 +1124,7 @@ export default function App() {
                       </div>
                     )}
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
-                    <OpeningExplorer fen={gameState?.fen ?? null} onArrows={setExplorerArrows} />
+                    <OpeningExplorer fen={moveHistory.length > 0 ? (gameState?.fen ?? null) : null} onArrows={setExplorerArrows} />
                     {playAnnotationPanel}
                   </div>
                 </>
@@ -1192,7 +1192,7 @@ export default function App() {
                         onLearn={handleLearnPlayedGame}
                         annotating={playAnnotating}
                       />
-                      <OpeningExplorer fen={gameState?.fen ?? null} onArrows={setExplorerArrows} />
+                      <OpeningExplorer fen={moveHistory.length > 0 ? (gameState?.fen ?? null) : null} onArrows={setExplorerArrows} />
                       <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                       {playAnnotationPanel}
                     </div>
