@@ -52,6 +52,19 @@ from models import (
 
 load_dotenv()
 
+_SENTRY_DSN = os.getenv("SENTRY_DSN")
+if _SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.starlette import StarletteIntegration
+    sentry_sdk.init(
+        dsn=_SENTRY_DSN,
+        integrations=[StarletteIntegration(), FastApiIntegration()],
+        traces_sample_rate=0.1,
+        send_default_pii=False,
+    )
+    logging.getLogger(__name__).info("Sentry initialized")
+
 _SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")
 _ALGORITHM = "HS256"
 _TOKEN_EXPIRE_DAYS = 30
@@ -157,6 +170,41 @@ def _build_pdn(history: List[Move]) -> str:
 
 
 import json as _json_mod
+import time
+from collections import defaultdict, deque
+from fastapi import Request
+
+
+class _RateLimiter:
+    """Sliding-window rate limiter (in-memory, single-process)."""
+
+    def __init__(self, max_calls: int, window: int):
+        self.max_calls = max_calls
+        self.window = window
+        self._calls: dict[str, deque] = defaultdict(deque)
+        self._lock = asyncio.Lock()
+
+    async def __call__(self, request: Request) -> None:
+        key = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        async with self._lock:
+            q = self._calls[key]
+            while q and q[0] < now - self.window:
+                q.popleft()
+            if len(q) >= self.max_calls:
+                raise HTTPException(
+                    status_code=429,
+                    detail="Trop de requêtes. Réessayez dans quelques secondes.",
+                )
+            q.append(now)
+
+
+# 5 Claude analyses / minute / IP
+_analysis_limiter = _RateLimiter(max_calls=5, window=60)
+# 20 Scan move requests / minute / IP
+_scan_limiter = _RateLimiter(max_calls=20, window=60)
+# 3 heavy batch operations / minute / IP
+_batch_limiter = _RateLimiter(max_calls=3, window=60)
 
 
 def _serialize_entry(entry: dict) -> str:
@@ -389,7 +437,8 @@ async def undo_move(game_id: str) -> GameStateResponse:
 
 @app.get("/api/game/{game_id}/ai-move")
 async def get_ai_move_suggestion(
-    game_id: str, depth: int = Query(4)
+    game_id: str, depth: int = Query(4),
+    _rl: None = Depends(_scan_limiter),
 ) -> Dict[str, Any]:
     entry = await _get_game_entry(game_id)
     if entry is None:
@@ -402,7 +451,10 @@ async def get_ai_move_suggestion(
 
 
 @app.post("/api/game/{game_id}/analyze", response_model=AnalysisResponse)
-async def analyze(game_id: str, req: AnalyzeRequest) -> AnalysisResponse:
+async def analyze(
+    game_id: str, req: AnalyzeRequest,
+    _rl: None = Depends(_analysis_limiter),
+) -> AnalysisResponse:
     entry = await _get_game_entry(game_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
@@ -956,7 +1008,10 @@ async def import_pdn_game(body: Dict[str, Any]) -> Dict[str, Any]:
 
 
 @app.post("/api/pdn/annotate")
-async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
+async def annotate_game_positions(
+    body: Dict[str, Any],
+    _rl: None = Depends(_batch_limiter),
+) -> Dict[str, Any]:
     """Batch position evaluation using the native Scan engine.
     Returns evaluations for every position or available=false if Scan is not installed."""
     from scan_engine import _get_engine, _build_pos
@@ -1039,7 +1094,10 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
 
 
 @app.post("/api/opening-book/precompute")
-async def precompute_positions(body: Dict[str, Any]) -> Dict[str, Any]:
+async def precompute_positions(
+    body: Dict[str, Any],
+    _rl: None = Depends(_batch_limiter),
+) -> Dict[str, Any]:
     """Deep evaluation of a game's positions, stored in the opening eval cache.
     Uses more time per position than the live annotate endpoint so Scan reaches
     higher depth. Cached results are reused instantly on future annotation calls."""
@@ -1369,7 +1427,11 @@ async def opening_book_migrate_local_db() -> Dict[str, Any]:
     }
 
 
-async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
+@app.post("/api/position/analyze", response_model=AnalysisResponse)
+async def position_analyze(
+    body: Dict[str, Any],
+    _rl: None = Depends(_analysis_limiter),
+) -> AnalysisResponse:
     fen = body.get("fen", "")
     question = body.get("question") or None
     language = body.get("language", "fr")
@@ -1394,7 +1456,10 @@ async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
 
 
 @app.post("/api/position/best-move")
-async def position_best_move(body: Dict[str, Any]) -> Dict[str, Any]:
+async def position_best_move(
+    body: Dict[str, Any],
+    _rl: None = Depends(_scan_limiter),
+) -> Dict[str, Any]:
     fen = body.get("fen", "")
     depth = int(body.get("depth", 6))
     try:
