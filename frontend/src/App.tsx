@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import Board from './components/Board'
-import type { Arrow } from './components/Board'
+import type { Arrow, BoardTheme } from './components/Board'
 import AnalysisPanel, { MoveAnnotationsTable } from './components/AnalysisPanel'
 import AnalysisText from './components/AnalysisText'
 import GameControls, { type PlayerSide } from './components/GameControls'
@@ -188,6 +188,9 @@ export default function App() {
   const [humanColor, setHumanColor] = useState<'white' | 'black'>('white')
   const [spokenSquares, setSpokenSquares] = useState<number[]>([])
   const [showControls, setShowControls] = useState(false)
+  const [boardTheme, setBoardTheme] = useState<BoardTheme>(() => {
+    try { return (localStorage.getItem('boardTheme') as BoardTheme) ?? 'classic' } catch { return 'classic' }
+  })
   const [analysisExpanded, setAnalysisExpanded] = useState(false)
   const [fullSpeaking, setFullSpeaking] = useState(false)
   const [replayingPosition, setReplayingPosition] = useState<{ board: number[], label: string } | null>(null)
@@ -1130,6 +1133,7 @@ export default function App() {
                         spokenSquares={spokenSquares}
                         arrows={bestMoveArrow ? [bestMoveArrow, ...explorerArrows] : explorerArrows}
                         flipped={!bothSides && humanColor === 'black'}
+                        theme={boardTheme}
                       />
                       <EvalBar fen={isAiThinking ? null : (gameState?.fen ?? null)} />
                       </div>
@@ -1207,6 +1211,7 @@ export default function App() {
                       spokenSquares={spokenSquares}
                       arrows={bestMoveArrow ? [bestMoveArrow, ...explorerArrows] : explorerArrows}
                       flipped={!bothSides && humanColor === 'black'}
+                      theme={boardTheme}
                     />
                     <EvalBar fen={isAiThinking ? null : (gameState?.fen ?? null)} />
                     </div>
@@ -1289,6 +1294,7 @@ export default function App() {
                   lastMove={gameState?.last_move}
                   spokenSquares={spokenSquares}
                   flipped={!bothSides && humanColor === 'black'}
+                  theme={boardTheme}
                 />
                 <EvalBar fen={isAiThinking ? null : (gameState?.fen ?? null)} />
                 </div>
@@ -1592,6 +1598,44 @@ export default function App() {
         </div>
         {/* ── Base ouvertures ── */}
         <div className="mt-4">
+          {/* ── Personnalisation ── */}
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1 mt-4">Personnalisation</h4>
+          <div className="mb-4">
+            <p className="text-xs text-gray-400 mb-3 px-1">Damier</p>
+            <div className="flex gap-4 px-1">
+              {([
+                { id: 'classic', label: 'Classique', light: '#F0CFA0', dark: '#9B6B4A', border: '#5C3317' },
+                { id: 'wood',    label: 'Bois',      light: '#f3e1b8', dark: '#c89868', border: '#74471f' },
+              ] as const).map(({ id, label, light, dark, border }) => (
+                <button
+                  key={id}
+                  onClick={() => {
+                    setBoardTheme(id)
+                    try { localStorage.setItem('boardTheme', id) } catch {}
+                  }}
+                  className="flex flex-col items-center gap-1.5"
+                >
+                  <div style={{
+                    padding: 3,
+                    borderRadius: 8,
+                    border: `2px solid ${boardTheme === id ? '#d97706' : '#374151'}`,
+                    transition: 'border-color 0.15s',
+                  }}>
+                    <svg width="56" height="56" viewBox="0 0 10 10" style={{ display: 'block', borderRadius: 4, overflow: 'hidden' }}>
+                      <rect width="10" height="10" fill={light}/>
+                      {[0,1,2,3,4].flatMap(r =>
+                        [0,1,2,3,4].map(c => ((r + c) % 2 === 1) ? (
+                          <rect key={`${r}-${c}`} x={c*2} y={r*2} width={2} height={2} fill={dark}/>
+                        ) : null)
+                      )}
+                      <rect width="10" height="10" fill="none" stroke={border} strokeWidth="0.5"/>
+                    </svg>
+                  </div>
+                  <span className="text-xs" style={{ color: boardTheme === id ? '#fbbf24' : '#6b7280' }}>{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">Base ouvertures</h4>
           <button
             onClick={() => { setShowControls(false); setTab('opening-builder') }}

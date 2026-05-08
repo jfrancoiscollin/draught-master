@@ -10,6 +10,34 @@ export interface Arrow {
   width?: number     // strokeWidth, default 2.2
 }
 
+export type BoardTheme = 'classic' | 'wood'
+
+const THEMES: Record<BoardTheme, {
+  light: string
+  dark: string
+  border: string
+  selectedBg: string
+  lastMoveBg: string
+  highlightBg: string
+}> = {
+  classic: {
+    light:       '#F0CFA0',
+    dark:        '#9B6B4A',
+    border:      '#5C3317',
+    selectedBg:  'rgba(186,220,255,0.42)',
+    lastMoveBg:  'rgba(186,220,255,0.26)',
+    highlightBg: 'rgba(186,220,255,0.16)',
+  },
+  wood: {
+    light:       'linear-gradient(135deg,#fbecce 0%,#f3e1b8 50%,#e8d2a0 100%)',
+    dark:        'linear-gradient(135deg,#dab084 0%,#c89868 50%,#b07f4a 100%)',
+    border:      '#74471f',
+    selectedBg:  'rgba(255,255,255,0.48)',
+    lastMoveBg:  'rgba(255,255,255,0.28)',
+    highlightBg: 'rgba(255,255,255,0.16)',
+  },
+}
+
 interface BoardProps {
   board: number[]
   legalMoves: MoveData[]
@@ -25,6 +53,7 @@ interface BoardProps {
   // and any subsequent dark-square click triggers onMove (free-move mode).
   freeSelectSquares?: Set<number>
   flipped?: boolean
+  theme?: BoardTheme
 }
 
 function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boolean; selected: boolean }) {
@@ -192,7 +221,9 @@ export default function Board({
   arrows = [],
   freeSelectSquares,
   flipped = false,
+  theme = 'classic',
 }: BoardProps) {
+  const th = THEMES[theme]
   // Convert square number to center % coordinates in the 100×100 SVG viewBox
   function sqCenter(sq: number): { x: number; y: number } {
     const row = Math.floor((sq - 1) / 5)
@@ -334,12 +365,11 @@ export default function Board({
       const isSpoken      = sq !== null && spokenSquares.includes(sq)
 
       // Square background color
-      let bg = isDark ? '#9B6B4A' : '#F0CFA0'
+      let bg = isDark ? th.dark : th.light
       if (isDark) {
-        if (isSelected)         bg = 'rgba(186,220,255,0.42)'  // pastel blue — selected piece
-        else if (isLastMove)    bg = 'rgba(186,220,255,0.26)'  // pastel blue — last move path
-        else if (isHighlighted) bg = 'rgba(186,220,255,0.16)'  // pastel blue — opening explorer
-        else                    bg = '#9B6B4A'
+        if (isSelected)         bg = th.selectedBg
+        else if (isLastMove)    bg = th.lastMoveBg
+        else if (isHighlighted) bg = th.highlightBg
       }
 
       cells.push(
@@ -348,7 +378,7 @@ export default function Board({
           onClick={() => sq !== null && isDark && handleCellClick(sq)}
           className={isSpoken ? 'spoken-square' : undefined}
           style={{
-            backgroundColor: bg,
+            background: bg,
             aspectRatio: '1',
             display: 'flex',
             alignItems: 'center',
@@ -413,7 +443,7 @@ export default function Board({
       gridTemplateColumns: 'repeat(10, 1fr)',
       width: '100%',
       maxWidth: '560px',
-      border: '3px solid #5C3317',
+      border: `3px solid ${th.border}`,
       borderRadius: '4px',
       overflow: 'hidden',
       boxShadow: '0 8px 32px rgba(0,0,0,0.55)',
