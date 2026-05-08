@@ -174,36 +174,41 @@ def _build_pdn(history: List[Move]) -> str:
 import json as _json_mod
 
 
-class _RateLimiter:
-    """Sliding-window rate limiter (in-memory, single-process)."""
+def _make_limiter(max_calls: int, window: int):
+    """Return a FastAPI dependency that enforces a sliding-window rate limit per IP.
 
-    def __init__(self, max_calls: int, window: int):
-        self.max_calls = max_calls
-        self.window = window
-        self._calls: dict[str, deque] = defaultdict(deque)
-        self._lock = asyncio.Lock()
+    Using a factory (plain function) rather than a callable class avoids a
+    Pydantic forward-reference resolution bug that occurs with
+    `from __future__ import annotations`: Pydantic resolves annotations of a
+    class `__call__` in the class namespace rather than the module globals,
+    causing `NameError: name 'Request' is not defined` at startup.
+    """
+    calls: defaultdict = defaultdict(deque)
+    lock = asyncio.Lock()
 
-    async def __call__(self, request: Request) -> None:
+    async def _check(request: Request) -> None:
         key = request.client.host if request.client else "unknown"
         now = time.monotonic()
-        async with self._lock:
-            q = self._calls[key]
-            while q and q[0] < now - self.window:
+        async with lock:
+            q = calls[key]
+            while q and q[0] < now - window:
                 q.popleft()
-            if len(q) >= self.max_calls:
+            if len(q) >= max_calls:
                 raise HTTPException(
                     status_code=429,
                     detail="Trop de requêtes. Réessayez dans quelques secondes.",
                 )
             q.append(now)
 
+    return _check
+
 
 # 5 Claude analyses / minute / IP
-_analysis_limiter = _RateLimiter(max_calls=5, window=60)
+_analysis_limiter = _make_limiter(max_calls=5, window=60)
 # 20 Scan move requests / minute / IP
-_scan_limiter = _RateLimiter(max_calls=20, window=60)
+_scan_limiter = _make_limiter(max_calls=20, window=60)
 # 3 heavy batch operations / minute / IP
-_batch_limiter = _RateLimiter(max_calls=3, window=60)
+_batch_limiter = _make_limiter(max_calls=3, window=60)
 
 
 def _serialize_entry(entry: dict) -> str:
