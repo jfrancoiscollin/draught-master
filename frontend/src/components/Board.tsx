@@ -33,8 +33,6 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const scale   = selected ? 1.05 : moveable ? 1.01 : 1
   const pfx     = isWhite ? 'pw' : 'pb'
 
-  const kingColor = isWhite ? 'rgba(100,60,0,0.85)' : 'rgba(200,140,0,0.85)'
-
   return (
     <svg
       viewBox="0 0 200 200"
@@ -79,44 +77,103 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
             </radialGradient>
           </>
         )}
+        {isKing && (
+          <radialGradient id={`${pfx}-gold`} cx="40%" cy="35%" r="65%">
+            <stop offset="0%"   stopColor="#fff4b8"/>
+            <stop offset="50%"  stopColor="#e8c547"/>
+            <stop offset="100%" stopColor="#a87f1a"/>
+          </radialGradient>
+        )}
       </defs>
 
-      {/* Ombre portée */}
-      <ellipse cx="90" cy="170" rx="75" ry={isWhite ? 6 : 7} fill={`url(#${pfx}-shd)`}/>
+      {isKing ? (
+        <>
+          {/* Ombre portée */}
+          <ellipse cx="90" cy="180" rx="75" ry={isWhite ? 6 : 7} fill={`url(#${pfx}-shd)`}/>
 
-      {/* Tranche */}
-      <path
-        d="M 20,90 A 80,40 0 0,0 180,90 L 180,130 A 80,40 0 0,1 20,130 Z"
-        fill={`url(#${pfx}-side)`}
-        stroke={isWhite ? '#a0a0a0' : '#000000'}
-        strokeWidth="1.5"
-      />
+          {/* Pion du bas : tranche */}
+          <path
+            d="M 20,115 A 80,40 0 0,0 180,115 L 180,150 A 80,40 0 0,1 20,150 Z"
+            fill={`url(#${pfx}-side)`}
+            stroke={isWhite ? '#a0a0a0' : '#000000'}
+            strokeWidth="1.5"
+          />
+          {/* Pion du bas : dessus */}
+          <ellipse cx="100" cy="115" rx="80" ry="40"
+            fill={`url(#${pfx}-top)`}
+            stroke={isWhite ? '#a8a8a8' : '#000000'}
+            strokeWidth="1.5"
+          />
 
-      {/* Face du dessus */}
-      <ellipse cx="100" cy="90" rx="80" ry="40"
-        fill={`url(#${pfx}-top)`}
-        stroke={isWhite ? '#a8a8a8' : '#000000'}
-        strokeWidth="1.5"
-      />
+          {/* Pion du haut : tranche */}
+          <path
+            d="M 20,75 A 80,40 0 0,0 180,75 L 180,110 A 80,40 0 0,1 20,110 Z"
+            fill={`url(#${pfx}-side)`}
+            stroke={isWhite ? '#a0a0a0' : '#000000'}
+            strokeWidth="1.5"
+          />
+          {/* Pion du haut : dessus */}
+          <ellipse cx="100" cy="75" rx="80" ry="40"
+            fill={`url(#${pfx}-top)`}
+            stroke={isWhite ? '#a8a8a8' : '#000000'}
+            strokeWidth="1.5"
+          />
 
-      {/* Anneau sélection */}
-      {selected && (
-        <ellipse cx="100" cy="90" rx="80" ry="40"
-          fill="none" stroke="#D4A017" strokeWidth="8"/>
-      )}
-      {/* Anneau jouable — très discret */}
-      {!selected && moveable && (
-        <ellipse cx="100" cy="90" rx="80" ry="40"
-          fill="none"
-          stroke={isWhite ? 'rgba(80,80,80,0.35)' : 'rgba(212,160,23,0.35)'}
-          strokeWidth="4"
-        />
-      )}
+          {/* Anneau sélection */}
+          {selected && (
+            <ellipse cx="100" cy="75" rx="80" ry="40"
+              fill="none" stroke="#D4A017" strokeWidth="8"/>
+          )}
+          {/* Anneau jouable */}
+          {!selected && moveable && (
+            <ellipse cx="100" cy="75" rx="80" ry="40"
+              fill="none"
+              stroke={isWhite ? 'rgba(80,80,80,0.35)' : 'rgba(212,160,23,0.35)'}
+              strokeWidth="4"
+            />
+          )}
 
-      {/* Anneau dame */}
-      {isKing && (
-        <ellipse cx="100" cy="90" rx="50" ry="22"
-          fill="none" stroke={kingColor} strokeWidth="5"/>
+          {/* Médaillon doré */}
+          <ellipse cx="100" cy="73" rx="22" ry="11"
+            fill={`url(#${pfx}-gold)`}
+            stroke="#7a5a10"
+            strokeWidth="1"
+          />
+        </>
+      ) : (
+        <>
+          {/* Ombre portée */}
+          <ellipse cx="90" cy="170" rx="75" ry={isWhite ? 6 : 7} fill={`url(#${pfx}-shd)`}/>
+
+          {/* Tranche */}
+          <path
+            d="M 20,90 A 80,40 0 0,0 180,90 L 180,130 A 80,40 0 0,1 20,130 Z"
+            fill={`url(#${pfx}-side)`}
+            stroke={isWhite ? '#a0a0a0' : '#000000'}
+            strokeWidth="1.5"
+          />
+
+          {/* Face du dessus */}
+          <ellipse cx="100" cy="90" rx="80" ry="40"
+            fill={`url(#${pfx}-top)`}
+            stroke={isWhite ? '#a8a8a8' : '#000000'}
+            strokeWidth="1.5"
+          />
+
+          {/* Anneau sélection */}
+          {selected && (
+            <ellipse cx="100" cy="90" rx="80" ry="40"
+              fill="none" stroke="#D4A017" strokeWidth="8"/>
+          )}
+          {/* Anneau jouable */}
+          {!selected && moveable && (
+            <ellipse cx="100" cy="90" rx="80" ry="40"
+              fill="none"
+              stroke={isWhite ? 'rgba(80,80,80,0.35)' : 'rgba(212,160,23,0.35)'}
+              strokeWidth="4"
+            />
+          )}
+        </>
       )}
     </svg>
   )
