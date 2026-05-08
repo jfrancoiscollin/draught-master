@@ -279,9 +279,9 @@ export default function Board({
       // Square background color
       let bg = isDark ? '#9B6B4A' : '#F0CFA0'
       if (isDark) {
-        if (isSelected)         bg = 'rgba(147,197,253,0.55)'  // pastel blue — selected piece
-        else if (isLastMove)    bg = 'rgba(147,197,253,0.35)'  // pastel blue — last move path
-        else if (isHighlighted) bg = 'rgba(147,197,253,0.22)'  // pastel blue — opening explorer
+        if (isSelected)         bg = 'rgba(186,220,255,0.42)'  // pastel blue — selected piece
+        else if (isLastMove)    bg = 'rgba(186,220,255,0.26)'  // pastel blue — last move path
+        else if (isHighlighted) bg = 'rgba(186,220,255,0.16)'  // pastel blue — opening explorer
         else                    bg = '#9B6B4A'
       }
 
@@ -340,7 +340,7 @@ export default function Board({
             <div style={{
               position: 'absolute',
               inset: 0,
-              border: '3px solid rgba(147,197,253,0.70)',
+              border: '3px solid rgba(186,220,255,0.55)',
               pointerEvents: 'none',
             }} />
           )}
