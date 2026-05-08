@@ -2,9 +2,12 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI-Draught — Entraînement au jeu de dames international</title>
+    <title>Draught Master — Entraînement au jeu de dames international</title>
+    <!-- Pre-fetch Scan WASM engine files so the engine is ready faster -->
+    <link rel="preload" href="/scan_normal.data" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="/scan_normal.wasm" as="fetch" crossorigin="anonymous" />
   </head>
   <body>
     <div id="root"></div>

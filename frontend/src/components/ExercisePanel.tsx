@@ -1,196 +1,215 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import type { ExerciseResponse, ExerciseCheckResponse } from '../types'
-import { getExercises } from '../api/client'
+import { getExercises, getUserProgress, getLessonTitles, getReadLessons } from '../api/client'
+import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
 
 interface ExercisePanelProps {
   onExerciseLoad: (fen: string, exerciseId: number) => void
+  onLessonOpen?: (chapter: number, fen: string) => void
   currentExerciseId: number | null
   feedback: ExerciseCheckResponse | null
+  compact?: boolean
+  readChapters?: Set<number>
 }
 
 function Stars({ count }: { count: number }) {
   return (
-    <span>
+    <span className="flex-shrink-0 text-xs tracking-tight">
       {Array.from({ length: 5 }, (_, i) => (
-        <span key={i} className={i < count ? 'star-filled' : 'star-empty'}>
-          ★
-        </span>
+        <span key={i} className={i < count ? 'text-amber-400' : 'text-gray-600'}>★</span>
       ))}
     </span>
   )
 }
 
-const CATEGORIES_FR: Record<string, string> = {
-  captures: 'Prises',
-  promotion: 'Promotion',
-  endgame: 'Finale',
-  opening: 'Ouverture',
-  strategy: 'Stratégie',
-  tactics: 'Tactique',
-  general: 'Général',
-}
-
-const CATEGORIES_EN: Record<string, string> = {
-  captures: 'Captures',
-  promotion: 'Promotion',
-  endgame: 'Endgame',
-  opening: 'Opening',
-  strategy: 'Strategy',
-  tactics: 'Tactics',
-  general: 'General',
+// Strip the chapter-title prefix: "COMBINAISONS EN 2 TEMPS – D1" → "D1"
+function shortName(name: string): string {
+  const idx = name.indexOf('–')
+  if (idx !== -1) return name.slice(idx + 1).trim()
+  const idx2 = name.lastIndexOf(' - ')
+  if (idx2 !== -1) return name.slice(idx2 + 3).trim()
+  return name
 }
 
 export default function ExercisePanel({
   onExerciseLoad,
+  onLessonOpen,
   currentExerciseId,
   feedback,
+  compact = true,
+  readChapters = new Set(),
 }: ExercisePanelProps) {
-  const { t, language } = useLanguage()
-  const CATEGORIES = language === 'en' ? CATEGORIES_EN : CATEGORIES_FR
+  const { t } = useLanguage()
+  const { user } = useAuth()
 
-  const [exercises, setExercises] = useState<ExerciseResponse[]>([])
+  const [allExercises, setAllExercises] = useState<ExerciseResponse[]>([])
+  const [lessonTitles, setLessonTitles] = useState<Record<string, { title: string }>>({})
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [solvedIds, setSolvedIds] = useState<Set<number>>(new Set())
+  const [openChapters, setOpenChapters] = useState<Set<number>>(new Set())
   const [selected, setSelected] = useState<ExerciseResponse | null>(null)
-  const [showHint, setShowHint] = useState(false)
-  const [filterCategory, setFilterCategory] = useState<string>('')
-  const [filterDifficulty, setFilterDifficulty] = useState<number | undefined>()
+  const activeRowRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
-    loadExercises()
-  }, [filterCategory, filterDifficulty])
+    setLoading(true)
+    setLoadError(null)
+    Promise.all([getExercises(), getLessonTitles()])
+      .then(([exercises, titles]) => {
+        setAllExercises(exercises)
+        setLessonTitles(titles)
+      })
+      .catch(err => setLoadError(String(err?.message ?? err)))
+      .finally(() => setLoading(false))
+  }, [])
 
-  const loadExercises = async () => {
-    const data = await getExercises({
-      category: filterCategory || undefined,
-      difficulty: filterDifficulty,
-    })
-    setExercises(data)
-  }
+  useEffect(() => {
+    if (!user) { setSolvedIds(new Set()); return }
+    getUserProgress()
+      .then(ids => setSolvedIds(new Set(ids)))
+      .catch(() => {})
+  }, [user])
+
+  useEffect(() => {
+    if (feedback?.correct && !feedback.in_progress && selected && user) {
+      setSolvedIds(prev => new Set([...prev, selected.id]))
+    }
+  }, [feedback, selected, user])
+
+  useEffect(() => {
+    if (currentExerciseId === null) return
+    const ex = allExercises.find(e => e.id === currentExerciseId)
+    if (ex?.chapter) setOpenChapters(prev => new Set([...prev, ex.chapter!]))
+  }, [currentExerciseId, allExercises])
+
+  // Scroll the active exercise row into view once its chapter is open
+  useEffect(() => {
+    if (!activeRowRef.current) return
+    setTimeout(() => activeRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80)
+  }, [currentExerciseId, openChapters])
 
   const handleSelect = (ex: ExerciseResponse) => {
     setSelected(ex)
-    setShowHint(false)
     onExerciseLoad(ex.initial_fen, ex.id)
   }
 
-  const handleNext = () => {
-    if (!selected) return
-    const idx = exercises.findIndex(e => e.id === selected.id)
-    if (idx < exercises.length - 1) {
-      handleSelect(exercises[idx + 1])
+  const chapters = React.useMemo(() => {
+    const map = new Map<number, ExerciseResponse[]>()
+    for (const ex of allExercises) {
+      const ch = ex.chapter ?? 0
+      if (!map.has(ch)) map.set(ch, [])
+      map.get(ch)!.push(ex)
     }
+    return Array.from(map.entries()).sort(([a], [b]) => a - b)
+  }, [allExercises])
+
+  const toggleChapter = (ch: number) => {
+    setOpenChapters(prev => {
+      const next = new Set(prev)
+      if (next.has(ch)) next.delete(ch); else next.add(ch)
+      return next
+    })
   }
 
   return (
-    <div className="flex flex-col gap-3 h-full">
+    <div className="flex flex-col gap-0 h-full">
       <div className="panel">
         <h3 className="text-lg font-bold text-amber-600 mb-3">{t('exercises')}</h3>
 
-        <div className="flex gap-2 mb-3 flex-wrap">
-          <select
-            value={filterCategory}
-            onChange={e => setFilterCategory(e.target.value)}
-            className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
-          >
-            <option value="">{t('category')}: {t('all')}</option>
-            {Object.entries(CATEGORIES).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
-            ))}
-          </select>
+        {loading && <p className="text-gray-400 text-sm text-center py-4">Chargement...</p>}
+        {loadError && <p className="text-red-400 text-xs py-2">Erreur : {loadError}</p>}
 
-          <select
-            value={filterDifficulty ?? ''}
-            onChange={e => setFilterDifficulty(e.target.value ? Number(e.target.value) : undefined)}
-            className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+        {!loading && !loadError && (
+          <div
+            className={compact ? 'max-h-[60vh]' : 'max-h-[75vh]'}
+            style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' as never }}
           >
-            <option value="">{t('difficulty')}: {t('all')}</option>
-            {[1, 2, 3, 4, 5].map(d => (
-              <option key={d} value={d}>{d} ★</option>
-            ))}
-          </select>
-        </div>
+            {chapters.map(([ch, exercises]) => {
+              const isOpen = openChapters.has(ch)
+              const lessonTitle = lessonTitles[String(ch)]?.title ?? `Chapitre ${ch}`
+              const firstEx = exercises[0]
+              const solvedCount = exercises.filter(e => solvedIds.has(e.id)).length
 
-        <div className="max-h-48 overflow-y-auto flex flex-col gap-1">
-          {exercises.map(ex => (
-            <button
-              key={ex.id}
-              onClick={() => handleSelect(ex)}
-              className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                currentExerciseId === ex.id
-                  ? 'bg-amber-900 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-              }`}
-            >
-              <div className="flex justify-between items-start">
-                <span className="font-medium">{ex.name}</span>
-                <Stars count={ex.difficulty} />
-              </div>
-              <div className="text-xs text-gray-400 mt-0.5">
-                {CATEGORIES[ex.category] || ex.category}
-              </div>
-            </button>
-          ))}
-        </div>
+              const isLessonRead = readChapters.has(ch)
+
+              return (
+                <div key={ch} className="mb-1 rounded-lg overflow-hidden">
+                  {/* Chapter header */}
+                  <div className="flex items-stretch bg-gray-700">
+                    <button
+                      onClick={() => toggleChapter(ch)}
+                      className="flex-1 flex items-center gap-2 px-3 py-2.5 text-left bg-gray-700 hover:bg-gray-600 border-0 cursor-pointer"
+                    >
+                      <span className="text-gray-400 text-xs w-3 flex-shrink-0">
+                        {isOpen ? '▼' : '▶'}
+                      </span>
+                      <span className="font-bold text-amber-400 text-sm flex-1 min-w-0 leading-snug">
+                        {lessonTitle}
+                      </span>
+                      <span className="flex items-center gap-1.5 flex-shrink-0 ml-1">
+                        {isLessonRead && (
+                          <span className="text-green-400 font-bold text-sm" title="Leçon lue">✓</span>
+                        )}
+                        <span className="text-xs text-gray-400">
+                          {solvedCount}/{exercises.length}
+                        </span>
+                      </span>
+                    </button>
+                    {onLessonOpen && (
+                      <button
+                        onClick={() => onLessonOpen(ch, firstEx.initial_fen)}
+                        className="flex-shrink-0 w-10 flex items-center justify-center bg-gray-700 hover:bg-amber-900 border-0 border-l border-gray-600 cursor-pointer text-base"
+                        title={`Leçon – ${lessonTitle}`}
+                      >
+                        📖
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Exercise rows */}
+                  {isOpen && (
+                    <div className="bg-gray-800 pl-2">
+                      {exercises.map((ex, idx) => {
+                        const isActive = currentExerciseId === ex.id
+                        const isSolved = solvedIds.has(ex.id)
+                        return (
+                          <button
+                            key={ex.id}
+                            ref={isActive ? activeRowRef : null}
+                            onClick={() => handleSelect(ex)}
+                            className={[
+                              'w-full flex items-center gap-2 px-3 py-2 text-left border-0 cursor-pointer',
+                              isActive
+                                ? 'bg-amber-900 border-l-2 border-amber-400'
+                                : idx % 2 === 0
+                                  ? 'bg-gray-800 hover:bg-gray-700 border-l-2 border-transparent'
+                                  : 'bg-gray-750 hover:bg-gray-700 border-l-2 border-transparent',
+                            ].join(' ')}
+                            style={idx % 2 !== 0 && !isActive ? { backgroundColor: '#263144' } : undefined}
+                          >
+                            <span className={`text-xs w-5 flex-shrink-0 text-center ${isSolved ? 'text-green-400' : 'text-gray-500'}`}>
+                              {isSolved ? '✓' : idx + 1}
+                            </span>
+                            <span className={`flex-1 text-sm truncate ${isActive ? 'text-white' : 'text-gray-200'}`}>
+                              {shortName(ex.name)}
+                            </span>
+                            <Stars count={ex.difficulty} />
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
-      {selected && (
-        <div className="panel flex flex-col gap-3">
-          <div>
-            <h4 className="font-bold text-white">{selected.name}</h4>
-            <div className="flex items-center gap-2 mt-1">
-              <Stars count={selected.difficulty} />
-              <span className="text-xs text-gray-400">
-                {CATEGORIES[selected.category] || selected.category}
-              </span>
-            </div>
-          </div>
-
-          {selected.description && (
-            <p className="text-gray-300 text-sm">{selected.description}</p>
-          )}
-
-          {showHint && selected.hint && (
-            <div className="bg-yellow-900 border border-yellow-700 rounded-lg px-3 py-2 text-sm text-yellow-200">
-              <span className="font-semibold">{t('hint')} :</span> {selected.hint}
-            </div>
-          )}
-
-          {feedback && (
-            <div
-              className={`rounded-lg px-3 py-2 text-sm ${
-                feedback.correct
-                  ? 'bg-amber-900 border border-amber-700 text-amber-100'
-                  : 'bg-red-900 border border-red-600 text-red-200'
-              }`}
-            >
-              <p className="font-semibold">
-                {feedback.correct ? `✓ ${t('wellDone')}` : `✗ ${t('tryAgain')}`}
-              </p>
-              {feedback.solution && (
-                <p className="mt-1 text-xs">
-                  Solution : {feedback.solution.join(', ')}
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            {selected.hint && (
-              <button
-                onClick={() => setShowHint(!showHint)}
-                className="btn-secondary text-sm flex-1"
-              >
-                {showHint ? t('hideHint') : t('hint')}
-              </button>
-            )}
-            <button
-              onClick={handleNext}
-              disabled={exercises.findIndex(e => e.id === selected.id) >= exercises.length - 1}
-              className="btn-secondary text-sm flex-1"
-            >
-              {t('next')}
-            </button>
-          </div>
+      {selected && feedback && !feedback.correct && (
+        <div className="panel mt-2">
+          <p className="text-red-300 font-semibold text-sm">{`✗ ${t('tryAgain')}`}</p>
         </div>
       )}
     </div>

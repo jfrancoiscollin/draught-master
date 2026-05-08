@@ -50,12 +50,30 @@ export interface ExerciseResponse {
   hint: string | null
   solution_moves: string[]
   legal_moves?: MoveData[]
+  chapter?: number | null
 }
 
 export interface ExerciseCheckResponse {
   correct: boolean
   message: string
   solution: string[] | null
+  in_progress?: boolean
+  auto_move?: string | null
+  auto_move_path?: number[] | null
+  auto_move_captures?: number[] | null
+  next_legal_moves?: { path: number[]; captures: number[] }[]
+}
+
+export interface MoveAnnotationItem {
+  move_number: number
+  color: 'white' | 'black'
+  move_pdn: string
+  verdict: 'blunder' | 'mistake' | 'inaccuracy' | null
+  score_before: number
+  score_after: number
+  loss_cp: number
+  best_move: string | null
+  book_tip: { concept: string; source: string } | null
 }
 
 export interface AnalysisResponse {
@@ -63,6 +81,7 @@ export interface AnalysisResponse {
   best_moves: string[]
   key_squares: number[]
   strategic_advice: string
+  move_annotations?: MoveAnnotationItem[]
 }
 
 export interface HistoryItem {

@@ -1,3 +1,12 @@
+"""LLM-powered game analysis using Claude (Anthropic API).
+
+This module is the *legacy* advisor that calls the Claude API for natural-language
+analysis. In production the three public functions (analyze_position,
+explain_best_move_concise, analyze_full_game_pdn) are overridden by scan_advisor.py
+which uses the Scan engine directly and requires no API credits.
+
+This file is kept as a fallback and for the suggest_exercises endpoint.
+"""
 from __future__ import annotations
 import asyncio
 import os
@@ -41,6 +50,7 @@ IMPORTANT : N'utilise JAMAIS de markdown (pas de #, *, **, _, etc.).
 
 
 def format_board_for_claude(state: GameState) -> str:
+    """Render the board as a human-readable text table for inclusion in LLM prompts."""
     lines = ["Plateau (Blancs jouent vers le haut, cases 1-5 en haut) :"]
     for row in range(10):
         row_str = f"Rangée {row + 1:2d}: "
@@ -60,6 +70,7 @@ def format_board_for_claude(state: GameState) -> str:
 
 
 def format_move_history(moves: list[Move]) -> str:
+    """Format a Move list as a PDN-style string: '1. 32-28 17-21 2. ...'"""
     if not moves:
         return "Aucun coup joué."
     parts = []
@@ -73,10 +84,12 @@ def format_move_history(moves: list[Move]) -> str:
 
 
 def _get_client() -> anthropic.AsyncAnthropic:
+    """Instantiate an Anthropic async client using ANTHROPIC_API_KEY from the environment."""
     return anthropic.AsyncAnthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 
 
 def _piece_counts(state: GameState) -> tuple[int, int, int, int]:
+    """Return (white_men, white_kings, black_men, black_kings) counts."""
     wm = wk = bm = bk = 0
     for sq in range(1, 51):
         p = state.board[sq]
@@ -103,6 +116,14 @@ async def analyze_position(
     user_question: Optional[str] = None,
     language: str = 'fr',
 ) -> dict:
+    """Analyze the current position using the Claude LLM.
+
+    Runs the Python minimax (depth=5) in a thread executor to produce candidate
+    moves, then builds a prompt with the board, evaluation, and candidates and
+    sends it to claude-opus-4-7. Detects potential sacrifices and flags them.
+
+    Returns: {analysis, best_moves, key_squares, strategic_advice}
+    """
     client = _get_client()
 
     # Run CPU-bound search in thread pool to avoid blocking the event loop
@@ -212,6 +233,13 @@ async def analyze_full_game(
     move_history: list[Move],
     language: str = 'fr',
 ) -> dict:
+    """Generate a full-game narrative analysis via Claude.
+
+    Sends the complete move history + final position to the LLM and asks for
+    opening / middlegame / conclusion sections.
+
+    Returns: {analysis, best_moves, key_squares, strategic_advice}
+    """
     client = _get_client()
     history_repr = format_move_history(move_history)
     board_repr = format_board_for_claude(state)
@@ -270,12 +298,103 @@ Analyse complète de la partie :
     }
 
 
+def format_pdn_history(pdn_moves: list[str]) -> str:
+    """Format a plain PDN string list as '1. 32-28 17-21 2. ...'"""
+    if not pdn_moves:
+        return "Aucun coup joué."
+    parts = []
+    for i, move in enumerate(pdn_moves):
+        move_num = i // 2 + 1
+        if i % 2 == 0:
+            parts.append(f"{move_num}. {move}")
+        else:
+            parts[-1] += f" {move}"
+    return ' '.join(parts)
+
+
+async def analyze_full_game_pdn(
+    state: GameState,
+    pdn_history: list[str],
+    language: str = 'fr',
+) -> dict:
+    """Full-game analysis when only PDN strings (not Move objects) are available.
+
+    Called from the /api/analyze endpoint when the client submits a PDN history
+    rather than a live game session.
+
+    Returns: {analysis, best_moves, key_squares, strategic_advice}
+    """
+    client = _get_client()
+    history_repr = format_pdn_history(pdn_history)
+    board_repr = format_board_for_claude(state)
+    wm, wk, bm, bk = _piece_counts(state)
+    current_score = evaluate(state)
+    lang_instruction = "Respond in English. No markdown." if language == 'en' \
+        else "Réponds en français. Pas de markdown."
+
+    if language == 'en':
+        prompt = f"""Analyse this entire international draughts game from start to finish.
+
+Full game ({len(pdn_history)} moves):
+{history_repr}
+
+Final position:
+{board_repr}
+Material — White: {wm} men, {wk} kings | Black: {bm} men, {bk} kings
+Engine evaluation: {current_score:+.0f}
+
+Provide a complete game analysis:
+1. Opening phase: which moves were strong or weak? What strategy did each side adopt?
+2. Middlegame: identify the key strong and weak moves. Were there important tactical or strategic errors?
+3. Conclusion: what are the strengths and weaknesses of each side's strategy? Which side played better and why?
+
+{lang_instruction}"""
+    else:
+        prompt = f"""Analyse l'ensemble de cette partie de jeu de dames international depuis le début.
+
+Historique complet ({len(pdn_history)} coups) :
+{history_repr}
+
+Position finale (ou position actuelle si la partie n'est pas terminée) :
+{board_repr}
+Matériel — Blancs : {wm} pions, {wk} dames | Noirs : {bm} pions, {bk} dames
+Évaluation moteur : {current_score:+.0f}
+
+Analyse complète de la partie :
+1. Phase d'ouverture : quels coups ont été forts ou faibles ? Quelle stratégie chaque camp a-t-il adoptée ?
+2. Milieu de jeu : identifie les coups forts et faibles des deux camps. Y a-t-il eu des erreurs importantes ?
+3. Conclusion : quelles sont les forces et faiblesses de la stratégie des Blancs et des Noirs ? Quel camp a joué le mieux et pourquoi ?
+
+{lang_instruction}"""
+
+    message = await client.messages.create(
+        model="claude-opus-4-7",
+        max_tokens=2000,
+        system=SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    analysis_text = message.content[0].text
+    return {
+        "analysis": analysis_text,
+        "best_moves": [],
+        "key_squares": [],
+        "strategic_advice": _extract_advice(analysis_text),
+    }
+
+
 async def explain_best_move_concise(
     state: GameState,
     move_history: list[Move],
     language: str = 'fr',
     ai_depth: int = 6,
 ) -> dict:
+    """Generate a 2-3 sentence explanation of the best move via Claude.
+
+    Uses the Python minimax at ai_depth to find the best move, then prompts
+    the LLM to explain only the key tactical or strategic idea behind it.
+
+    Returns: {analysis, best_moves, key_squares, strategic_advice}
+    """
     client = _get_client()
     loop = asyncio.get_event_loop()
     # Use get_best_move at same depth as the game AI for consistency with Best move button
@@ -335,6 +454,7 @@ En 2-3 phrases maximum, explique de façon très synthétique POURQUOI {best_mov
 
 
 def _extract_advice(text: str) -> str:
+    """Pick the first non-trivial line (>30 chars) from an LLM response as a strategic snippet."""
     for line in text.strip().split('\n'):
         if len(line) > 30:
             return line.strip()
@@ -342,6 +462,7 @@ def _extract_advice(text: str) -> str:
 
 
 async def suggest_exercises(state: GameState) -> dict:
+    """Ask Claude to suggest three training exercises based on the current position."""
     client = _get_client()
     prompt = f"""Analyse cette position de jeu de dames et suggère des exercices d'entraînement :
 

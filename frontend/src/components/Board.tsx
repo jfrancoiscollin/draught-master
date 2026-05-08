@@ -1,6 +1,14 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState, useLayoutEffect, useRef } from 'react'
 import { rcToSq, EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING } from '../types'
 import type { MoveData } from '../types'
+
+export interface Arrow {
+  from: number
+  to: number
+  color?: string     // CSS color, default '#9CA3AF'
+  opacity?: number   // 0-1, default 0.85
+  width?: number     // strokeWidth, default 2.2
+}
 
 interface BoardProps {
   board: number[]
@@ -12,74 +20,162 @@ interface BoardProps {
   lastMove?: MoveData | null
   highlightSquares?: number[]
   spokenSquares?: number[]
+  arrows?: Arrow[]
   // When provided, these squares can be selected even if not in legalMoves,
   // and any subsequent dark-square click triggers onMove (free-move mode).
   freeSelectSquares?: Set<number>
-}
-
-const PIECE_WHITE: React.CSSProperties = {
-  width: '76%',
-  height: '76%',
-  borderRadius: '50%',
-  background: 'radial-gradient(circle at 38% 32%, #ffffff 0%, #f2f2f2 28%, #d6d6d6 58%, #bbb 82%, #aaa 100%)',
-  border: '2px solid #999',
-  boxShadow: '0 3px 7px rgba(0,0,0,0.50), 0 1px 2px rgba(0,0,0,0.25), inset 0 2px 4px rgba(255,255,255,0.85)',
-  flexShrink: 0,
-  cursor: 'pointer',
-}
-
-const PIECE_BLACK: React.CSSProperties = {
-  width: '76%',
-  height: '76%',
-  borderRadius: '50%',
-  background: 'radial-gradient(circle at 38% 32%, #505050 0%, #1e1e1e 32%, #0a0a0a 65%, #000 100%)',
-  border: '2px solid #050505',
-  boxShadow: '0 3px 7px rgba(0,0,0,0.75), 0 1px 2px rgba(0,0,0,0.50), inset 0 2px 3px rgba(255,255,255,0.10)',
-  flexShrink: 0,
-  cursor: 'pointer',
-}
-
-const KING_RING_WHITE: React.CSSProperties = {
-  position: 'absolute',
-  width: '42%',
-  height: '42%',
-  borderRadius: '50%',
-  border: '2px solid rgba(160,100,0,0.75)',
-  boxShadow: 'inset 0 0 4px rgba(160,100,0,0.4)',
-  pointerEvents: 'none',
-}
-
-const KING_RING_BLACK: React.CSSProperties = {
-  position: 'absolute',
-  width: '42%',
-  height: '42%',
-  borderRadius: '50%',
-  border: '2px solid rgba(210,165,0,0.85)',
-  boxShadow: 'inset 0 0 5px rgba(210,165,0,0.5)',
-  pointerEvents: 'none',
+  flipped?: boolean
 }
 
 function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boolean; selected: boolean }) {
   const isWhite = piece === WHITE_MAN || piece === WHITE_KING
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
-  const base    = isWhite ? PIECE_WHITE : PIECE_BLACK
-
-  const style: React.CSSProperties = {
-    ...base,
-    transform: selected ? 'scale(1.08)' : moveable ? 'scale(1.03)' : 'scale(1)',
-    transition: 'transform 0.1s',
-    outline: moveable && !selected ? '2px solid rgba(212,160,23,0.55)' : 'none',
-    outlineOffset: '1px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  }
+  const scale   = selected ? 1.05 : moveable ? 1.01 : 1
+  const pfx     = isWhite ? 'pw' : 'pb'
 
   return (
-    <div style={style}>
-      {isKing && <div style={isWhite ? KING_RING_WHITE : KING_RING_BLACK} />}
-    </div>
+    <svg
+      viewBox="0 0 200 200"
+      style={{ width: '100%', height: '100%', transform: `scale(${scale})`, transition: 'transform 0.12s ease' }}
+    >
+      <defs>
+        {isWhite ? (
+          <>
+            <linearGradient id={`${pfx}-side`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#9a9a9a"/>
+              <stop offset="15%"  stopColor="#c8c8c8"/>
+              <stop offset="35%"  stopColor="#ececec"/>
+              <stop offset="60%"  stopColor="#fafafa"/>
+              <stop offset="100%" stopColor="#ffffff"/>
+            </linearGradient>
+            <linearGradient id={`${pfx}-top`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#f5f5f5"/>
+              <stop offset="100%" stopColor="#ffffff"/>
+            </linearGradient>
+            <radialGradient id={`${pfx}-shd`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stopColor="#000000" stopOpacity="0.2"/>
+              <stop offset="100%" stopColor="#000000" stopOpacity="0"/>
+            </radialGradient>
+          </>
+        ) : (
+          <>
+            <linearGradient id={`${pfx}-side`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#000000"/>
+              <stop offset="45%"  stopColor="#2a2a2a"/>
+              <stop offset="78%"  stopColor="#6a6a6a"/>
+              <stop offset="92%"  stopColor="#a8a8a8"/>
+              <stop offset="98%"  stopColor="#c8c8c8"/>
+              <stop offset="100%" stopColor="#5a5a5a"/>
+            </linearGradient>
+            <linearGradient id={`${pfx}-top`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#1a1a1a"/>
+              <stop offset="100%" stopColor="#2a2a2a"/>
+            </linearGradient>
+            <radialGradient id={`${pfx}-shd`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stopColor="#000000" stopOpacity="0.3"/>
+              <stop offset="100%" stopColor="#000000" stopOpacity="0"/>
+            </radialGradient>
+          </>
+        )}
+        {isKing && (
+          <radialGradient id={`${pfx}-gold`} cx="40%" cy="35%" r="65%">
+            <stop offset="0%"   stopColor="#fff4b8"/>
+            <stop offset="50%"  stopColor="#e8c547"/>
+            <stop offset="100%" stopColor="#a87f1a"/>
+          </radialGradient>
+        )}
+      </defs>
+
+      {isKing ? (
+        <>
+          {/* Ombre portée */}
+          <ellipse cx="90" cy="180" rx="75" ry={isWhite ? 6 : 7} fill={`url(#${pfx}-shd)`}/>
+
+          {/* Pion du bas : tranche */}
+          <path
+            d="M 20,115 A 80,40 0 0,0 180,115 L 180,150 A 80,40 0 0,1 20,150 Z"
+            fill={`url(#${pfx}-side)`}
+            stroke={isWhite ? '#a0a0a0' : '#000000'}
+            strokeWidth="1.5"
+          />
+          {/* Pion du bas : dessus */}
+          <ellipse cx="100" cy="115" rx="80" ry="40"
+            fill={`url(#${pfx}-top)`}
+            stroke={isWhite ? '#a8a8a8' : '#000000'}
+            strokeWidth="1.5"
+          />
+
+          {/* Pion du haut : tranche */}
+          <path
+            d="M 20,75 A 80,40 0 0,0 180,75 L 180,110 A 80,40 0 0,1 20,110 Z"
+            fill={`url(#${pfx}-side)`}
+            stroke={isWhite ? '#a0a0a0' : '#000000'}
+            strokeWidth="1.5"
+          />
+          {/* Pion du haut : dessus */}
+          <ellipse cx="100" cy="75" rx="80" ry="40"
+            fill={`url(#${pfx}-top)`}
+            stroke={isWhite ? '#a8a8a8' : '#000000'}
+            strokeWidth="1.5"
+          />
+
+          {/* Anneau sélection */}
+          {selected && (
+            <ellipse cx="100" cy="75" rx="80" ry="40"
+              fill="none" stroke="#D4A017" strokeWidth="8"/>
+          )}
+          {/* Anneau jouable */}
+          {!selected && moveable && (
+            <ellipse cx="100" cy="75" rx="80" ry="40"
+              fill="none"
+              stroke={isWhite ? 'rgba(80,80,80,0.35)' : 'rgba(212,160,23,0.35)'}
+              strokeWidth="4"
+            />
+          )}
+
+          {/* Médaillon doré */}
+          <ellipse cx="100" cy="73" rx="22" ry="11"
+            fill={`url(#${pfx}-gold)`}
+            stroke="#7a5a10"
+            strokeWidth="1"
+          />
+        </>
+      ) : (
+        <>
+          {/* Ombre portée */}
+          <ellipse cx="90" cy="170" rx="75" ry={isWhite ? 6 : 7} fill={`url(#${pfx}-shd)`}/>
+
+          {/* Tranche */}
+          <path
+            d="M 20,90 A 80,40 0 0,0 180,90 L 180,130 A 80,40 0 0,1 20,130 Z"
+            fill={`url(#${pfx}-side)`}
+            stroke={isWhite ? '#a0a0a0' : '#000000'}
+            strokeWidth="1.5"
+          />
+
+          {/* Face du dessus */}
+          <ellipse cx="100" cy="90" rx="80" ry="40"
+            fill={`url(#${pfx}-top)`}
+            stroke={isWhite ? '#a8a8a8' : '#000000'}
+            strokeWidth="1.5"
+          />
+
+          {/* Anneau sélection */}
+          {selected && (
+            <ellipse cx="100" cy="90" rx="80" ry="40"
+              fill="none" stroke="#D4A017" strokeWidth="8"/>
+          )}
+          {/* Anneau jouable */}
+          {!selected && moveable && (
+            <ellipse cx="100" cy="90" rx="80" ry="40"
+              fill="none"
+              stroke={isWhite ? 'rgba(80,80,80,0.35)' : 'rgba(212,160,23,0.35)'}
+              strokeWidth="4"
+            />
+          )}
+        </>
+      )}
+    </svg>
   )
 }
 
@@ -93,8 +189,71 @@ export default function Board({
   lastMove = null,
   highlightSquares = [],
   spokenSquares = [],
+  arrows = [],
   freeSelectSquares,
+  flipped = false,
 }: BoardProps) {
+  // Convert square number to center % coordinates in the 100×100 SVG viewBox
+  function sqCenter(sq: number): { x: number; y: number } {
+    const row = Math.floor((sq - 1) / 5)
+    const colInRow = (sq - 1) % 5
+    const col = colInRow * 2 + (row % 2 === 0 ? 1 : 0)
+    const r = flipped ? 9 - row : row
+    const c = flipped ? 9 - col : col
+    return { x: (c + 0.5) * 10, y: (r + 0.5) * 10 }
+  }
+  // ── Smooth piece movement overlay ───────────────────────────────────────
+  const [animPiece,   setAnimPiece]   = useState<number>(EMPTY)
+  const [animX,       setAnimX]       = useState(0)
+  const [animY,       setAnimY]       = useState(0)
+  const [animVisible, setAnimVisible] = useState(false)
+  const [animHideSq,  setAnimHideSq]  = useState<number | null>(null)
+  const [animMoving,  setAnimMoving]  = useState(false)
+  const prevLastMoveRef               = useRef<MoveData | null | undefined>(undefined)
+  const animTimerRef                  = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // useLayoutEffect fires synchronously before the browser paints.
+  // This prevents the one-frame flash where the piece appears at the destination
+  // before being hidden — which caused the "B→A→B" reversal on white moves.
+  useLayoutEffect(() => {
+    if (lastMove === prevLastMoveRef.current) return
+    prevLastMoveRef.current = lastMove
+    if (!lastMove) { setAnimVisible(false); return }
+
+    const from  = lastMove.path[0]
+    const to    = lastMove.path[lastMove.path.length - 1]
+    const piece = board[to]
+    if (piece === EMPTY) { setAnimVisible(false); return }
+
+    const src = sqCenter(from)
+    const dst = sqCenter(to)
+
+    if (animTimerRef.current) clearTimeout(animTimerRef.current)
+
+    // Place overlay at source with no transition (synchronously, before paint)
+    setAnimPiece(piece)
+    setAnimX(src.x)
+    setAnimY(src.y)
+    setAnimHideSq(to)
+    setAnimMoving(false)
+    setAnimVisible(true)
+
+    // Two rAFs ensure the browser paints the initial position before transitioning
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setAnimX(dst.x)
+        setAnimY(dst.y)
+        setAnimMoving(true)
+      })
+    })
+
+    animTimerRef.current = setTimeout(() => {
+      setAnimVisible(false)
+      setAnimHideSq(null)
+    }, 380)
+  }, [lastMove]) // eslint-disable-line react-hooks/exhaustive-deps
+  // ────────────────────────────────────────────────────────────────────────
+
   const legalTargets = useCallback((): Set<number> => {
     if (selectedSquare === null) return new Set()
     const targets = new Set<number>()
@@ -159,8 +318,10 @@ export default function Board({
 
   const cells: React.ReactNode[] = []
 
-  for (let row = 0; row < 10; row++) {
-    for (let col = 0; col < 10; col++) {
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 10; c++) {
+      const row = flipped ? 9 - r : r
+      const col = flipped ? 9 - c : c
       const isDark = (row + col) % 2 === 1
       const sq     = isDark ? rcToSq(row, col) : null
       const piece  = sq !== null ? board[sq] : EMPTY
@@ -175,15 +336,15 @@ export default function Board({
       // Square background color
       let bg = isDark ? '#9B6B4A' : '#F0CFA0'
       if (isDark) {
-        if (isSelected)    bg = '#C8A400'
-        else if (isLastMove)    bg = '#B8832A'
-        else if (isHighlighted) bg = '#7A4020'
+        if (isSelected)         bg = 'rgba(186,220,255,0.42)'  // pastel blue — selected piece
+        else if (isLastMove)    bg = 'rgba(186,220,255,0.26)'  // pastel blue — last move path
+        else if (isHighlighted) bg = 'rgba(186,220,255,0.16)'  // pastel blue — opening explorer
         else                    bg = '#9B6B4A'
       }
 
       cells.push(
         <div
-          key={`${row}-${col}`}
+          key={`${r}-${c}`}
           onClick={() => sq !== null && isDark && handleCellClick(sq)}
           className={isSpoken ? 'spoken-square' : undefined}
           style={{
@@ -214,8 +375,8 @@ export default function Board({
             </div>
           )}
 
-          {/* Piece */}
-          {isDark && sq !== null && piece !== EMPTY && (
+          {/* Piece — hidden at animation destination while overlay is in flight */}
+          {isDark && sq !== null && piece !== EMPTY && sq !== animHideSq && (
             <PieceDisc piece={piece} moveable={isMoveable} selected={isSelected} />
           )}
 
@@ -236,7 +397,7 @@ export default function Board({
             <div style={{
               position: 'absolute',
               inset: 0,
-              border: '3px solid rgba(200,164,0,0.85)',
+              border: '3px solid rgba(186,220,255,0.55)',
               pointerEvents: 'none',
             }} />
           )}
@@ -247,6 +408,7 @@ export default function Board({
 
   return (
     <div style={{
+      position: 'relative',
       display: 'grid',
       gridTemplateColumns: 'repeat(10, 1fr)',
       width: '100%',
@@ -257,6 +419,90 @@ export default function Board({
       boxShadow: '0 8px 32px rgba(0,0,0,0.55)',
     }}>
       {cells}
+
+      {/* Moving piece overlay */}
+      {animVisible && (
+        <div
+          style={{
+            position: 'absolute',
+            left:   `${animX - 5}%`,
+            top:    `${animY - 5}%`,
+            width:  '10%',
+            height: '10%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 20,
+            transition: animMoving
+              ? 'left 0.28s cubic-bezier(0.25,0,0.35,1), top 0.28s cubic-bezier(0.25,0,0.35,1)'
+              : 'none',
+          }}
+        >
+          <PieceDisc piece={animPiece} moveable={false} selected={false} />
+        </div>
+      )}
+
+      {/* Arrow overlay */}
+      {arrows.length > 0 && (
+        <svg
+          viewBox="0 0 100 100"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        >
+          {arrows.map((arrow, i) => {
+            const f = sqCenter(arrow.from)
+            const t = sqCenter(arrow.to)
+            const dx = t.x - f.x
+            const dy = t.y - f.y
+            const len = Math.sqrt(dx * dx + dy * dy)
+            if (len < 1) return null
+
+            const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI
+            const scale     = (arrow.width ?? 2.2) / 2.2
+
+            // Arrow path pointing rightward from origin: shaft + chevron head
+            const start    = 2.5              // gap from source center
+            const headLen  = 4.0 * scale
+            const headHalf = 3.2 * scale
+            const shaftH   = 1.1 * scale
+            const xh       = len - headLen
+
+            const d = [
+              `M ${start} ${-shaftH}`,
+              `L ${xh}    ${-shaftH}`,
+              `L ${xh}    ${-headHalf}`,
+              `L ${len}   0`,
+              `L ${xh}    ${headHalf}`,
+              `L ${xh}    ${shaftH}`,
+              `L ${start} ${shaftH}`,
+              'Z',
+            ].join(' ')
+
+            const color   = arrow.color   ?? '#9CA3AF'
+            const opacity = arrow.opacity ?? 0.85
+
+            return (
+              <path
+                key={i}
+                d={d}
+                fill={color}
+                stroke="rgba(0,0,0,0.28)"
+                strokeWidth={0.5}
+                strokeLinejoin="round"
+                opacity={opacity}
+                transform={`translate(${f.x},${f.y}) rotate(${angleDeg})`}
+              />
+            )
+          })}
+        </svg>
+      )}
     </div>
   )
 }

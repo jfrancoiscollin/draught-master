@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import type { AnalysisResponse } from '../types'
+import type { AnalysisResponse, MoveAnnotationItem } from '../types'
 import { useLanguage } from '../i18n/LanguageContext'
 import AnalysisText from './AnalysisText'
 
@@ -14,6 +14,9 @@ interface AnalysisPanelProps {
   onCollapse?: () => void
   aiThinking?: boolean
   onMoveClick?: (pdn: string) => void
+  onAnnotate?: () => void
+  onLearn?: () => void
+  annotating?: boolean
 }
 
 function extractMoveSquares(text: string, charIndex: number): number[] {
@@ -81,6 +84,103 @@ function useSpeech(language: string, onSquares: (squares: number[]) => void) {
   return { speak, stop, speaking }
 }
 
+const VERDICT_SYMBOL: Record<string, string> = {
+  blunder: '??',
+  mistake: '?',
+  inaccuracy: '?!',
+}
+const VERDICT_COLOR: Record<string, string> = {
+  blunder: '#ef4444',
+  mistake: '#f97316',
+  inaccuracy: '#eab308',
+}
+const VERDICT_LABEL: Record<string, { fr: string; en: string }> = {
+  blunder:    { fr: 'Gaffe',       en: 'Blunder' },
+  mistake:    { fr: 'Erreur',      en: 'Mistake' },
+  inaccuracy: { fr: 'Imprécision', en: 'Inaccuracy' },
+}
+
+export function MoveAnnotationsTable({
+  annotations,
+  language,
+}: {
+  annotations: MoveAnnotationItem[]
+  language: string
+}) {
+  const fr = language === 'fr'
+  const notable = annotations.filter(a => a.verdict !== null)
+
+  if (notable.length === 0) {
+    return (
+      <div className="text-xs text-green-400 text-center py-2">
+        {fr ? '✓ Partie propre — aucune erreur détectée' : '✓ Clean game — no errors detected'}
+      </div>
+    )
+  }
+
+  const whiteBad = notable.filter(a => a.color === 'white')
+  const blackBad = notable.filter(a => a.color === 'black')
+
+  return (
+    <div className="flex flex-col gap-2">
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 gap-px bg-gray-800 rounded overflow-hidden text-xs">
+        {(['white', 'black'] as const).map(color => {
+          const items = color === 'white' ? whiteBad : blackBad
+          const blunders   = items.filter(a => a.verdict === 'blunder').length
+          const mistakes   = items.filter(a => a.verdict === 'mistake').length
+          const inaccuracies = items.filter(a => a.verdict === 'inaccuracy').length
+          return (
+            <div key={color} className="bg-gray-950 px-2 py-1.5 flex flex-col gap-0.5">
+              <span className="font-medium">{color === 'white' ? '⬜ Blancs' : '⬛ Noirs'}</span>
+              <div className="flex gap-2">
+                {blunders > 0 && <span style={{ color: VERDICT_COLOR.blunder }} className="font-bold">{blunders}??</span>}
+                {mistakes > 0 && <span style={{ color: VERDICT_COLOR.mistake }} className="font-bold">{mistakes}?</span>}
+                {inaccuracies > 0 && <span style={{ color: VERDICT_COLOR.inaccuracy }} className="font-bold">{inaccuracies}?!</span>}
+                {blunders + mistakes + inaccuracies === 0 && <span className="text-green-500">✓</span>}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Per-move list */}
+      <div className="flex flex-col gap-1.5">
+        {notable.map((ann, idx) => {
+          const sym = ann.verdict ? VERDICT_SYMBOL[ann.verdict] : ''
+          const clr = ann.verdict ? VERDICT_COLOR[ann.verdict] : '#9ca3af'
+          const label = ann.verdict ? (fr ? VERDICT_LABEL[ann.verdict].fr : VERDICT_LABEL[ann.verdict].en) : ''
+          const colorLabel = ann.color === 'white' ? (fr ? 'Blancs' : 'White') : (fr ? 'Noirs' : 'Black')
+          return (
+            <div key={idx} className="bg-gray-900 rounded px-2 py-1.5 text-xs flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span style={{ color: clr, fontWeight: 700, fontSize: '0.85rem' }}>{sym}</span>
+                <span className="font-medium" style={{ color: clr }}>{label}</span>
+                <span className="text-gray-400">{fr ? 'Coup' : 'Move'} {ann.move_number} · {colorLabel}</span>
+                <span className="font-mono text-gray-200 ml-auto">{ann.move_pdn}</span>
+              </div>
+              {ann.best_move && ann.best_move !== ann.move_pdn && (
+                <div className="text-gray-400">
+                  {fr ? 'Meilleur coup' : 'Best move'} : <span className="font-mono text-amber-400">{ann.best_move}</span>
+                </div>
+              )}
+              {ann.book_tip && (
+                <div className="text-gray-500 border-t border-gray-800 pt-1 mt-0.5">
+                  <span className="text-amber-600">📚</span>{' '}
+                  <span className="text-gray-400">{ann.book_tip.concept}</span>
+                  {ann.book_tip.source && (
+                    <span className="text-gray-600 ml-1">— {ann.book_tip.source}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function AnalysisPanel({
   gameId,
   onAnalyze,
@@ -92,6 +192,9 @@ export default function AnalysisPanel({
   onCollapse,
   aiThinking = false,
   onMoveClick,
+  onAnnotate,
+  onLearn,
+  annotating = false,
 }: AnalysisPanelProps) {
   const { t, language } = useLanguage()
   const [mode, setMode] = useState<'bestmove' | 'full' | 'fullgame' | 'bestmoveexplain' | null>(null)
@@ -194,6 +297,30 @@ export default function AnalysisPanel({
             </span>
           ) : t('explainMove')}
         </button>
+
+        {onAnnotate && (
+          <button
+            onClick={onAnnotate}
+            disabled={!gameId || annotating || aiThinking}
+            className="btn-secondary text-sm col-span-1 disabled:opacity-40"
+          >
+            {annotating ? (
+              <span className="flex items-center gap-2 justify-center">
+                <div className="spinner" style={{ width: 14, height: 14 }} />
+              </span>
+            ) : '⚙ Coup par coup'}
+          </button>
+        )}
+
+        {onLearn && (
+          <button
+            onClick={onLearn}
+            disabled={!gameId || annotating || aiThinking}
+            className="btn-secondary text-sm col-span-1 disabled:opacity-40"
+          >
+            📚 Apprendre
+          </button>
+        )}
       </div>
 
       {mode === 'bestmove' && quickMoves !== null && (
@@ -254,6 +381,16 @@ export default function AnalysisPanel({
               <div className="bg-gray-900 rounded-lg p-3 text-gray-300 leading-relaxed overflow-y-auto text-xs max-h-48">
                 <AnalysisText text={analysis.analysis} onMoveClick={onMoveClick} className="whitespace-pre-wrap" />
               </div>
+            </div>
+          )}
+
+          {/* Move-by-move annotations — full game, non-expanded panel only */}
+          {!expanded && mode === 'fullgame' && analysis.move_annotations && analysis.move_annotations.length > 0 && (
+            <div>
+              <div className="text-xs text-gray-400 uppercase font-semibold mb-1">
+                {language === 'fr' ? 'Analyse coup par coup' : 'Move-by-move analysis'}
+              </div>
+              <MoveAnnotationsTable annotations={analysis.move_annotations} language={language} />
             </div>
           )}
 

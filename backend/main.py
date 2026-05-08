@@ -2,13 +2,23 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import secrets
+import smtplib
+import ssl
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
 from typing import Dict, Any, Optional, List
 
 logging.basicConfig(level=logging.INFO)
 
-from fastapi import FastAPI, HTTPException, Query
+import hmac
+import hashlib
+import base64
+import json as _json
+from passlib.context import CryptContext
+from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -20,16 +30,85 @@ from game_engine import (
 )
 from ai_engine import get_best_move
 from scan_engine import get_scan_move
-from claude_advisor import analyze_position, suggest_exercises, analyze_full_game, explain_best_move_concise
-from database import init_db, save_game, get_games, get_game, get_exercises, get_exercise, record_progress
+from scan_advisor import analyze_position, analyze_full_game, analyze_full_game_pdn, explain_best_move_concise
+from database import (
+    init_db, save_game, save_game_annotations, get_user_stats,
+    get_games, get_game,
+    save_active_game, load_active_game, delete_active_game,
+    get_exercises, get_exercise, record_progress,
+    create_user, get_user_by_email, get_user_by_id,
+    create_reset_token, get_reset_token, consume_reset_token,
+    mark_exercise_solved, get_user_solved_exercise_ids,
+    mark_lesson_read, get_user_read_lesson_chapters,
+)
 from models import (
     NewGameRequest, MoveRequest, AnalyzeRequest,
     GameStateResponse, MoveResponse, LegalMovesResponse,
     ExerciseResponse, ExerciseCheckRequest, ExerciseCheckResponse,
     AnalysisResponse, HistoryResponse, HistoryItem, GameDetailResponse,
+    RegisterRequest, LoginRequest, TokenResponse, UserResponse,
+    ForgotPasswordRequest, ResetPasswordRequest,
 )
 
 load_dotenv()
+
+_SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")
+_ALGORITHM = "HS256"
+_TOKEN_EXPIRE_DAYS = 30
+_pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+_bearer = HTTPBearer(auto_error=False)
+
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+def _create_token(user_id: int, email: str) -> str:
+    header = _b64url(_json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
+    exp = int((datetime.utcnow() + timedelta(days=_TOKEN_EXPIRE_DAYS)).timestamp())
+    payload = _b64url(_json.dumps({"sub": str(user_id), "email": email, "exp": exp}).encode())
+    sig = _b64url(
+        hmac.new(_SECRET_KEY.encode(), f"{header}.{payload}".encode(), hashlib.sha256).digest()
+    )
+    return f"{header}.{payload}.{sig}"
+
+
+def _decode_token(token: str) -> Dict[str, Any]:
+    try:
+        header, payload, sig = token.split(".")
+        expected = _b64url(
+            hmac.new(_SECRET_KEY.encode(), f"{header}.{payload}".encode(), hashlib.sha256).digest()
+        )
+        if not hmac.compare_digest(sig, expected):
+            raise ValueError("bad signature")
+        data = _json.loads(base64.urlsafe_b64decode(payload + "=="))
+        if data.get("exp", 0) < int(datetime.utcnow().timestamp()):
+            raise ValueError("expired")
+        return data
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail="Token invalide") from exc
+
+
+async def _require_auth(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
+) -> Dict[str, Any]:
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Non authentifié")
+    data = _decode_token(credentials.credentials)
+    return {"id": int(data["sub"]), "email": data["email"]}
+
+
+async def _optional_auth(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
+) -> Optional[Dict[str, Any]]:
+    if not credentials:
+        return None
+    try:
+        data = _decode_token(credentials.credentials)
+        return {"id": int(data["sub"]), "email": data["email"]}
+    except Exception:
+        return None
+
 
 app = FastAPI(title="AI-Draught API", version="1.0.0")
 
@@ -77,27 +156,98 @@ def _build_pdn(history: List[Move]) -> str:
     return " ".join(parts)
 
 
+import json as _json_mod
+
+
+def _serialize_entry(entry: dict) -> str:
+    def ser_state(s: GameState) -> dict:
+        return {
+            "board": s.board,
+            "turn": s.turn,
+            "half_move_clock": s.half_move_clock,
+            "move_history": [{"path": m.path, "captures": m.captures} for m in s.move_history],
+        }
+    return _json_mod.dumps({
+        "date": entry["date"],
+        "white_player": entry["white_player"],
+        "black_player": entry["black_player"],
+        "ai_depth": entry.get("ai_depth", 4),
+        "fen_positions": entry["fen_positions"],
+        "user_id": entry.get("user_id"),
+        "state": ser_state(entry["state"]),
+        "state_history": [
+            {"state": ser_state(s), "fen_len": fl}
+            for s, fl in entry["state_history"]
+        ],
+    })
+
+
+def _deserialize_entry(raw: str) -> dict:
+    d = _json_mod.loads(raw)
+
+    def deser_state(sd: dict) -> GameState:
+        return GameState(
+            board=sd["board"],
+            turn=sd["turn"],
+            half_move_clock=sd.get("half_move_clock", 0),
+            move_history=[Move(path=m["path"], captures=m["captures"]) for m in sd.get("move_history", [])],
+        )
+
+    return {
+        "date": d["date"],
+        "white_player": d["white_player"],
+        "black_player": d["black_player"],
+        "ai_depth": d.get("ai_depth", 4),
+        "fen_positions": d["fen_positions"],
+        "user_id": d.get("user_id"),
+        "state": deser_state(d["state"]),
+        "state_history": [
+            (deser_state(sh["state"]), sh["fen_len"])
+            for sh in d.get("state_history", [])
+        ],
+    }
+
+
+async def _get_game_entry(game_id: str) -> Optional[dict]:
+    """Return game entry from RAM cache, restoring from DB if needed."""
+    if game_id in game_store:
+        return game_store[game_id]
+    raw = await load_active_game(game_id)
+    if raw is None:
+        return None
+    entry = _deserialize_entry(raw)
+    game_store[game_id] = entry
+    return entry
+
+
 @app.post("/api/game/new", response_model=GameStateResponse)
-async def new_game(req: NewGameRequest) -> GameStateResponse:
+async def new_game(
+    req: NewGameRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(_optional_auth),
+) -> GameStateResponse:
     game_id = str(uuid.uuid4())
     state = initial_state()
-    game_store[game_id] = {
+    entry = {
         "state": state,
         "white_player": req.white_player,
         "black_player": req.black_player,
         "ai_depth": req.ai_depth,
         "fen_positions": [board_to_fen(state)],
         "date": datetime.utcnow().isoformat(),
-        "state_history": [],   # list of (GameState, fen_positions_len) for undo
+        "state_history": [],
+        "user_id": current_user["id"] if current_user else None,
     }
+    game_store[game_id] = entry
+    await save_active_game(game_id, _serialize_entry(entry))
     return _state_to_response(game_id, state)
 
 
 @app.get("/api/game/{game_id}/legal-moves", response_model=LegalMovesResponse)
 async def legal_moves(game_id: str, from_sq: Optional[int] = Query(None)) -> LegalMovesResponse:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    state: GameState = game_store[game_id]["state"]
+    state: GameState = entry["state"]
     all_moves = get_legal_moves(state)
     if from_sq is not None:
         filtered = [m for m in all_moves if m.path[0] == from_sq]
@@ -109,10 +259,9 @@ async def legal_moves(game_id: str, from_sq: Optional[int] = Query(None)) -> Leg
 
 @app.post("/api/game/{game_id}/move", response_model=MoveResponse)
 async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-
-    entry = game_store[game_id]
     state: GameState = entry["state"]
 
     if game_result(state) is not None:
@@ -130,9 +279,13 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
 
     state = apply_move(state, player_move)
     entry["state"] = state
-    entry["fen_positions"].append(board_to_fen(state))
+    _cur_fen = board_to_fen(state)
+    entry["fen_positions"].append(_cur_fen)
 
-    result = game_result(state)
+    if entry["fen_positions"].count(_cur_fen) >= 3:
+        result = "draw"
+    else:
+        result = game_result(state)
     ai_move_data = None
 
     if not req.both_sides and result is None and state.turn == "black":
@@ -156,9 +309,13 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
             entry["state_history"].append((state, len(entry["fen_positions"])))
             state = apply_move(state, ai_move)
             entry["state"] = state
-            entry["fen_positions"].append(board_to_fen(state))
+            _ai_fen = board_to_fen(state)
+            entry["fen_positions"].append(_ai_fen)
             ai_move_data = {"path": ai_move.path, "captures": ai_move.captures}
-            result = game_result(state)
+            if entry["fen_positions"].count(_ai_fen) >= 3:
+                result = "draw"
+            else:
+                result = game_result(state)
 
     if result is not None:
         pdn = _build_pdn(state.move_history)
@@ -171,7 +328,11 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
             pdn=pdn,
             fen_positions=entry["fen_positions"],
             move_count=len(state.move_history),
+            user_id=entry.get("user_id"),
         )
+        await delete_active_game(game_id)
+    else:
+        await save_active_game(game_id, _serialize_entry(entry))
 
     final_legal = get_legal_moves(state) if result is None else []
     return MoveResponse(
@@ -190,9 +351,9 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
 
 @app.post("/api/game/{game_id}/resign")
 async def resign_game(game_id: str) -> Dict[str, Any]:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    entry = game_store[game_id]
     state: GameState = entry["state"]
     if game_result(state) is not None:
         raise HTTPException(status_code=400, detail="La partie est déjà terminée")
@@ -206,20 +367,23 @@ async def resign_game(game_id: str) -> Dict[str, Any]:
         pdn=pdn,
         fen_positions=entry["fen_positions"],
         move_count=len(state.move_history),
+        user_id=entry.get("user_id"),
     )
+    await delete_active_game(game_id)
     return {"result": "black"}
 
 
 @app.post("/api/game/{game_id}/undo", response_model=GameStateResponse)
 async def undo_move(game_id: str) -> GameStateResponse:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    entry = game_store[game_id]
     if not entry["state_history"]:
         raise HTTPException(status_code=400, detail="Aucun coup à annuler")
     state, fen_len = entry["state_history"].pop()
     entry["state"] = state
     entry["fen_positions"] = entry["fen_positions"][:fen_len]
+    await save_active_game(game_id, _serialize_entry(entry))
     return _state_to_response(game_id, state)
 
 
@@ -227,9 +391,10 @@ async def undo_move(game_id: str) -> GameStateResponse:
 async def get_ai_move_suggestion(
     game_id: str, depth: int = Query(4)
 ) -> Dict[str, Any]:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    state: GameState = game_store[game_id]["state"]
+    state: GameState = entry["state"]
     move = get_best_move(state, depth=depth)
     if move is None:
         return {"move": None}
@@ -238,9 +403,10 @@ async def get_ai_move_suggestion(
 
 @app.post("/api/game/{game_id}/analyze", response_model=AnalysisResponse)
 async def analyze(game_id: str, req: AnalyzeRequest) -> AnalysisResponse:
-    if game_id not in game_store:
+    entry = await _get_game_entry(game_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
-    state: GameState = game_store[game_id]["state"]
+    state: GameState = entry["state"]
     try:
         if req.mode == 'full_game':
             result = await analyze_full_game(state, state.move_history, req.language)
@@ -261,7 +427,24 @@ async def list_exercises(
     difficulty: Optional[int] = Query(None),
 ) -> List[ExerciseResponse]:
     exercises = await get_exercises(category=category, difficulty=difficulty)
-    return [ExerciseResponse(**ex) for ex in exercises]
+    result = []
+    for ex in exercises:
+        try:
+            result.append(ExerciseResponse(**ex))
+        except Exception as e:
+            logging.error(f"Exercise {ex.get('id')} skipped: {e}")
+    return result
+
+
+@app.get("/api/exercises-categories")
+async def list_exercise_categories() -> List[str]:
+    exercises = await get_exercises()
+    seen: dict = {}
+    for ex in exercises:
+        cat = ex["category"]
+        if cat not in seen:
+            seen[cat] = True
+    return list(seen.keys())
 
 
 @app.get("/api/exercises/{exercise_id}", response_model=ExerciseResponse)
@@ -278,43 +461,182 @@ async def get_exercise_detail(exercise_id: int) -> ExerciseResponse:
 
 
 @app.get("/api/exercises/{exercise_id}/legal-moves")
-async def exercise_legal_moves_endpoint(exercise_id: int) -> Dict[str, Any]:
+async def exercise_legal_moves_endpoint(
+    exercise_id: int,
+    step: int = Query(0),
+) -> Dict[str, Any]:
     ex = await get_exercise(exercise_id)
     if ex is None:
         raise HTTPException(status_code=404, detail="Exercice introuvable")
-    state = fen_to_board(ex["initial_fen"])
+    solution: List[Optional[str]] = ex["solution_moves"]
+    # Reconstruct state after `step` user moves (each user move is followed by an opponent move)
+    state = _reconstruct_state(ex["initial_fen"], solution, step * 2)
+    if state is None:
+        # Reconstruction failed (e.g. abbreviated solution PDN): return empty so
+        # the frontend activates free-move mode rather than showing wrong moves.
+        if step > 0:
+            return {"moves": []}
+        state = fen_to_board(ex["initial_fen"])
     legal = get_legal_moves(state)
     return {"moves": [{"path": m.path, "captures": m.captures} for m in legal]}
 
 
+def _find_move_by_pdn(pdn: str, legal_moves: List[Move]) -> Optional[Move]:
+    """Match a PDN string (full or short form start x end) to a legal move."""
+    pdn_norm = pdn.strip()
+    for move in legal_moves:
+        if move_to_pdn(move) == pdn_norm:
+            return move
+    try:
+        if 'x' in pdn_norm:
+            parts = [int(p) for p in pdn_norm.split('x') if p]
+        elif '-' in pdn_norm:
+            parts = [int(p) for p in pdn_norm.split('-') if p]
+        else:
+            return None
+        start, end = parts[0], parts[-1]
+    except (ValueError, IndexError):
+        return None
+    for move in legal_moves:
+        if move.path[0] == start and move.path[-1] == end:
+            return move
+    return None
+
+
+def _reconstruct_state(initial_fen: str, solution: List[Optional[str]], move_count: int) -> Optional[GameState]:
+    """Apply move_count moves from solution to reconstruct board state."""
+    state = fen_to_board(initial_fen)
+    for i in range(move_count):
+        if i >= len(solution) or solution[i] is None:
+            break
+        legal = get_legal_moves(state)
+        move = _find_move_by_pdn(solution[i], legal)
+        if move is None:
+            return None
+        state = apply_move(state, move)
+    return state
+
+
 @app.post("/api/exercises/{exercise_id}/check", response_model=ExerciseCheckResponse)
-async def check_exercise(exercise_id: int, req: ExerciseCheckRequest) -> ExerciseCheckResponse:
+async def check_exercise(
+    exercise_id: int,
+    req: ExerciseCheckRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(_optional_auth),
+) -> ExerciseCheckResponse:
     ex = await get_exercise(exercise_id)
     if ex is None:
         raise HTTPException(status_code=404, detail="Exercice introuvable")
 
-    solution: List[str] = ex["solution_moves"]
+    solution: List[Optional[str]] = ex["solution_moves"]  # may contain None for ad-lib moves
+    step = req.step
     submitted = req.moves
 
-    def _norm(m: str) -> str:
-        return m.strip().lstrip('K')
+    def _parse_endpoints(pdn: str):
+        s = pdn.strip().lstrip('K')
+        try:
+            if 'x' in s:
+                parts = [int(p) for p in s.split('x') if p]
+            elif '-' in s:
+                parts = [int(p) for p in s.split('-') if p]
+            else:
+                return None, None
+            return parts[0], parts[-1]
+        except (ValueError, IndexError):
+            return None, None
 
-    correct = False
-    if len(submitted) >= 1 and len(solution) >= 1:
-        correct = _norm(submitted[0]) == _norm(solution[0])
+    def _moves_match(submitted: str, expected: str) -> bool:
+        s = submitted.strip().lstrip('K')
+        e = expected.strip().lstrip('K')
+        if s == e:
+            return True
+        s_start, s_end = _parse_endpoints(s)
+        e_start, e_end = _parse_endpoints(e)
+        return s_start is not None and s_start == e_start and s_end == e_end
 
-    await record_progress(exercise_id, correct)
+    user_move_idx = step * 2
+    if user_move_idx >= len(solution) or solution[user_move_idx] is None:
+        return ExerciseCheckResponse(correct=True, message="Exercice terminé.")
+
+    expected = solution[user_move_idx]
+    correct = len(submitted) >= 1 and _moves_match(submitted[0], expected)
 
     if correct:
-        msg = "Bravo ! Vous avez trouvé le bon coup."
-    else:
-        msg = f"Ce n'est pas le bon coup. Le premier coup attendu était : {solution[0]}"
+        next_opponent_idx = user_move_idx + 1
+        next_user_idx = user_move_idx + 2
 
-    return ExerciseCheckResponse(
-        correct=correct,
-        message=msg,
-        solution=solution if not correct else None,
-    )
+        auto_move: Optional[str] = None
+        auto_move_path: Optional[List[int]] = None
+        auto_move_captures: Optional[List[int]] = None
+
+        if next_opponent_idx < len(solution) and solution[next_opponent_idx] is not None:
+            auto_move = solution[next_opponent_idx]
+            # Reconstruct board after user's move and find full auto_move data
+            state_after_user = _reconstruct_state(ex["initial_fen"], solution, user_move_idx + 1)
+            if state_after_user:
+                opponent_legal = get_legal_moves(state_after_user)
+                auto_move_obj = _find_move_by_pdn(auto_move, opponent_legal)
+                if auto_move_obj:
+                    auto_move_path = auto_move_obj.path
+                    auto_move_captures = auto_move_obj.captures
+                elif 'x' in auto_move:
+                    # PDN is a capture but no exact/endpoint match found (abbreviated notation).
+                    # Fall back to first legal capture from the same starting square for display.
+                    try:
+                        start_sq = int(auto_move.split('x')[0])
+                        fallback_obj = next(
+                            (m for m in opponent_legal if m.path[0] == start_sq and m.captures),
+                            None,
+                        )
+                        if fallback_obj:
+                            auto_move_path = fallback_obj.path
+                            auto_move_captures = fallback_obj.captures
+                    except (ValueError, IndexError):
+                        pass
+
+        has_more = next_user_idx < len(solution) and any(
+            m is not None for m in solution[next_user_idx:]
+        )
+
+        if has_more:
+            # Compute legal moves for the next user step (after auto_move applied)
+            next_legal_moves: List[Dict] = []
+            state_after_auto = _reconstruct_state(ex["initial_fen"], solution, user_move_idx + 2)
+            if state_after_auto:
+                next_legal = get_legal_moves(state_after_auto)
+                next_legal_moves = [{"path": m.path, "captures": m.captures} for m in next_legal]
+
+            return ExerciseCheckResponse(
+                correct=True,
+                in_progress=True,
+                message="Bon coup ! Continuez.",
+                auto_move=auto_move,
+                auto_move_path=auto_move_path,
+                auto_move_captures=auto_move_captures,
+                next_legal_moves=next_legal_moves,
+            )
+        else:
+            await record_progress(exercise_id, True)
+            if current_user:
+                await mark_exercise_solved(current_user["id"], exercise_id)
+            return ExerciseCheckResponse(
+                correct=True,
+                in_progress=False,
+                message="Bravo ! Vous avez trouvé la solution.",
+                auto_move=auto_move,
+                auto_move_path=auto_move_path,
+                auto_move_captures=auto_move_captures,
+            )
+    else:
+        if step == 0:
+            await record_progress(exercise_id, False)
+        first_move = next((m for m in solution if m is not None), None)
+        msg = f"Ce n'est pas le bon coup. Le premier coup attendu était : {first_move}"
+        visible = [m for m in solution if m is not None]
+        return ExerciseCheckResponse(
+            correct=False,
+            message=msg,
+            solution=visible,
+        )
 
 
 @app.get("/api/history", response_model=HistoryResponse)
@@ -346,15 +668,777 @@ async def get_game_detail(game_id: str) -> GameDetailResponse:
     return GameDetailResponse(**game)
 
 
+def _send_reset_email(to_email: str, reset_link: str) -> bool:
+    """Returns True if email was sent successfully."""
+    host = os.getenv("SMTP_HOST")
+    port = int(os.getenv("SMTP_PORT", "587"))
+    user = os.getenv("SMTP_USER")
+    password = os.getenv("SMTP_PASS")
+    from_addr = os.getenv("SMTP_FROM", user)
+
+    if not host or not user or not password:
+        logging.warning(f"SMTP not configured — reset link: {reset_link}")
+        return False
+
+    body = (
+        "Bonjour,\n\n"
+        "Vous avez demandé la réinitialisation de votre mot de passe sur AI-Draught.\n\n"
+        f"Cliquez sur ce lien (valable 1 heure) :\n{reset_link}\n\n"
+        "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.\n\n"
+        "L'équipe AI-Draught"
+    )
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = "Réinitialisation de mot de passe — AI-Draught"
+    msg["From"] = from_addr
+    msg["To"] = to_email
+    try:
+        ctx = ssl.create_default_context()
+        with smtplib.SMTP(host, port) as server:
+            server.starttls(context=ctx)
+            server.login(user, password)
+            server.sendmail(from_addr, to_email, msg.as_string())
+        logging.info(f"Reset email sent to {to_email}")
+        return True
+    except Exception as e:
+        logging.error(f"SMTP error sending reset email to {to_email}: {type(e).__name__}: {e}")
+        return False
+
+
+@app.post("/api/auth/forgot-password")
+async def auth_forgot_password(req: ForgotPasswordRequest) -> Dict[str, Any]:
+    email = req.email.lower().strip()
+    user = await get_user_by_email(email)
+    if not user:
+        return {
+            "message": "Aucun compte trouvé avec cet email. Veuillez vous inscrire.",
+            "not_found": True,
+        }
+
+    token = secrets.token_urlsafe(32)
+    expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+    await create_reset_token(email, token, expires_at)
+    app_url = os.getenv("APP_URL", "").rstrip("/")
+    reset_link = f"{app_url}/?reset_token={token}"
+    sent = _send_reset_email(email, reset_link)
+
+    if sent:
+        return {"message": "Un lien de réinitialisation a été envoyé à votre adresse email."}
+    else:
+        # SMTP not configured or failed: return the link directly so the admin can share it
+        return {
+            "message": "L'envoi email a échoué. Utilisez le lien ci-dessous pour réinitialiser votre mot de passe :",
+            "reset_url": reset_link,
+        }
+
+
+@app.post("/api/auth/reset-password")
+async def auth_reset_password(req: ResetPasswordRequest) -> Dict[str, str]:
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
+    row = await get_reset_token(req.token)
+    if not row:
+        raise HTTPException(status_code=400, detail="Lien invalide ou expiré")
+    expires_at = datetime.fromisoformat(row["expires_at"])
+    if datetime.utcnow() > expires_at:
+        raise HTTPException(status_code=400, detail="Lien expiré")
+    new_hash = _pwd_context.hash(req.password)
+    ok = await consume_reset_token(req.token, new_hash)
+    if not ok:
+        raise HTTPException(status_code=400, detail="Lien invalide ou déjà utilisé")
+    return {"message": "Mot de passe mis à jour avec succès"}
+
+
+@app.post("/api/auth/register", response_model=TokenResponse)
+async def auth_register(req: RegisterRequest) -> TokenResponse:
+    email = req.email.lower().strip()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Email invalide")
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
+    if await get_user_by_email(email):
+        raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
+    password_hash = _pwd_context.hash(req.password)
+    user_id = await create_user(email, password_hash)
+    return TokenResponse(
+        token=_create_token(user_id, email),
+        user=UserResponse(id=user_id, email=email),
+    )
+
+
+@app.post("/api/auth/login", response_model=TokenResponse)
+async def auth_login(req: LoginRequest) -> TokenResponse:
+    email = req.email.lower().strip()
+    user = await get_user_by_email(email)
+    if not user or not _pwd_context.verify(req.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+    return TokenResponse(
+        token=_create_token(user["id"], user["email"]),
+        user=UserResponse(id=user["id"], email=user["email"]),
+    )
+
+
+@app.get("/api/auth/me", response_model=UserResponse)
+async def auth_me(current_user: Dict[str, Any] = Depends(_require_auth)) -> UserResponse:
+    return UserResponse(id=current_user["id"], email=current_user["email"])
+
+
+@app.get("/api/auth/me/progress")
+async def auth_me_progress(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
+    solved_ids = await get_user_solved_exercise_ids(current_user["id"])
+    return {"solved_exercise_ids": solved_ids}
+
+
+@app.get("/api/auth/me/stats")
+async def auth_me_stats(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
+    stats = await get_user_stats(current_user["id"])
+    return stats
+
+
+@app.post("/api/history/{game_id}/annotations")
+async def save_annotations(
+    game_id: str,
+    body: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(_require_auth),
+) -> Dict[str, Any]:
+    annotations = body.get("annotations")
+    if not isinstance(annotations, list):
+        raise HTTPException(status_code=400, detail="annotations doit être une liste")
+    await save_game_annotations(game_id, current_user["id"], annotations)
+    return {"ok": True}
+
+
+@app.post("/api/position/legal-moves")
+async def position_legal_moves(body: Dict[str, Any]) -> Dict[str, Any]:
+    fen = body.get("fen", "")
+    try:
+        state = fen_to_board(fen)
+    except Exception:
+        raise HTTPException(status_code=400, detail="FEN invalide")
+    moves = get_legal_moves(state)
+    return {"moves": [{"path": m.path, "captures": m.captures} for m in moves]}
+
+
+@app.post("/api/position/apply-move")
+async def position_apply_move(body: Dict[str, Any]) -> Dict[str, Any]:
+    fen = body.get("fen", "")
+    path = body.get("path", [])
+    try:
+        state = fen_to_board(fen)
+    except Exception:
+        raise HTTPException(status_code=400, detail="FEN invalide")
+    legal = get_legal_moves(state)
+    move = next((m for m in legal if m.path == path), None)
+    if move is None:
+        raise HTTPException(status_code=400, detail="Coup illégal")
+    new_state = apply_move(state, move)
+    result = game_result(new_state)
+    next_legal = get_legal_moves(new_state) if result is None else []
+    return {
+        "fen": board_to_fen(new_state),
+        "moves": [{"path": m.path, "captures": m.captures} for m in next_legal],
+    }
+
+
+@app.get("/api/auth/me/lessons/read")
+async def get_read_lessons(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
+    chapters = await get_user_read_lesson_chapters(current_user["id"])
+    return {"read_chapters": chapters}
+
+
+@app.post("/api/auth/me/lessons/{chapter}/read")
+async def mark_lesson_read_endpoint(
+    chapter: int,
+    current_user: Dict[str, Any] = Depends(_require_auth),
+) -> Dict[str, Any]:
+    await mark_lesson_read(current_user["id"], chapter)
+    return {"ok": True}
+
+
+@app.get("/api/lessons")
+async def list_lessons() -> Dict[str, Any]:
+    import json as _json_mod, os as _os
+    lessons_path = _os.path.join(_os.path.dirname(__file__), "lessons.json")
+    try:
+        with open(lessons_path, encoding="utf-8") as f:
+            lessons = _json_mod.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Lessons file not found")
+    return {ch: {"title": v["title"], "category": v["category"]} for ch, v in lessons.items()}
+
+
+@app.get("/api/lessons/{chapter}")
+async def get_lesson(chapter: int) -> Dict[str, Any]:
+    import json as _json_mod, os as _os
+    lessons_path = _os.path.join(_os.path.dirname(__file__), "lessons.json")
+    try:
+        with open(lessons_path, encoding="utf-8") as f:
+            lessons = _json_mod.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Lessons file not found")
+    lesson = lessons.get(str(chapter))
+    if not lesson:
+        raise HTTPException(status_code=404, detail=f"No lesson for chapter {chapter}")
+    return lesson
+
+
 @app.get("/api/health")
 async def health() -> Dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/debug/db-stats")
+async def debug_db_stats() -> Dict[str, Any]:
+    import aiosqlite
+    from database import DB_PATH
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT category, COUNT(*) as cnt FROM exercises GROUP BY category ORDER BY category"
+        )
+        rows = await cursor.fetchall()
+        cats = {row[0]: row[1] for row in rows}
+        cursor2 = await db.execute("SELECT COUNT(*) FROM exercises")
+        total = (await cursor2.fetchone())[0]
+    return {"total": total, "by_category": cats}
+
+
+@app.post("/api/pdn/import")
+async def import_pdn_game(body: Dict[str, Any]) -> Dict[str, Any]:
+    import re as _re
+    pdn_text = body.get("pdn", "").strip()
+    if not pdn_text:
+        raise HTTPException(status_code=400, detail="PDN vide")
+
+    # Extract metadata from [Tag "value"] headers
+    metadata: Dict[str, str] = {}
+    for m in _re.finditer(r'\[(\w+)\s+"([^"]*)"\]', pdn_text):
+        metadata[m.group(1).lower()] = m.group(2)
+
+    # Strip headers, curly-brace comments, semicolon comments
+    moves_text = _re.sub(r'\[.*?\]', '', pdn_text, flags=_re.DOTALL)
+    moves_text = _re.sub(r'\{[^}]*\}', '', moves_text)
+    moves_text = _re.sub(r';[^\n]*', '', moves_text)
+
+    # Collect move tokens (skip "1." / "12..." numbering and result strings)
+    result_tokens = {'1-0', '0-1', '1/2-1/2', '*', '2-0', '0-2', '1-1'}
+    move_tokens: List[str] = []
+    for tok in moves_text.split():
+        if _re.match(r'^\d+\.+$', tok):
+            continue
+        if tok in result_tokens:
+            continue
+        if _re.match(r'^\d+[-x]\d', tok):
+            move_tokens.append(tok)
+
+    if not move_tokens:
+        raise HTTPException(status_code=400, detail="Aucun coup trouvé dans le PDN")
+
+    # Replay from initial position, collecting a FEN snapshot after each move
+    state = initial_state()
+    positions = [{"fen": board_to_fen(state), "notation": None, "move_number": 0, "color": None}]
+
+    for i, pdn_move in enumerate(move_tokens):
+        legal = get_legal_moves(state)
+        move = _find_move_by_pdn(pdn_move, legal)
+        if move is None:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Coup illisible ou illégal : '{pdn_move}' (coup n°{i + 1})"
+            )
+        state = apply_move(state, move)
+        positions.append({
+            "fen": board_to_fen(state),
+            "notation": move_to_pdn(move),
+            "move_number": i // 2 + 1,
+            "color": "white" if i % 2 == 0 else "black",
+        })
+
+    return {"positions": positions, "metadata": metadata, "total_moves": len(move_tokens)}
+
+
+@app.post("/api/pdn/annotate")
+async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Batch position evaluation using the native Scan engine.
+    Returns evaluations for every position or available=false if Scan is not installed."""
+    from scan_engine import _get_engine, _build_pos
+    import asyncio
+
+    positions = body.get("positions", [])
+    ms_per_move = min(max(int(body.get("ms_per_move", 200)), 50), 8000)
+
+    engine = _get_engine(use_book=False)  # no opening book so positions get real scores
+    if engine is None:
+        return {"evaluations": None, "available": False}
+
+    movetime_s = ms_per_move / 1000.0
+
+    def run_batch() -> tuple:
+        try:
+            from opening_book_db import lookup as cached_lookup, store as book_store
+        except Exception as exc:
+            logging.warning("opening_book_db unavailable: %s", exc)
+            cached_lookup = lambda _fen: None  # noqa: E731
+            book_store = lambda _entries: None  # noqa: E731
+
+        results = []
+        cache_hits = 0
+        to_save: list[dict] = []
+
+        for i, pos_data in enumerate(positions):
+            fen = pos_data.get("fen", "")
+            if not fen:
+                results.append({"score": 0, "bestMove": None})
+                continue
+            # Check cache first — only trust non-zero scores (zero could be a
+            # stale value from an older buggy analysis run).
+            try:
+                hit = cached_lookup(fen)
+            except Exception:
+                hit = None
+            if hit is not None and hit.get("score") != 0:
+                results.append({"score": hit["score"], "bestMove": hit.get("bestMove")})
+                cache_hits += 1
+                continue
+            state = fen_to_board(fen)
+            hub_pos = _build_pos(state)
+            result = engine.evaluate_pos(hub_pos, movetime_s)
+            ev = result or {"score": 0, "bestMove": None}
+            logging.info("annotate pos %d/%d fen=%s score=%.3f best=%s",
+                         i+1, len(positions), fen[:40], ev["score"], ev.get("bestMove"))
+            results.append(ev)
+            # Only cache non-zero scores — zero could be a genuine balance or
+            # an engine miss; we don't want to freeze it in the DB indefinitely.
+            if ev.get("score") != 0:
+                to_save.append({"fen": fen, "score": ev["score"], "bestMove": ev.get("bestMove")})
+
+        # Forced-move propagation (negamax): when a position had only one legal
+        # move (forced capture), Scan returns score=0 without evaluating.
+        # Derive its score from the resulting position: score(P) ≈ -score(P_next).
+        for i in range(len(results) - 1):
+            r = results[i]
+            if r.get("forced") and r.get("score", 0) == 0:
+                next_score = results[i + 1].get("score", 0)
+                if next_score != 0:
+                    results[i] = {"score": -next_score, "bestMove": r.get("bestMove")}
+                    logging.info("annotate pos %d: forced-move score derived as %.3f", i + 1, -next_score)
+
+        if to_save:
+            try:
+                book_store(to_save)
+                logging.info("annotate: saved %d new positions to opening book cache", len(to_save))
+            except Exception as exc:
+                logging.warning("annotate: could not save to cache: %s", exc)
+
+        return results, cache_hits
+
+    evaluations, cache_hits = await asyncio.get_event_loop().run_in_executor(None, run_batch)
+    non_zero = sum(1 for e in evaluations if e["score"] != 0)
+    logging.info("annotate done: %d positions, %d cache hits, %d non-zero scores",
+                 len(evaluations), cache_hits, non_zero)
+    return {"evaluations": evaluations, "available": True, "cache_hits": cache_hits,
+            "debug": {"non_zero_scores": non_zero, "total": len(evaluations)}}
+
+
+@app.post("/api/opening-book/precompute")
+async def precompute_positions(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Deep evaluation of a game's positions, stored in the opening eval cache.
+    Uses more time per position than the live annotate endpoint so Scan reaches
+    higher depth. Cached results are reused instantly on future annotation calls."""
+    from scan_engine import _get_engine, _build_pos
+    from opening_book_db import lookup as cached_lookup, store as cache_store, size as cache_size
+    import asyncio
+
+    positions = body.get("positions", [])
+    if not positions:
+        return {"success": False, "error": "No positions provided"}
+
+    engine = _get_engine(use_book=False)
+    if engine is None:
+        return {"success": False, "error": "Scan non disponible"}
+
+    # Allocate up to 10 s/position, total budget 280 s so we stay under HTTP timeout
+    ms_per_pos = min(10000, max(3000, 280000 // max(len(positions), 1)))
+    movetime_s = ms_per_pos / 1000.0
+    logging.info("precompute: %d positions, %.1f s each (total ~%.0f s)", len(positions), movetime_s, len(positions) * movetime_s)
+
+    def run() -> list:
+        new_entries: list[dict] = []
+        all_results: list[dict] = []
+        for i, pos_data in enumerate(positions):
+            fen = pos_data.get("fen", "")
+            if not fen:
+                all_results.append({"score": 0, "bestMove": None})
+                continue
+            # Skip positions already in cache
+            existing = cached_lookup(fen)
+            if existing:
+                logging.info("precompute pos %d/%d: already cached score=%d", i, len(positions)-1, existing["score"])
+                all_results.append({"score": existing["score"], "bestMove": existing["bestMove"]})
+                continue
+            state = fen_to_board(fen)
+            hub_pos = _build_pos(state)
+            ev = engine.evaluate_pos(hub_pos, movetime_s) or {"score": 0, "bestMove": None}
+            entry = {"fen": fen, "score": ev["score"], "bestMove": ev["bestMove"]}
+            new_entries.append(entry)
+            all_results.append({"score": ev["score"], "bestMove": ev["bestMove"]})
+            logging.info("precompute pos %d/%d: score=%d best=%s", i, len(positions)-1, ev["score"], ev["bestMove"])
+        if new_entries:
+            cache_store(new_entries)
+        return all_results
+
+    evaluations = await asyncio.get_event_loop().run_in_executor(None, run)
+    return {
+        "success": True,
+        "computed": len(evaluations),
+        "cache_size": cache_size(),
+        "evaluations": evaluations,
+    }
+
+
+@app.get("/api/opening-book/players")
+async def find_players_by_rating(
+    rating_min: int = Query(1600, ge=500, le=2800),
+    rating_max: int = Query(2200, ge=500, le=2800),
+    count: int = Query(10, ge=1, le=500),
+    perf_type: str = Query("standard"),
+) -> Dict[str, Any]:
+    """Return randomly-sampled Lidraughts players within a rating range."""
+    from lidraughts_fetcher import fetch_players_by_rating
+    if rating_min >= rating_max:
+        raise HTTPException(status_code=400, detail="rating_min doit être < rating_max")
+    players, pool_size = fetch_players_by_rating(rating_min, rating_max, count, perf_type)
+    return {"players": players, "found": len(players), "pool_size": pool_size}
+
+
+@app.post("/api/opening-book/build")
+async def start_cache_build(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Start a background job that evaluates opening positions.
+    Accepts either usernames (server fetches from Lidraughts) or
+    pdn_texts (PDN already downloaded by the browser client).
+    """
+    import cache_builder
+    usernames: List[str] = body.get("usernames", [])
+    pdn_texts: List[str] = body.get("pdn_texts", [])
+    if not usernames and not pdn_texts:
+        raise HTTPException(status_code=400, detail="Fournir 'usernames' ou 'pdn_texts'")
+    max_games = min(int(body.get("max_games_per_user", 100)), 500)
+    max_moves = min(int(body.get("max_moves", 12)), 20)
+    ms_per_pos = min(max(int(body.get("ms_per_position", 5000)), 1000), 15000)
+    started = cache_builder.start(usernames, max_games, max_moves, ms_per_pos, pdn_texts or None)
+    if not started:
+        return {"started": False, "message": "Un calcul est déjà en cours"}
+    src = f"{len(pdn_texts)} lots PDN" if pdn_texts else f"{len(usernames)} joueurs"
+    logging.info("cache_builder started: %s max_moves=%d ms=%d", src, max_moves, ms_per_pos)
+    return {"started": True, "message": f"Calcul lancé ({src})"}
+
+
+@app.get("/api/opening-book/build/status")
+async def get_cache_build_status() -> Dict[str, Any]:
+    """Poll the status of the background opening cache build job."""
+    import cache_builder
+    from opening_book_db import size as cache_size
+    status = cache_builder.get_status()
+    status["cache_size"] = cache_size()
+    return status
+
+
+@app.get("/api/opening-book/continuations")
+async def get_opening_continuations(fen: str = Query(...)) -> Dict[str, Any]:
+    """Return sorted continuation moves for a given FEN with frequency and eval."""
+    from opening_book_db import lookup
+    entry = lookup(fen)
+    if not entry:
+        return {"fen": fen, "total_games": 0, "continuations": [],
+                "engine_best": None, "engine_score": 0}
+
+    raw_cont: dict = entry.get("cont", {})
+    total_games = sum(raw_cont.values()) if raw_cont else 0
+
+    if not raw_cont:
+        return {"fen": fen, "total_games": 0, "continuations": [],
+                "engine_best": entry.get("bestMove"), "engine_score": entry.get("score", 0)}
+
+    try:
+        state = fen_to_board(fen)
+        legal = get_legal_moves(state)
+    except Exception:
+        return {"fen": fen, "total_games": 0, "continuations": [],
+                "engine_best": entry.get("bestMove"), "engine_score": entry.get("score", 0)}
+
+    continuations = []
+    for move_pdn, freq in sorted(raw_cont.items(), key=lambda x: -x[1]):
+        move_obj = _find_move_by_pdn(move_pdn, legal)
+        score = None
+        if move_obj:
+            try:
+                next_state = apply_move(state, move_obj)
+                next_fen = board_to_fen(next_state)
+                next_entry = lookup(next_fen)
+                if next_entry and next_entry.get("score") is not None:
+                    score = -next_entry["score"]  # negate: opponent's score → our score
+            except Exception:
+                pass
+        continuations.append({
+            "move": move_pdn,
+            "frequency": freq,
+            "pct": round(freq / total_games * 100) if total_games else 0,
+            "score": score,
+        })
+
+    return {
+        "fen": fen,
+        "total_games": total_games,
+        "continuations": continuations,
+        "engine_best": entry.get("bestMove"),
+        "engine_score": entry.get("score", 0),
+    }
+
+
+@app.post("/api/opening-book/ingest")
+async def ingest_pdn(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Receive one player's raw PDN or NDJSON text, extract FENs into pending pool."""
+    import cache_builder
+    raw: str = body.get("raw", "")
+    max_moves: int = min(int(body.get("max_moves", 12)), 20)
+    try:
+        result = cache_builder.ingest_raw(raw, max_moves)
+        return result
+    except Exception as exc:
+        logging.exception("ingest_raw error (raw[:80]=%s)", raw[:80] if raw else "")
+        return {"games": 0, "fens_added": 0, "format": "error", "error": str(exc)}
+
+
+@app.post("/api/opening-book/start-eval")
+async def start_eval(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Start Scan evaluation on all FENs collected via /ingest calls."""
+    import cache_builder
+    ms_per_pos: int = min(max(int(body.get("ms_per_position", 5000)), 1000), 15000)
+    started = cache_builder.start_eval(ms_per_pos)
+    if not started:
+        s = cache_builder.get_status()
+        if s.get("status") == "running":
+            return {"started": False, "message": "Un calcul est déjà en cours"}
+        return {"started": False, "message": "Aucune position en attente d'évaluation"}
+    return {"started": True, "message": "Évaluation Scan démarrée en arrière-plan"}
+
+
+@app.post("/api/opening-book/reeval")
+async def reeval_unevaluated(body: Dict[str, Any] = {}) -> Dict[str, Any]:
+    """Re-evaluate positions in the book that have no Scan score yet (best_move IS NULL).
+
+    Useful after a server restart interrupted a build run. Picks up exactly where
+    the previous job left off without re-downloading any games.
+
+    Parameters (all optional):
+      ms_per_position  int  default 5000  — thinking time in ms per position
+      limit            int  default 0     — max positions to evaluate (0 = all)
+    """
+    import cache_builder
+    from opening_book_db import get_unevaluated_fens
+    ms_per_pos: int = min(max(int(body.get("ms_per_position", 5000)), 1000), 15000)
+    limit: int = max(0, int(body.get("limit", 0)))
+
+    pending = len(get_unevaluated_fens(limit=1))  # cheap check
+    if pending == 0:
+        return {"started": False, "message": "Toutes les positions sont déjà évaluées", "pending": 0}
+
+    started = cache_builder.start_reeval(ms_per_pos, limit=limit)
+    if not started:
+        s = cache_builder.get_status()
+        if s.get("status") == "running":
+            return {"started": False, "message": "Un calcul est déjà en cours"}
+        return {"started": False, "message": "Aucune position non-évaluée trouvée"}
+
+    # Count how many we're about to evaluate so the UI can show a meaningful message
+    from opening_book_db import get_unevaluated_fens as _guf
+    total_pending = len(_guf(limit=limit)) if limit == 0 else limit
+    return {"started": True, "message": f"Réévaluation de {total_pending} positions lancée en arrière-plan", "pending": total_pending}
+
+
+@app.post("/api/opening-book/cleanup")
+async def opening_book_cleanup(body: Dict[str, Any] = {}) -> Dict[str, Any]:
+    """Remove low-quality positions from the opening book.
+
+    Parameters (all optional):
+      min_games       int   default 3   — drop positions seen in fewer games
+      max_depth       int   default 40  — drop positions deeper than N half-moves
+      min_cont_pct    float default 0.03 — drop moves with < 3% frequency
+      min_cont_count  int   default 2   — drop moves seen fewer than N times
+    """
+    from opening_book_db import cleanup
+    result = cleanup(
+        min_games=int(body.get("min_games", 3)),
+        max_depth=int(body.get("max_depth", 40)),
+        min_cont_pct=float(body.get("min_cont_pct", 0.03)),
+        min_cont_count=int(body.get("min_cont_count", 2)),
+    )
+    return result
+
+
+@app.get("/api/opening-book/stats")
+async def opening_book_stats() -> Dict[str, Any]:
+    """Return summary statistics about the opening book."""
+    from opening_book_db import stats
+    return stats()
+
+
+@app.get("/api/opening-book/db-info")
+async def opening_book_db_info() -> Dict[str, Any]:
+    """Return the DB path, file size, and row counts so you can verify
+    that the Railway volume is correctly mounted and populated."""
+    import os as _os
+    from opening_book_db import _DB_PATH, stats as db_stats
+    abs_path = _os.path.abspath(_DB_PATH)
+    try:
+        file_size = _os.path.getsize(abs_path)
+    except FileNotFoundError:
+        file_size = None
+    try:
+        book_stats = db_stats()
+    except Exception as exc:
+        book_stats = {"error": str(exc)}
+    return {
+        "db_path": abs_path,
+        "env_override": _os.environ.get("OPENING_BOOK_DB") is not None,
+        "file_exists": file_size is not None,
+        "file_size_bytes": file_size,
+        **book_stats,
+    }
+
+
+@app.post("/api/opening-book/migrate-json")
+async def opening_book_migrate_json() -> Dict[str, Any]:
+    """One-time migration from the old opening_eval_cache.json file."""
+    from opening_book_db import migrate_from_json
+    import os as _os
+    json_path = _os.path.join(_os.path.dirname(__file__), "opening_eval_cache.json")
+    return migrate_from_json(json_path)
+
+
+@app.post("/api/opening-book/migrate-local-db")
+async def opening_book_migrate_local_db() -> Dict[str, Any]:
+    """One-time migration from the old local opening_book.db (ephemeral FS)
+    to the current DB path (Railway volume). Safe to call if already migrated."""
+    import os as _os
+    import sqlite3 as _sqlite3
+    from opening_book_db import _DB_PATH, store, store_continuations
+
+    local_path = _os.path.join(_os.path.dirname(__file__), "opening_book.db")
+    abs_local = _os.path.abspath(local_path)
+    abs_target = _os.path.abspath(_DB_PATH)
+
+    if abs_local == abs_target:
+        return {"status": "same_path", "message": "Source and target are the same DB — nothing to migrate."}
+
+    if not _os.path.exists(abs_local):
+        return {"status": "no_source", "message": f"Local DB not found at {abs_local}"}
+
+    try:
+        src = _sqlite3.connect(abs_local)
+        src.row_factory = _sqlite3.Row
+        rows = src.execute(
+            "SELECT fen, score, best_move, games_seen, depth FROM opening_book"
+        ).fetchall()
+        cont_rows = src.execute(
+            "SELECT fen, move, count FROM opening_continuations"
+        ).fetchall()
+        src.close()
+    except Exception as exc:
+        return {"status": "error", "message": f"Could not read source DB: {exc}"}
+
+    entries = [
+        {"fen": r["fen"], "score": r["score"], "bestMove": r["best_move"], "depth": r["depth"]}
+        for r in rows
+    ]
+    added = store(entries)
+
+    # Rebuild cont_map from source continuations
+    cont_map: Dict[str, Dict[str, int]] = {}
+    fen_depths: Dict[str, int] = {r["fen"]: r["depth"] for r in rows}
+    for r in cont_rows:
+        cont_map.setdefault(r["fen"], {})[r["move"]] = r["count"]
+    if cont_map:
+        store_continuations(cont_map, fen_depths)
+
+    return {
+        "status": "ok",
+        "source": abs_local,
+        "target": abs_target,
+        "source_positions": len(entries),
+        "new_positions_added": added,
+        "continuations_merged": len(cont_rows),
+    }
+
+
+async def position_analyze(body: Dict[str, Any]) -> AnalysisResponse:
+    fen = body.get("fen", "")
+    question = body.get("question") or None
+    language = body.get("language", "fr")
+    mode = body.get("mode", "position")
+    pdn_history: List[str] = body.get("move_history") or []
+    try:
+        state = fen_to_board(fen)
+    except Exception:
+        raise HTTPException(status_code=400, detail="FEN invalide")
+    if mode == "full_game":
+        result = await analyze_full_game_pdn(state, pdn_history, language)
+    else:
+        if language == 'en':
+            context_note = ("Note: this position comes from an imported PDN game. "
+                            "The FEN is correct and valid. ")
+        else:
+            context_note = ("Note : cette position est extraite d'une partie importée au format PDN. "
+                            "Le FEN est correct et la position est valide. ")
+        effective_question = context_note + (question or "")
+        result = await analyze_position(state, [], effective_question, language)
+    return AnalysisResponse(**result)
+
+
+@app.post("/api/position/best-move")
+async def position_best_move(body: Dict[str, Any]) -> Dict[str, Any]:
+    fen = body.get("fen", "")
+    depth = int(body.get("depth", 6))
+    try:
+        state = fen_to_board(fen)
+    except Exception:
+        raise HTTPException(status_code=400, detail="FEN invalide")
+    loop = asyncio.get_event_loop()
+    move = await loop.run_in_executor(None, lambda: get_scan_move(state, depth))
+    if move is None:
+        return {"move": None}
+    return {"move": move_to_pdn(move)}
 
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 
 if os.path.isdir(_STATIC_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(_STATIC_DIR, "assets")), name="assets")
+
+    # Serve Scan WASM engine files with correct MIME types (iOS Safari is strict)
+    _WASM_CACHE = "public, max-age=604800, immutable"
+
+    @app.get("/scan_normal.wasm.js")
+    async def serve_scan_js() -> FileResponse:
+        return FileResponse(
+            os.path.join(_STATIC_DIR, "scan_normal.wasm.js"),
+            media_type="application/javascript",
+            headers={"Cache-Control": _WASM_CACHE},
+        )
+
+    @app.get("/scan_normal.wasm")
+    async def serve_scan_wasm() -> FileResponse:
+        return FileResponse(
+            os.path.join(_STATIC_DIR, "scan_normal.wasm"),
+            media_type="application/wasm",
+            headers={"Cache-Control": _WASM_CACHE},
+        )
+
+    @app.get("/scan_normal.data")
+    async def serve_scan_data() -> FileResponse:
+        return FileResponse(
+            os.path.join(_STATIC_DIR, "scan_normal.data"),
+            media_type="application/octet-stream",
+            headers={"Cache-Control": _WASM_CACHE},
+        )
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str) -> FileResponse:
