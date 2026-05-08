@@ -176,6 +176,9 @@ export default function App() {
   const [showExplorer, setShowExplorer] = useState<boolean>(() => {
     try { return localStorage.getItem('showExplorer') !== 'false' } catch { return true }
   })
+  const [explorerMaxMoves, setExplorerMaxMoves] = useState<number>(() => {
+    try { return Number(localStorage.getItem('explorerMaxMoves') ?? '12') || 12 } catch { return 12 }
+  })
   const [isAiThinking, setIsAiThinking] = useState(false)
   const [bothSides, setBothSides] = useState(false)
   const [spokenSquares, setSpokenSquares] = useState<number[]>([])
@@ -341,6 +344,16 @@ export default function App() {
     try { localStorage.setItem('showExplorer', String(v)) } catch { /* ignore */ }
     if (!v) setExplorerArrows([])
   }
+
+  const changeExplorerMaxMoves = (n: number) => {
+    setExplorerMaxMoves(n)
+    try { localStorage.setItem('explorerMaxMoves', String(n)) } catch { /* ignore */ }
+  }
+
+  // fen passed to OpeningExplorer: null if disabled, no moves yet, or past max depth
+  const explorerFen = showExplorer && moveHistory.length > 0 && moveHistory.length <= explorerMaxMoves
+    ? (gameState?.fen ?? null)
+    : null
 
   const handleMove = useCallback(async (move: MoveData) => {
     if (!gameState || gameState.result || isAiThinking) return
@@ -1133,13 +1146,7 @@ export default function App() {
                       </div>
                     )}
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
-                    <button onClick={() => toggleExplorer(!showExplorer)} className="flex items-center gap-1.5 text-xs py-0.5 mt-0.5 transition-colors" style={{ color: showExplorer ? '#f59e0b' : '#6b7280' }}>
-                      <span style={{ width: 28, height: 14, borderRadius: 7, background: showExplorer ? '#d97706' : '#4b5563', position: 'relative', display: 'inline-block', flexShrink: 0, transition: 'background 0.2s' }}>
-                        <span style={{ position: 'absolute', top: 2, left: showExplorer ? 14 : 2, width: 10, height: 10, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
-                      </span>
-                      Explorateur d'ouvertures
-                    </button>
-                    {showExplorer && <OpeningExplorer fen={moveHistory.length > 0 ? (gameState?.fen ?? null) : null} onArrows={setExplorerArrows} />}
+                    <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                     {playAnnotationPanel}
                   </div>
                 </>
@@ -1207,13 +1214,7 @@ export default function App() {
                         onLearn={handleLearnPlayedGame}
                         annotating={playAnnotating}
                       />
-                      <button onClick={() => toggleExplorer(!showExplorer)} className="flex items-center gap-1.5 text-xs py-0.5 mt-0.5 transition-colors" style={{ color: showExplorer ? '#f59e0b' : '#6b7280' }}>
-                        <span style={{ width: 28, height: 14, borderRadius: 7, background: showExplorer ? '#d97706' : '#4b5563', position: 'relative', display: 'inline-block', flexShrink: 0, transition: 'background 0.2s' }}>
-                          <span style={{ position: 'absolute', top: 2, left: showExplorer ? 14 : 2, width: 10, height: 10, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
-                        </span>
-                        Explorateur d'ouvertures
-                      </button>
-                      {showExplorer && <OpeningExplorer fen={moveHistory.length > 0 ? (gameState?.fen ?? null) : null} onArrows={setExplorerArrows} />}
+                      <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                       <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                       {playAnnotationPanel}
                     </div>
@@ -1322,14 +1323,12 @@ export default function App() {
                       onNewGame={startNewGame}
                       onAiDepthChange={setAiDepth}
                       disabled={isAiThinking}
+                      showExplorer={showExplorer}
+                      onShowExplorerChange={toggleExplorer}
+                      explorerMaxMoves={explorerMaxMoves}
+                      onExplorerMaxMovesChange={changeExplorerMaxMoves}
                     />
-                    <button onClick={() => toggleExplorer(!showExplorer)} className="flex items-center gap-1.5 text-xs py-0.5 mt-0.5 transition-colors" style={{ color: showExplorer ? '#f59e0b' : '#6b7280' }}>
-                      <span style={{ width: 28, height: 14, borderRadius: 7, background: showExplorer ? '#d97706' : '#4b5563', position: 'relative', display: 'inline-block', flexShrink: 0, transition: 'background 0.2s' }}>
-                        <span style={{ position: 'absolute', top: 2, left: showExplorer ? 14 : 2, width: 10, height: 10, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
-                      </span>
-                      Explorateur d'ouvertures
-                    </button>
-                    {showExplorer && <OpeningExplorer fen={moveHistory.length > 0 ? (gameState?.fen ?? null) : null} onArrows={setExplorerArrows} />}
+                    <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                     {playAnnotationPanel}
                   </div>
@@ -1364,13 +1363,7 @@ export default function App() {
               {/* Move list */}
               {analysisExpanded && (
                 <div style={{ gridColumn: '1', gridRow: '3' }} className="min-w-0">
-                  <button onClick={() => toggleExplorer(!showExplorer)} className="flex items-center gap-1.5 text-xs py-0.5 mt-0.5 transition-colors" style={{ color: showExplorer ? '#f59e0b' : '#6b7280' }}>
-                    <span style={{ width: 28, height: 14, borderRadius: 7, background: showExplorer ? '#d97706' : '#4b5563', position: 'relative', display: 'inline-block', flexShrink: 0, transition: 'background 0.2s' }}>
-                      <span style={{ position: 'absolute', top: 2, left: showExplorer ? 14 : 2, width: 10, height: 10, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
-                    </span>
-                    Explorateur d'ouvertures
-                  </button>
-                  {showExplorer && <OpeningExplorer fen={moveHistory.length > 0 ? (gameState?.fen ?? null) : null} onArrows={setExplorerArrows} />}
+                  <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                   <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                   {playAnnotationPanel}
                 </div>
@@ -1387,6 +1380,10 @@ export default function App() {
                     onNewGame={startNewGame}
                     onAiDepthChange={setAiDepth}
                     disabled={isAiThinking}
+                    showExplorer={showExplorer}
+                    onShowExplorerChange={toggleExplorer}
+                    explorerMaxMoves={explorerMaxMoves}
+                    onExplorerMaxMovesChange={changeExplorerMaxMoves}
                   />
                 </div>
               )}
@@ -1532,6 +1529,10 @@ export default function App() {
           onNewGame={() => { startNewGame(); setShowControls(false) }}
           onAiDepthChange={setAiDepth}
           disabled={isAiThinking}
+          showExplorer={showExplorer}
+          onShowExplorerChange={toggleExplorer}
+          explorerMaxMoves={explorerMaxMoves}
+          onExplorerMaxMovesChange={changeExplorerMaxMoves}
         />
       </BottomSheet>
 

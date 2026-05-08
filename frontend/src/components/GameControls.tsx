@@ -9,6 +9,10 @@ interface GameControlsProps {
   onNewGame: () => void
   onAiDepthChange: (depth: number) => void
   disabled?: boolean
+  showExplorer: boolean
+  onShowExplorerChange: (v: boolean) => void
+  explorerMaxMoves: number
+  onExplorerMaxMovesChange: (n: number) => void
 }
 
 export default function GameControls({
@@ -19,6 +23,10 @@ export default function GameControls({
   onNewGame,
   onAiDepthChange,
   disabled = false,
+  showExplorer,
+  onShowExplorerChange,
+  explorerMaxMoves,
+  onExplorerMaxMovesChange,
 }: GameControlsProps) {
   const { t } = useLanguage()
 
@@ -66,6 +74,48 @@ export default function GameControls({
         <div className="flex justify-between text-xs text-gray-500">
           <span>{t('easy')}</span>
           <span>{t('expert')}</span>
+        </div>
+      </div>
+
+      {/* Explorateur d'ouvertures */}
+      <div className="border-t border-gray-700 pt-3 flex flex-col gap-2">
+        <h4 className="text-sm font-semibold text-gray-300">Explorateur d'ouvertures</h4>
+
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-gray-400">Afficher les flèches</span>
+          <button
+            onClick={() => onShowExplorerChange(!showExplorer)}
+            className="flex items-center gap-1.5 transition-colors"
+            style={{ color: showExplorer ? '#f59e0b' : '#6b7280' }}
+          >
+            <span style={{
+              width: 32, height: 16, borderRadius: 8,
+              background: showExplorer ? '#d97706' : '#4b5563',
+              position: 'relative', display: 'inline-block', flexShrink: 0,
+              transition: 'background 0.2s',
+            }}>
+              <span style={{
+                position: 'absolute', top: 3, width: 10, height: 10,
+                borderRadius: '50%', background: '#fff',
+                left: showExplorer ? 18 : 3,
+                transition: 'left 0.2s',
+              }} />
+            </span>
+            <span className="text-xs">{showExplorer ? 'Activé' : 'Désactivé'}</span>
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-gray-400">Coups max</span>
+          <select
+            value={explorerMaxMoves}
+            onChange={e => onExplorerMaxMovesChange(Number(e.target.value))}
+            className="bg-gray-700 text-white text-sm rounded px-2 py-0.5 border border-gray-600"
+          >
+            {[8, 10, 12, 15, 20].map(n => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
         </div>
       </div>
 
