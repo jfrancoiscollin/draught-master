@@ -242,29 +242,38 @@ export default function Board({
   const [animMoving,  setAnimMoving]  = useState(false)
   const prevLastMoveRef               = useRef<MoveData | null | undefined>(undefined)
   const animTimerRef                  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const segTimersRef                  = useRef<ReturnType<typeof setTimeout>[]>([])
 
   // useLayoutEffect fires synchronously before the browser paints.
   // This prevents the one-frame flash where the piece appears at the destination
   // before being hidden — which caused the "B→A→B" reversal on white moves.
+  // For multi-capture paths, each segment is animated sequentially.
   useLayoutEffect(() => {
     if (lastMove === prevLastMoveRef.current) return
     prevLastMoveRef.current = lastMove
     if (!lastMove) { setAnimVisible(false); return }
 
-    const from  = lastMove.path[0]
-    const to    = lastMove.path[lastMove.path.length - 1]
+    const path = lastMove.path
+    if (path.length < 2) { setAnimVisible(false); return }
+
+    const to    = path[path.length - 1]
     const piece = board[to]
     if (piece === EMPTY) { setAnimVisible(false); return }
 
-    const src = sqCenter(from)
-    const dst = sqCenter(to)
+    const nSegments = path.length - 1
+    const segMs     = nSegments === 1 ? 280 : 180
 
     if (animTimerRef.current) clearTimeout(animTimerRef.current)
+    segTimersRef.current.forEach(t => clearTimeout(t))
+    segTimersRef.current = []
+
+    // Pre-compute all positions using current sqCenter (captures current flipped)
+    const positions = path.map(sq => sqCenter(sq))
 
     // Place overlay at source with no transition (synchronously, before paint)
     setAnimPiece(piece)
-    setAnimX(src.x)
-    setAnimY(src.y)
+    setAnimX(positions[0].x)
+    setAnimY(positions[0].y)
     setAnimHideSq(to)
     setAnimMoving(false)
     setAnimVisible(true)
@@ -272,16 +281,27 @@ export default function Board({
     // Two rAFs ensure the browser paints the initial position before transitioning
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        setAnimX(dst.x)
-        setAnimY(dst.y)
+        // Start first segment immediately
+        setAnimX(positions[1].x)
+        setAnimY(positions[1].y)
         setAnimMoving(true)
+
+        // Schedule each subsequent segment after the previous one completes
+        for (let i = 2; i < path.length; i++) {
+          const pos = positions[i]
+          const t = setTimeout(() => {
+            setAnimX(pos.x)
+            setAnimY(pos.y)
+          }, (i - 1) * segMs)
+          segTimersRef.current.push(t)
+        }
+
+        animTimerRef.current = setTimeout(() => {
+          setAnimVisible(false)
+          setAnimHideSq(null)
+        }, nSegments * segMs + 80)
       })
     })
-
-    animTimerRef.current = setTimeout(() => {
-      setAnimVisible(false)
-      setAnimHideSq(null)
-    }, 380)
   }, [lastMove]) // eslint-disable-line react-hooks/exhaustive-deps
   // ────────────────────────────────────────────────────────────────────────
 
@@ -465,7 +485,7 @@ export default function Board({
             pointerEvents: 'none',
             zIndex: 20,
             transition: animMoving
-              ? 'left 0.28s cubic-bezier(0.25,0,0.35,1), top 0.28s cubic-bezier(0.25,0,0.35,1)'
+              ? `left ${(lastMove?.path.length ?? 2) > 2 ? 180 : 280}ms cubic-bezier(0.25,0,0.35,1), top ${(lastMove?.path.length ?? 2) > 2 ? 180 : 280}ms cubic-bezier(0.25,0,0.35,1)`
               : 'none',
           }}
         >
