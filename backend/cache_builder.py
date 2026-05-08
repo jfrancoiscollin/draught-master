@@ -216,7 +216,7 @@ def run_build(
             return
 
         # ── Phase 3: evaluate with Scan ──────────────────────────────────────
-        engine = _get_engine()
+        engine = _get_engine(use_book=False)
         if engine is None:
             _set(status="error", message="Moteur Scan non disponible")
             return

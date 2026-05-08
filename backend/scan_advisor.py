@@ -222,7 +222,7 @@ def _scan_eval_sync(state: GameState, ms: float) -> dict:
     """Call Scan synchronously. Returns {score, bestMove, pv}."""
     try:
         from scan_engine import _get_engine, _build_pos
-        engine = _get_engine()
+        engine = _get_engine(use_book=False)
         if engine is None:
             return {"score": 0, "bestMove": None, "pv": []}
         hub_pos = _build_pos(state)
@@ -475,7 +475,7 @@ def _annotate_game_moves_sync(
     except ImportError:
         return []
 
-    engine = _get_engine()
+    engine = _get_engine(use_book=False)
     if engine is None:
         return []
 

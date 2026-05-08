@@ -1024,7 +1024,7 @@ async def precompute_positions(body: Dict[str, Any]) -> Dict[str, Any]:
     if not positions:
         return {"success": False, "error": "No positions provided"}
 
-    engine = _get_engine()
+    engine = _get_engine(use_book=False)
     if engine is None:
         return {"success": False, "error": "Scan non disponible"}
 
