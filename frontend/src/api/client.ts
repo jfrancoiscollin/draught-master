@@ -293,6 +293,11 @@ export async function startEval(msPerPosition: number): Promise<{ started: boole
   return res.data
 }
 
+export async function startReeval(msPerPosition: number): Promise<{ started: boolean; message: string; pending?: number }> {
+  const res = await api.post('/opening-book/reeval', { ms_per_position: msPerPosition }, { timeout: 10000 })
+  return res.data
+}
+
 // Pre-compute deep evaluations for a game's positions and store them in the
 // server-side opening eval cache. Subsequent annotation calls will use the cache.
 export async function precomputePositions(

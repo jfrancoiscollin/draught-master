@@ -1221,6 +1221,39 @@ async def start_eval(body: Dict[str, Any]) -> Dict[str, Any]:
     return {"started": True, "message": "Évaluation Scan démarrée en arrière-plan"}
 
 
+@app.post("/api/opening-book/reeval")
+async def reeval_unevaluated(body: Dict[str, Any] = {}) -> Dict[str, Any]:
+    """Re-evaluate positions in the book that have no Scan score yet (best_move IS NULL).
+
+    Useful after a server restart interrupted a build run. Picks up exactly where
+    the previous job left off without re-downloading any games.
+
+    Parameters (all optional):
+      ms_per_position  int  default 5000  — thinking time in ms per position
+      limit            int  default 0     — max positions to evaluate (0 = all)
+    """
+    import cache_builder
+    from opening_book_db import get_unevaluated_fens
+    ms_per_pos: int = min(max(int(body.get("ms_per_position", 5000)), 1000), 15000)
+    limit: int = max(0, int(body.get("limit", 0)))
+
+    pending = len(get_unevaluated_fens(limit=1))  # cheap check
+    if pending == 0:
+        return {"started": False, "message": "Toutes les positions sont déjà évaluées", "pending": 0}
+
+    started = cache_builder.start_reeval(ms_per_pos, limit=limit)
+    if not started:
+        s = cache_builder.get_status()
+        if s.get("status") == "running":
+            return {"started": False, "message": "Un calcul est déjà en cours"}
+        return {"started": False, "message": "Aucune position non-évaluée trouvée"}
+
+    # Count how many we're about to evaluate so the UI can show a meaningful message
+    from opening_book_db import get_unevaluated_fens as _guf
+    total_pending = len(_guf(limit=limit)) if limit == 0 else limit
+    return {"started": True, "message": f"Réévaluation de {total_pending} positions lancée en arrière-plan", "pending": total_pending}
+
+
 @app.post("/api/opening-book/cleanup")
 async def opening_book_cleanup(body: Dict[str, Any] = {}) -> Dict[str, Any]:
     """Remove low-quality positions from the opening book.

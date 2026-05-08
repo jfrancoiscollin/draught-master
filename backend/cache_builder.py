@@ -395,6 +395,93 @@ def _run_eval_only(fens: dict[str, int], total_games: int, ms_per_position: int)
     logger.info("_run_eval_only: done, %d new entries", len(new_fens))
 
 
+def start_reeval(ms_per_position: int, limit: int = 0) -> bool:
+    """Resume Scan evaluation for positions stored in the DB without an evaluation.
+
+    Queries opening_book WHERE best_move IS NULL and evaluates each position with
+    Scan. Useful after a server restart interrupted a previous build run.
+
+    limit=0 evaluates all unevaluated positions; limit>0 caps the batch size.
+    Returns False if a job is already running or there is nothing to evaluate.
+    """
+    with _lock:
+        if _job.get("status") == "running":
+            return False
+
+    from opening_book_db import get_unevaluated_fens
+    fens = get_unevaluated_fens(limit=limit)
+    if not fens:
+        return False
+
+    t = threading.Thread(
+        target=_run_reeval,
+        args=(fens, ms_per_position),
+        daemon=True,
+    )
+    t.start()
+    return True
+
+
+def _run_reeval(fens: list[str], ms_per_position: int) -> None:
+    """Background thread: evaluate a list of FENs that have no best_move yet."""
+    from opening_book_db import store as db_store, size as cache_size
+    from scan_engine import _get_engine, _build_pos
+    from game_engine import fen_to_board
+
+    total = len(fens)
+    _set(
+        status="running",
+        message=f"{total} positions non-évaluées à calculer…",
+        fetched_games=0,
+        unique_positions=total,
+        computed=0,
+        skipped=0,
+        total_to_compute=total,
+        errors=0,
+    )
+
+    engine = _get_engine(use_book=False)
+    if engine is None:
+        _set(status="error", message="Moteur Scan non disponible")
+        return
+
+    movetime_s = ms_per_position / 1000.0
+    batch: list[dict] = []
+
+    for i, fen in enumerate(fens):
+        try:
+            state = fen_to_board(fen)
+            hub_pos = _build_pos(state)
+            ev = engine.evaluate_pos(hub_pos, movetime_s) or {"score": 0, "bestMove": None}
+            # Only persist if we got a real evaluation (skip genuine score=0 until
+            # we have a bestMove to confirm Scan actually evaluated the position)
+            if ev.get("bestMove") or ev.get("score") != 0:
+                batch.append({
+                    "fen": fen,
+                    "score": ev["score"],
+                    "bestMove": ev["bestMove"],
+                })
+        except Exception as exc:
+            logger.warning("reeval pos %d: %s", i, exc)
+            _inc("errors")
+
+        _set(computed=i + 1, message=f"Réévaluation {i + 1}/{total}…")
+
+        if len(batch) >= 50:
+            db_store(batch)
+            batch.clear()
+
+    if batch:
+        db_store(batch)
+
+    total_cache = cache_size()
+    _set(
+        status="done",
+        message=f"Terminé ! {total} positions réévaluées · {total_cache} au total en cache.",
+    )
+    logger.info("_run_reeval: done, %d positions processed", total)
+
+
 def start(
     usernames: list[str],
     max_games_per_user: int = 100,

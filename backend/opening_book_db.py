@@ -271,6 +271,25 @@ def cleanup(
         }
 
 
+def get_unevaluated_fens(limit: int = 0) -> list[str]:
+    """Return canonical FENs that have no Scan evaluation yet (best_move IS NULL).
+
+    Used by cache_builder.start_reeval() to resume an interrupted evaluation run.
+    limit=0 means no limit.
+    """
+    with _lock:
+        conn = _get_conn()
+        if limit > 0:
+            rows = conn.execute(
+                "SELECT fen FROM opening_book WHERE best_move IS NULL LIMIT ?", (limit,)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT fen FROM opening_book WHERE best_move IS NULL"
+            ).fetchall()
+    return [r["fen"] for r in rows]
+
+
 def stats() -> dict:
     """Return summary statistics about the book."""
     with _lock:

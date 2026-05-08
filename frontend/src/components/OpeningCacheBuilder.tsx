@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { getOpeningCacheBuildStatus, ingestPdn, startEval } from '../api/client'
+import { getOpeningCacheBuildStatus, ingestPdn, startEval, startReeval } from '../api/client'
 
 interface Props {
   onClose: () => void
@@ -69,6 +69,8 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const [migrateResult, setMigrateResult] = useState<{
     status: string; source_positions?: number; new_positions_added?: number; continuations_merged?: number; message?: string;
   } | null>(null)
+  const [reevalRunning, setReevalRunning] = useState(false)
+  const [reevalMessage, setReevalMessage] = useState('')
 
   const checkDbInfo = async () => {
     setDbInfoLoading(true)
@@ -93,6 +95,25 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
       }
     } catch { /* ignore */ } finally {
       setMigrating(false)
+    }
+  }
+
+  const handleReeval = async () => {
+    setReevalRunning(true)
+    setReevalMessage('')
+    try {
+      const res = await startReeval(msPerPos)
+      if (res.started) {
+        setReevalMessage(`✓ ${res.message}`)
+        setStatus(null)
+        startPolling()
+      } else {
+        setReevalMessage(res.message)
+      }
+    } catch {
+      setReevalMessage('Erreur lors du lancement')
+    } finally {
+      setReevalRunning(false)
     }
   }
 
@@ -284,6 +305,29 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
                   {dbInfo.positions.toLocaleString()} ({dbInfo.evaluated.toLocaleString()} évaluées)
                 </span>
               </div>
+            </div>
+          )}
+
+          {/* Re-evaluate interrupted Scan job */}
+          {dbInfo && dbInfo.positions > 0 && dbInfo.evaluated < dbInfo.positions && (
+            <div className="border-t border-gray-700 pt-2 mt-1 flex flex-col gap-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-amber-300 flex-1">
+                  {(dbInfo.positions - dbInfo.evaluated).toLocaleString()} positions sans évaluation Scan
+                </span>
+                <button
+                  onClick={handleReeval}
+                  disabled={reevalRunning || isRunning}
+                  className="text-xs px-2.5 py-1 rounded bg-amber-700 hover:bg-amber-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                  {reevalRunning ? 'Lancement…' : '▶ Reprendre l\'évaluation'}
+                </button>
+              </div>
+              {reevalMessage && (
+                <p className={`text-xs font-mono ${reevalMessage.startsWith('✓') ? 'text-green-300' : 'text-amber-300'}`}>
+                  {reevalMessage}
+                </p>
+              )}
             </div>
           )}
 
