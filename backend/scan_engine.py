@@ -172,6 +172,7 @@ class ScanEngine:
 
             last_score: float = 0.0
             last_best: Optional[str] = None
+            had_info_score = False
             deadline = time.monotonic() + movetime_s + 10.0
             raw_lines: list[str] = []
 
@@ -187,21 +188,30 @@ class ScanEngine:
                         p = re.search(r'\bpv="([^"]*)"', line)
                         if s:
                             last_score = float(s.group(1))
+                            had_info_score = True
                         if p:
                             words = p.group(1).strip().split()
                             if words:
                                 last_best = words[0]
+                        elif not p:
+                            # pv without quotes = forced move (no score emitted)
+                            pf = re.search(r'\bpv=(\S+)', line)
+                            if pf and not last_best:
+                                last_best = pf.group(1).split()[0]
                     elif line.startswith("done") and (len(line) == 4 or line[4] == ' '):
                         move_m = re.search(r'\bmove=(\S+)', line)
                         score_m = re.search(r'\bscore=\s*([+-]?\d+(?:\.\d+)?)', line)
                         best = (move_m.group(1) if move_m else None) or last_best
                         score = float(score_m.group(1)) if score_m else last_score
-                        logger.warning("evaluate_pos done: score=%.3f best=%s raw_lines=%s", score, best, raw_lines[-3:])
-                        return {"bestMove": best, "score": score}
+                        # forced=True when no info line had a score (Scan returned
+                        # the move immediately without searching — forced capture)
+                        forced = not had_info_score and score == 0.0
+                        logger.warning("evaluate_pos done: score=%.3f best=%s forced=%s", score, best, forced)
+                        return {"bestMove": best, "score": score, "forced": forced}
                 except queue.Empty:
                     pass
 
-        logger.warning("evaluate_pos: timeout, no done. raw_lines=%s", raw_lines[-5:] if raw_lines else [])
+        logger.warning("evaluate_pos: timeout, no done.")
         return None
 
     def alive(self) -> bool:

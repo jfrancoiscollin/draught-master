@@ -988,12 +988,13 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
             if not fen:
                 results.append({"score": 0, "bestMove": None})
                 continue
-            # Check cache first (populated by past analyses or /api/opening-book/precompute)
+            # Check cache first — only trust non-zero scores (zero could be a
+            # stale value from an older buggy analysis run).
             try:
                 hit = cached_lookup(fen)
             except Exception:
                 hit = None
-            if hit is not None:
+            if hit is not None and hit.get("score") != 0:
                 results.append({"score": hit["score"], "bestMove": hit.get("bestMove")})
                 cache_hits += 1
                 continue
@@ -1004,8 +1005,21 @@ async def annotate_game_positions(body: Dict[str, Any]) -> Dict[str, Any]:
             logging.info("annotate pos %d/%d fen=%s score=%.3f best=%s",
                          i+1, len(positions), fen[:40], ev["score"], ev.get("bestMove"))
             results.append(ev)
-            # Save to cache so the next analysis of the same game is instant
-            to_save.append({"fen": fen, "score": ev["score"], "bestMove": ev.get("bestMove")})
+            # Only cache non-zero scores — zero could be a genuine balance or
+            # an engine miss; we don't want to freeze it in the DB indefinitely.
+            if ev.get("score") != 0:
+                to_save.append({"fen": fen, "score": ev["score"], "bestMove": ev.get("bestMove")})
+
+        # Forced-move propagation (negamax): when a position had only one legal
+        # move (forced capture), Scan returns score=0 without evaluating.
+        # Derive its score from the resulting position: score(P) ≈ -score(P_next).
+        for i in range(len(results) - 1):
+            r = results[i]
+            if r.get("forced") and r.get("score", 0) == 0:
+                next_score = results[i + 1].get("score", 0)
+                if next_score != 0:
+                    results[i] = {"score": -next_score, "bestMove": r.get("bestMove")}
+                    logging.info("annotate pos %d: forced-move score derived as %.3f", i + 1, -next_score)
 
         if to_save:
             try:
