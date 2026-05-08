@@ -1348,6 +1348,42 @@ async def position_best_move(body: Dict[str, Any]) -> Dict[str, Any]:
     return {"move": move_to_pdn(move)}
 
 
+@app.get("/api/debug/eval")
+async def debug_eval() -> Dict[str, Any]:
+    """Evaluate a known imbalanced position and return raw result for diagnosis."""
+    import asyncio as _asyncio
+    from scan_engine import _get_engine, _build_pos
+    from game_engine import initial_state as _initial_state, apply_move, get_legal_moves
+
+    def _run():
+        engine = _get_engine(use_book=False)
+        if engine is None:
+            return {"error": "eval engine is None", "engine_available": False}
+        # Use initial position (balanced, should be ~0)
+        st = _initial_state()
+        hub = _build_pos(st)
+        r1 = engine.evaluate_pos(hub, 1.0)
+        # Apply two moves to get a slightly different position
+        moves = get_legal_moves(st)
+        if moves:
+            st2 = apply_move(st, moves[0])
+            hub2 = _build_pos(st2)
+            r2 = engine.evaluate_pos(hub2, 1.0)
+        else:
+            r2 = None
+        return {
+            "engine_available": True,
+            "use_book": engine._use_book,
+            "initial_pos": hub[:10],
+            "result_initial": r1,
+            "result_after_move": r2,
+        }
+
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, _run)
+    return result
+
+
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 
 if os.path.isdir(_STATIC_DIR):

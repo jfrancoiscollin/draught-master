@@ -165,6 +165,7 @@ class ScanEngine:
                 except queue.Empty:
                     break
 
+            logger.warning("evaluate_pos: pos=%s movetime=%.2f use_book=%s", pos[:30], movetime_s, self._use_book)
             self._send(f"pos pos={pos}")
             self._send(f"level move-time={movetime_s}")
             self._send("go think")
@@ -172,6 +173,7 @@ class ScanEngine:
             last_score = 0
             last_best: Optional[str] = None
             deadline = time.monotonic() + movetime_s + 10.0
+            raw_lines: list[str] = []
 
             while True:
                 remaining = deadline - time.monotonic()
@@ -179,6 +181,7 @@ class ScanEngine:
                     break
                 try:
                     line = self._q.get(timeout=min(0.05, remaining))
+                    raw_lines.append(line)
                     if line.startswith("info "):
                         s = re.search(r'\bscore=\s*([+-]?\d+)', line)
                         p = re.search(r'\bpv="([^"]*)"', line)
@@ -193,12 +196,12 @@ class ScanEngine:
                         score_m = re.search(r'\bscore=\s*([+-]?\d+)', line)
                         best = (move_m.group(1) if move_m else None) or last_best
                         score = int(score_m.group(1)) if score_m else last_score
-                        logger.info("evaluate_pos done: score=%d best=%s", score, best)
+                        logger.warning("evaluate_pos done: score=%d best=%s raw_lines=%s", score, best, raw_lines[-3:])
                         return {"bestMove": best, "score": score}
                 except queue.Empty:
                     pass
 
-        logger.warning("evaluate_pos: no done received for pos=%s", pos[:40])
+        logger.warning("evaluate_pos: timeout, no done. raw_lines=%s", raw_lines[-5:] if raw_lines else [])
         return None
 
     def alive(self) -> bool:
