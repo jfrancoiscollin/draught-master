@@ -24,7 +24,7 @@ function buildReport(status: ExerciseVerificationStatus, dataset: Dataset): stri
   ]
 
   const allResults = status.all_results ?? []
-  const issueMap = new Map(status.issues.map(i => [i.name, i]))
+  const issueMap = new Map(status.issues.map(i => [i.fen, i]))
 
   if (status.scan_available && allResults.length > 0) {
     // Scan mode: full exercise-by-exercise comparison
@@ -40,7 +40,7 @@ function buildReport(status: ExerciseVerificationStatus, dataset: Dataset): stri
       lines.push(`  Scan    : ${scanLabel}  ${match}`)
       if (r.fen && (r.heuristic_fix || r.status !== 'OK'))
         lines.push(`  FEN     : ${r.fen}`)
-      const issue = issueMap.get(r.name)
+      const issue = issueMap.get(r.fen)
       if (issue) {
         lines.push(`  Raison  : ${issue.reason}`)
         if (issue.legal_moves.length > 0)
@@ -241,10 +241,10 @@ export default function ExerciseVerificationPanel() {
         <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
           {status.issues.map((issue) => (
             <IssueRow
-              key={issue.name}
+              key={issue.fen}
               issue={issue}
-              open={expanded === issue.name}
-              onToggle={() => setExpanded(expanded === issue.name ? null : issue.name)}
+              open={expanded === issue.fen}
+              onToggle={() => setExpanded(expanded === issue.fen ? null : issue.fen)}
             />
           ))}
         </div>
