@@ -21,6 +21,7 @@ from __future__ import annotations
 #   131 – la flèche 33-38-42
 #   132 – la formation 34-39-43
 # (first-move corrections applied by scripts/fix_illegal_exercises.py)
+# heuristic_fix=True : first move was auto-corrected; verify against the book
 
 SENS_DU_JEU_EXERCISES = [
 
@@ -32,6 +33,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch102',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LA NOTION D'AVANTAGE – D2",
@@ -41,6 +43,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch102',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LA NOTION D'AVANTAGE – D3",
@@ -50,6 +53,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch102',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LA NOTION D'AVANTAGE – D4",
@@ -59,6 +63,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch102',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LA NOTION D'AVANTAGE – D5",
@@ -77,6 +82,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch102',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LIBERTÉ DE MOUVEMENT – D1',
@@ -86,6 +92,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch103',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LIBERTÉ DE MOUVEMENT – D2',
@@ -95,6 +102,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch103',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LIBERTÉ DE MOUVEMENT – D3',
@@ -122,6 +130,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch103',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LIBERTÉ DE MOUVEMENT – D6',
@@ -131,6 +140,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch103',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES ÉCHANGES – D1',
@@ -140,6 +150,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch104',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES ÉCHANGES – D2',
@@ -149,6 +160,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch104',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES ÉCHANGES – D3',
@@ -158,6 +170,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch104',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES ÉCHANGES – D4',
@@ -167,6 +180,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch104',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES ÉCHANGES – D5',
@@ -176,6 +190,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch104',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES ÉCHANGES – D6',
@@ -185,6 +200,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 1,
         'category': 'sdj_ch104',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LE PION D'ANGLE 46 (1) – D1",
@@ -212,6 +228,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch108',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LE PION D'ANGLE 46 (1) – D4",
@@ -221,6 +238,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch108',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LE PION D'ANGLE 46 (2) – D1",
@@ -239,6 +257,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch109',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LE PION D'ANGLE 46 (2) – D3",
@@ -248,6 +267,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch109',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LE PION D'ANGLE 46 (2) – D4",
@@ -257,6 +277,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch109',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LE PION D'ANGLE 46 (2) – D5",
@@ -266,6 +287,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch109',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LE PION D'ANGLE 46 (3) – D1",
@@ -284,6 +306,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch110',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LE PION D'ANGLE 46 (3) – D3",
@@ -293,6 +316,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch110',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': "LE PION D'ANGLE 46 (3) – D4",
@@ -302,6 +326,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch110',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES PIONS 49 ET 50 – D1',
@@ -311,6 +336,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch115',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES PIONS 49 ET 50 – D2',
@@ -320,6 +346,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch115',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES PIONS 49 ET 50 – D3',
@@ -329,6 +356,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch115',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES PIONS 49 ET 50 – D4',
@@ -338,6 +366,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch115',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LES PIONS 49 ET 50 – D5',
@@ -356,6 +385,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 2,
         'category': 'sdj_ch115',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 36 – D1',
@@ -365,6 +395,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch116',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 36 – D2',
@@ -374,6 +405,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch116',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 36 – D3',
@@ -383,6 +415,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch116',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 36 – D4',
@@ -392,6 +425,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch116',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 36 – D5',
@@ -419,6 +453,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch117',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION DE BANDE 26 – D2',
@@ -428,6 +463,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch117',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION DE BANDE 26 – D3',
@@ -446,6 +482,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch117',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION DE BANDE 26 – D5',
@@ -464,6 +501,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch120',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 45 – D2',
@@ -473,6 +511,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch120',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 45 – D3',
@@ -491,6 +530,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch120',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 35 – D1',
@@ -500,6 +540,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch121',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 35 – D2',
@@ -509,6 +550,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 3,
         'category': 'sdj_ch121',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LE PION BLANC 35 – D3',
@@ -536,6 +578,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 4,
         'category': 'sdj_ch130',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LA FORMATION 45-40 – D2',
@@ -545,6 +588,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 4,
         'category': 'sdj_ch130',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LA FORMATION 45-40 – D3',
@@ -563,6 +607,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 4,
         'category': 'sdj_ch130',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LA FLÈCHE 33-38-42 – D1',
@@ -590,6 +635,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 4,
         'category': 'sdj_ch131',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LA FLÈCHE 33-38-42 – D4',
@@ -608,6 +654,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 4,
         'category': 'sdj_ch131',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LA FLÈCHE 33-38-42 – D6',
@@ -617,6 +664,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 4,
         'category': 'sdj_ch131',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LA FORMATION 34-39-43 – D1',
@@ -653,6 +701,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 4,
         'category': 'sdj_ch132',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LA FORMATION 34-39-43 – D5',
@@ -662,6 +711,7 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 4,
         'category': 'sdj_ch132',
         'hint': '',
+        'heuristic_fix': True,
     },
     {
         'name': 'LA FORMATION 34-39-43 – D6',
@@ -671,5 +721,6 @@ SENS_DU_JEU_EXERCISES = [
         'difficulty': 4,
         'category': 'sdj_ch132',
         'hint': '',
+        'heuristic_fix': True,
     },
 ]

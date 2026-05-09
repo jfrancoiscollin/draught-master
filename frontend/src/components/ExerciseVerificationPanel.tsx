@@ -12,31 +12,32 @@ function buildReport(status: ExerciseVerificationStatus, dataset: Dataset): stri
   const date = new Date().toLocaleString('fr-FR')
   const mode = status.scan_available ? 'Légalité + Scan' : 'Légalité seule'
   const datasetLabel = dataset === 'all' ? 'Tous les exercices' : dataset === 'sens_du_jeu' ? 'Sens du Jeu' : 'Exercices de base'
+  const heuristic = status.heuristic_count ?? 0
+
   const lines: string[] = [
     `=== RAPPORT DE VÉRIFICATION DES EXERCICES ===`,
     `Date : ${date}`,
     `Jeu de données : ${datasetLabel}`,
     `Mode : ${mode}`,
-    `Total : ${status.total} | OK : ${status.ok} | Illégaux : ${status.illegal}${status.scan_available ? ` | Scan mismatch : ${status.scan_mismatch}` : ''}`,
+    `Total : ${status.total} | OK : ${status.ok} | Illégaux : ${status.illegal}${status.scan_available ? ` | Scan mismatch : ${status.scan_mismatch}` : ''}${heuristic > 0 ? ` | Heuristiques : ${heuristic}` : ''}`,
     ``,
   ]
 
-  // When Scan was used, emit the full per-exercise list (all_results)
   const allResults = status.all_results ?? []
-  if (status.scan_available && allResults.length > 0) {
-    // Build an issue index for quick lookup of extra details
-    const issueMap = new Map(status.issues.map(i => [i.name, i]))
+  const issueMap = new Map(status.issues.map(i => [i.name, i]))
 
+  if (status.scan_available && allResults.length > 0) {
+    // Scan mode: full exercise-by-exercise comparison
     lines.push(`── LISTE COMPLÈTE (coup stocké vs Scan) ──`)
     lines.push(``)
     for (const r of allResults) {
       const tag = r.status === 'OK' ? 'OK' : r.status
-      const match = r.scan_move
-        ? (r.stored_move === r.scan_move ? '✓' : '≠')
-        : ' '
-      lines.push(`[${tag}] ${r.name}`)
+      const scanLabel = r.scan_move ?? '—'
+      const match = r.scan_move ? (r.stored_move === r.scan_move ? '✓' : '≠') : ' '
+      const hTag = r.heuristic_fix ? ' [HEURISTIQUE — à vérifier dans le livre]' : ''
+      lines.push(`[${tag}] ${r.name}${hTag}`)
       lines.push(`  Stocké  : ${r.stored_move}`)
-      lines.push(`  Scan    : ${r.scan_move ?? '—'}  ${match}`)
+      lines.push(`  Scan    : ${scanLabel}  ${match}`)
       const issue = issueMap.get(r.name)
       if (issue) {
         lines.push(`  Raison  : ${issue.reason}`)
@@ -46,12 +47,15 @@ function buildReport(status: ExerciseVerificationStatus, dataset: Dataset): stri
       lines.push(``)
     }
   } else {
-    // Legality-only mode: only list the issues
-    if (status.issues.length === 0) {
+    // Legality-only mode
+    const problemResults = allResults.filter(r => r.status !== 'OK' || r.heuristic_fix)
+    if (status.issues.length === 0 && heuristic === 0) {
       lines.push('Tous les exercices sont valides.')
     } else {
+      // Issues section
       for (const issue of status.issues) {
-        lines.push(`[${issue.status}] ${issue.name}`)
+        const hTag = issue.heuristic_fix ? ' [HEURISTIQUE]' : ''
+        lines.push(`[${issue.status}] ${issue.name}${hTag}`)
         lines.push(`  FEN     : ${issue.fen}`)
         lines.push(`  Stocké  : ${issue.stored_move}`)
         lines.push(`  Raison  : ${issue.reason}`)
@@ -59,6 +63,17 @@ function buildReport(status: ExerciseVerificationStatus, dataset: Dataset): stri
         if (issue.legal_moves.length > 0)
           lines.push(`  Légaux  : ${issue.legal_moves.join(', ')}${issue.legal_moves.length >= 8 ? '…' : ''}`)
         lines.push(``)
+      }
+      // Heuristic section (exercises corrected automatically, to verify against the book)
+      const heuristicResults = allResults.filter(r => r.heuristic_fix && r.status === 'OK')
+      if (heuristicResults.length > 0) {
+        lines.push(`── EXERCICES HEURISTIQUES — premier coup auto-corrigé, à vérifier dans le livre ──`)
+        lines.push(``)
+        for (const r of heuristicResults) {
+          lines.push(`[HEURISTIQUE] ${r.name}`)
+          lines.push(`  Stocké  : ${r.stored_move}`)
+          lines.push(``)
+        }
       }
     }
   }
@@ -187,7 +202,7 @@ export default function ExerciseVerificationPanel() {
 
       {/* Summary */}
       {status && (isDone || isRunning) && (
-        <div className="flex gap-2 text-xs">
+        <div className="flex flex-wrap gap-2 text-xs">
           <span className="flex-1 bg-green-900/40 border border-green-800 text-green-400 rounded-lg px-3 py-2 text-center font-semibold">
             ✓ {status.ok} OK
           </span>
@@ -196,7 +211,12 @@ export default function ExerciseVerificationPanel() {
           </span>
           {status.scan_available && (
             <span className="flex-1 bg-yellow-900/40 border border-yellow-800 text-yellow-400 rounded-lg px-3 py-2 text-center font-semibold">
-              ? {status.scan_mismatch} Scan
+              ? {status.scan_mismatch} Scan ≠
+            </span>
+          )}
+          {(status.heuristic_count ?? 0) > 0 && (
+            <span className="flex-1 bg-orange-900/40 border border-orange-800 text-orange-400 rounded-lg px-3 py-2 text-center font-semibold">
+              ⚠ {status.heuristic_count} heurist.
             </span>
           )}
         </div>
@@ -249,6 +269,11 @@ function IssueRow({ issue, open, onToggle }: {
           {isIllegal ? '✗' : '?'}
         </span>
         <span className="flex-1 font-medium text-gray-200 truncate">{issue.name}</span>
+        {issue.heuristic_fix && (
+          <span className="text-orange-400 text-[10px] font-medium px-1 py-0.5 rounded border border-orange-800 bg-orange-950/40">
+            heurist.
+          </span>
+        )}
         <span className={isIllegal ? 'text-red-400' : 'text-yellow-400'}>
           {issue.stored_move}
         </span>
@@ -257,6 +282,11 @@ function IssueRow({ issue, open, onToggle }: {
 
       {open && (
         <div className="px-3 pb-3 space-y-1.5 border-t border-gray-700 pt-2">
+          {issue.heuristic_fix && (
+            <p className="text-orange-400 text-[10px]">
+              ⚠ Premier coup auto-corrigé heuristiquement — à vérifier dans le livre
+            </p>
+          )}
           <p className="text-gray-400"><span className="text-gray-500">Raison :</span> {issue.reason}</p>
           {issue.scan_move && (
             <p className="text-yellow-300"><span className="text-gray-500">Scan suggère :</span> {issue.scan_move}</p>

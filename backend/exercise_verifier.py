@@ -10,6 +10,10 @@ When Scan is available, Scan is queried for EVERY exercise (including illegal
 ones) so that the full report can show Scan's recommendation alongside the
 stored move for manual book verification.
 
+Exercises flagged heuristic_fix=True had their first move auto-corrected by
+the heuristic fixer; they are always included in the report so they can be
+verified against the book.
+
 Follows the same singleton/threading pattern as cache_builder.py.
 """
 from __future__ import annotations
@@ -33,8 +37,9 @@ _state: Dict[str, Any] = {
     "ok": 0,
     "illegal": 0,
     "scan_mismatch": 0,
+    "heuristic_count": 0,   # exercises flagged heuristic_fix=True
     "issues": [],
-    "all_results": [],      # one entry per exercise when Scan is available
+    "all_results": [],      # one entry per exercise (always populated)
     "scan_available": False,
     "error": None,
 }
@@ -111,6 +116,8 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
         except Exception:
             scan_ok = False
 
+    heuristic_count = sum(1 for ex in exercises if ex.get("heuristic_fix"))
+
     with _lock:
         _state.update({
             "status": "running",
@@ -119,6 +126,7 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
             "ok": 0,
             "illegal": 0,
             "scan_mismatch": 0,
+            "heuristic_count": heuristic_count,
             "issues": [],
             "all_results": [],
             "scan_available": scan_ok,
@@ -134,6 +142,7 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
         fen = ex.get("initial_fen", "")
         sol = ex.get("solution_moves", [])
         stored_move = sol[0] if sol else ""
+        is_heuristic = bool(ex.get("heuristic_fix", False))
 
         leg = _check_legality(fen, sol)
 
@@ -164,6 +173,7 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
                 "reason": reason,
                 "legal_moves": leg["legal_moves"][:8],
                 "scan_move": scan_move,
+                "heuristic_fix": is_heuristic,
             }
         elif scan_ok and scan_move and sol:
             stored_pair = _normalise_move(sol[0])[:2]
@@ -179,6 +189,7 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
                     "reason": f"Scan joue {scan_move!r}",
                     "legal_moves": leg["legal_moves"][:8],
                     "scan_move": scan_move,
+                    "heuristic_fix": is_heuristic,
                 }
             else:
                 ok += 1
@@ -188,14 +199,14 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
         if issue:
             issues.append(issue)
 
-        # Always record the result when Scan is available
-        if scan_ok:
-            all_results.append({
-                "name": name,
-                "stored_move": stored_move,
-                "scan_move": scan_move,
-                "status": result_status,
-            })
+        # Always record every exercise (heuristic ones always included for review)
+        all_results.append({
+            "name": name,
+            "stored_move": stored_move,
+            "scan_move": scan_move,
+            "status": result_status,
+            "heuristic_fix": is_heuristic,
+        })
 
         with _lock:
             _state["done"] += 1

@@ -369,6 +369,7 @@ export interface ExerciseIssue {
   reason: string
   legal_moves: string[]
   scan_move: string | null
+  heuristic_fix: boolean
 }
 
 export interface ExerciseResult {
@@ -376,6 +377,7 @@ export interface ExerciseResult {
   stored_move: string
   scan_move: string | null
   status: 'OK' | 'ILLEGAL' | 'SCAN_MISMATCH'
+  heuristic_fix: boolean
 }
 
 export interface ExerciseVerificationStatus {
@@ -385,6 +387,7 @@ export interface ExerciseVerificationStatus {
   ok: number
   illegal: number
   scan_mismatch: number
+  heuristic_count: number
   issues: ExerciseIssue[]
   all_results: ExerciseResult[]
   scan_available: boolean
