@@ -183,16 +183,29 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
         _state["issues"] = issues
 
 
-def start(use_scan: bool = False, movetime: float = 0.3) -> bool:
+def start(
+    use_scan: bool = False,
+    movetime: float = 0.3,
+    dataset: str = "all",
+) -> bool:
     """Start verification job in background thread.  Returns False if already running."""
     with _lock:
         if _state["status"] == "running":
             return False
 
     from db.sens_du_jeu_exercises import SENS_DU_JEU_EXERCISES
+    from db.exercises_data import INITIAL_EXERCISES
+
+    if dataset == "sens_du_jeu":
+        exercises = list(SENS_DU_JEU_EXERCISES)
+    elif dataset == "initial":
+        exercises = list(INITIAL_EXERCISES)
+    else:  # "all"
+        exercises = list(INITIAL_EXERCISES) + list(SENS_DU_JEU_EXERCISES)
+
     t = threading.Thread(
         target=_run,
-        args=(list(SENS_DU_JEU_EXERCISES), use_scan, movetime),
+        args=(exercises, use_scan, movetime),
         daemon=True,
     )
     t.start()

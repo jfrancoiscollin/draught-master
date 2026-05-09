@@ -383,8 +383,12 @@ export interface ExerciseVerificationStatus {
   error: string | null
 }
 
-export async function startExerciseVerification(useScan = false, movetime = 0.3): Promise<{ started: boolean }> {
-  const res = await api.post('/admin/verify-exercises', { use_scan: useScan, movetime })
+export async function startExerciseVerification(
+  useScan = false,
+  movetime = 0.3,
+  dataset: 'all' | 'initial' | 'sens_du_jeu' = 'all',
+): Promise<{ started: boolean }> {
+  const res = await api.post('/admin/verify-exercises', { use_scan: useScan, movetime, dataset })
   return res.data
 }
 

@@ -1224,7 +1224,10 @@ async def start_exercise_verification(body: Dict[str, Any] = {}) -> Dict[str, An
     import exercise_verifier
     use_scan = bool(body.get("use_scan", False))
     movetime = float(body.get("movetime", 0.3))
-    started = exercise_verifier.start(use_scan=use_scan, movetime=movetime)
+    dataset = str(body.get("dataset", "all"))
+    if dataset not in ("all", "initial", "sens_du_jeu"):
+        dataset = "all"
+    started = exercise_verifier.start(use_scan=use_scan, movetime=movetime, dataset=dataset)
     return {"started": started, "message": "Vérification lancée" if started else "Déjà en cours"}
 
 

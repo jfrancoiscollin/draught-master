@@ -6,10 +6,43 @@ import {
   ExerciseIssue,
 } from '../api/client'
 
+type Dataset = 'all' | 'sens_du_jeu' | 'initial'
+
+function buildReport(status: ExerciseVerificationStatus, dataset: Dataset): string {
+  const date = new Date().toLocaleString('fr-FR')
+  const mode = status.scan_available ? 'Légalité + Scan' : 'Légalité seule'
+  const datasetLabel = dataset === 'all' ? 'Tous les exercices' : dataset === 'sens_du_jeu' ? 'Sens du Jeu' : 'Exercices de base'
+  const lines: string[] = [
+    `=== RAPPORT DE VÉRIFICATION DES EXERCICES ===`,
+    `Date : ${date}`,
+    `Jeu de données : ${datasetLabel}`,
+    `Mode : ${mode}`,
+    `Total : ${status.total} | OK : ${status.ok} | Illégaux : ${status.illegal}${status.scan_available ? ` | Scan mismatch : ${status.scan_mismatch}` : ''}`,
+    ``,
+  ]
+  if (status.issues.length === 0) {
+    lines.push('Tous les exercices sont valides.')
+  } else {
+    for (const issue of status.issues) {
+      lines.push(`[${issue.status}] ${issue.name}`)
+      lines.push(`  FEN     : ${issue.fen}`)
+      lines.push(`  Stocké  : ${issue.stored_move}`)
+      lines.push(`  Raison  : ${issue.reason}`)
+      if (issue.scan_move) lines.push(`  Scan    : ${issue.scan_move}`)
+      if (issue.legal_moves.length > 0)
+        lines.push(`  Légaux  : ${issue.legal_moves.join(', ')}${issue.legal_moves.length >= 8 ? '…' : ''}`)
+      lines.push(``)
+    }
+  }
+  return lines.join('\n')
+}
+
 export default function ExerciseVerificationPanel() {
   const [status, setStatus] = useState<ExerciseVerificationStatus | null>(null)
   const [useScan, setUseScan] = useState(false)
+  const [dataset, setDataset] = useState<Dataset>('all')
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const stopPolling = () => {
@@ -17,7 +50,6 @@ export default function ExerciseVerificationPanel() {
   }
 
   useEffect(() => {
-    // Fetch current status on mount (may already be done/running)
     getExerciseVerificationStatus().then(setStatus).catch(() => {})
     return stopPolling
   }, [])
@@ -34,11 +66,29 @@ export default function ExerciseVerificationPanel() {
   }, [status?.status])
 
   const handleStart = async () => {
-    const res = await startExerciseVerification(useScan, 0.3)
+    setCopied(false)
+    const res = await startExerciseVerification(useScan, 0.3, dataset)
     if (res.started) {
       const s = await getExerciseVerificationStatus()
       setStatus(s)
     }
+  }
+
+  const handleCopy = async () => {
+    if (!status) return
+    const report = buildReport(status, dataset)
+    try {
+      await navigator.clipboard.writeText(report)
+    } catch {
+      const ta = document.createElement('textarea')
+      ta.value = report
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+    }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2500)
   }
 
   const progress = status && status.total > 0
@@ -50,6 +100,24 @@ export default function ExerciseVerificationPanel() {
 
   return (
     <div className="space-y-3">
+      {/* Dataset selector */}
+      <div className="flex gap-1.5 text-xs">
+        {(['all', 'initial', 'sens_du_jeu'] as Dataset[]).map(ds => (
+          <button
+            key={ds}
+            onClick={() => setDataset(ds)}
+            disabled={isRunning}
+            className={`flex-1 rounded-lg px-2 py-1.5 border transition-colors ${
+              dataset === ds
+                ? 'bg-indigo-700 border-indigo-500 text-white'
+                : 'bg-gray-800 border-gray-600 text-gray-400 hover:border-gray-500'
+            }`}
+          >
+            {ds === 'all' ? 'Tous (480)' : ds === 'initial' ? 'Base (408)' : 'Sens du Jeu (72)'}
+          </button>
+        ))}
+      </div>
+
       {/* Controls */}
       <div className="flex items-center gap-3">
         <button
@@ -103,6 +171,16 @@ export default function ExerciseVerificationPanel() {
             </span>
           )}
         </div>
+      )}
+
+      {/* Copy report button */}
+      {isDone && (
+        <button
+          onClick={handleCopy}
+          className="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-sm text-gray-200 rounded-xl px-4 py-2.5 transition-colors"
+        >
+          {copied ? '✓ Rapport copié !' : '📋 Copier le rapport complet'}
+        </button>
       )}
 
       {/* Issue list */}
