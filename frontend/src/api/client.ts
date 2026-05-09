@@ -374,6 +374,7 @@ export interface ExerciseIssue {
 
 export interface ExerciseResult {
   name: string
+  fen: string
   stored_move: string
   scan_move: string | null
   status: 'OK' | 'ILLEGAL' | 'SCAN_MISMATCH'

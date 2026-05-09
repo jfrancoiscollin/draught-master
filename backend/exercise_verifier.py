@@ -202,6 +202,7 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
         # Always record every exercise (heuristic ones always included for review)
         all_results.append({
             "name": name,
+            "fen": fen,
             "stored_move": stored_move,
             "scan_move": scan_move,
             "status": result_status,

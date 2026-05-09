@@ -38,6 +38,8 @@ function buildReport(status: ExerciseVerificationStatus, dataset: Dataset): stri
       lines.push(`[${tag}] ${r.name}${hTag}`)
       lines.push(`  Stocké  : ${r.stored_move}`)
       lines.push(`  Scan    : ${scanLabel}  ${match}`)
+      if (r.fen && (r.heuristic_fix || r.status !== 'OK'))
+        lines.push(`  FEN     : ${r.fen}`)
       const issue = issueMap.get(r.name)
       if (issue) {
         lines.push(`  Raison  : ${issue.reason}`)
@@ -67,11 +69,13 @@ function buildReport(status: ExerciseVerificationStatus, dataset: Dataset): stri
       // Heuristic section (exercises corrected automatically, to verify against the book)
       const heuristicResults = allResults.filter(r => r.heuristic_fix && r.status === 'OK')
       if (heuristicResults.length > 0) {
-        lines.push(`── EXERCICES HEURISTIQUES — premier coup auto-corrigé, à vérifier dans le livre ──`)
+        lines.push(`── ${heuristicResults.length} EXERCICES HEURISTIQUES — premier coup auto-corrigé, à vérifier dans le livre ──`)
+        lines.push(`   (activer + Scan pour obtenir le coup proposé par le moteur)`)
         lines.push(``)
         for (const r of heuristicResults) {
           lines.push(`[HEURISTIQUE] ${r.name}`)
           lines.push(`  Stocké  : ${r.stored_move}`)
+          if (r.fen) lines.push(`  FEN     : ${r.fen}`)
           lines.push(``)
         }
       }
