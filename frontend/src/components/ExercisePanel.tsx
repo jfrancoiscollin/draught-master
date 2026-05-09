@@ -11,6 +11,7 @@ interface ExercisePanelProps {
   feedback: ExerciseCheckResponse | null
   compact?: boolean
   readChapters?: Set<number>
+  bookId?: string
 }
 
 function Stars({ count }: { count: number }) {
@@ -39,6 +40,7 @@ export default function ExercisePanel({
   feedback,
   compact = true,
   readChapters = new Set(),
+  bookId = 'dubois_combinaisons',
 }: ExercisePanelProps) {
   const { t } = useLanguage()
   const { user } = useAuth()
@@ -55,14 +57,14 @@ export default function ExercisePanel({
   useEffect(() => {
     setLoading(true)
     setLoadError(null)
-    Promise.all([getExercises(), getLessonTitles()])
+    Promise.all([getExercises({ book_id: bookId }), getLessonTitles(bookId)])
       .then(([exercises, titles]) => {
         setAllExercises(exercises)
         setLessonTitles(titles)
       })
       .catch(err => setLoadError(String(err?.message ?? err)))
       .finally(() => setLoading(false))
-  }, [])
+  }, [bookId])
 
   useEffect(() => {
     if (!user) { setSolvedIds(new Set()); return }

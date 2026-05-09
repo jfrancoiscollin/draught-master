@@ -39,7 +39,7 @@ const BOOKS: Book[] = [
     author: 'J-P. Dubois',
     category: 'apprentissage',
     emoji: '🧠',
-    hasExercises: false,
+    hasExercises: true,
   },
   {
     id: 'dubois_perf_combinaisons',
@@ -139,49 +139,79 @@ export default function ExerciseLibraryPage({ onSelectBook }: ExerciseLibraryPag
   const { user } = useAuth()
   const [stats, setStats] = useState<Record<string, BookStats>>({})
 
+  const enabledBooks = BOOKS.filter(b => b.hasExercises)
+
   useEffect(() => {
-    // Always fetch totals (for all users)
-    Promise.all([
-      getLessonTitles(),
-      getExercises(),
-    ]).then(([lessons, exercises]) => {
-      const totalLessons = Object.keys(lessons).length
-      const totalExercises = exercises.length
-      setStats(prev => ({
-        ...prev,
-        dubois_combinaisons: {
-          totalLessons,
-          totalExercises,
-          readLessons: prev['dubois_combinaisons']?.readLessons ?? 0,
-          solvedExercises: prev['dubois_combinaisons']?.solvedExercises ?? 0,
-        },
-      }))
+    // Fetch totals for each enabled book
+    Promise.all(
+      enabledBooks.map(book =>
+        Promise.all([
+          getLessonTitles(book.id),
+          getExercises({ book_id: book.id }),
+        ]).then(([lessons, exercises]) => ({
+          bookId: book.id,
+          totalLessons: Object.keys(lessons).length,
+          totalExercises: exercises.length,
+          exerciseIds: exercises.map(e => e.id),
+        }))
+      )
+    ).then(results => {
+      setStats(prev => {
+        const next = { ...prev }
+        for (const r of results) {
+          next[r.bookId] = {
+            totalLessons: r.totalLessons,
+            totalExercises: r.totalExercises,
+            readLessons: prev[r.bookId]?.readLessons ?? 0,
+            solvedExercises: prev[r.bookId]?.solvedExercises ?? 0,
+          }
+        }
+        return next
+      })
     }).catch(() => {})
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!user) {
       setStats(prev => {
         const next = { ...prev }
-        if (next['dubois_combinaisons']) {
-          next['dubois_combinaisons'] = { ...next['dubois_combinaisons'], readLessons: 0, solvedExercises: 0 }
+        for (const book of enabledBooks) {
+          if (next[book.id]) {
+            next[book.id] = { ...next[book.id], readLessons: 0, solvedExercises: 0 }
+          }
         }
         return next
       })
       return
     }
-    Promise.all([getReadLessons(), getUserProgress()]).then(([readChapters, solvedIds]) => {
-      setStats(prev => ({
-        ...prev,
-        dubois_combinaisons: {
-          totalLessons: prev['dubois_combinaisons']?.totalLessons ?? 0,
-          totalExercises: prev['dubois_combinaisons']?.totalExercises ?? 0,
-          readLessons: readChapters.length,
-          solvedExercises: solvedIds.length,
-        },
-      }))
+    // Fetch user progress alongside per-book exercise lists to count solved per book
+    Promise.all([
+      getReadLessons(),
+      getUserProgress(),
+      ...enabledBooks.map(book => getExercises({ book_id: book.id })),
+    ]).then(([readChapters, solvedIds, ...bookExerciseLists]) => {
+      const solvedSet = new Set(solvedIds as number[])
+      setStats(prev => {
+        const next = { ...prev }
+        enabledBooks.forEach((book, i) => {
+          const bookExIds = (bookExerciseLists[i] as { id: number }[]).map(e => e.id)
+          // Count how many of this book's chapter numbers appear in readChapters
+          const bookChapters = (bookExerciseLists[i] as { chapter?: number }[])
+            .map(e => e.chapter)
+            .filter((c): c is number => c != null)
+          const uniqueChapters = new Set(bookChapters)
+          const readCount = (readChapters as number[]).filter(ch => uniqueChapters.has(ch)).length
+          next[book.id] = {
+            totalLessons: prev[book.id]?.totalLessons ?? 0,
+            totalExercises: prev[book.id]?.totalExercises ?? 0,
+            readLessons: readCount,
+            solvedExercises: bookExIds.filter(id => solvedSet.has(id)).length,
+          }
+        })
+        return next
+      })
     }).catch(() => {})
-  }, [user])
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const categories: Book['category'][] = ['apprentissage', 'perfectionnement', 'reference']
 

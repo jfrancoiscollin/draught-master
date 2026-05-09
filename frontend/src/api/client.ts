@@ -81,6 +81,7 @@ export async function analyzePosition(
 export async function getExercises(params?: {
   category?: string
   difficulty?: number
+  book_id?: string
 }): Promise<ExerciseResponse[]> {
   const res = await api.get<ExerciseResponse[]>('/exercises', { params })
   return res.data
@@ -142,8 +143,8 @@ export async function getUserProgress(): Promise<number[]> {
   return res.data.solved_exercise_ids
 }
 
-export async function getLessonTitles(): Promise<Record<string, { title: string; category: string }>> {
-  const res = await api.get('/lessons')
+export async function getLessonTitles(book?: string): Promise<Record<string, { title: string; category: string }>> {
+  const res = await api.get('/lessons', { params: book ? { book } : undefined })
   return res.data
 }
 

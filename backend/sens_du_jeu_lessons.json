@@ -1,0 +1,20 @@
+{
+  "101": {
+    "title": "Chapitre 101 : Principes fondamentaux du sens du jeu",
+    "category": "sens_fondamentaux",
+    "text": "# Principes fondamentaux du sens du jeu\n\nLe **sens du jeu** est la capacité à évaluer une position et à trouver le meilleur plan stratégique, au-delà du simple calcul tactique.\n\n## Les principes de base\n\n### 1. Contrôle des cases centrales\n\nLes cases centrales (cases 23, 24, 27, 28 pour les blancs) offrent le plus de mobilité. Un pion placé au centre contrôle davantage de cases qu'un pion en bordure.\n\n### 2. Coordination des pions\n\nLes pions doivent se soutenir mutuellement. Une chaîne de pions bien coordonnée est plus difficile à attaquer qu'un groupe de pions isolés.\n\n### 3. L'avance contrôlée\n\nAvancer un pion vers la dame est tentant, mais chaque avance doit être calculée pour éviter de créer des faiblesses dans votre camp.\n\n## Exercice pratique\n\nDans les positions qui suivent, identifiez le coup qui améliore le plus la coordination de vos pièces avant de chercher une combinaison tactique.",
+    "diagrams": []
+  },
+  "102": {
+    "title": "Chapitre 102 : Contrôle du centre",
+    "category": "sens_centre",
+    "text": "# Contrôle du centre\n\nLe contrôle du centre est un principe fondamental aux dames. Celui qui domine le centre contrôle le jeu.\n\n## Pourquoi le centre est-il important ?\n\nUn pion au centre :\n- Contrôle plus de cases adverses\n- Gêne la mobilité des pions adverses\n- Facilite les combinaisons tactiques\n\n## La battle pour le centre\n\nDans une partie équilibrée, les deux adversaires cherchent à occuper ou à contrôler les cases centrales. La stratégie consiste souvent à :\n\n1. **Occuper** les cases centrales avec vos pions\n2. **Restreindre** les pions adverses qui tentent d'y pénétrer\n3. **Exploiter** la supériorité centrale pour créer des complications\n\n## La case 28\n\nLa case 28 (pour les blancs) est souvent appelée la \"case royale\". Un pion blanc sur cette case exerce une pression considérable sur le camp adverse.\n\n## Exercices\n\nLes positions suivantes illustrent comment le contrôle du centre permet de créer des opportunités décisives.",
+    "diagrams": []
+  },
+  "103": {
+    "title": "Chapitre 103 : Structures de jeu",
+    "category": "sens_structures",
+    "text": "# Structures de jeu\n\nComprendre les structures de pions est essentiel pour jouer avec sens. Une structure solide résiste aux attaques ; une structure fragile s'effondre rapidement.\n\n## Types de structures\n\n### Structure compacte\nLes pions forment un bloc serré, difficile à pénétrer. L'inconvénient est la mobilité réduite.\n\n### Structure étendue\nLes pions sont dispersés sur l'échiquier, offrant plus de flexibilité mais créant des faiblesses potentielles.\n\n### La tour\nUne colonne de 3 pions ou plus sur la même diagonale constitue une \"tour\", une formation puissante mais qui peut devenir une cible.\n\n## Évaluer une structure\n\nPour évaluer une structure de pions :\n1. **Comptez les points de contact** entre vos pions et ceux de l'adversaire\n2. **Identifiez les pions isolés** (sans voisins immédiats)\n3. **Repérez les cases arriérées** difficiles à défendre\n\n## Transformer la structure\n\nUn sacrifice de pion peut transformer une structure défavorable en une structure gagnante. Les exercices ci-dessous illustrent ce principe.",
+    "diagrams": []
+  }
+}

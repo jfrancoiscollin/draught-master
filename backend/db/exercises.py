@@ -17,6 +17,7 @@ def _extract_chapter(description: str) -> Optional[int]:
 async def get_exercises(
     category: Optional[str] = None,
     difficulty: Optional[int] = None,
+    book_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
@@ -28,6 +29,9 @@ async def get_exercises(
         if difficulty is not None:
             query += " AND difficulty = ?"
             params.append(difficulty)
+        if book_id is not None:
+            query += " AND book_id = ?"
+            params.append(book_id)
         query += " ORDER BY difficulty ASC, id ASC"
         cursor = await db.execute(query, params)
         rows = await cursor.fetchall()

@@ -481,8 +481,9 @@ async def analyze(
 async def list_exercises(
     category: Optional[str] = Query(None),
     difficulty: Optional[int] = Query(None),
+    book_id: Optional[str] = Query(None),
 ) -> List[ExerciseResponse]:
-    exercises = await get_exercises(category=category, difficulty=difficulty)
+    exercises = await get_exercises(category=category, difficulty=difficulty, book_id=book_id)
     result = []
     for ex in exercises:
         try:
@@ -910,10 +911,18 @@ async def mark_lesson_read_endpoint(
     return {"ok": True}
 
 
+def _lessons_path_for_book(book: Optional[str]) -> str:
+    import os as _os
+    dirname = _os.path.dirname(__file__)
+    if book == "dubois_sens_du_jeu":
+        return _os.path.join(dirname, "sens_du_jeu_lessons.json")
+    return _os.path.join(dirname, "lessons.json")
+
+
 @app.get("/api/lessons")
-async def list_lessons() -> Dict[str, Any]:
-    import json as _json_mod, os as _os
-    lessons_path = _os.path.join(_os.path.dirname(__file__), "lessons.json")
+async def list_lessons(book: Optional[str] = Query(None)) -> Dict[str, Any]:
+    import json as _json_mod
+    lessons_path = _lessons_path_for_book(book)
     try:
         with open(lessons_path, encoding="utf-8") as f:
             lessons = _json_mod.load(f)
@@ -924,8 +933,10 @@ async def list_lessons() -> Dict[str, Any]:
 
 @app.get("/api/lessons/{chapter}")
 async def get_lesson(chapter: int) -> Dict[str, Any]:
-    import json as _json_mod, os as _os
-    lessons_path = _os.path.join(_os.path.dirname(__file__), "lessons.json")
+    import json as _json_mod
+    # Route to sens_du_jeu file for chapters 100+ (offset convention)
+    book = "dubois_sens_du_jeu" if chapter >= 100 else None
+    lessons_path = _lessons_path_for_book(book)
     try:
         with open(lessons_path, encoding="utf-8") as f:
             lessons = _json_mod.load(f)

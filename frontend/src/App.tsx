@@ -229,6 +229,7 @@ export default function App() {
     return sels.size > 0 ? sels : undefined
   }, [exerciseGameState, exerciseSolved, exerciseLegalMoves])
 
+  const [selectedBookId, setSelectedBookId] = useState<string>('dubois_combinaisons')
   const [lessonOpen, setLessonOpen] = useState<{ chapter: number; fen: string } | null>(null)
   const [readChapters, setReadChapters] = useState<Set<number>>(new Set())
   const [resultFlash, setResultFlash] = useState<string | null>(null)
@@ -1459,7 +1460,7 @@ export default function App() {
         {/* EXERCISE LIBRARY TAB */}
         {tab === 'exercise-library' && (
           <ExerciseLibraryPage
-            onSelectBook={() => { resetExerciseState(); setTab('exercises') }}
+            onSelectBook={(bookId: string) => { resetExerciseState(); setSelectedBookId(bookId); setTab('exercises') }}
           />
         )}
 
@@ -1474,6 +1475,7 @@ export default function App() {
                 feedback={null}
                 compact={false}
                 readChapters={readChapters}
+                bookId={selectedBookId}
               />
             </div>
           </div>
