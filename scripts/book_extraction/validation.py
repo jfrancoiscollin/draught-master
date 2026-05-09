@@ -6,7 +6,10 @@ Prints a structured report and returns a list of issues.
 """
 from __future__ import annotations
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from config import BookConfig
 
 
 # ── Exercise validation ───────────────────────────────────────────────────────
@@ -158,6 +161,76 @@ def print_lesson_report(lessons: Dict[str, Dict[str, Any]]) -> bool:
     else:
         print('\n  ✓ All lesson checks passed')
 
+    print(f'{"─"*60}\n')
+    return len(issues) == 0
+
+
+# ── Config validation ────────────────────────────────────────────────────────
+
+def validate_config(cfg: 'BookConfig') -> List[str]:
+    """
+    Validate a BookConfig before running extraction.  Returns a list of issues.
+
+    Key checks:
+    - Chapter titles must NOT embed the internal chapter_id (offset ID).
+      The display title should use the book-relative chapter number, not the
+      DB id.  E.g. "Chapitre 2 : ..." is correct; "Chapitre 102 : ..." leaks
+      the chapter_id_offset into the UI.
+    - Exercise and lesson chapter IDs must be consistent.
+    - Exercise page must come after (or equal to) the lesson chapter start page.
+    """
+    issues: List[str] = []
+    offset = cfg.chapter_id_offset
+
+    for lc in cfg.lesson_chapters:
+        display_num = lc.chapter_id - offset
+        # Only flag when there IS an offset and the title embeds the raw DB id
+        # (when offset=0, chapter_id == display_num so the title is correct)
+        if offset != 0 and display_num != lc.chapter_id:
+            ch_id_str = str(lc.chapter_id)
+            if re.search(rf'\b[Cc]hapitre\s+{re.escape(ch_id_str)}\b', lc.title):
+                issues.append(
+                    f'[chapter {lc.chapter_id}] Title contains raw DB id "{ch_id_str}" '
+                    f'— use the display number "{display_num}" instead. '
+                    f'Current: "{lc.title}"'
+                )
+        # Start page must be positive
+        if lc.page < 1:
+            issues.append(f'[chapter {lc.chapter_id}] Invalid start page: {lc.page}')
+
+    # Exercise chapter IDs must all appear in lesson_chapters (or at least be sane)
+    lesson_ids = {lc.chapter_id for lc in cfg.lesson_chapters}
+    for block in cfg.exercise_chapters:
+        if lesson_ids and block.chapter_id not in lesson_ids:
+            issues.append(
+                f'[exercise chapter {block.chapter_id}] No matching lesson chapter — '
+                f'add a LessonChapter entry or check the chapter_id'
+            )
+        if block.ex_page < 1 or block.sol_page < 1:
+            issues.append(
+                f'[exercise chapter {block.chapter_id}] Invalid page numbers '
+                f'(ex_page={block.ex_page}, sol_page={block.sol_page})'
+            )
+        if block.sol_page < block.ex_page:
+            issues.append(
+                f'[exercise chapter {block.chapter_id}] sol_page ({block.sol_page}) '
+                f'is before ex_page ({block.ex_page})'
+            )
+
+    return issues
+
+
+def print_config_report(cfg: 'BookConfig') -> bool:
+    """Print config validation report.  Returns True if no issues."""
+    issues = validate_config(cfg)
+    print(f'\n{"─"*60}')
+    print(f'CONFIG VALIDATION  ({cfg.book_id})')
+    print(f'{"─"*60}')
+    if issues:
+        for issue in issues:
+            print(f'  ✗ {issue}')
+    else:
+        print('  ✓ Config looks good')
     print(f'{"─"*60}\n')
     return len(issues) == 0
 

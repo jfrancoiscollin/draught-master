@@ -78,11 +78,19 @@ def main() -> None:
     from exercise_extraction import extract_all_exercises
     from lesson_extraction import extract_all_lessons
     from pdf_utils import extract_text_pages
-    from validation import print_validation_report, validate_lessons, print_lesson_report
+    from validation import (
+        print_validation_report, validate_lessons, print_lesson_report,
+        print_config_report,
+    )
     from codegen import write_exercises_py, write_lessons_json, print_integration_checklist
 
     exercises = []
     lessons = {}
+
+    # ── Config validation (always runs) ──────────────────────────────────────
+    config_ok = print_config_report(cfg)
+    if not config_ok and not args.dry_run:
+        print('WARNING: config issues found — continuing anyway, but fix before committing.\n')
 
     # ── Page audit (standalone mode) ─────────────────────────────────────────
     if args.audit_pages:

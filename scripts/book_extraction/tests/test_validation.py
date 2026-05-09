@@ -1,8 +1,9 @@
 """
 Unit tests for validation.py.
 
-Covers exercise validation (FEN, solution, duplicates) and lesson validation
-(empty text, suspiciously short content for real chapters).
+Covers exercise validation (FEN, solution, duplicates), lesson validation
+(empty text, suspiciously short content for real chapters), and config
+validation (offset-id leak, page consistency).
 """
 import pytest
 import sys, os
@@ -11,9 +12,21 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from validation import (
     validate_exercises,
     validate_lessons,
+    validate_config,
     _validate_fen,
     _is_valid_move,
 )
+from config import BookConfig, LessonChapter, ChapterExerciseBlock
+
+
+def _cfg(lesson_chapters=None, exercise_chapters=None, offset=100):
+    return BookConfig(
+        book_id='test', title_fr='T', title_en='T', pdf_path='x.pdf',
+        exercise_id_offset=0,
+        chapter_id_offset=offset,
+        lesson_chapters=lesson_chapters or [],
+        exercise_chapters=exercise_chapters or [],
+    )
 
 
 # ── _validate_fen ─────────────────────────────────────────────────────────────
@@ -167,3 +180,52 @@ class TestValidateLessons:
         lessons = {'2': {'title': 'Ch 2', 'text': placeholder, 'category': 'cat'}}
         issues = validate_lessons(lessons)
         assert issues  # something should be flagged
+
+
+# ── validate_config ───────────────────────────────────────────────────────────
+
+class TestValidateConfig:
+    def test_clean_config_no_issues(self):
+        # Titles use display numbers (not raw IDs) — no issues expected
+        cfg = _cfg(lesson_chapters=[
+            LessonChapter(101, 5, "Chapitre 1 : la notion d'espace", "cat"),
+            LessonChapter(102, 8, "Chapitre 2 : la notion d'avantage", "cat"),
+        ])
+        assert validate_config(cfg) == []
+
+    def test_offset_id_in_title_flagged(self):
+        # "Chapitre 102 :" leaks the DB id — must be flagged
+        cfg = _cfg(lesson_chapters=[
+            LessonChapter(102, 8, "Chapitre 102 : la notion d'avantage", "cat"),
+        ])
+        issues = validate_config(cfg)
+        assert any('102' in i and 'display' in i.lower() for i in issues)
+
+    def test_zero_offset_titles_are_fine(self):
+        # When offset=0, chapter_id == display number — title "Chapitre 5 : ..." is correct
+        cfg = _cfg(
+            lesson_chapters=[LessonChapter(5, 10, "Chapitre 5 : theme", "cat")],
+            offset=0,
+        )
+        assert validate_config(cfg) == []
+
+    def test_exercise_chapter_without_lesson_flagged(self):
+        cfg = _cfg(
+            lesson_chapters=[LessonChapter(101, 5, "Chapitre 1 : x", "cat")],
+            exercise_chapters=[
+                ChapterExerciseBlock(10, 11, chapter_id=999, short_title='X', long_title='x'),
+            ],
+        )
+        issues = validate_config(cfg)
+        assert any('999' in i for i in issues)
+
+    def test_sol_page_before_ex_page_flagged(self):
+        cfg = _cfg(
+            lesson_chapters=[LessonChapter(101, 5, "Chapitre 1 : x", "cat")],
+            exercise_chapters=[
+                ChapterExerciseBlock(ex_page=20, sol_page=15, chapter_id=101,
+                                     short_title='X', long_title='x'),
+            ],
+        )
+        issues = validate_config(cfg)
+        assert any('sol_page' in i for i in issues)
