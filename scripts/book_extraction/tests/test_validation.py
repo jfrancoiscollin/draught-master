@@ -108,8 +108,8 @@ class TestValidateExercises:
     def test_multiple_exercises_checked_independently(self):
         exercises = [
             _ex('D1', fen='W:W32,28:B18,13'),
-            _ex('D2', fen='W:W33,27:B19,14', moves=[]),  # unique FEN, empty solution
-            _ex('D3', fen='W:W34,26:B20,15'),
+            _ex('D2', fen='W:W33,27:B19,14', moves=[]),   # unique FEN, empty solution
+            _ex('D3', fen='W:W34,26:B20,15', moves=['34-29']),  # source sq34 is white's
         ]
         issues = validate_exercises(exercises)
         # Only D2 should raise an issue (empty solution)

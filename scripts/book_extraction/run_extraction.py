@@ -68,6 +68,12 @@ def main() -> None:
                         help='Print the first line of each configured lesson chapter start '
                              'page so you can verify all page numbers are correct')
     parser.add_argument('--verbose', '-v', action='store_true')
+    parser.add_argument('--check-legality', action='store_true',
+                        help='After extraction, run full game-engine legality check on '
+                             'every first move (requires backend/ on sys.path)')
+    parser.add_argument('--fix-illegal', action='store_true',
+                        help='Automatically correct illegal first moves using heuristics '
+                             '(implies --check-legality; writes corrected file)')
     args = parser.parse_args()
 
     cfg = load_config(args.config)
@@ -80,7 +86,7 @@ def main() -> None:
     from pdf_utils import extract_text_pages
     from validation import (
         print_validation_report, validate_lessons, print_lesson_report,
-        print_config_report,
+        print_config_report, print_legality_report, fix_illegal_first_moves,
     )
     from codegen import write_exercises_py, write_lessons_json, print_integration_checklist
 
@@ -123,6 +129,25 @@ def main() -> None:
         ok = print_validation_report(exercises)
         if not ok and not args.dry_run:
             print('WARNING: validation issues found — files will still be written.')
+
+        # Engine-based legality check (full move generation)
+        if args.check_legality or args.fix_illegal:
+            print_legality_report(exercises, backend_path=os.path.join(_project_root, 'backend'))
+
+        # Auto-fix illegal first moves
+        if args.fix_illegal:
+            exercises, corrections = fix_illegal_first_moves(
+                exercises,
+                backend_path=os.path.join(_project_root, 'backend'),
+            )
+            fixed = [c for c in corrections if c['fix']]
+            uncertain = [c for c in corrections if not c['fix']]
+            print(f'  Auto-fix: {len(fixed)} corrigés, {len(uncertain)} incertains')
+            for c in uncertain:
+                print(f'    [UNCERTAIN] {c["name"]}: {c["stored"]!r}')
+            if fixed:
+                print()
+
         if not args.dry_run:
             write_exercises_py(exercises, cfg, project_root=_project_root)
 

@@ -3,10 +3,23 @@ Validation of extracted exercises and lessons.
 
 Run this after extraction to catch problems before writing to the backend.
 Prints a structured report and returns a list of issues.
+
+Two levels of exercise validation are available:
+
+  validate_exercises(exercises)
+      Fast structural checks: FEN format, duplicate FENs, move notation,
+      and a lightweight legality check (source square must be in the mover's
+      piece list according to the raw FEN string).
+
+  validate_exercises_with_engine(exercises, backend_path)
+      Full legality check using the game engine.  Catches all illegal first
+      moves — not just wrong source squares but also blocked destinations,
+      forced-capture violations, etc.  Requires the backend on sys.path.
+      Falls back gracefully if the engine is not importable.
 """
 from __future__ import annotations
 import re
-from typing import Any, Dict, List, Tuple, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from config import BookConfig
@@ -93,6 +106,255 @@ def print_validation_report(exercises: List[Dict[str, Any]]) -> bool:
 
     print(f'{"─"*60}\n')
     return len(issues) == 0
+
+
+# ── Engine-based legality check ───────────────────────────────────────────────
+
+def validate_exercises_with_engine(
+    exercises: List[Dict[str, Any]],
+    backend_path: Optional[str] = None,
+) -> List[str]:
+    """
+    Full game-engine legality check on every exercise's first move.
+
+    Catches errors that the lightweight FEN-string check misses:
+      - Destination occupied by own piece
+      - Non-capture move when a capture is forced
+      - Move not geometrically reachable
+
+    Returns a list of issue strings (empty = all OK).
+    Falls back to empty list with a warning if the engine cannot be imported.
+    """
+    import sys
+    import os
+
+    if backend_path:
+        sys.path.insert(0, backend_path)
+    else:
+        # Try common relative paths
+        for candidate in [
+            os.path.join(os.path.dirname(__file__), '..', '..', 'backend'),
+        ]:
+            p = os.path.normpath(candidate)
+            if os.path.isdir(p):
+                sys.path.insert(0, p)
+                break
+
+    try:
+        from game_engine import (
+            fen_to_board, get_legal_moves,
+            WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
+        )
+    except ImportError as exc:
+        import warnings
+        warnings.warn(
+            f'game_engine not importable — skipping engine legality check: {exc}',
+            stacklevel=2,
+        )
+        return []
+
+    issues: List[str] = []
+    for ex in exercises:
+        name = ex.get('name', '?')
+        fen = ex.get('initial_fen', '')
+        sol = ex.get('solution_moves', [])
+        if not sol or not fen:
+            continue
+
+        first = sol[0]
+        sep = 'x' if 'x' in first else '-'
+        parts = first.split(sep)
+        try:
+            frm, to = int(parts[0]), int(parts[-1])
+        except (ValueError, IndexError):
+            continue
+
+        try:
+            state = fen_to_board(fen)
+            legal = get_legal_moves(state)
+        except Exception as exc:
+            issues.append(f'[{name}] Engine error for FEN {fen!r}: {exc}')
+            continue
+
+        legal_strs = {
+            f"{m.path[0]}{'x' if m.captures else '-'}{m.path[-1]}"
+            for m in legal
+        }
+        norm = f'{frm}{sep}{to}'
+        if norm not in legal_strs:
+            # Determine why it failed for a helpful message
+            src_ok = any(m.path[0] == frm for m in legal)
+            if not src_ok:
+                reason = f'case {frm} non occupée par le joueur actif'
+            else:
+                reason = f'coup impossible depuis {frm} (destination {to} bloquée ou capture forcée)'
+            issues.append(
+                f'[{name}] Premier coup illégal {first!r}: {reason}. '
+                f'Coups légaux: {sorted(legal_strs)[:6]}'
+            )
+
+    return issues
+
+
+def print_legality_report(
+    exercises: List[Dict[str, Any]],
+    backend_path: Optional[str] = None,
+) -> bool:
+    """Print engine legality report.  Returns True if no issues."""
+    issues = validate_exercises_with_engine(exercises, backend_path)
+    print(f'\n{"─"*60}')
+    print(f'ENGINE LEGALITY CHECK  ({len(exercises)} exercises)')
+    print(f'{"─"*60}')
+    if issues:
+        print(f'  Issues: {len(issues)}')
+        for issue in issues:
+            print(f'    ✗ {issue}')
+    else:
+        print('  ✓ All first moves are legal')
+    print(f'{"─"*60}\n')
+    return len(issues) == 0
+
+
+# ── Heuristic first-move fixer ────────────────────────────────────────────────
+
+def fix_illegal_first_moves(
+    exercises: List[Dict[str, Any]],
+    backend_path: Optional[str] = None,
+) -> tuple[List[Dict[str, Any]], List[Dict[str, str]]]:
+    """
+    Attempt to correct illegal first moves using heuristics.
+
+    Returns (corrected_exercises, corrections_log) where corrections_log is a
+    list of dicts with keys: name, stored, fix, reason.
+
+    For each illegal exercise:
+      1. Source occupied, but destination blocked: find legal move from same
+         source with closest destination.
+      2. Source empty: try reversing from/to (catches OCR transpositions),
+         then find legal move with closest from-square.
+    """
+    import sys
+    import os
+
+    if backend_path:
+        sys.path.insert(0, backend_path)
+    else:
+        for candidate in [
+            os.path.join(os.path.dirname(__file__), '..', '..', 'backend'),
+        ]:
+            p = os.path.normpath(candidate)
+            if os.path.isdir(p):
+                sys.path.insert(0, p)
+                break
+
+    try:
+        from game_engine import (
+            fen_to_board, get_legal_moves,
+            WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
+        )
+    except ImportError as exc:
+        import warnings
+        warnings.warn(f'game_engine not importable — cannot fix illegal moves: {exc}', stacklevel=2)
+        return exercises, []
+
+    def _pairs(fen):
+        state = fen_to_board(fen)
+        legal = get_legal_moves(state)
+        return [(m.path[0], m.path[-1], 'x' if m.captures else '-') for m in legal]
+
+    def _is_legal(fen, mv):
+        sep = 'x' if 'x' in mv else '-'
+        parts = mv.split(sep)
+        try:
+            frm, to = int(parts[0]), int(parts[-1])
+        except (ValueError, IndexError):
+            return False
+        return any(f == frm and t == to for f, t, _ in _pairs(fen))
+
+    def _src_occupied(fen, mv):
+        sep = 'x' if 'x' in mv else '-'
+        parts = mv.split(sep)
+        try:
+            frm = int(parts[0])
+        except (ValueError, IndexError):
+            return False
+        if not (1 <= frm <= 50):
+            return False
+        state = fen_to_board(fen)
+        piece = state.board[frm]
+        if state.turn == 'white':
+            return piece in (WHITE_MAN, WHITE_KING)
+        return piece in (BLACK_MAN, BLACK_KING)
+
+    def _suggest(fen, stored):
+        sep = 'x' if 'x' in stored else '-'
+        parts = stored.split(sep)
+        try:
+            frm, to = int(parts[0]), int(parts[-1])
+        except (ValueError, IndexError):
+            return None, 'move format unrecognised'
+
+        pairs = _pairs(fen)
+        if not pairs:
+            return None, 'no legal moves in position'
+
+        legal_strs = {f"{f}{'x' if s == 'x' else '-'}{t}" for f, t, s in pairs}
+
+        if _src_occupied(fen, stored):
+            from_source = [(f, t, s) for f, t, s in pairs if f == frm]
+            if len(from_source) == 1:
+                f2, t2, s2 = from_source[0]
+                return f"{f2}{s2}{t2}", f"seul coup légal depuis {frm}"
+            if len(from_source) > 1:
+                best = min(from_source, key=lambda x: abs(x[1] - to))
+                f2, t2, s2 = best
+                return f"{f2}{s2}{t2}", f"coup légal depuis {frm} avec to le plus proche de {to}"
+            # Source occupied but no legal moves from it — fall through
+
+        # Try reversal
+        rev = f"{to}{sep}{frm}"
+        if rev in legal_strs:
+            return rev, "from/to inversés (inversion OCR probable)"
+
+        # Closest from-square
+        by_from = sorted(pairs, key=lambda x: abs(x[0] - frm))
+        cf = by_from[0][0]
+        candidates = [p for p in by_from if p[0] == cf]
+        if len(candidates) == 1:
+            f2, t2, s2 = candidates[0]
+            return f"{f2}{s2}{t2}", f"from-sq {cf} le plus proche de {frm}"
+        best = min(candidates, key=lambda x: abs(x[1] - to))
+        f2, t2, s2 = best
+        return f"{f2}{s2}{t2}", f"from-sq {cf} le plus proche, to-sq {t2} le plus proche de {to}"
+
+    corrected = []
+    log_entries = []
+    for ex in exercises:
+        ex2 = dict(ex)
+        fen = ex2.get('initial_fen', '')
+        sol = list(ex2.get('solution_moves', []))
+        if sol and not _is_legal(fen, sol[0]):
+            stored = sol[0]
+            fix, reason = _suggest(fen, stored)
+            if fix and _is_legal(fen, fix):
+                sol[0] = fix
+                ex2['solution_moves'] = sol
+                log_entries.append({
+                    'name': ex2.get('name', '?'),
+                    'stored': stored,
+                    'fix': fix,
+                    'reason': reason,
+                })
+            else:
+                log_entries.append({
+                    'name': ex2.get('name', '?'),
+                    'stored': stored,
+                    'fix': None,
+                    'reason': f'UNCERTAIN — {reason}',
+                })
+        corrected.append(ex2)
+
+    return corrected, log_entries
 
 
 # ── Lesson validation ─────────────────────────────────────────────────────────
