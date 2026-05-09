@@ -103,8 +103,13 @@ export default function ExercisePanel({
       if (!map.has(ch)) map.set(ch, [])
       map.get(ch)!.push(ex)
     }
+    // Also include chapters that have a lesson but no exercises (lesson-only chapters)
+    for (const chStr of Object.keys(lessonTitles)) {
+      const ch = Number(chStr)
+      if (!map.has(ch)) map.set(ch, [])
+    }
     return Array.from(map.entries()).sort(([a], [b]) => a - b)
-  }, [allExercises])
+  }, [allExercises, lessonTitles])
 
   const toggleChapter = (ch: number) => {
     setOpenChapters(prev => {
@@ -132,35 +137,40 @@ export default function ExercisePanel({
               const lessonTitle = lessonTitles[String(ch)]?.title ?? `Chapitre ${ch}`
               const firstEx = exercises[0]
               const solvedCount = exercises.filter(e => solvedIds.has(e.id)).length
-
               const isLessonRead = readChapters.has(ch)
+              const lessonOnly = exercises.length === 0
 
               return (
                 <div key={ch} className="mb-1 rounded-lg overflow-hidden">
                   {/* Chapter header */}
                   <div className="flex items-stretch bg-gray-700">
                     <button
-                      onClick={() => toggleChapter(ch)}
-                      className="flex-1 flex items-center gap-2 px-3 py-2.5 text-left bg-gray-700 hover:bg-gray-600 border-0 cursor-pointer"
+                      onClick={() => !lessonOnly && toggleChapter(ch)}
+                      className={[
+                        'flex-1 flex items-center gap-2 px-3 py-2.5 text-left bg-gray-700 border-0',
+                        lessonOnly ? 'cursor-default' : 'hover:bg-gray-600 cursor-pointer',
+                      ].join(' ')}
                     >
                       <span className="text-gray-400 text-xs w-3 flex-shrink-0">
-                        {isOpen ? '▼' : '▶'}
+                        {lessonOnly ? ' ' : (isOpen ? '▼' : '▶')}
                       </span>
-                      <span className="font-bold text-amber-400 text-sm flex-1 min-w-0 leading-snug">
+                      <span className={`font-bold text-sm flex-1 min-w-0 leading-snug ${lessonOnly ? 'text-gray-300' : 'text-amber-400'}`}>
                         {lessonTitle}
                       </span>
                       <span className="flex items-center gap-1.5 flex-shrink-0 ml-1">
                         {isLessonRead && (
                           <span className="text-green-400 font-bold text-sm" title="Leçon lue">✓</span>
                         )}
-                        <span className="text-xs text-gray-400">
-                          {solvedCount}/{exercises.length}
-                        </span>
+                        {!lessonOnly && (
+                          <span className="text-xs text-gray-400">
+                            {solvedCount}/{exercises.length}
+                          </span>
+                        )}
                       </span>
                     </button>
                     {onLessonOpen && (
                       <button
-                        onClick={() => onLessonOpen(ch, firstEx.initial_fen)}
+                        onClick={() => onLessonOpen(ch, firstEx?.initial_fen ?? '')}
                         className="flex-shrink-0 w-10 flex items-center justify-center bg-gray-700 hover:bg-amber-900 border-0 border-l border-gray-600 cursor-pointer text-base"
                         title={`Leçon – ${lessonTitle}`}
                       >
@@ -169,8 +179,8 @@ export default function ExercisePanel({
                     )}
                   </div>
 
-                  {/* Exercise rows */}
-                  {isOpen && (
+                  {/* Exercise rows — only when there are exercises and the chapter is open */}
+                  {isOpen && !lessonOnly && (
                     <div className="bg-gray-800 pl-2">
                       {exercises.map((ex, idx) => {
                         const isActive = currentExerciseId === ex.id
