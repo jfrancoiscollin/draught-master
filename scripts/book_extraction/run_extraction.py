@@ -21,6 +21,11 @@ Examples:
   python scripts/book_extraction/run_extraction.py \\
       scripts/book_extraction/configs/dubois_sens_du_jeu.py --dry-run
 
+  # Audit chapter page numbers — print first line of each configured start page
+  # so you can verify they all point to chapter headings:
+  python scripts/book_extraction/run_extraction.py \\
+      scripts/book_extraction/configs/dubois_sens_du_jeu.py --audit-pages
+
   # Verbose output (shows board counts, solution details):
   python scripts/book_extraction/run_extraction.py \\
       scripts/book_extraction/configs/dubois_sens_du_jeu.py --verbose
@@ -59,6 +64,9 @@ def main() -> None:
     parser.add_argument('--lessons-only', action='store_true')
     parser.add_argument('--dry-run', action='store_true',
                         help='Extract and validate but do not write files')
+    parser.add_argument('--audit-pages', action='store_true',
+                        help='Print the first line of each configured lesson chapter start '
+                             'page so you can verify all page numbers are correct')
     parser.add_argument('--verbose', '-v', action='store_true')
     args = parser.parse_args()
 
@@ -70,11 +78,35 @@ def main() -> None:
     from exercise_extraction import extract_all_exercises
     from lesson_extraction import extract_all_lessons
     from pdf_utils import extract_text_pages
-    from validation import print_validation_report, validate_lessons
+    from validation import print_validation_report, validate_lessons, print_lesson_report
     from codegen import write_exercises_py, write_lessons_json, print_integration_checklist
 
     exercises = []
     lessons = {}
+
+    # ── Page audit (standalone mode) ─────────────────────────────────────────
+    if args.audit_pages:
+        if not cfg.lesson_chapters:
+            print('No lesson chapters in config.')
+            return
+        pages = extract_text_pages(cfg.pdf_path, cwd=_project_root)
+        print(f'\n{"─"*70}')
+        print(f'PAGE AUDIT — first line of each configured lesson chapter start page')
+        print(f'{"─"*70}')
+        print(f'{"Ch ID":>6}  {"Page":>5}  {"First line on that page"}')
+        print(f'{"─"*6}  {"─"*5}  {"─"*55}')
+        for lc in sorted(cfg.lesson_chapters, key=lambda c: c.page):
+            idx = lc.page - 1
+            if 0 <= idx < len(pages):
+                first = next((l.strip() for l in pages[idx].split('\n') if l.strip()), '(empty page)')
+            else:
+                first = f'(page {lc.page} out of range, PDF has {len(pages)} pages)'
+            ok = '✓' if first.lower().startswith('chapitre') else '?'
+            print(f'{lc.chapter_id:>6}  {lc.page:>5}  {ok}  {first[:60]}')
+        print(f'{"─"*70}')
+        print('  ✓ = first line looks like a chapter heading')
+        print('  ? = first line does not start with "Chapitre" — verify manually\n')
+        return
 
     # ── Exercises ────────────────────────────────────────────────────────────
     if not args.lessons_only:
@@ -92,13 +124,7 @@ def main() -> None:
             print('\n[2/2] Extracting lessons…')
             pages = extract_text_pages(cfg.pdf_path, cwd=_project_root)
             lessons = extract_all_lessons(pages, cfg)
-            lesson_issues = validate_lessons(lessons)
-            if lesson_issues:
-                print(f'  Lesson issues ({len(lesson_issues)}):')
-                for issue in lesson_issues:
-                    print(f'    ✗ {issue}')
-            else:
-                print(f'  ✓ {len(lessons)} chapters extracted, no issues')
+            print_lesson_report(lessons)
             if not args.dry_run:
                 write_lessons_json(lessons, cfg, project_root=_project_root)
         else:

@@ -81,18 +81,85 @@ def print_validation_report(exercises: List[Dict[str, Any]]) -> bool:
 
 # ── Lesson validation ─────────────────────────────────────────────────────────
 
+# Chapters with this string in their title are expected to have minimal text.
+_PLACEHOLDER_TITLE_MARKER = 'en création'
+
+# Placeholder text written by hand before real extraction was done.
+_PLACEHOLDER_TEXT_FRAGMENTS = [
+    '*(Contenu de la leçon à venir)*',
+    'contenu de la leçon à venir',
+]
+
+# Real chapters below this threshold are almost certainly using a wrong start page.
+_MIN_CONTENT_CHARS = 200
+
+
 def validate_lessons(lessons: Dict[str, Dict[str, Any]]) -> List[str]:
-    """Validate extracted lessons.  Returns a list of issue strings."""
+    """
+    Validate extracted lessons.  Returns a list of issue strings.
+
+    In addition to structural checks, warns when:
+    - A real chapter (not 'en création') has very short text — likely a wrong
+      start page number in the config.
+    - Text is a known hand-written placeholder ('*(Contenu de la leçon à venir)*').
+    """
     issues: List[str] = []
     for ch_id, lesson in lessons.items():
         prefix = f'[chapter {ch_id}]'
-        if not lesson.get('title'):
+        title = lesson.get('title', '')
+        text = lesson.get('text', '').strip()
+        is_placeholder_chapter = _PLACEHOLDER_TITLE_MARKER in title.lower()
+
+        if not title:
             issues.append(f'{prefix} Missing title')
-        if not lesson.get('text', '').strip():
+
+        if not text:
             issues.append(f'{prefix} Empty text (lesson text not extracted)')
+        else:
+            # Check for hand-written placeholder text
+            for fragment in _PLACEHOLDER_TEXT_FRAGMENTS:
+                if fragment in text.lower():
+                    issues.append(
+                        f'{prefix} Placeholder text detected — lesson was never extracted'
+                    )
+                    break
+            # Check for suspiciously short text in real chapters
+            if not is_placeholder_chapter and len(text) < _MIN_CONTENT_CHARS:
+                issues.append(
+                    f'{prefix} Very short text ({len(text)} chars) for a real chapter'
+                    f' — check the start page number in the config'
+                )
+
         if not lesson.get('category'):
             issues.append(f'{prefix} Missing category')
+
     return issues
+
+
+def print_lesson_report(lessons: Dict[str, Dict[str, Any]]) -> bool:
+    """Print a human-readable lesson validation report.  Returns True if no issues."""
+    issues = validate_lessons(lessons)
+    real_chapters = sum(
+        1 for l in lessons.values()
+        if _PLACEHOLDER_TITLE_MARKER not in l.get('title', '').lower()
+    )
+    empty_count = sum(1 for l in lessons.values() if not l.get('text', '').strip())
+
+    print(f'\n{"─"*60}')
+    print(f'LESSON REPORT  ({len(lessons)} chapters, {real_chapters} with content)')
+    print(f'{"─"*60}')
+    print(f'  Chapters with text : {len(lessons) - empty_count}/{len(lessons)}')
+    print(f'  Issues found       : {len(issues)}')
+
+    if issues:
+        print('\n  Issues:')
+        for issue in issues:
+            print(f'    ✗ {issue}')
+    else:
+        print('\n  ✓ All lesson checks passed')
+
+    print(f'{"─"*60}\n')
+    return len(issues) == 0
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
