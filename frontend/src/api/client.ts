@@ -358,3 +358,37 @@ export async function getContinuations(fen: string): Promise<OpeningExplorerData
     return null
   }
 }
+
+// ── Exercise verification ─────────────────────────────────────────────────────
+
+export interface ExerciseIssue {
+  name: string
+  fen: string
+  stored_move: string
+  status: 'ILLEGAL' | 'SCAN_MISMATCH'
+  reason: string
+  legal_moves: string[]
+  scan_move: string | null
+}
+
+export interface ExerciseVerificationStatus {
+  status: 'idle' | 'running' | 'done'
+  total: number
+  done: number
+  ok: number
+  illegal: number
+  scan_mismatch: number
+  issues: ExerciseIssue[]
+  scan_available: boolean
+  error: string | null
+}
+
+export async function startExerciseVerification(useScan = false, movetime = 0.3): Promise<{ started: boolean }> {
+  const res = await api.post('/admin/verify-exercises', { use_scan: useScan, movetime })
+  return res.data
+}
+
+export async function getExerciseVerificationStatus(): Promise<ExerciseVerificationStatus> {
+  const res = await api.get('/admin/verify-exercises/status')
+  return res.data
+}

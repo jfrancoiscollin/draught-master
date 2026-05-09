@@ -10,6 +10,7 @@ import ExerciseLibraryPage from './components/ExerciseLibraryPage'
 import LessonPanel from './components/LessonPanel'
 import ImportGamePanel from './components/ImportGamePanel'
 import OpeningCacheBuilder from './components/OpeningCacheBuilder'
+import ExerciseVerificationPanel from './components/ExerciseVerificationPanel'
 import OpeningExplorer from './components/OpeningExplorer'
 import LearnFromMistakes from './components/LearnFromMistakes'
 import EvalBar from './components/EvalBar'
@@ -1683,6 +1684,11 @@ export default function App() {
             </div>
             <span className="ml-auto text-gray-400">›</span>
           </button>
+        </div>
+        {/* ── Vérification des exercices ── */}
+        <div className="mt-4">
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">Vérification des exercices</h4>
+          <ExerciseVerificationPanel />
         </div>
       </BottomSheet>
 

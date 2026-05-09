@@ -1204,6 +1204,7 @@ async def start_cache_build(body: Dict[str, Any]) -> Dict[str, Any]:
     return {"started": True, "message": f"Calcul lancé ({src})"}
 
 
+
 @app.get("/api/opening-book/build/status")
 async def get_cache_build_status() -> Dict[str, Any]:
     """Poll the status of the background opening cache build job."""
@@ -1212,6 +1213,26 @@ async def get_cache_build_status() -> Dict[str, Any]:
     status = cache_builder.get_status()
     status["cache_size"] = cache_size()
     return status
+
+
+# ── Exercise verification ─────────────────────────────────────────────────────
+
+@app.post("/api/admin/verify-exercises")
+async def start_exercise_verification(body: Dict[str, Any] = {}) -> Dict[str, Any]:
+    """Start background exercise verification.
+    Optionally uses Scan (use_scan=true) to compare best move vs stored solution."""
+    import exercise_verifier
+    use_scan = bool(body.get("use_scan", False))
+    movetime = float(body.get("movetime", 0.3))
+    started = exercise_verifier.start(use_scan=use_scan, movetime=movetime)
+    return {"started": started, "message": "Vérification lancée" if started else "Déjà en cours"}
+
+
+@app.get("/api/admin/verify-exercises/status")
+async def get_exercise_verification_status() -> Dict[str, Any]:
+    """Poll the status of the background exercise verification job."""
+    import exercise_verifier
+    return exercise_verifier.get_status()
 
 
 @app.get("/api/opening-book/continuations")
