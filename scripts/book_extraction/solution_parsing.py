@@ -18,6 +18,14 @@ Key challenges encountered (and solved):
      Fix: parse only up to the first blank line after "Solution :".
   4. Multi-step position notation (16-22-26, 37-38-42-47) is not a valid move.
      Fix: reject moves with more than one '-' separator.
+  5. Attribution lines with dates ("27-12-1975") contribute spurious moves.
+     Fix: strip any line that contains a 4-digit year before parsing.
+  6. Context annotations ("5-10 ?!") on their own line leak into solution.
+     Fix: strip standalone lines that are just a move + ?/!/? annotation.
+  7. Numbered game notation ("38.32-27") must be normalised to "32-27".
+     Fix: strip the move-number prefix before extraction.
+  8. "jouant :" is used as a solution marker in some French books.
+     Fix: extend the Solution-marker search to include "jouant :".
 """
 from __future__ import annotations
 import re
@@ -48,27 +56,51 @@ def extract_moves(sol_text: str, max_moves: int = 10) -> List[str]:
     """
     Extract the main solution line from a solution block.
 
-    Looks for a "Solution :" marker and grabs the text up to the first
-    blank line.  Falls back to the whole block if no marker is found.
+    Looks for a "Solution :" / "jouant :" marker and grabs the text up to
+    the first blank line.  Falls back to the first paragraph that contains
+    two or more moves if no marker is found.
     """
     # Remove bracketed comments (may span newlines)
     clean = re.sub(r'\[[\s\S]*?\]', '', sol_text)
-    # Remove parenthesised black replies (they're the opponent's moves, not the solution line)
-    # We keep the text but drop the parens so move regex doesn't capture them wrong
+    # Strip attribution lines that contain a 4-digit year, e.g.
+    # "Agafonow - Baba Sy (Suiker GMA, 27-12-1975)" → would contribute "27-12"
+    clean = re.sub(r'^[^\n]*\b\d{4}\b[^\n]*$', '', clean, flags=re.M)
+    # Strip standalone context/annotation lines: a single move followed by ?/!/
+    # These appear before the real solution to indicate a questionable black move.
+    # E.g. "5-10 ?!" or "5-10 ?" on its own line.
+    clean = re.sub(r'^\s*\d{1,2}[-x]\d{1,2}\s*[?!]+\s*$', '', clean, flags=re.M)
+    # Normalise numbered game notation: "38.32-27" → "32-27"
+    clean = re.sub(r'\b\d{1,2}\.(\d{1,2}[-x])', r'\1', clean)
+    # Remove parenthesised content (opponent's replies) — expand into the text
+    # so move regex can pick them up as part of the variation.
     clean = re.sub(r'\(([^)]*)\)', r' \1 ', clean)
 
-    # Find "Solution :" marker and capture 2 lines (solution sometimes wraps).
-    # "Solution 1:" or "Solution :" or "Solution:" all accepted.
-    m = re.search(r'[Ss]olution\s*\d*\s*:?\s*(.+?)(?:\n\n|\Z)', clean, re.S)
+    # Find "Solution :" / "jouant :" marker and capture up to first blank line.
+    # "Solution 1:", "Solution :", "Solution:", "jouant :" all accepted.
+    m = re.search(
+        r'(?:[Ss]olution\s*\d*\s*:?|[Jj]ouant\s*:)\s*(.+?)(?:\n\n|\Z)',
+        clean, re.S,
+    )
     if m:
         # Limit to max 3 lines (stops multi-paragraph capture)
         raw = '\n'.join(m.group(1).splitlines()[:3])
-    else:
-        # No "Solution :" marker — take up to 4 lines from start of body
-        raw = '\n'.join(clean.splitlines()[:4])
+        raw = raw.replace('\n', ' ')
+        return _parse_moves(raw, max_moves)
 
-    raw = raw.replace('\n', ' ')
-    return _parse_moves(raw, max_moves)
+    # No explicit solution marker — scan paragraphs for the first one that
+    # contains 2+ moves (solution sequences have multiple moves; isolated
+    # context lines like "10-14" or "12x21" have only one).
+    paragraphs = [p.replace('\n', ' ') for p in re.split(r'\n\n+', clean) if p.strip()]
+    for para in paragraphs:
+        moves = _parse_moves(para, max_moves)
+        if len(moves) >= 2:
+            return moves
+    # Final fallback: return any paragraph that has at least one move
+    for para in paragraphs:
+        moves = _parse_moves(para, max_moves)
+        if moves:
+            return moves
+    return []
 
 
 def _parse_moves(text: str, max_moves: int = 10) -> List[str]:

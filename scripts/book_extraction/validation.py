@@ -48,6 +48,19 @@ def validate_exercises(exercises: List[Dict[str, Any]]) -> List[str]:
             for mv in sol:
                 if not _is_valid_move(mv):
                     issues.append(f'{prefix} Suspicious move in solution: {mv!r}')
+            # First-move legality: source square must exist in the mover's pieces
+            first_move = sol[0]
+            src = _first_move_source(first_move)
+            if src is not None and fen:
+                m_fen = re.match(r'^([WB]):W([\d,]*):B([\d,]*)$', fen)
+                if m_fen:
+                    turn = m_fen.group(1)
+                    pieces = [int(x) for x in m_fen.group(2 if turn == 'W' else 3).split(',') if x]
+                    if src not in pieces:
+                        issues.append(
+                            f'{prefix} First move {first_move!r} starts on sq{src} '
+                            f'but that square is not occupied by {turn} — likely wrong FEN'
+                        )
 
         # Required fields
         for field in ('name', 'description', 'initial_fen', 'solution_moves', 'difficulty', 'category'):
@@ -256,6 +269,18 @@ def _validate_fen(fen: str) -> Tuple[bool, str]:
     if not black:
         return False, 'no black pieces'
     return True, 'ok'
+
+
+def _first_move_source(mv: str) -> int | None:
+    """Return the source square of a move string, or None if unparseable."""
+    try:
+        if '-' in mv and 'x' not in mv:
+            return int(mv.split('-')[0])
+        if 'x' in mv and '-' not in mv:
+            return int(mv.split('x')[0])
+    except (ValueError, IndexError):
+        pass
+    return None
 
 
 def _is_valid_move(mv: str) -> bool:

@@ -153,8 +153,15 @@ def _find_segments(mask: np.ndarray, gap: int = 5) -> List[Tuple[int, int]]:
 
 
 def _deduplicate(boards: List[Board], min_dist: int = 80) -> List[Board]:
-    """Remove near-duplicate board detections."""
-    boards = sorted(boards, key=lambda b: (b[1], b[0]))
+    """Remove near-duplicate board detections, sorted in reading order (left-to-right, top-to-bottom).
+
+    Boards on the same visual row can have slightly different y1 values due to
+    PDF rendering noise. Using exact y1 as a sort key causes the right-column board
+    (lower y1) to sort before the left-column board, swapping FEN assignments.
+    Row-tolerant sort: snap y1 to 40-pixel buckets so boards within the same
+    visual row always sort left-to-right by x1.
+    """
+    boards = sorted(boards, key=lambda b: (b[1] // 40, b[0]))
     unique: List[Board] = []
     for b in boards:
         if not any(abs(b[0] - u[0]) < min_dist and abs(b[1] - u[1]) < min_dist for u in unique):

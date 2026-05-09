@@ -219,3 +219,55 @@ class TestParseSolutionPage:
         result = parse_solution_page(text)
         assert '34-30' not in result[1]
         assert '34-29' in result[1]
+
+
+# ── New robustness tests (issues discovered during real extraction) ───────────
+
+class TestExtractMovesRobustness:
+    def test_attribution_line_with_date_skipped(self):
+        # "27-12" in a date "27-12-1975" must not be treated as move 27-12.
+        text = (
+            'Agafonow - Baba Sy (Suiker GMA, 27-12-1975)\n'
+            '32-27 21x32 43-38 32x34\n'
+        )
+        moves = extract_moves(text)
+        assert moves[0] == '32-27', 'first move must be 32-27, not the date fragment 27-12'
+        assert '27-12' not in moves
+
+    def test_standalone_annotation_line_skipped(self):
+        # "5-10 ?!" on its own line is a questionable-move annotation, not a solution.
+        text = (
+            '5-10 ?!\n\n'
+            'Les blancs dament par 27-22 (18x27) 38-33 (27x29) 34x5\n'
+        )
+        moves = extract_moves(text)
+        assert moves[0] == '27-22', 'annotation line must be skipped; real solution starts with 27-22'
+        assert '5-10' not in moves
+
+    def test_jouant_marker_used_as_solution_start(self):
+        # "jouant :" is used in French books as an informal solution marker.
+        text = (
+            'Le dernier coup des Noirs (23-28) est fautif.\n'
+            'Les Blancs gagnent en jouant : 33-29.\n'
+        )
+        moves = extract_moves(text)
+        assert moves[0] == '33-29', '"jouant :" must act as a solution marker'
+        assert '23-28' not in moves
+
+    def test_numbered_game_notation_normalised(self):
+        # "38.32-27" (game-move notation) must yield move 32-27, not fail.
+        text = '38.32-27 21x32 39.43-38 32x34\n'
+        moves = extract_moves(text)
+        assert '32-27' in moves
+        assert '43-38' in moves
+
+    def test_fallback_skips_single_move_context_lines(self):
+        # When there's no Solution marker, single-move context lines (10-14,
+        # 12x21) must be skipped; the first paragraph with 2+ moves is the solution.
+        text = (
+            '10-14\n\n'
+            '12x21\n\n'
+            '33-29 (10-14) 29-24 (20-25) 27-22\n'
+        )
+        moves = extract_moves(text)
+        assert moves[0] == '33-29', 'single-move context paragraphs must be skipped'
