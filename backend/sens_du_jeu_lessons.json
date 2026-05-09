@@ -1,20 +1,200 @@
 {
   "101": {
-    "title": "Chapitre 101 : Principes fondamentaux du sens du jeu",
-    "category": "sens_fondamentaux",
-    "text": "# Principes fondamentaux du sens du jeu\n\nLe **sens du jeu** est la capacité à évaluer une position et à trouver le meilleur plan stratégique, au-delà du simple calcul tactique.\n\n## Les principes de base\n\n### 1. Contrôle des cases centrales\n\nLes cases centrales (cases 23, 24, 27, 28 pour les blancs) offrent le plus de mobilité. Un pion placé au centre contrôle davantage de cases qu'un pion en bordure.\n\n### 2. Coordination des pions\n\nLes pions doivent se soutenir mutuellement. Une chaîne de pions bien coordonnée est plus difficile à attaquer qu'un groupe de pions isolés.\n\n### 3. L'avance contrôlée\n\nAvancer un pion vers la dame est tentant, mais chaque avance doit être calculée pour éviter de créer des faiblesses dans votre camp.\n\n## Exercice pratique\n\nDans les positions qui suivent, identifiez le coup qui améliore le plus la coordination de vos pièces avant de chercher une combinaison tactique.",
+    "title": "1re partie – Ch. 1 : la notion d'espace",
+    "category": "generalites",
+    "text": "# La notion d'espace\n\n*(Contenu de la leçon à venir)*",
     "diagrams": []
   },
   "102": {
-    "title": "Chapitre 102 : Contrôle du centre",
-    "category": "sens_centre",
-    "text": "# Contrôle du centre\n\nLe contrôle du centre est un principe fondamental aux dames. Celui qui domine le centre contrôle le jeu.\n\n## Pourquoi le centre est-il important ?\n\nUn pion au centre :\n- Contrôle plus de cases adverses\n- Gêne la mobilité des pions adverses\n- Facilite les combinaisons tactiques\n\n## La battle pour le centre\n\nDans une partie équilibrée, les deux adversaires cherchent à occuper ou à contrôler les cases centrales. La stratégie consiste souvent à :\n\n1. **Occuper** les cases centrales avec vos pions\n2. **Restreindre** les pions adverses qui tentent d'y pénétrer\n3. **Exploiter** la supériorité centrale pour créer des complications\n\n## La case 28\n\nLa case 28 (pour les blancs) est souvent appelée la \"case royale\". Un pion blanc sur cette case exerce une pression considérable sur le camp adverse.\n\n## Exercices\n\nLes positions suivantes illustrent comment le contrôle du centre permet de créer des opportunités décisives.",
+    "title": "1re partie – Ch. 2 : la notion d'avantage",
+    "category": "generalites",
+    "text": "# La notion d'avantage\n\n*(Contenu de la leçon à venir)*",
     "diagrams": []
   },
   "103": {
-    "title": "Chapitre 103 : Structures de jeu",
-    "category": "sens_structures",
-    "text": "# Structures de jeu\n\nComprendre les structures de pions est essentiel pour jouer avec sens. Une structure solide résiste aux attaques ; une structure fragile s'effondre rapidement.\n\n## Types de structures\n\n### Structure compacte\nLes pions forment un bloc serré, difficile à pénétrer. L'inconvénient est la mobilité réduite.\n\n### Structure étendue\nLes pions sont dispersés sur l'échiquier, offrant plus de flexibilité mais créant des faiblesses potentielles.\n\n### La tour\nUne colonne de 3 pions ou plus sur la même diagonale constitue une \"tour\", une formation puissante mais qui peut devenir une cible.\n\n## Évaluer une structure\n\nPour évaluer une structure de pions :\n1. **Comptez les points de contact** entre vos pions et ceux de l'adversaire\n2. **Identifiez les pions isolés** (sans voisins immédiats)\n3. **Repérez les cases arriérées** difficiles à défendre\n\n## Transformer la structure\n\nUn sacrifice de pion peut transformer une structure défavorable en une structure gagnante. Les exercices ci-dessous illustrent ce principe.",
+    "title": "1re partie – Ch. 3 : la liberté de mouvement relative",
+    "category": "generalites",
+    "text": "# La liberté de mouvement relative\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "104": {
+    "title": "1re partie – Ch. 4 : les échanges",
+    "category": "generalites",
+    "text": "# Les échanges\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "105": {
+    "title": "1re partie – Ch. 5 : les temps d'avance",
+    "category": "generalites",
+    "text": "# Les temps d'avance\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "106": {
+    "title": "1re partie – Ch. 6 : les temps de réserve",
+    "category": "generalites",
+    "text": "# Les temps de réserve\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "107": {
+    "title": "1re partie – Ch. 7 : les pions « arrière » ou « suspendus »",
+    "category": "generalites",
+    "text": "# Les pions « arrière » ou « suspendus »\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "108": {
+    "title": "2e partie – Ch. 1 : le pion d'angle 46 (1re partie)",
+    "category": "pions_de_base",
+    "text": "# Le pion d'angle 46 (1re partie)\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "109": {
+    "title": "2e partie – Ch. 2 : le pion d'angle 46 (seconde partie)",
+    "category": "pions_de_base",
+    "text": "# Le pion d'angle 46 (seconde partie)\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "110": {
+    "title": "2e partie – Ch. 3 : le pion d'angle 46 (3e partie)",
+    "category": "pions_de_base",
+    "text": "# Le pion d'angle 46 (3e partie)\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "111": {
+    "title": "2e partie – Ch. 4 : le pion de base 47 (1re partie)",
+    "category": "pions_de_base",
+    "text": "# Le pion de base 47 (1re partie)\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "112": {
+    "title": "2e partie – Ch. 5 : le pion de base 47 (2e partie)",
+    "category": "pions_de_base",
+    "text": "# Le pion de base 47 (2e partie)\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "113": {
+    "title": "2e partie – Ch. 6 : le pion savant (1re partie)",
+    "category": "pions_de_base",
+    "text": "# Le pion savant (1re partie)\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "114": {
+    "title": "2e partie – Ch. 7 : le pion savant (2e partie)",
+    "category": "pions_de_base",
+    "text": "# Le pion savant (2e partie)\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "115": {
+    "title": "2e partie – Ch. 8 : les pions de base 49 et 50",
+    "category": "pions_de_base",
+    "text": "# Les pions de base 49 et 50\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "116": {
+    "title": "3e partie – Ch. 1 : le pion blanc 36",
+    "category": "pions_de_bande",
+    "text": "# Le pion blanc 36\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "117": {
+    "title": "3e partie – Ch. 2 : le pion de bande 26",
+    "category": "pions_de_bande",
+    "text": "# Le pion de bande 26\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "118": {
+    "title": "3e partie – Ch. 3 : le pion de bande 16",
+    "category": "pions_de_bande",
+    "text": "# Le pion de bande 16\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "119": {
+    "title": "3e partie – Ch. 4 : le pion de bande 6",
+    "category": "pions_de_bande",
+    "text": "# Le pion de bande 6\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "120": {
+    "title": "3e partie – Ch. 5 : le pion blanc 45",
+    "category": "pions_de_bande",
+    "text": "# Le pion blanc 45\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "121": {
+    "title": "3e partie – Ch. 6 : le pion blanc 35",
+    "category": "pions_de_bande",
+    "text": "# Le pion blanc 35\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "122": {
+    "title": "3e partie – Ch. 7 : le pion blanc 25",
+    "category": "pions_de_bande",
+    "text": "# Le pion blanc 25\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "123": {
+    "title": "3e partie – Ch. 8 : le pion 15 – les spécificités",
+    "category": "pions_de_bande",
+    "text": "# Le pion 15 – les spécificités\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "124": {
+    "title": "4e partie – Ch. 1 : le pion 27",
+    "category": "pions_offensifs",
+    "text": "# Le pion 27\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "125": {
+    "title": "4e partie – Ch. 2 : le pion 28",
+    "category": "pions_offensifs",
+    "text": "# Le pion 28\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "126": {
+    "title": "4e partie – Ch. 3 : le pion 29",
+    "category": "pions_offensifs",
+    "text": "# Le pion 29\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "127": {
+    "title": "4e partie – Ch. 4 : le pion 22",
+    "category": "pions_offensifs",
+    "text": "# Le pion 22\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "128": {
+    "title": "4e partie – Ch. 5 : le pion 23",
+    "category": "pions_offensifs",
+    "text": "# Le pion 23\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "129": {
+    "title": "4e partie – Ch. 6 : le pion 24 – le « pion taquin »",
+    "category": "pions_offensifs",
+    "text": "# Le pion 24 – le « pion taquin »\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "130": {
+    "title": "5e partie – Ch. 1 : la formation 45-40",
+    "category": "formations",
+    "text": "# La formation 45-40\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "131": {
+    "title": "5e partie – Ch. 2 : la flèche 33-38-42",
+    "category": "formations",
+    "text": "# La flèche 33-38-42\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "132": {
+    "title": "5e partie – Ch. 3 : la formation 34-39-43",
+    "category": "formations",
+    "text": "# La formation 34-39-43\n\n*(Contenu de la leçon à venir)*",
+    "diagrams": []
+  },
+  "133": {
+    "title": "5e partie – Ch. 4 : la flèche 27-31-36",
+    "category": "formations",
+    "text": "# La flèche 27-31-36\n\n*(Contenu de la leçon à venir)*",
     "diagrams": []
   }
 }
