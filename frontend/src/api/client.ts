@@ -371,6 +371,13 @@ export interface ExerciseIssue {
   scan_move: string | null
 }
 
+export interface ExerciseResult {
+  name: string
+  stored_move: string
+  scan_move: string | null
+  status: 'OK' | 'ILLEGAL' | 'SCAN_MISMATCH'
+}
+
 export interface ExerciseVerificationStatus {
   status: 'idle' | 'running' | 'done'
   total: number
@@ -379,6 +386,7 @@ export interface ExerciseVerificationStatus {
   illegal: number
   scan_mismatch: number
   issues: ExerciseIssue[]
+  all_results: ExerciseResult[]
   scan_available: boolean
   error: string | null
 }

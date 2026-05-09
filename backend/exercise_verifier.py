@@ -6,6 +6,10 @@ Checks every stored exercise solution for:
   2. Scan agreement — does Scan's best move match our stored first move?
      (only when Scan is available)
 
+When Scan is available, Scan is queried for EVERY exercise (including illegal
+ones) so that the full report can show Scan's recommendation alongside the
+stored move for manual book verification.
+
 Follows the same singleton/threading pattern as cache_builder.py.
 """
 from __future__ import annotations
@@ -30,6 +34,7 @@ _state: Dict[str, Any] = {
     "illegal": 0,
     "scan_mismatch": 0,
     "issues": [],
+    "all_results": [],      # one entry per exercise when Scan is available
     "scan_available": False,
     "error": None,
 }
@@ -115,23 +120,38 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
             "illegal": 0,
             "scan_mismatch": 0,
             "issues": [],
+            "all_results": [],
             "scan_available": scan_ok,
             "error": None,
         })
 
     issues: List[Dict[str, Any]] = []
+    all_results: List[Dict[str, Any]] = []
     ok = illegal = mismatch = 0
 
     for ex in exercises:
         name = ex.get("name", "?")
         fen = ex.get("initial_fen", "")
         sol = ex.get("solution_moves", [])
+        stored_move = sol[0] if sol else ""
 
         leg = _check_legality(fen, sol)
+
+        # Query Scan for every exercise when available (including illegal ones)
+        scan_move: Optional[str] = None
+        if scan_ok and engine and fen:
+            try:
+                hub = _fen_to_hub(fen)
+                scan_move = engine.best_move(hub, movetime)
+            except Exception:
+                scan_move = None
+
         issue: Optional[Dict[str, Any]] = None
+        result_status = "OK"
 
         if not leg["legal"]:
             illegal += 1
+            result_status = "ILLEGAL"
             reason = (
                 "case source vide" if not leg["source_occupied"]
                 else "coup absent de la liste légale"
@@ -139,31 +159,27 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
             issue = {
                 "name": name,
                 "fen": fen,
-                "stored_move": sol[0] if sol else "",
+                "stored_move": stored_move,
                 "status": "ILLEGAL",
                 "reason": reason,
                 "legal_moves": leg["legal_moves"][:8],
-                "scan_move": None,
+                "scan_move": scan_move,
             }
-        elif scan_ok and engine and sol:
-            hub = _fen_to_hub(fen)
-            scan_move = engine.best_move(hub, movetime)
-            if scan_move:
-                stored_pair = _normalise_move(sol[0])[:2]
-                scan_pair = _normalise_move(scan_move)[:2]
-                if stored_pair != scan_pair:
-                    mismatch += 1
-                    issue = {
-                        "name": name,
-                        "fen": fen,
-                        "stored_move": sol[0],
-                        "status": "SCAN_MISMATCH",
-                        "reason": f"Scan joue {scan_move!r}",
-                        "legal_moves": leg["legal_moves"][:8],
-                        "scan_move": scan_move,
-                    }
-                else:
-                    ok += 1
+        elif scan_ok and scan_move and sol:
+            stored_pair = _normalise_move(sol[0])[:2]
+            scan_pair = _normalise_move(scan_move)[:2]
+            if stored_pair != scan_pair:
+                mismatch += 1
+                result_status = "SCAN_MISMATCH"
+                issue = {
+                    "name": name,
+                    "fen": fen,
+                    "stored_move": sol[0],
+                    "status": "SCAN_MISMATCH",
+                    "reason": f"Scan joue {scan_move!r}",
+                    "legal_moves": leg["legal_moves"][:8],
+                    "scan_move": scan_move,
+                }
             else:
                 ok += 1
         else:
@@ -171,6 +187,15 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
 
         if issue:
             issues.append(issue)
+
+        # Always record the result when Scan is available
+        if scan_ok:
+            all_results.append({
+                "name": name,
+                "stored_move": stored_move,
+                "scan_move": scan_move,
+                "status": result_status,
+            })
 
         with _lock:
             _state["done"] += 1
@@ -181,6 +206,7 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
     with _lock:
         _state["status"] = "done"
         _state["issues"] = issues
+        _state["all_results"] = all_results
 
 
 def start(

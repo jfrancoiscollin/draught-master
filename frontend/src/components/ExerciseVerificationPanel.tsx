@@ -20,20 +20,49 @@ function buildReport(status: ExerciseVerificationStatus, dataset: Dataset): stri
     `Total : ${status.total} | OK : ${status.ok} | Illégaux : ${status.illegal}${status.scan_available ? ` | Scan mismatch : ${status.scan_mismatch}` : ''}`,
     ``,
   ]
-  if (status.issues.length === 0) {
-    lines.push('Tous les exercices sont valides.')
-  } else {
-    for (const issue of status.issues) {
-      lines.push(`[${issue.status}] ${issue.name}`)
-      lines.push(`  FEN     : ${issue.fen}`)
-      lines.push(`  Stocké  : ${issue.stored_move}`)
-      lines.push(`  Raison  : ${issue.reason}`)
-      if (issue.scan_move) lines.push(`  Scan    : ${issue.scan_move}`)
-      if (issue.legal_moves.length > 0)
-        lines.push(`  Légaux  : ${issue.legal_moves.join(', ')}${issue.legal_moves.length >= 8 ? '…' : ''}`)
+
+  // When Scan was used, emit the full per-exercise list (all_results)
+  const allResults = status.all_results ?? []
+  if (status.scan_available && allResults.length > 0) {
+    // Build an issue index for quick lookup of extra details
+    const issueMap = new Map(status.issues.map(i => [i.name, i]))
+
+    lines.push(`── LISTE COMPLÈTE (coup stocké vs Scan) ──`)
+    lines.push(``)
+    for (const r of allResults) {
+      const tag = r.status === 'OK' ? 'OK' : r.status
+      const match = r.scan_move
+        ? (r.stored_move === r.scan_move ? '✓' : '≠')
+        : ' '
+      lines.push(`[${tag}] ${r.name}`)
+      lines.push(`  Stocké  : ${r.stored_move}`)
+      lines.push(`  Scan    : ${r.scan_move ?? '—'}  ${match}`)
+      const issue = issueMap.get(r.name)
+      if (issue) {
+        lines.push(`  Raison  : ${issue.reason}`)
+        if (issue.legal_moves.length > 0)
+          lines.push(`  Légaux  : ${issue.legal_moves.join(', ')}${issue.legal_moves.length >= 8 ? '…' : ''}`)
+      }
       lines.push(``)
     }
+  } else {
+    // Legality-only mode: only list the issues
+    if (status.issues.length === 0) {
+      lines.push('Tous les exercices sont valides.')
+    } else {
+      for (const issue of status.issues) {
+        lines.push(`[${issue.status}] ${issue.name}`)
+        lines.push(`  FEN     : ${issue.fen}`)
+        lines.push(`  Stocké  : ${issue.stored_move}`)
+        lines.push(`  Raison  : ${issue.reason}`)
+        if (issue.scan_move) lines.push(`  Scan    : ${issue.scan_move}`)
+        if (issue.legal_moves.length > 0)
+          lines.push(`  Légaux  : ${issue.legal_moves.join(', ')}${issue.legal_moves.length >= 8 ? '…' : ''}`)
+        lines.push(``)
+      }
+    }
   }
+
   return lines.join('\n')
 }
 
