@@ -84,7 +84,7 @@ def _extract_lesson_diagrams(
     """
     try:
         from pdf_utils import render_page_gray
-        from board_detection import find_boards
+        from board_detection import find_boards, find_boards_border_lines
         from fen_extraction import analyze_board_fen
     except ImportError as e:
         logger.warning('Diagram extraction skipped (import error): %s', e)
@@ -108,6 +108,16 @@ def _extract_lesson_diagrams(
             min_border_run=cfg.min_border_run,
             expected_board_px=cfg.expected_board_px,
         )
+        # Illustrative lesson diagrams are often smaller (~440px) than exercise
+        # boards (~505px).  Retry with smaller expected size when nothing found.
+        if not boards and cfg.board_style == 'border_lines':
+            for px, tol in ((440, 0.12), (380, 0.15)):
+                boards = find_boards_border_lines(
+                    gray, min_run=cfg.min_border_run,
+                    expected_px=px, size_tolerance=tol,
+                )
+                if boards:
+                    break
         if not boards:
             continue
 
@@ -177,17 +187,21 @@ def _extract_labels_from_page(
 
         if len(parts) >= 2:
             # Multi-column line — each part is a candidate label
-            valid = [p for p in parts if _is_label(p)]
+            # Normalize internal spaces (layout artefact) before testing
+            normed = [re.sub(r' {2,}', ' ', p).strip() for p in parts]
+            valid = [p for p in normed if _is_label(p)]
             if len(valid) >= 2:
                 labels.extend(valid)
                 continue
 
         # Single phrase on the line — accept only if it looks like a label
-        if len(parts) == 1 and _is_label(parts[0]):
-            # Only add standalone labels when we still need them and they're
-            # not ordinary prose sentences (prose lines are usually longer)
-            if len(labels) < board_count and len(parts[0].split()) <= 5:
-                labels.append(parts[0])
+        if len(parts) == 1:
+            normed = re.sub(r' {2,}', ' ', parts[0]).strip()
+            if _is_label(normed):
+                # Only add standalone labels when we still need them and they
+                # are not ordinary prose sentences (prose is usually longer)
+                if len(labels) < board_count and len(normed.split()) <= 5:
+                    labels.append(normed)
 
     # Trim to board_count
     return labels[:board_count]
@@ -195,13 +209,21 @@ def _extract_labels_from_page(
 
 def _is_label(text: str) -> bool:
     """Return True if text looks like a board-diagram caption."""
+    text = re.sub(r' {2,}', ' ', text).strip()
     words = text.split()
     return (
         1 <= len(words) <= 7
-        and not re.search(r'\d', text)       # no digits
-        and len(text) < 55                    # not a full sentence
-        and bool(re.search(r'[a-zA-ZÀ-ÿ]', text))  # has letters
-        and not text.endswith(':')            # not a section header
+        and not text.endswith('.')          # sentence fragments
+        and not text.endswith(',')          # mid-sentence
+        and not text.endswith('?')          # rhetorical questions
+        and len(text) < 55
+        and bool(re.search(r'[a-zA-ZÀ-ÿ]', text))  # must have letters
+        and not text.endswith(':')          # section headers
+        and ' : ' not in text              # "Chapitre N : ..." titles
+        and '=' not in text                # URL query strings
+        and '&' not in text                # URL fragments
+        # Reject pure move sequences (digits / operators, no real words)
+        and not re.match(r'^[\d\s.\-x()\[\]!?]+$', text)
     )
 
 
