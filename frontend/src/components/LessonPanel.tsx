@@ -104,7 +104,8 @@ function LessonText({
 
 export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead, isRead: isReadProp }: LessonPanelProps) {
   const { user } = useAuth()
-  const [lesson, setLesson] = useState<{ title: string; text: string; diagrams?: string[] } | null>(null)
+  type LessonDiagram = string | { fen: string; label: string }
+  const [lesson, setLesson] = useState<{ title: string; text: string; diagrams?: LessonDiagram[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [exercises, setExercises] = useState<ExerciseResponse[]>([])
@@ -141,7 +142,11 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
 
   const lessonDiagrams = lesson?.diagrams ?? []
   const diagrams: Array<{ label: string; fen: string }> = lessonDiagrams.length > 0
-    ? lessonDiagrams.map((fen, i) => ({ label: `Diag. ${i + 1}`, fen }))
+    ? lessonDiagrams.map((d, i) =>
+        typeof d === 'string'
+          ? { label: `Diag. ${i + 1}`, fen: d }
+          : { label: d.label, fen: d.fen }
+      )
     : exercises.map((ex, i) => ({ label: `D${i + 1}`, fen: ex.initial_fen }))
 
   const initialFen = diagrams[activeDiagram]?.fen ?? exampleFen

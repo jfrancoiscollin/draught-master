@@ -156,7 +156,7 @@ def main() -> None:
         if cfg.lesson_chapters:
             print('\n[2/2] Extracting lessons…')
             pages = extract_text_pages(cfg.pdf_path, cwd=_project_root)
-            lessons = extract_all_lessons(pages, cfg)
+            lessons = extract_all_lessons(pages, cfg, pdf_path=cfg.pdf_path, cwd=_project_root)
             print_lesson_report(lessons)
             if not args.dry_run:
                 write_lessons_json(lessons, cfg, project_root=_project_root)
