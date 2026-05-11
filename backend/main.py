@@ -1466,6 +1466,55 @@ async def opening_book_migrate_local_db() -> Dict[str, Any]:
     }
 
 
+@app.get("/api/opening-book/export-fens")
+async def export_fens():
+    """Export all known positions as a plain-text file, one FEN per line.
+
+    Sources (deduplicated):
+      1. opening_book table (positions from downloaded Lidraughts games)
+      2. exercises table (exercise starting positions)
+    """
+    import os as _os
+    from opening_book_db import _get_conn, _lock
+    from fastapi.responses import PlainTextResponse
+
+    lines: list[str] = ["# ai-draught positions export", ""]
+
+    # 1. Opening book FENs
+    try:
+        with _lock:
+            conn = _get_conn()
+            rows = conn.execute("SELECT fen FROM opening_book ORDER BY games_seen DESC").fetchall()
+        book_fens = [r["fen"] for r in rows]
+    except Exception:
+        book_fens = []
+
+    if book_fens:
+        lines.append(f"# opening book ({len(book_fens)} positions)")
+        lines.extend(book_fens)
+        lines.append("")
+
+    # 2. Exercise FENs
+    try:
+        ex_rows = await db.fetch_all("SELECT DISTINCT initial_fen FROM exercises WHERE initial_fen IS NOT NULL AND initial_fen != ''")
+        ex_fens = [r["initial_fen"] for r in ex_rows]
+    except Exception:
+        ex_fens = []
+
+    if ex_fens:
+        lines.append(f"# exercises ({len(ex_fens)} positions)")
+        lines.extend(ex_fens)
+        lines.append("")
+
+    total = len(book_fens) + len(ex_fens)
+    lines.append(f"# total: {total} positions")
+
+    return PlainTextResponse(
+        content="\n".join(lines),
+        headers={"Content-Disposition": 'attachment; filename="positions.fen"'},
+    )
+
+
 @app.post("/api/position/analyze", response_model=AnalysisResponse)
 async def position_analyze(
     body: Dict[str, Any],

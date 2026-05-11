@@ -591,6 +591,15 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
           <p>• Le cache est <strong className="text-gray-300">persistant</strong> sur le volume Railway</p>
           <p>• Plus tu ajoutes de joueurs, plus la base est riche</p>
         </div>
+
+        {/* Export FENs */}
+        <a
+          href="/api/opening-book/export-fens"
+          download="positions.fen"
+          className="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-sm text-gray-200 rounded-xl px-4 py-2.5 transition-colors"
+        >
+          ⬇️ Exporter toutes les positions (.fen)
+        </a>
       </div>
     </div>
   )
