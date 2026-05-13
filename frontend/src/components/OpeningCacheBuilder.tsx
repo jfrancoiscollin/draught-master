@@ -101,7 +101,6 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
 
   const handleFetchTopPlayers = async () => {
     setTopFetchDone(false)
-    setTopPlayers([])
     setTopFetchError('')
     setTopFetching(true)
     const params = new URLSearchParams({
