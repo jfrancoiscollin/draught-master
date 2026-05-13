@@ -67,7 +67,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const [topNb, setTopNb] = useState(200)
   const [topSeeds, setTopSeeds] = useState('')  // empty = auto-scrape lidraughts.org/player
   const [topMinRating, setTopMinRating] = useState(1800)
-  const [topPlayers, setTopPlayers] = useState<{ username: string; rating: number | null }[]>([])
+  const [topPlayers, setTopPlayers] = useState<{ username: string; rating: number | null; gameCount: number }[]>([])
   const [topFetching, setTopFetching] = useState(false)
   const [topFetchDone, setTopFetchDone] = useState(false)
   const [topFetchError, setTopFetchError] = useState('')
@@ -94,6 +94,11 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     corpusRatingMax === 0 || (p.rating ?? 0) <= corpusRatingMax
   )
 
+  const filteredTotalGames = filteredCorpusPlayers.reduce((sum, p) => {
+    const n = corpusMaxGames > 0 ? Math.min(p.gameCount, corpusMaxGames) : p.gameCount
+    return sum + n
+  }, 0)
+
   const handleFetchTopPlayers = async () => {
     setTopFetchDone(false)
     setTopPlayers([])
@@ -112,15 +117,22 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
         if (data.error) {
           setTopFetchError(data.error)
         } else {
-          const incoming: { username: string; rating: number | null }[] = data.players ?? []
-          // Merge with existing players — keep highest rating, deduplicate
+          const incoming: { username: string; rating: number | null; game_count?: number }[] = data.players ?? []
+          // Merge with existing players — keep highest rating and latest game_count, deduplicate
           setTopPlayers(prev => {
-            const merged = new Map<string, number>()
-            for (const p of prev) merged.set(p.username, p.rating ?? 0)
-            for (const p of incoming) merged.set(p.username, Math.max(merged.get(p.username) ?? 0, p.rating ?? 0))
-            return Array.from(merged.entries())
+            const mergedRating = new Map<string, number>()
+            const mergedCount = new Map<string, number>()
+            for (const p of prev) {
+              mergedRating.set(p.username, p.rating ?? 0)
+              mergedCount.set(p.username, p.gameCount)
+            }
+            for (const p of incoming) {
+              mergedRating.set(p.username, Math.max(mergedRating.get(p.username) ?? 0, p.rating ?? 0))
+              if ((p.game_count ?? 0) > 0) mergedCount.set(p.username, p.game_count!)
+            }
+            return Array.from(mergedRating.entries())
               .sort((a, b) => b[1] - a[1])
-              .map(([username, rating]) => ({ username, rating }))
+              .map(([username, rating]) => ({ username, rating, gameCount: mergedCount.get(username) ?? 0 }))
           })
           // Show which seeds were actually used (useful when auto-discovered)
           if (data.seeds_used?.length && !topSeeds.trim())
@@ -814,9 +826,9 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
                     )}
                   </div>
                   <div className="text-emerald-300 font-medium">
-                    {corpusMaxGames > 0
-                      ? `~${(topPlayers.length * corpusMaxGames).toLocaleString()} parties à télécharger (max ${corpusMaxGames}/joueur)`
-                      : `Toutes leurs parties — volume non borné`}
+                    {filteredTotalGames > 0
+                      ? `~${filteredTotalGames.toLocaleString()} parties à télécharger${corpusMaxGames > 0 ? ` (max ${corpusMaxGames}/joueur)` : ''}`
+                      : `Volume inconnu — comptes non encore récupérés`}
                   </div>
                 </div>
               ) : (
@@ -872,8 +884,8 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
               >
                 {pdnDownloading
                   ? '⬇️ Téléchargement…'
-                  : corpusMaxGames > 0
-                    ? `⬇️ Télécharger .pdn (${players.length} joueurs · ~${(players.length * corpusMaxGames).toLocaleString()} parties)`
+                  : filteredTotalGames > 0
+                    ? `⬇️ Télécharger .pdn (${players.length} joueurs · ~${filteredTotalGames.toLocaleString()} parties)`
                     : `⬇️ Télécharger .pdn (${players.length} joueurs · toutes leurs parties)`}
               </button>
             )
