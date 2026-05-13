@@ -64,10 +64,15 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     total: number; by_source: Record<string, number>; min_date: string | null; max_date: string | null
   } | null>(null)
   const [corpusLoading, setCorpusLoading] = useState(false)
-  const [corpusIngestMsg, setCorpusIngestMsg] = useState('')
-  const [corpusRunning, setCorpusRunning] = useState(false)
   // 0 = toutes (no ?max param)
   const [corpusMaxGames, setCorpusMaxGames] = useState(0)
+
+  // Corpus — ELO range (independent player list for PDN export)
+  const [corpusRatingMin, setCorpusRatingMin] = useState(2000)
+  const [corpusRatingMax, setCorpusRatingMax] = useState(2800)
+  const [corpusFoundPlayers, setCorpusFoundPlayers] = useState<{ username: string; rating: number }[]>([])
+  const [corpusSearchDone, setCorpusSearchDone] = useState(false)
+  const [corpusSearching, setCorpusSearching] = useState(false)
 
   // PDN direct download (no DB storage)
   const [pdnDownloading, setPdnDownloading] = useState(false)
@@ -86,10 +91,24 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const [reevalRunning, setReevalRunning] = useState(false)
   const [reevalMessage, setReevalMessage] = useState('')
 
+  const handleCorpusSearch = async () => {
+    setCorpusSearchDone(false)
+    setCorpusFoundPlayers([])
+    setCorpusSearching(true)
+    try {
+      const { players } = await fetchPlayersByRating(corpusRatingMin, corpusRatingMax, 0)
+      setCorpusFoundPlayers(players)
+    } catch {
+      setCorpusFoundPlayers([])
+    }
+    setCorpusSearchDone(true)
+    setCorpusSearching(false)
+  }
+
   const handleDownloadPdn = async () => {
-    const names = mode === 'manual'
-      ? usernames.split('\n').map(u => u.trim()).filter(Boolean)
-      : foundPlayers.map(p => p.username)
+    const names = corpusSearchDone && corpusFoundPlayers.length > 0
+      ? corpusFoundPlayers.map(p => p.username)
+      : activeNames
     if (!names.length) return
     setPdnDownloading(true)
     setPdnMsg('')
@@ -157,59 +176,6 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
       if (res.ok) setCorpusStats(await res.json())
     } catch { /* ignore */ } finally {
       setCorpusLoading(false)
-    }
-  }
-
-  const handleStoreGames = async () => {
-    const names = mode === 'manual'
-      ? usernames.split('\n').map(u => u.trim()).filter(Boolean)
-      : foundPlayers.map(p => p.username)
-    if (!names.length) return
-    setCorpusRunning(true)
-    setCorpusIngestMsg('')
-
-    let totalInserted = 0
-    let totalSkipped = 0
-
-    try {
-      for (let i = 0; i < names.length; i++) {
-        const username = names[i]
-        setCorpusIngestMsg(`⬇️ ${username} (${i + 1}/${names.length}) — ${totalInserted} parties stockées…`)
-
-        // Download games — corpusMaxGames=0 means no limit (fetch all)
-        const maxParam = corpusMaxGames > 0 ? `?max=${corpusMaxGames}` : ''
-        let raw = ''
-        try {
-          const resp = await fetch(
-            `https://lidraughts.org/api/games/user/${encodeURIComponent(username)}${maxParam}`,
-            { headers: { Accept: 'application/x-ndjson' } },
-          )
-          if (resp.ok) {
-            const ct = resp.headers.get('content-type') ?? ''
-            if (!ct.includes('html')) raw = await resp.text()
-          }
-        } catch { /* network/CORS */ }
-
-        if (!raw || raw.trim().length < 10) continue
-
-        try {
-          const res = await fetch('/api/expert-games/ingest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ndjson: raw }),
-          })
-          if (res.ok) {
-            const data = await res.json()
-            totalInserted += data.inserted ?? 0
-            totalSkipped += data.skipped ?? 0
-          }
-        } catch { /* ignore */ }
-      }
-
-      setCorpusIngestMsg(`✓ ${totalInserted} nouvelles parties stockées (${totalSkipped} déjà présentes)`)
-      await fetchCorpusStats()
-    } finally {
-      setCorpusRunning(false)
     }
   }
 
@@ -745,39 +711,63 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
 
         {/* NNUE Corpus */}
         <div className="bg-gray-800 rounded-xl p-3 flex flex-col gap-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-300">Corpus NNUE (parties complètes)</span>
-            <button
-              onClick={fetchCorpusStats}
-              disabled={corpusLoading}
-              className="text-xs px-2.5 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50 transition-colors"
-            >
-              {corpusLoading ? '…' : 'Stats'}
-            </button>
+          <span className="text-xs font-semibold text-gray-300">Corpus NNUE (parties complètes)</span>
+
+          {/* ELO range */}
+          <div className="grid grid-cols-2 gap-1.5">
+            {ELO_PRESETS.map(p => (
+              <button
+                key={p.label}
+                onClick={() => { setCorpusRatingMin(p.min); setCorpusRatingMax(p.max); setCorpusSearchDone(false) }}
+                className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-colors ${
+                  corpusRatingMin === p.min && corpusRatingMax === p.max
+                    ? 'bg-indigo-700 border-indigo-500 text-white'
+                    : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-indigo-500'
+                }`}
+              >
+                {p.label}<br /><span className="text-gray-400 font-normal">{p.min}–{p.max}</span>
+              </button>
+            ))}
           </div>
 
-          {corpusStats !== null && (
-            <div className="text-xs font-mono space-y-0.5">
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${corpusStats.total > 0 ? 'bg-green-400' : 'bg-gray-500'}`} />
-                <span className="text-gray-400">Parties stockées :</span>
-                <span className="text-white font-semibold">{corpusStats.total.toLocaleString()}</span>
-              </div>
-              {corpusStats.total > 0 && corpusStats.min_date && (
-                <div className="text-gray-500 pl-4">
-                  {corpusStats.min_date} → {corpusStats.max_date}
-                  {Object.entries(corpusStats.by_source).map(([src, n]) => (
-                    <span key={src} className="ml-2 text-indigo-400">{src}: {n.toLocaleString()}</span>
-                  ))}
-                </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Elo min</label>
+              <input type="number" value={corpusRatingMin}
+                onChange={e => { setCorpusRatingMin(Number(e.target.value)); setCorpusSearchDone(false) }}
+                min={500} max={2800} step={50}
+                className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Elo max</label>
+              <input type="number" value={corpusRatingMax}
+                onChange={e => { setCorpusRatingMax(Number(e.target.value)); setCorpusSearchDone(false) }}
+                min={500} max={2800} step={50}
+                className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white" />
+            </div>
+          </div>
+
+          <button
+            onClick={handleCorpusSearch}
+            disabled={corpusSearching || pdnDownloading}
+            className="w-full py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium disabled:opacity-40 transition-colors"
+          >
+            {corpusSearching ? '🔍 Recherche…' : '🔍 Rechercher les joueurs'}
+          </button>
+
+          {corpusSearchDone && (
+            <div className={`rounded-lg px-3 py-2 text-xs ${corpusFoundPlayers.length > 0 ? 'bg-indigo-900/40 border border-indigo-700/50' : 'bg-amber-900/30 border border-amber-700/50'}`}>
+              {corpusFoundPlayers.length > 0 ? (
+                <span className="text-white">
+                  <strong>{corpusFoundPlayers.length}</strong> joueurs dans ce range
+                  {corpusMaxGames > 0
+                    ? <span className="text-indigo-300"> · ~{(corpusFoundPlayers.length * corpusMaxGames).toLocaleString()} parties max</span>
+                    : <span className="text-gray-400"> · toutes leurs parties</span>}
+                </span>
+              ) : (
+                <span className="text-amber-300">Aucun joueur dans ce range en base locale — construis d'abord la base d'ouvertures avec des joueurs de ce niveau.</span>
               )}
             </div>
-          )}
-
-          {corpusIngestMsg && (
-            <p className={`text-xs font-mono ${corpusIngestMsg.startsWith('✓') ? 'text-green-300' : 'text-indigo-300 animate-pulse'}`}>
-              {corpusIngestMsg}
-            </p>
           )}
 
           <div className="flex items-center gap-2">
@@ -785,7 +775,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
             <select
               value={corpusMaxGames}
               onChange={e => setCorpusMaxGames(Number(e.target.value))}
-              disabled={corpusRunning || pdnDownloading}
+              disabled={pdnDownloading}
               className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-white disabled:opacity-40"
             >
               <option value={0}>Toutes</option>
@@ -801,27 +791,24 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
             </p>
           )}
 
-          <button
-            onClick={handleDownloadPdn}
-            disabled={pdnDownloading || corpusRunning || activeNames.length === 0}
-            className="w-full py-2 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white font-medium text-sm disabled:opacity-40 transition-colors"
-          >
-            {pdnDownloading
-              ? '⬇️ Téléchargement…'
-              : `⬇️ Télécharger .pdn (${activeNames.length} joueur${activeNames.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes les parties' : ` · max ${corpusMaxGames}`})`}
-          </button>
-
-          <button
-            onClick={handleStoreGames}
-            disabled={corpusRunning || isRunning || activeNames.length === 0}
-            className="w-full py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium text-sm disabled:opacity-40 transition-colors"
-          >
-            {corpusRunning
-              ? '⬇️ Stockage en cours…'
-              : `💾 Stocker en SQLite (${activeNames.length} joueur${activeNames.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes' : ` · max ${corpusMaxGames}`})`}
-          </button>
+          {(() => {
+            const names = corpusSearchDone && corpusFoundPlayers.length > 0
+              ? corpusFoundPlayers
+              : activeNames.map(n => ({ username: n, rating: 0 }))
+            return (
+              <button
+                onClick={handleDownloadPdn}
+                disabled={pdnDownloading || names.length === 0}
+                className="w-full py-2 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white font-medium text-sm disabled:opacity-40 transition-colors"
+              >
+                {pdnDownloading
+                  ? '⬇️ Téléchargement…'
+                  : `⬇️ Télécharger .pdn (${names.length} joueur${names.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes' : ` · max ${corpusMaxGames}`})`}
+              </button>
+            )
+          })()}
           <p className="text-xs text-gray-500">
-            Utilise les joueurs sélectionnés ci-dessus (manuel ou Elo). Le .pdn se télécharge directement — SQLite garde une copie persistante pour rejouer.
+            La recherche Elo filtre les joueurs déjà en base locale. Le fichier .pdn se télécharge directement depuis Lidraughts.
           </p>
         </div>
 
