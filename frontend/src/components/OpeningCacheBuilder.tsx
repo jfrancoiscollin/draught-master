@@ -785,13 +785,19 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
           {topFetchDone && (
             <div className={`rounded-lg px-3 py-2 text-xs ${topPlayers.length > 0 ? 'bg-indigo-900/40 border border-indigo-700/50' : 'bg-red-900/30 border border-red-700/50'}`}>
               {topPlayers.length > 0 ? (
-                <span className="text-indigo-200">
-                  <strong className="text-white">{topPlayers.length}</strong> joueurs ≥ {topMinRating} Elo
-                  {topPlayers.some(p => p.rating !== null) && (
-                    <> · {Math.min(...topPlayers.map(p => p.rating ?? 9999).filter(r => r < 9999))}–{Math.max(...topPlayers.map(p => p.rating ?? 0))}</>
-                  )}
-                  {corpusMaxGames > 0 && <span className="text-gray-400"> · ~{(topPlayers.length * corpusMaxGames).toLocaleString()} parties max</span>}
-                </span>
+                <div className="flex flex-col gap-0.5 text-indigo-200">
+                  <div>
+                    <strong className="text-white">{topPlayers.length}</strong> joueurs ≥ {topMinRating} Elo
+                    {topPlayers.some(p => p.rating !== null) && (
+                      <span className="text-gray-400"> · {Math.min(...topPlayers.map(p => p.rating ?? 9999).filter(r => r < 9999))}–{Math.max(...topPlayers.map(p => p.rating ?? 0))}</span>
+                    )}
+                  </div>
+                  <div className="text-emerald-300 font-medium">
+                    {corpusMaxGames > 0
+                      ? `~${(topPlayers.length * corpusMaxGames).toLocaleString()} parties à télécharger (max ${corpusMaxGames}/joueur)`
+                      : `Toutes leurs parties — volume non borné`}
+                  </div>
+                </div>
               ) : (
                 <span className="text-red-300">{topFetchError || 'Aucun joueur trouvé.'}</span>
               )}
@@ -845,7 +851,9 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
               >
                 {pdnDownloading
                   ? '⬇️ Téléchargement…'
-                  : `⬇️ Télécharger .pdn (${players.length} joueur${players.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes' : ` · max ${corpusMaxGames}`})`}
+                  : corpusMaxGames > 0
+                    ? `⬇️ Télécharger .pdn (${players.length} joueurs · ~${(players.length * corpusMaxGames).toLocaleString()} parties)`
+                    : `⬇️ Télécharger .pdn (${players.length} joueurs · toutes leurs parties)`}
               </button>
             )
           })()}
