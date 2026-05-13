@@ -89,6 +89,58 @@ async def init_db() -> None:
                 updated_at TEXT NOT NULL
             )
         """)
+        # Pedagogy tables (PR 7)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS move_verdicts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                game_id TEXT NOT NULL,
+                move_number INTEGER NOT NULL,
+                side TEXT NOT NULL,
+                fen_before TEXT NOT NULL,
+                fen_after TEXT NOT NULL,
+                move_notation TEXT NOT NULL,
+                score_before REAL NOT NULL,
+                score_after REAL NOT NULL,
+                delta_winchance REAL NOT NULL,
+                verdict TEXT NOT NULL,
+                is_forced INTEGER NOT NULL,
+                phase TEXT NOT NULL,
+                motifs_json TEXT NOT NULL,
+                features_json TEXT,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
+                UNIQUE (game_id, move_number)
+            )
+        """)
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_move_verdicts_game ON move_verdicts(game_id)"
+        )
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_move_verdicts_verdict ON move_verdicts(verdict)"
+        )
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS pedagogy_explanations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                move_verdict_id INTEGER NOT NULL,
+                mode TEXT NOT NULL,
+                lang TEXT NOT NULL,
+                text TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (move_verdict_id) REFERENCES move_verdicts(id) ON DELETE CASCADE,
+                UNIQUE (move_verdict_id, mode, lang)
+            )
+        """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS exercise_tags (
+                exercise_id INTEGER NOT NULL,
+                tag TEXT NOT NULL,
+                PRIMARY KEY (exercise_id, tag),
+                FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
+            )
+        """)
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_exercise_tags_tag ON exercise_tags(tag)"
+        )
         await db.commit()
 
         # Migrations: add columns to existing tables if they don't exist yet
@@ -96,6 +148,9 @@ async def init_db() -> None:
             "ALTER TABLE games ADD COLUMN user_id INTEGER",
             "ALTER TABLE games ADD COLUMN annotations_json TEXT",
             "ALTER TABLE exercises ADD COLUMN book_id TEXT DEFAULT 'dubois_combinaisons'",
+            "ALTER TABLE games ADD COLUMN user_side TEXT",
+            "ALTER TABLE games ADD COLUMN opening_name TEXT",
+            "ALTER TABLE games ADD COLUMN status TEXT DEFAULT 'finished'",
         ]:
             try:
                 await db.execute(col_ddl)

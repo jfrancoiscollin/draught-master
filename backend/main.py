@@ -135,12 +135,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from pedagogy.api import router as pedagogy_router  # noqa: E402
+app.include_router(pedagogy_router)
+
+# Shared BookRAG singleton — populated at startup if corpus is present.
+# `explain_verdict` degrades gracefully to template mode when None.
+shared_book_rag = None
+
 game_store: Dict[str, Dict[str, Any]] = {}
 
 
 @app.on_event("startup")
 async def startup_event() -> None:
     await init_db()
+    global shared_book_rag
+    try:
+        from pathlib import Path
+        from pedagogy.explanations.book_rag import BookRAG
+        corpus = Path(__file__).parent.parent / "docs" / "corpus"
+        if corpus.exists():
+            shared_book_rag = BookRAG.from_directory(str(corpus))
+    except Exception:
+        pass  # corpus not present or scikit-learn not installed
 
 
 def _state_to_response(game_id: str, state: GameState, last_move: Optional[Move] = None) -> GameStateResponse:
