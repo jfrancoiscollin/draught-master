@@ -69,13 +69,9 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   // 0 = toutes (no ?max param)
   const [corpusMaxGames, setCorpusMaxGames] = useState(0)
 
-  // Corpus NNUE — own ELO range (independent of the main ELO mode)
-  const [corpusRatingMin, setCorpusRatingMin] = useState(2000)
-  const [corpusRatingMax, setCorpusRatingMax] = useState(2800)
-  const [corpusFoundPlayers, setCorpusFoundPlayers] = useState<{ username: string; rating: number }[]>([])
-  const [corpusPoolSize, setCorpusPoolSize] = useState<number | null>(null)
-  const [corpusSearchDone, setCorpusSearchDone] = useState(false)
-  const [corpusSearching, setCorpusSearching] = useState(false)
+  // PDN direct download (no DB storage)
+  const [pdnDownloading, setPdnDownloading] = useState(false)
+  const [pdnMsg, setPdnMsg] = useState('')
 
   // DB volume info
   const [dbInfo, setDbInfo] = useState<{
@@ -90,21 +86,68 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const [reevalRunning, setReevalRunning] = useState(false)
   const [reevalMessage, setReevalMessage] = useState('')
 
-  const handleCorpusSearch = async () => {
-    setCorpusSearchDone(false)
-    setCorpusFoundPlayers([])
-    setCorpusPoolSize(null)
-    setCorpusSearching(true)
-    try {
-      const { players, pool_size } = await fetchPlayersByRating(corpusRatingMin, corpusRatingMax, 0)
-      setCorpusFoundPlayers(players)
-      setCorpusPoolSize(pool_size)
-    } catch {
-      setCorpusFoundPlayers([])
-      setCorpusPoolSize(0)
+  const handleDownloadPdn = async () => {
+    const names = mode === 'manual'
+      ? usernames.split('\n').map(u => u.trim()).filter(Boolean)
+      : foundPlayers.map(p => p.username)
+    if (!names.length) return
+    setPdnDownloading(true)
+    setPdnMsg('')
+    let allPdn = ''
+    let gameCount = 0
+    for (let i = 0; i < names.length; i++) {
+      const username = names[i]
+      setPdnMsg(`⬇️ ${username} (${i + 1}/${names.length}) — ${gameCount} parties…`)
+      try {
+        const maxParam = corpusMaxGames > 0 ? `?max=${corpusMaxGames}` : ''
+        const resp = await fetch(
+          `https://lidraughts.org/api/games/user/${encodeURIComponent(username)}${maxParam}`,
+          { headers: { Accept: 'application/x-ndjson' } },
+        )
+        if (resp.ok) {
+          const text = await resp.text()
+          for (const line of text.split('\n')) {
+            if (!line.trim()) continue
+            try {
+              const obj = JSON.parse(line)
+              const moves = (obj.moves || obj.pdn || obj.pgn || '').trim()
+              if (!moves) continue
+              const wp = obj.players?.white ?? {}; const bp = obj.players?.black ?? {}
+              const whiteName = wp.user?.name ?? wp.name ?? '?'
+              const blackName = bp.user?.name ?? bp.name ?? '?'
+              const whiteRating = wp.rating ?? wp.user?.rating
+              const blackRating = bp.rating ?? bp.user?.rating
+              const winner = obj.winner ?? ''
+              const result = winner === 'white' ? '1-0' : winner === 'black' ? '0-1' : '1/2-1/2'
+              let date: string | null = null
+              if (obj.createdAt) {
+                try { date = new Date(Number(obj.createdAt)).toISOString().split('T')[0] } catch { /* */ }
+              }
+              let pdn = `[Event "${obj.event ?? '?'}"]\n[White "${whiteName}"]\n[Black "${blackName}"]\n[Result "${result}"]\n`
+              if (whiteRating) pdn += `[WhiteElo "${whiteRating}"]\n`
+              if (blackRating) pdn += `[BlackElo "${blackRating}"]\n`
+              if (date) pdn += `[Date "${date}"]\n`
+              pdn += `\n${moves}\n\n`
+              allPdn += pdn
+              gameCount++
+            } catch { /* skip malformed line */ }
+          }
+        }
+      } catch { /* network error for this player */ }
     }
-    setCorpusSearchDone(true)
-    setCorpusSearching(false)
+    if (allPdn.trim()) {
+      const blob = new Blob([allPdn], { type: 'text/plain' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `corpus_nnue_${new Date().toISOString().split('T')[0]}.pdn`
+      document.body.appendChild(a); a.click(); document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setPdnMsg(`✓ ${gameCount.toLocaleString()} parties exportées`)
+    } else {
+      setPdnMsg('Aucune partie récupérée — vérifie les pseudos.')
+    }
+    setPdnDownloading(false)
   }
 
   const fetchCorpusStats = async () => {
@@ -118,11 +161,9 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   }
 
   const handleStoreGames = async () => {
-    const names = corpusSearchDone && corpusFoundPlayers.length > 0
-      ? corpusFoundPlayers.map(p => p.username)
-      : mode === 'manual'
-        ? usernames.split('\n').map(u => u.trim()).filter(Boolean)
-        : foundPlayers.map(p => p.username)
+    const names = mode === 'manual'
+      ? usernames.split('\n').map(u => u.trim()).filter(Boolean)
+      : foundPlayers.map(p => p.username)
     if (!names.length) return
     setCorpusRunning(true)
     setCorpusIngestMsg('')
@@ -739,85 +780,12 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
             </p>
           )}
 
-          {/* ELO range for corpus */}
-          <div className="border-t border-gray-700 pt-2.5 flex flex-col gap-2">
-            <span className="text-xs font-medium text-gray-300">Range Elo du corpus</span>
-
-            <div className="grid grid-cols-2 gap-1.5">
-              {ELO_PRESETS.map(p => (
-                <button
-                  key={p.label}
-                  onClick={() => { setCorpusRatingMin(p.min); setCorpusRatingMax(p.max); setCorpusSearchDone(false) }}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-colors ${
-                    corpusRatingMin === p.min && corpusRatingMax === p.max
-                      ? 'bg-emerald-800 border-emerald-500 text-white'
-                      : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-emerald-500'
-                  }`}
-                >
-                  {p.label}<br />
-                  <span className="text-gray-400 font-normal">{p.min}–{p.max}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-xs text-gray-400 mb-1 block">Elo min</label>
-                <input
-                  type="number"
-                  value={corpusRatingMin}
-                  onChange={e => { setCorpusRatingMin(Number(e.target.value)); setCorpusSearchDone(false) }}
-                  min={500} max={2800} step={50}
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-400 mb-1 block">Elo max</label>
-                <input
-                  type="number"
-                  value={corpusRatingMax}
-                  onChange={e => { setCorpusRatingMax(Number(e.target.value)); setCorpusSearchDone(false) }}
-                  min={500} max={2800} step={50}
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleCorpusSearch}
-              disabled={corpusSearching || corpusRunning}
-              className="w-full py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium disabled:opacity-40 transition-colors"
-            >
-              {corpusSearching ? '🔍 Recherche…' : '✓ Valider le range'}
-            </button>
-
-            {corpusSearchDone && (
-              <div className={`rounded-lg px-3 py-2 text-xs flex flex-col gap-0.5 ${corpusFoundPlayers.length > 0 ? 'bg-emerald-900/40 border border-emerald-700/50' : 'bg-red-900/30 border border-red-700/50'}`}>
-                {corpusFoundPlayers.length > 0 ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span className="text-white font-semibold">{corpusFoundPlayers.length.toLocaleString()} joueurs</span>
-                      <span className="text-gray-400">dans ce range</span>
-                    </div>
-                    <div className="text-emerald-300">
-                      {corpusMaxGames > 0
-                        ? `~${(corpusFoundPlayers.length * corpusMaxGames).toLocaleString()} parties à télécharger (max ${corpusMaxGames}/joueur)`
-                        : `Toutes leurs parties (volume indéterminé)`}
-                    </div>
-                  </>
-                ) : (
-                  <span className="text-red-300">Aucun joueur trouvé — élargis le range.</span>
-                )}
-              </div>
-            )}
-          </div>
-
           <div className="flex items-center gap-2">
             <label className="text-xs text-gray-400 flex-shrink-0">Parties/joueur</label>
             <select
               value={corpusMaxGames}
               onChange={e => setCorpusMaxGames(Number(e.target.value))}
-              disabled={corpusRunning}
+              disabled={corpusRunning || pdnDownloading}
               className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-white disabled:opacity-40"
             >
               <option value={0}>Toutes</option>
@@ -827,24 +795,33 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
             </select>
           </div>
 
-          {(() => {
-            const names = corpusSearchDone && corpusFoundPlayers.length > 0
-              ? corpusFoundPlayers
-              : activeNames.map(n => ({ username: n, rating: 0 }))
-            return (
-              <button
-                onClick={handleStoreGames}
-                disabled={corpusRunning || isRunning || names.length === 0}
-                className="w-full py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium text-sm disabled:opacity-40 transition-colors"
-              >
-                {corpusRunning
-                  ? '⬇️ Téléchargement en cours…'
-                  : `💾 Stocker les parties (${names.length} joueur${names.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes' : ` · max ${corpusMaxGames}`})`}
-              </button>
-            )
-          })()}
+          {pdnMsg && (
+            <p className={`text-xs font-mono ${pdnMsg.startsWith('✓') ? 'text-green-300' : 'text-indigo-300 animate-pulse'}`}>
+              {pdnMsg}
+            </p>
+          )}
+
+          <button
+            onClick={handleDownloadPdn}
+            disabled={pdnDownloading || corpusRunning || activeNames.length === 0}
+            className="w-full py-2 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white font-medium text-sm disabled:opacity-40 transition-colors"
+          >
+            {pdnDownloading
+              ? '⬇️ Téléchargement…'
+              : `⬇️ Télécharger .pdn (${activeNames.length} joueur${activeNames.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes les parties' : ` · max ${corpusMaxGames}`})`}
+          </button>
+
+          <button
+            onClick={handleStoreGames}
+            disabled={corpusRunning || isRunning || activeNames.length === 0}
+            className="w-full py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium text-sm disabled:opacity-40 transition-colors"
+          >
+            {corpusRunning
+              ? '⬇️ Stockage en cours…'
+              : `💾 Stocker en SQLite (${activeNames.length} joueur${activeNames.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes' : ` · max ${corpusMaxGames}`})`}
+          </button>
           <p className="text-xs text-gray-500">
-            Stocke les parties complètes en base SQLite pour l'entraînement NNUE de jass. Idempotent — les doublons sont ignorés.
+            Utilise les joueurs sélectionnés ci-dessus (manuel ou Elo). Le .pdn se télécharge directement — SQLite garde une copie persistante pour rejouer.
           </p>
         </div>
 
