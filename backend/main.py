@@ -1556,6 +1556,35 @@ async def expert_games_stats() -> Dict[str, Any]:
     return await get_stats()
 
 
+@app.get("/api/lidraughts/top-players")
+async def lidraughts_top_players(nb: int = 200, perf: str = "standard") -> Dict[str, Any]:
+    """Proxy to Lidraughts leaderboard — returns top-N players for a given variant."""
+    import asyncio
+    import requests as _req
+    nb = min(max(nb, 10), 500)
+    url = f"https://lidraughts.org/api/player/top/{nb}/{perf}"
+
+    def _fetch() -> Dict[str, Any]:
+        r = _req.get(url, headers={"Accept": "application/json"}, timeout=20)
+        r.raise_for_status()
+        return r.json()
+
+    try:
+        data = await asyncio.to_thread(_fetch)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Lidraughts API error: {exc}")
+
+    players = [
+        {
+            "username": u.get("username") or u.get("id") or "",
+            "rating": ((u.get("perfs") or {}).get(perf) or {}).get("rating"),
+        }
+        for u in data.get("users", [])
+        if u.get("username") or u.get("id")
+    ]
+    return {"players": players, "total": len(players)}
+
+
 @app.post("/api/position/analyze", response_model=AnalysisResponse)
 async def position_analyze(
     body: Dict[str, Any],
