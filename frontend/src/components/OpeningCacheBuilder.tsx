@@ -69,6 +69,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const [topPlayers, setTopPlayers] = useState<{ username: string; rating: number | null }[]>([])
   const [topFetching, setTopFetching] = useState(false)
   const [topFetchDone, setTopFetchDone] = useState(false)
+  const [topFetchError, setTopFetchError] = useState('')
   const [corpusRatingMin, setCorpusRatingMin] = useState(0)
   const [corpusRatingMax, setCorpusRatingMax] = useState(0)
 
@@ -98,14 +99,33 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const handleFetchTopPlayers = async () => {
     setTopFetchDone(false)
     setTopPlayers([])
+    setTopFetchError('')
     setTopFetching(true)
     try {
-      const res = await fetch(`/api/lidraughts/top-players?nb=${topNb}&perf=${topPerf}`)
-      if (res.ok) {
-        const data = await res.json()
-        setTopPlayers(data.players ?? [])
+      // Call Lidraughts directly from the browser (same as game downloads)
+      const resp = await fetch(
+        `https://lidraughts.org/api/player/top/${topNb}/${topPerf}`,
+        { headers: { Accept: 'application/json' } },
+      )
+      if (resp.ok) {
+        const data = await resp.json()
+        const players = (data.users ?? [])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((u: any) => ({
+            username: (u.username || u.id || '') as string,
+            rating: (u.perfs?.[topPerf]?.rating ?? null) as number | null,
+          }))
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .filter((p: any) => p.username)
+        setTopPlayers(players)
+        if (players.length === 0) setTopFetchError(`Réponse vide (HTTP ${resp.status}) — essaie une autre variante.`)
+      } else {
+        const text = await resp.text().catch(() => '')
+        setTopFetchError(`Lidraughts HTTP ${resp.status}${text ? ': ' + text.slice(0, 120) : ''}`)
       }
-    } catch { /* network error */ }
+    } catch (e) {
+      setTopFetchError(`Erreur réseau : ${e instanceof Error ? e.message : String(e)}`)
+    }
     setTopFetchDone(true)
     setTopFetching(false)
   }
@@ -757,10 +777,17 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
           </button>
 
           {topFetchDone && (
-            <div className={`rounded-lg px-3 py-2 text-xs ${topPlayers.length > 0 ? 'bg-indigo-900/40 border border-indigo-700/50' : 'bg-amber-900/30 border border-amber-700/50'}`}>
-              {topPlayers.length > 0
-                ? <span className="text-indigo-200"><strong className="text-white">{topPlayers.length}</strong> joueurs récupérés · Elo {Math.min(...topPlayers.map(p => p.rating ?? 9999))}–{Math.max(...topPlayers.map(p => p.rating ?? 0))}</span>
-                : <span className="text-amber-300">Aucun joueur récupéré — vérifie ta connexion.</span>}
+            <div className={`rounded-lg px-3 py-2 text-xs ${topPlayers.length > 0 ? 'bg-indigo-900/40 border border-indigo-700/50' : 'bg-red-900/30 border border-red-700/50'}`}>
+              {topPlayers.length > 0 ? (
+                <span className="text-indigo-200">
+                  <strong className="text-white">{topPlayers.length}</strong> joueurs récupérés
+                  {topPlayers.some(p => p.rating !== null) && (
+                    <> · Elo {Math.min(...topPlayers.map(p => p.rating ?? 9999).filter(r => r < 9999))}–{Math.max(...topPlayers.map(p => p.rating ?? 0))}</>
+                  )}
+                </span>
+              ) : (
+                <span className="text-red-300 font-mono text-xs break-all">{topFetchError || 'Aucun joueur récupéré.'}</span>
+              )}
             </div>
           )}
 
