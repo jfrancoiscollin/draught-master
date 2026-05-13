@@ -59,6 +59,16 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
 
   const [cacheSize, setCacheSize] = useState<number | null>(null)
 
+  // NNUE corpus
+  const [corpusStats, setCorpusStats] = useState<{
+    total: number; by_source: Record<string, number>; min_date: string | null; max_date: string | null
+  } | null>(null)
+  const [corpusLoading, setCorpusLoading] = useState(false)
+  const [corpusIngestMsg, setCorpusIngestMsg] = useState('')
+  const [corpusRunning, setCorpusRunning] = useState(false)
+  // 0 = toutes (no ?max param)
+  const [corpusMaxGames, setCorpusMaxGames] = useState(0)
+
   // DB volume info
   const [dbInfo, setDbInfo] = useState<{
     db_path: string; env_override: boolean; file_exists: boolean;
@@ -71,6 +81,69 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   } | null>(null)
   const [reevalRunning, setReevalRunning] = useState(false)
   const [reevalMessage, setReevalMessage] = useState('')
+
+  const fetchCorpusStats = async () => {
+    setCorpusLoading(true)
+    try {
+      const res = await fetch('/api/expert-games/stats')
+      if (res.ok) setCorpusStats(await res.json())
+    } catch { /* ignore */ } finally {
+      setCorpusLoading(false)
+    }
+  }
+
+  const handleStoreGames = async () => {
+    const names = mode === 'manual'
+      ? usernames.split('\n').map(u => u.trim()).filter(Boolean)
+      : foundPlayers.map(p => p.username)
+    if (!names.length) return
+    setCorpusRunning(true)
+    setCorpusIngestMsg('')
+
+    let totalInserted = 0
+    let totalSkipped = 0
+
+    try {
+      for (let i = 0; i < names.length; i++) {
+        const username = names[i]
+        setCorpusIngestMsg(`⬇️ ${username} (${i + 1}/${names.length}) — ${totalInserted} parties stockées…`)
+
+        // Download games — corpusMaxGames=0 means no limit (fetch all)
+        const maxParam = corpusMaxGames > 0 ? `?max=${corpusMaxGames}` : ''
+        let raw = ''
+        try {
+          const resp = await fetch(
+            `https://lidraughts.org/api/games/user/${encodeURIComponent(username)}${maxParam}`,
+            { headers: { Accept: 'application/x-ndjson' } },
+          )
+          if (resp.ok) {
+            const ct = resp.headers.get('content-type') ?? ''
+            if (!ct.includes('html')) raw = await resp.text()
+          }
+        } catch { /* network/CORS */ }
+
+        if (!raw || raw.trim().length < 10) continue
+
+        try {
+          const res = await fetch('/api/expert-games/ingest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ndjson: raw }),
+          })
+          if (res.ok) {
+            const data = await res.json()
+            totalInserted += data.inserted ?? 0
+            totalSkipped += data.skipped ?? 0
+          }
+        } catch { /* ignore */ }
+      }
+
+      setCorpusIngestMsg(`✓ ${totalInserted} nouvelles parties stockées (${totalSkipped} déjà présentes)`)
+      await fetchCorpusStats()
+    } finally {
+      setCorpusRunning(false)
+    }
+  }
 
   const checkDbInfo = async () => {
     setDbInfoLoading(true)
@@ -135,12 +208,13 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     }, 2000)
   }
 
-  const handleSearch = async () => {
+  const handleSearch = async (allPlayers = false) => {
     setSearchDone(false)
     setFoundPlayers([])
     setPoolSize(null)
     try {
-      const { players, pool_size } = await fetchPlayersByRating(ratingMin, ratingMax, playerCount)
+      // count=0 fetches all players in the pool
+      const { players, pool_size } = await fetchPlayersByRating(ratingMin, ratingMax, allPlayers ? 0 : playerCount)
       setFoundPlayers(players)
       setPoolSize(pool_size)
     } catch {
@@ -444,13 +518,22 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
               </div>
             </div>
 
-            <button
-              onClick={handleSearch}
-              disabled={isRunning}
-              className="w-full py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm text-white font-medium disabled:opacity-40 transition-colors"
-            >
-              🔍 Chercher des joueurs
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleSearch(false)}
+                disabled={isRunning}
+                className="flex-1 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm text-white font-medium disabled:opacity-40 transition-colors"
+              >
+                🔍 Échantillon aléatoire
+              </button>
+              <button
+                onClick={() => handleSearch(true)}
+                disabled={isRunning}
+                className="flex-1 py-2 rounded-lg bg-indigo-800 hover:bg-indigo-700 text-sm text-white font-medium disabled:opacity-40 transition-colors"
+              >
+                📋 Tous les joueurs
+              </button>
+            </div>
 
             {searchDone && foundPlayers.length === 0 && (
               <p className="text-sm text-red-400 text-center">Aucun joueur trouvé dans cette plage. Essaie une plage plus large.</p>
@@ -482,7 +565,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
                   ))}
                 </div>
                 <button
-                  onClick={handleSearch}
+                  onClick={() => handleSearch(false)}
                   className="text-xs text-gray-500 hover:text-gray-300 underline self-start"
                 >
                   ↺ Piocher d'autres joueurs
@@ -590,6 +673,72 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
           <p>• Les positions déjà en cache sont <strong className="text-gray-300">skippées</strong> automatiquement</p>
           <p>• Le cache est <strong className="text-gray-300">persistant</strong> sur le volume Railway</p>
           <p>• Plus tu ajoutes de joueurs, plus la base est riche</p>
+        </div>
+
+        {/* NNUE Corpus */}
+        <div className="bg-gray-800 rounded-xl p-3 flex flex-col gap-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-300">Corpus NNUE (parties complètes)</span>
+            <button
+              onClick={fetchCorpusStats}
+              disabled={corpusLoading}
+              className="text-xs px-2.5 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50 transition-colors"
+            >
+              {corpusLoading ? '…' : 'Stats'}
+            </button>
+          </div>
+
+          {corpusStats !== null && (
+            <div className="text-xs font-mono space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${corpusStats.total > 0 ? 'bg-green-400' : 'bg-gray-500'}`} />
+                <span className="text-gray-400">Parties stockées :</span>
+                <span className="text-white font-semibold">{corpusStats.total.toLocaleString()}</span>
+              </div>
+              {corpusStats.total > 0 && corpusStats.min_date && (
+                <div className="text-gray-500 pl-4">
+                  {corpusStats.min_date} → {corpusStats.max_date}
+                  {Object.entries(corpusStats.by_source).map(([src, n]) => (
+                    <span key={src} className="ml-2 text-indigo-400">{src}: {n.toLocaleString()}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {corpusIngestMsg && (
+            <p className={`text-xs font-mono ${corpusIngestMsg.startsWith('✓') ? 'text-green-300' : 'text-indigo-300 animate-pulse'}`}>
+              {corpusIngestMsg}
+            </p>
+          )}
+
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-gray-400 flex-shrink-0">Parties/joueur</label>
+            <select
+              value={corpusMaxGames}
+              onChange={e => setCorpusMaxGames(Number(e.target.value))}
+              disabled={corpusRunning}
+              className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-white disabled:opacity-40"
+            >
+              <option value={0}>Toutes</option>
+              <option value={500}>500</option>
+              <option value={1000}>1 000</option>
+              <option value={2000}>2 000</option>
+            </select>
+          </div>
+
+          <button
+            onClick={handleStoreGames}
+            disabled={corpusRunning || isRunning || activeNames.length === 0}
+            className="w-full py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium text-sm disabled:opacity-40 transition-colors"
+          >
+            {corpusRunning
+              ? '⬇️ Téléchargement en cours…'
+              : `💾 Stocker les parties (${activeNames.length} joueur${activeNames.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes' : ` · max ${corpusMaxGames}`})`}
+          </button>
+          <p className="text-xs text-gray-500">
+            Stocke les parties complètes en base SQLite pour l'entraînement NNUE de jass. Idempotent — les doublons sont ignorés.
+          </p>
         </div>
 
         {/* Export FENs */}

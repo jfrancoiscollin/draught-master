@@ -140,7 +140,8 @@ def fetch_players_by_rating(
     )
 
     random.shuffle(in_range)
-    return in_range[:count], pool_size
+    # count=0 → return all (no sampling)
+    return in_range if count == 0 else in_range[:count], pool_size
 
 
 def _fetch_leaderboard_candidates(perf_type: str) -> list[dict]:

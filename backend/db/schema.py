@@ -89,6 +89,40 @@ async def init_db() -> None:
                 updated_at TEXT NOT NULL
             )
         """)
+        # Expert games corpus (NNUE training)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS expert_games (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                source        TEXT NOT NULL,
+                source_id     TEXT,
+                date          TEXT,
+                white_name    TEXT,
+                black_name    TEXT,
+                white_rating  INTEGER,
+                black_rating  INTEGER,
+                result        TEXT NOT NULL,
+                num_plies     INTEGER,
+                event         TEXT,
+                variant       TEXT NOT NULL DEFAULT 'standard',
+                pdn           TEXT NOT NULL,
+                ingested_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (source, source_id)
+            )
+        """)
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_eg_date ON expert_games(date)"
+        )
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_eg_variant ON expert_games(variant)"
+        )
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_eg_min_rating ON expert_games("
+            "CASE WHEN white_rating IS NULL THEN black_rating "
+            "     WHEN black_rating IS NULL THEN white_rating "
+            "     WHEN white_rating < black_rating THEN white_rating "
+            "     ELSE black_rating END)"
+        )
+
         # Pedagogy tables (PR 7)
         await db.execute("""
             CREATE TABLE IF NOT EXISTS move_verdicts (

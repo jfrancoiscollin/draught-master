@@ -1531,6 +1531,31 @@ async def export_fens():
     )
 
 
+# ---------------------------------------------------------------------------
+# Expert games corpus (NNUE training)
+# ---------------------------------------------------------------------------
+
+@app.post("/api/expert-games/ingest")
+async def ingest_expert_games(body: Dict[str, Any]) -> Dict[str, Any]:
+    """Receive raw Lidraughts NDJSON and store full games into expert_games.
+
+    Body: { "ndjson": "<raw NDJSON string>" }
+    Returns: { "inserted": N, "skipped": N, "errors": N }
+    """
+    from db.expert_games import ingest_ndjson
+    ndjson: str = body.get("ndjson", "")
+    if not ndjson or len(ndjson) < 10:
+        return {"inserted": 0, "skipped": 0, "errors": 0}
+    return await ingest_ndjson(ndjson)
+
+
+@app.get("/api/expert-games/stats")
+async def expert_games_stats() -> Dict[str, Any]:
+    """Return aggregate statistics for the expert_games corpus."""
+    from db.expert_games import get_stats
+    return await get_stats()
+
+
 @app.post("/api/position/analyze", response_model=AnalysisResponse)
 async def position_analyze(
     body: Dict[str, Any],
