@@ -69,6 +69,14 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   // 0 = toutes (no ?max param)
   const [corpusMaxGames, setCorpusMaxGames] = useState(0)
 
+  // Corpus NNUE — own ELO range (independent of the main ELO mode)
+  const [corpusRatingMin, setCorpusRatingMin] = useState(2000)
+  const [corpusRatingMax, setCorpusRatingMax] = useState(2800)
+  const [corpusFoundPlayers, setCorpusFoundPlayers] = useState<{ username: string; rating: number }[]>([])
+  const [corpusPoolSize, setCorpusPoolSize] = useState<number | null>(null)
+  const [corpusSearchDone, setCorpusSearchDone] = useState(false)
+  const [corpusSearching, setCorpusSearching] = useState(false)
+
   // DB volume info
   const [dbInfo, setDbInfo] = useState<{
     db_path: string; env_override: boolean; file_exists: boolean;
@@ -82,6 +90,23 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const [reevalRunning, setReevalRunning] = useState(false)
   const [reevalMessage, setReevalMessage] = useState('')
 
+  const handleCorpusSearch = async () => {
+    setCorpusSearchDone(false)
+    setCorpusFoundPlayers([])
+    setCorpusPoolSize(null)
+    setCorpusSearching(true)
+    try {
+      const { players, pool_size } = await fetchPlayersByRating(corpusRatingMin, corpusRatingMax, 0)
+      setCorpusFoundPlayers(players)
+      setCorpusPoolSize(pool_size)
+    } catch {
+      setCorpusFoundPlayers([])
+      setCorpusPoolSize(0)
+    }
+    setCorpusSearchDone(true)
+    setCorpusSearching(false)
+  }
+
   const fetchCorpusStats = async () => {
     setCorpusLoading(true)
     try {
@@ -93,9 +118,11 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   }
 
   const handleStoreGames = async () => {
-    const names = mode === 'manual'
-      ? usernames.split('\n').map(u => u.trim()).filter(Boolean)
-      : foundPlayers.map(p => p.username)
+    const names = corpusSearchDone && corpusFoundPlayers.length > 0
+      ? corpusFoundPlayers.map(p => p.username)
+      : mode === 'manual'
+        ? usernames.split('\n').map(u => u.trim()).filter(Boolean)
+        : foundPlayers.map(p => p.username)
     if (!names.length) return
     setCorpusRunning(true)
     setCorpusIngestMsg('')
@@ -712,6 +739,79 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
             </p>
           )}
 
+          {/* ELO range for corpus */}
+          <div className="border-t border-gray-700 pt-2.5 flex flex-col gap-2">
+            <span className="text-xs font-medium text-gray-300">Range Elo du corpus</span>
+
+            <div className="grid grid-cols-2 gap-1.5">
+              {ELO_PRESETS.map(p => (
+                <button
+                  key={p.label}
+                  onClick={() => { setCorpusRatingMin(p.min); setCorpusRatingMax(p.max); setCorpusSearchDone(false) }}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-colors ${
+                    corpusRatingMin === p.min && corpusRatingMax === p.max
+                      ? 'bg-emerald-800 border-emerald-500 text-white'
+                      : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-emerald-500'
+                  }`}
+                >
+                  {p.label}<br />
+                  <span className="text-gray-400 font-normal">{p.min}–{p.max}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Elo min</label>
+                <input
+                  type="number"
+                  value={corpusRatingMin}
+                  onChange={e => { setCorpusRatingMin(Number(e.target.value)); setCorpusSearchDone(false) }}
+                  min={500} max={2800} step={50}
+                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Elo max</label>
+                <input
+                  type="number"
+                  value={corpusRatingMax}
+                  onChange={e => { setCorpusRatingMax(Number(e.target.value)); setCorpusSearchDone(false) }}
+                  min={500} max={2800} step={50}
+                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleCorpusSearch}
+              disabled={corpusSearching || corpusRunning}
+              className="w-full py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium disabled:opacity-40 transition-colors"
+            >
+              {corpusSearching ? '🔍 Recherche…' : '✓ Valider le range'}
+            </button>
+
+            {corpusSearchDone && (
+              <div className={`rounded-lg px-3 py-2 text-xs flex flex-col gap-0.5 ${corpusFoundPlayers.length > 0 ? 'bg-emerald-900/40 border border-emerald-700/50' : 'bg-red-900/30 border border-red-700/50'}`}>
+                {corpusFoundPlayers.length > 0 ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-semibold">{corpusFoundPlayers.length.toLocaleString()} joueurs</span>
+                      <span className="text-gray-400">dans ce range</span>
+                    </div>
+                    <div className="text-emerald-300">
+                      {corpusMaxGames > 0
+                        ? `~${(corpusFoundPlayers.length * corpusMaxGames).toLocaleString()} parties à télécharger (max ${corpusMaxGames}/joueur)`
+                        : `Toutes leurs parties (volume indéterminé)`}
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-red-300">Aucun joueur trouvé — élargis le range.</span>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center gap-2">
             <label className="text-xs text-gray-400 flex-shrink-0">Parties/joueur</label>
             <select
@@ -727,15 +827,22 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
             </select>
           </div>
 
-          <button
-            onClick={handleStoreGames}
-            disabled={corpusRunning || isRunning || activeNames.length === 0}
-            className="w-full py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium text-sm disabled:opacity-40 transition-colors"
-          >
-            {corpusRunning
-              ? '⬇️ Téléchargement en cours…'
-              : `💾 Stocker les parties (${activeNames.length} joueur${activeNames.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes' : ` · max ${corpusMaxGames}`})`}
-          </button>
+          {(() => {
+            const names = corpusSearchDone && corpusFoundPlayers.length > 0
+              ? corpusFoundPlayers
+              : activeNames.map(n => ({ username: n, rating: 0 }))
+            return (
+              <button
+                onClick={handleStoreGames}
+                disabled={corpusRunning || isRunning || names.length === 0}
+                className="w-full py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium text-sm disabled:opacity-40 transition-colors"
+              >
+                {corpusRunning
+                  ? '⬇️ Téléchargement en cours…'
+                  : `💾 Stocker les parties (${names.length} joueur${names.length > 1 ? 's' : ''}${corpusMaxGames === 0 ? ' · toutes' : ` · max ${corpusMaxGames}`})`}
+              </button>
+            )
+          })()}
           <p className="text-xs text-gray-500">
             Stocke les parties complètes en base SQLite pour l'entraînement NNUE de jass. Idempotent — les doublons sont ignorés.
           </p>
