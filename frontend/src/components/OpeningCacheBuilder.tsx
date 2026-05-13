@@ -65,7 +65,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
 
   // Corpus — discover strong players via opponent extraction from seed games
   const [topNb, setTopNb] = useState(200)
-  const [topSeeds, setTopSeeds] = useState('el-negron,pbp7055')
+  const [topSeeds, setTopSeeds] = useState('')  // empty = auto-scrape lidraughts.org/player
   const [topMinRating, setTopMinRating] = useState(1800)
   const [topPlayers, setTopPlayers] = useState<{ username: string; rating: number | null }[]>([])
   const [topFetching, setTopFetching] = useState(false)
@@ -100,7 +100,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     setTopFetchError('')
     setTopFetching(true)
     const params = new URLSearchParams({
-      seeds: topSeeds,
+      seeds: topSeeds.trim(),   // empty = auto-scrape lidraughts.org/player
       min_rating: String(topMinRating),
       nb: String(topNb),
       max_games_per_seed: '100',
@@ -113,8 +113,11 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
           setTopFetchError(data.error)
         } else {
           setTopPlayers(data.players ?? [])
+          // Show which seeds were actually used (useful when auto-discovered)
+          if (data.seeds_used?.length && !topSeeds.trim())
+            setTopSeeds(data.seeds_used.join(','))
           if ((data.players ?? []).length === 0)
-            setTopFetchError('Aucun joueur trouvé — essaie d\'abaisser l\'Elo min ou d\'ajouter des seeds.')
+            setTopFetchError('Aucun joueur trouvé — baisse l\'Elo min ou ajoute des seeds manuellement.')
         }
       } else {
         setTopFetchError(`Erreur backend HTTP ${res.status}`)
@@ -736,13 +739,15 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
 
           {/* Step 1 — discovery params */}
           <div>
-            <label className="text-xs text-gray-400 mb-1 block">Joueurs de départ (seeds, virgule)</label>
+            <label className="text-xs text-gray-400 mb-1 block">
+              Seeds (optionnel — vide = auto depuis lidraughts.org/player)
+            </label>
             <input
               type="text"
               value={topSeeds}
               onChange={e => { setTopSeeds(e.target.value); setTopFetchDone(false) }}
               disabled={topFetching}
-              placeholder="el-negron,pbp7055,..."
+              placeholder="Laisser vide pour découverte automatique…"
               className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white font-mono disabled:opacity-40"
             />
           </div>

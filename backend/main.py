@@ -1556,21 +1556,50 @@ async def expert_games_stats() -> Dict[str, Any]:
     return await get_stats()
 
 
+def _scrape_lidraughts_seeds(nb_seeds: int = 30) -> list[str]:
+    """Scrape lidraughts.org/player to extract top player usernames."""
+    import re
+    import requests as _req
+    try:
+        resp = _req.get("https://lidraughts.org/player", timeout=15,
+                        headers={"Accept": "text/html"})
+        if not resp.ok:
+            return []
+        # Lidraughts URLs use /@/username pattern
+        names = re.findall(r'/@/([A-Za-z0-9_-]{2,30})', resp.text)
+        seen: set[str] = set()
+        result: list[str] = []
+        for n in names:
+            if n not in seen:
+                seen.add(n)
+                result.append(n)
+        return result[:nb_seeds]
+    except Exception:
+        return []
+
+
 @app.get("/api/lidraughts/top-players")
 async def lidraughts_top_players(
-    seeds: str = "el-negron,pbp7055",
+    seeds: str = "",
     min_rating: int = 1800,
     nb: int = 200,
     max_games_per_seed: int = 100,
 ) -> Dict[str, Any]:
-    """Discover strong players by fetching games from seed players and extracting high-rated opponents."""
+    """Discover strong players by fetching games from seed players and extracting high-rated opponents.
+
+    If seeds is empty, automatically scrapes lidraughts.org/player to get seed usernames.
+    """
     import asyncio
     import json as _json
     import requests as _req
 
-    seed_list = [s.strip() for s in seeds.split(",") if s.strip()][:10]
+    # Auto-discover seeds from leaderboard if none provided
+    seed_list = [s.strip() for s in seeds.split(",") if s.strip()]
     if not seed_list:
-        return {"players": [], "total": 0, "error": "No seeds provided"}
+        seed_list = await asyncio.to_thread(_scrape_lidraughts_seeds, 30)
+    seed_list = seed_list[:15]
+    if not seed_list:
+        return {"players": [], "total": 0, "error": "Impossible de récupérer les seeds depuis lidraughts.org/player"}
 
     found: dict[str, int] = {}  # username → max rating seen
 
@@ -1604,7 +1633,7 @@ async def lidraughts_top_players(
 
     sorted_players = sorted(found.items(), key=lambda x: -x[1])[:nb]
     players = [{"username": name, "rating": rating} for name, rating in sorted_players]
-    return {"players": players, "total": len(players)}
+    return {"players": players, "total": len(players), "seeds_used": seed_list}
 
 
 @app.post("/api/position/analyze", response_model=AnalysisResponse)
