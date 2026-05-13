@@ -1631,7 +1631,33 @@ async def lidraughts_top_players(
                 pass
 
     sorted_players = sorted(found.items(), key=lambda x: -x[1])[:nb]
-    players = [{"username": name, "rating": rating} for name, rating in sorted_players]
+    players = [{"username": name, "rating": rating, "game_count": 0} for name, rating in sorted_players]
+
+    # Batch-fetch rated game counts via POST /api/users
+    def _fetch_counts(usernames: list[str]) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for i in range(0, len(usernames), 100):
+            batch = usernames[i:i + 100]
+            try:
+                r = _req.post(
+                    "https://lidraughts.org/api/users",
+                    data="\n".join(batch),
+                    headers={"Content-Type": "text/plain", "Accept": "application/json"},
+                    timeout=15,
+                )
+                if r.ok:
+                    for u in r.json():
+                        uname = (u.get("username") or u.get("id") or "").lower()
+                        c = u.get("count") or {}
+                        counts[uname] = int(c.get("rated") or c.get("all") or 0)
+            except Exception:
+                pass
+        return counts
+
+    if players:
+        counts = await asyncio.to_thread(_fetch_counts, [p["username"] for p in players])
+        for p in players:
+            p["game_count"] = counts.get(p["username"].lower(), 0)
     return {"players": players, "total": len(players), "seeds_used": seed_list}
 
 
