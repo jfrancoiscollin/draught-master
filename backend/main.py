@@ -1564,15 +1564,22 @@ async def lidraughts_top_players(nb: int = 200, perf: str = "standard") -> Dict[
     nb = min(max(nb, 10), 500)
     url = f"https://lidraughts.org/api/player/top/{nb}/{perf}"
 
-    def _fetch() -> Dict[str, Any]:
+    def _fetch() -> tuple:
         r = _req.get(url, headers={"Accept": "application/json"}, timeout=20)
-        r.raise_for_status()
-        return r.json()
+        return r.status_code, r.text
 
     try:
-        data = await asyncio.to_thread(_fetch)
+        status_code, body = await asyncio.to_thread(_fetch)
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Lidraughts API error: {exc}")
+        return {"players": [], "total": 0, "error": f"network: {exc}"}
+
+    if status_code != 200:
+        return {"players": [], "total": 0, "error": f"HTTP {status_code}: {body[:300]}"}
+
+    try:
+        data = __import__("json").loads(body)
+    except Exception as exc:
+        return {"players": [], "total": 0, "error": f"JSON parse: {exc} — body: {body[:200]}"}
 
     players = [
         {

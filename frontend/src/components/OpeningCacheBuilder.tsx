@@ -102,26 +102,18 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
     setTopFetchError('')
     setTopFetching(true)
     try {
-      // Call Lidraughts directly from the browser (same as game downloads)
-      const resp = await fetch(
-        `https://lidraughts.org/api/player/top/${topNb}/${topPerf}`,
-        { headers: { Accept: 'application/json' } },
-      )
-      if (resp.ok) {
-        const data = await resp.json()
-        const players = (data.users ?? [])
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((u: any) => ({
-            username: (u.username || u.id || '') as string,
-            rating: (u.perfs?.[topPerf]?.rating ?? null) as number | null,
-          }))
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .filter((p: any) => p.username)
-        setTopPlayers(players)
-        if (players.length === 0) setTopFetchError(`Réponse vide (HTTP ${resp.status}) — essaie une autre variante.`)
+      const res = await fetch(`/api/lidraughts/top-players?nb=${topNb}&perf=${topPerf}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.error) {
+          setTopFetchError(data.error)
+        } else {
+          setTopPlayers(data.players ?? [])
+          if ((data.players ?? []).length === 0)
+            setTopFetchError('Réponse vide — essaie une autre variante.')
+        }
       } else {
-        const text = await resp.text().catch(() => '')
-        setTopFetchError(`Lidraughts HTTP ${resp.status}${text ? ': ' + text.slice(0, 120) : ''}`)
+        setTopFetchError(`Backend HTTP ${res.status}`)
       }
     } catch (e) {
       setTopFetchError(`Erreur réseau : ${e instanceof Error ? e.message : String(e)}`)
