@@ -1557,38 +1557,53 @@ async def expert_games_stats() -> Dict[str, Any]:
 
 
 @app.get("/api/lidraughts/top-players")
-async def lidraughts_top_players(nb: int = 200, perf: str = "standard") -> Dict[str, Any]:
-    """Proxy to Lidraughts leaderboard — returns top-N players for a given variant."""
+async def lidraughts_top_players(
+    seeds: str = "el-negron,pbp7055",
+    min_rating: int = 1800,
+    nb: int = 200,
+    max_games_per_seed: int = 100,
+) -> Dict[str, Any]:
+    """Discover strong players by fetching games from seed players and extracting high-rated opponents."""
     import asyncio
+    import json as _json
     import requests as _req
-    nb = min(max(nb, 10), 500)
-    url = f"https://lidraughts.org/api/player/top/{nb}/{perf}"
 
-    def _fetch() -> tuple:
-        r = _req.get(url, headers={"Accept": "application/json"}, timeout=20)
-        return r.status_code, r.text
+    seed_list = [s.strip() for s in seeds.split(",") if s.strip()][:10]
+    if not seed_list:
+        return {"players": [], "total": 0, "error": "No seeds provided"}
 
-    try:
-        status_code, body = await asyncio.to_thread(_fetch)
-    except Exception as exc:
-        return {"players": [], "total": 0, "error": f"network: {exc}"}
+    found: dict[str, int] = {}  # username → max rating seen
 
-    if status_code != 200:
-        return {"players": [], "total": 0, "error": f"HTTP {status_code}: {body[:300]}"}
+    def _fetch_games(username: str) -> str:
+        url = (
+            f"https://lidraughts.org/api/games/user/{username}"
+            f"?max={max_games_per_seed}&rated=true"
+        )
+        r = _req.get(url, headers={"Accept": "application/x-ndjson"}, timeout=30)
+        return r.text if r.ok else ""
 
-    try:
-        data = __import__("json").loads(body)
-    except Exception as exc:
-        return {"players": [], "total": 0, "error": f"JSON parse: {exc} — body: {body[:200]}"}
+    for seed in seed_list:
+        try:
+            text = await asyncio.to_thread(_fetch_games, seed)
+        except Exception as exc:
+            continue
+        for line in text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = _json.loads(line)
+                for side in ("white", "black"):
+                    p = obj.get("players", {}).get(side, {})
+                    name = (p.get("user") or {}).get("name") or p.get("name") or ""
+                    rating = p.get("rating") or (p.get("user") or {}).get("rating") or 0
+                    if name and int(rating) >= min_rating:
+                        found[name] = max(found.get(name, 0), int(rating))
+            except Exception:
+                pass
 
-    players = [
-        {
-            "username": u.get("username") or u.get("id") or "",
-            "rating": ((u.get("perfs") or {}).get(perf) or {}).get("rating"),
-        }
-        for u in data.get("users", [])
-        if u.get("username") or u.get("id")
-    ]
+    sorted_players = sorted(found.items(), key=lambda x: -x[1])[:nb]
+    players = [{"username": name, "rating": rating} for name, rating in sorted_players]
     return {"players": players, "total": len(players)}
 
 

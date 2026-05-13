@@ -63,14 +63,14 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   // 0 = toutes (no ?max param)
   const [corpusMaxGames, setCorpusMaxGames] = useState(0)
 
-  // Corpus — top-N from Lidraughts + optional ELO filter (client-side)
+  // Corpus — discover strong players via opponent extraction from seed games
   const [topNb, setTopNb] = useState(200)
-  const [topPerf, setTopPerf] = useState('standard')
+  const [topSeeds, setTopSeeds] = useState('el-negron,pbp7055')
+  const [topMinRating, setTopMinRating] = useState(1800)
   const [topPlayers, setTopPlayers] = useState<{ username: string; rating: number | null }[]>([])
   const [topFetching, setTopFetching] = useState(false)
   const [topFetchDone, setTopFetchDone] = useState(false)
   const [topFetchError, setTopFetchError] = useState('')
-  const [corpusRatingMin, setCorpusRatingMin] = useState(0)
   const [corpusRatingMax, setCorpusRatingMax] = useState(0)
 
   // PDN direct download (no DB storage)
@@ -90,19 +90,23 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
   const [reevalRunning, setReevalRunning] = useState(false)
   const [reevalMessage, setReevalMessage] = useState('')
 
-  const filteredCorpusPlayers = topPlayers.filter(p => {
-    if (corpusRatingMin > 0 && (p.rating ?? 0) < corpusRatingMin) return false
-    if (corpusRatingMax > 0 && (p.rating ?? 0) > corpusRatingMax) return false
-    return true
-  })
+  const filteredCorpusPlayers = topPlayers.filter(p =>
+    corpusRatingMax === 0 || (p.rating ?? 0) <= corpusRatingMax
+  )
 
   const handleFetchTopPlayers = async () => {
     setTopFetchDone(false)
     setTopPlayers([])
     setTopFetchError('')
     setTopFetching(true)
+    const params = new URLSearchParams({
+      seeds: topSeeds,
+      min_rating: String(topMinRating),
+      nb: String(topNb),
+      max_games_per_seed: '100',
+    })
     try {
-      const res = await fetch(`/api/lidraughts/top-players?nb=${topNb}&perf=${topPerf}`)
+      const res = await fetch(`/api/lidraughts/top-players?${params}`)
       if (res.ok) {
         const data = await res.json()
         if (data.error) {
@@ -110,10 +114,10 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
         } else {
           setTopPlayers(data.players ?? [])
           if ((data.players ?? []).length === 0)
-            setTopFetchError('Réponse vide — essaie une autre variante.')
+            setTopFetchError('Aucun joueur trouvé — essaie d\'abaisser l\'Elo min ou d\'ajouter des seeds.')
         }
       } else {
-        setTopFetchError(`Backend HTTP ${res.status}`)
+        setTopFetchError(`Erreur backend HTTP ${res.status}`)
       }
     } catch (e) {
       setTopFetchError(`Erreur réseau : ${e instanceof Error ? e.message : String(e)}`)
@@ -730,32 +734,37 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
         <div className="bg-gray-800 rounded-xl p-3 flex flex-col gap-2.5">
           <span className="text-xs font-semibold text-gray-300">Corpus NNUE (parties complètes)</span>
 
-          {/* Step 1 — fetch top-N from Lidraughts */}
+          {/* Step 1 — discovery params */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Joueurs de départ (seeds, virgule)</label>
+            <input
+              type="text"
+              value={topSeeds}
+              onChange={e => { setTopSeeds(e.target.value); setTopFetchDone(false) }}
+              disabled={topFetching}
+              placeholder="el-negron,pbp7055,..."
+              className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white font-mono disabled:opacity-40"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-gray-400 mb-1 block">Variante</label>
-              <select value={topPerf} onChange={e => { setTopPerf(e.target.value); setTopFetchDone(false) }}
-                disabled={topFetching}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-xs text-white disabled:opacity-40">
-                <option value="standard">International (10×10)</option>
-                <option value="frisian">Frisian</option>
-                <option value="antidraughts">Anti-draughts</option>
-                <option value="frysk">Frysk!</option>
-                <option value="breakthrough">Breakthrough</option>
-                <option value="russian">Russian</option>
-                <option value="turkish">Turkish</option>
-              </select>
+              <label className="text-xs text-gray-400 mb-1 block">Elo min</label>
+              <input type="number" value={topMinRating}
+                onChange={e => { setTopMinRating(Number(e.target.value)); setTopFetchDone(false) }}
+                min={800} max={2800} step={50} disabled={topFetching}
+                className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white disabled:opacity-40" />
             </div>
             <div>
-              <label className="text-xs text-gray-400 mb-1 block">Top joueurs</label>
+              <label className="text-xs text-gray-400 mb-1 block">Nb joueurs max</label>
               <select value={topNb} onChange={e => { setTopNb(Number(e.target.value)); setTopFetchDone(false) }}
                 disabled={topFetching}
                 className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-xs text-white disabled:opacity-40">
-                <option value={100}>Top 100</option>
-                <option value={200}>Top 200</option>
-                <option value={300}>Top 300</option>
-                <option value={400}>Top 400</option>
-                <option value={500}>Top 500</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+                <option value={300}>300</option>
+                <option value={400}>400</option>
+                <option value={500}>500</option>
               </select>
             </div>
           </div>
@@ -765,49 +774,35 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
             disabled={topFetching || pdnDownloading}
             className="w-full py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium disabled:opacity-40 transition-colors"
           >
-            {topFetching ? '⏳ Récupération…' : '🌍 Récupérer les top joueurs Lidraughts'}
+            {topFetching ? '⏳ Découverte en cours…' : '🔍 Découvrir les joueurs forts'}
           </button>
 
           {topFetchDone && (
             <div className={`rounded-lg px-3 py-2 text-xs ${topPlayers.length > 0 ? 'bg-indigo-900/40 border border-indigo-700/50' : 'bg-red-900/30 border border-red-700/50'}`}>
               {topPlayers.length > 0 ? (
                 <span className="text-indigo-200">
-                  <strong className="text-white">{topPlayers.length}</strong> joueurs récupérés
+                  <strong className="text-white">{topPlayers.length}</strong> joueurs ≥ {topMinRating} Elo
                   {topPlayers.some(p => p.rating !== null) && (
-                    <> · Elo {Math.min(...topPlayers.map(p => p.rating ?? 9999).filter(r => r < 9999))}–{Math.max(...topPlayers.map(p => p.rating ?? 0))}</>
+                    <> · {Math.min(...topPlayers.map(p => p.rating ?? 9999).filter(r => r < 9999))}–{Math.max(...topPlayers.map(p => p.rating ?? 0))}</>
                   )}
+                  {corpusMaxGames > 0 && <span className="text-gray-400"> · ~{(topPlayers.length * corpusMaxGames).toLocaleString()} parties max</span>}
                 </span>
               ) : (
-                <span className="text-red-300 font-mono text-xs break-all">{topFetchError || 'Aucun joueur récupéré.'}</span>
+                <span className="text-red-300">{topFetchError || 'Aucun joueur trouvé.'}</span>
               )}
             </div>
           )}
 
-          {/* Step 2 — optional ELO filter */}
+          {/* Step 2 — optional max Elo cap */}
           {topFetchDone && topPlayers.length > 0 && (
-            <div className="flex flex-col gap-2 border-t border-gray-700 pt-2">
-              <span className="text-xs text-gray-400">Filtrer par Elo (0 = sans filtre)</span>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Min</label>
-                  <input type="number" value={corpusRatingMin}
-                    onChange={e => setCorpusRatingMin(Number(e.target.value))}
-                    min={0} max={2800} step={50}
-                    className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Max</label>
-                  <input type="number" value={corpusRatingMax}
-                    onChange={e => setCorpusRatingMax(Number(e.target.value))}
-                    min={0} max={2800} step={50}
-                    className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white" />
-                </div>
-              </div>
-              {(corpusRatingMin > 0 || corpusRatingMax > 0) && (
-                <p className="text-xs text-indigo-300">
-                  {filteredCorpusPlayers.length} joueurs après filtre
-                  {corpusMaxGames > 0 && ` · ~${(filteredCorpusPlayers.length * corpusMaxGames).toLocaleString()} parties max`}
-                </p>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-400 flex-shrink-0">Elo max (0 = sans limite)</label>
+              <input type="number" value={corpusRatingMax}
+                onChange={e => setCorpusRatingMax(Number(e.target.value))}
+                min={0} max={2800} step={50}
+                className="w-32 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-white" />
+              {corpusRatingMax > 0 && (
+                <span className="text-xs text-indigo-300">{filteredCorpusPlayers.length} joueurs</span>
               )}
             </div>
           )}
