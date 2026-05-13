@@ -1583,12 +1583,9 @@ async def lidraughts_top_players(
     seeds: str = "",
     min_rating: int = 1800,
     nb: int = 200,
-    max_games_per_seed: int = 100,
+    max_games_per_seed: int = 30,
 ) -> Dict[str, Any]:
-    """Discover strong players by fetching games from seed players and extracting high-rated opponents.
-
-    If seeds is empty, automatically scrapes lidraughts.org/player to get seed usernames.
-    """
+    """Discover strong players by fetching games from seed players in parallel."""
     import asyncio
     import json as _json
     import requests as _req
@@ -1596,8 +1593,8 @@ async def lidraughts_top_players(
     # Auto-discover seeds from leaderboard if none provided
     seed_list = [s.strip() for s in seeds.split(",") if s.strip()]
     if not seed_list:
-        seed_list = await asyncio.to_thread(_scrape_lidraughts_seeds, 30)
-    seed_list = seed_list[:15]
+        seed_list = await asyncio.to_thread(_scrape_lidraughts_seeds, 20)
+    seed_list = seed_list[:10]  # cap at 10 seeds to stay well within 25s
     if not seed_list:
         return {"players": [], "total": 0, "error": "Impossible de récupérer les seeds depuis lidraughts.org/player"}
 
@@ -1608,14 +1605,16 @@ async def lidraughts_top_players(
             f"https://lidraughts.org/api/games/user/{username}"
             f"?max={max_games_per_seed}&rated=true"
         )
-        r = _req.get(url, headers={"Accept": "application/x-ndjson"}, timeout=30)
-        return r.text if r.ok else ""
-
-    for seed in seed_list:
         try:
-            text = await asyncio.to_thread(_fetch_games, seed)
-        except Exception as exc:
-            continue
+            r = _req.get(url, headers={"Accept": "application/x-ndjson"}, timeout=12)
+            return r.text if r.ok else ""
+        except Exception:
+            return ""
+
+    # Fetch all seeds in parallel
+    texts = await asyncio.gather(*[asyncio.to_thread(_fetch_games, s) for s in seed_list])
+
+    for text in texts:
         for line in text.splitlines():
             line = line.strip()
             if not line:
