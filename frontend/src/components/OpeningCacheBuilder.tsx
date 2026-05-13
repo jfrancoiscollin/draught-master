@@ -112,12 +112,21 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
         if (data.error) {
           setTopFetchError(data.error)
         } else {
-          setTopPlayers(data.players ?? [])
+          const incoming: { username: string; rating: number | null }[] = data.players ?? []
+          // Merge with existing players — keep highest rating, deduplicate
+          setTopPlayers(prev => {
+            const merged = new Map<string, number>()
+            for (const p of prev) merged.set(p.username, p.rating ?? 0)
+            for (const p of incoming) merged.set(p.username, Math.max(merged.get(p.username) ?? 0, p.rating ?? 0))
+            return Array.from(merged.entries())
+              .sort((a, b) => b[1] - a[1])
+              .map(([username, rating]) => ({ username, rating }))
+          })
           // Show which seeds were actually used (useful when auto-discovered)
           if (data.seeds_used?.length && !topSeeds.trim())
             setTopSeeds(data.seeds_used.join(','))
-          if ((data.players ?? []).length === 0)
-            setTopFetchError('Aucun joueur trouvé — baisse l\'Elo min ou ajoute des seeds manuellement.')
+          if (incoming.length === 0)
+            setTopFetchError('Aucun nouveau joueur trouvé — baisse l\'Elo min ou change les seeds.')
         }
       } else {
         setTopFetchError(`Erreur backend HTTP ${res.status}`)
@@ -774,13 +783,25 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
             </div>
           </div>
 
+          <div className="flex gap-2">
           <button
             onClick={handleFetchTopPlayers}
             disabled={topFetching || pdnDownloading}
-            className="w-full py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium disabled:opacity-40 transition-colors"
+            className="flex-1 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium disabled:opacity-40 transition-colors"
           >
-            {topFetching ? '⏳ Découverte en cours…' : '🔍 Découvrir les joueurs forts'}
+            {topFetching ? '⏳ Découverte en cours…' : topPlayers.length > 0 ? '🔍 Découvrir + cumuler' : '🔍 Découvrir les joueurs forts'}
           </button>
+          {topPlayers.length > 0 && (
+            <button
+              onClick={() => { setTopPlayers([]); setTopFetchDone(false); setTopFetchError('') }}
+              disabled={topFetching || pdnDownloading}
+              className="px-3 py-2 rounded-lg bg-gray-700 hover:bg-red-900/60 text-gray-400 hover:text-red-300 text-sm disabled:opacity-40 transition-colors"
+              title="Réinitialiser la liste"
+            >
+              ✕
+            </button>
+          )}
+          </div>
 
           {topFetchDone && (
             <div className={`rounded-lg px-3 py-2 text-xs ${topPlayers.length > 0 ? 'bg-indigo-900/40 border border-indigo-700/50' : 'bg-red-900/30 border border-red-700/50'}`}>
