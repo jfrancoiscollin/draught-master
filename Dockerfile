@@ -34,9 +34,9 @@ RUN mkdir -p /scan-data && cp -r /tmp/scan/data/. /scan-data/ && echo "Scan data
 FROM python:3.12-slim
 WORKDIR /app/backend
 
-# Runtime libs the Scan binary may need
+# Runtime libs the Scan binary may need + git for pip VCS installs (dilf)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libstdc++6 libgcc-s1 \
+        libstdc++6 libgcc-s1 git \
     && rm -rf /var/lib/apt/lists/*
 
 # Scan binary + data directory (scan looks for data/ relative to its CWD)
