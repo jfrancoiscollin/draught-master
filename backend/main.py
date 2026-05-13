@@ -1588,13 +1588,16 @@ async def lidraughts_top_players(
     """Discover strong players by fetching games from seed players in parallel."""
     import asyncio
     import json as _json
+    import random
     import requests as _req
 
     # Auto-discover seeds from leaderboard if none provided
     seed_list = [s.strip() for s in seeds.split(",") if s.strip()]
     if not seed_list:
-        seed_list = await asyncio.to_thread(_scrape_lidraughts_seeds, 20)
-    seed_list = seed_list[:10]  # cap at 10 seeds to stay well within 25s
+        seed_list = await asyncio.to_thread(_scrape_lidraughts_seeds, 60)
+    # Shuffle so repeated clicks explore different subsets of the seed pool
+    random.shuffle(seed_list)
+    seed_list = seed_list[:25]  # up to 25 seeds per call, run in parallel
     if not seed_list:
         return {"players": [], "total": 0, "error": "Impossible de récupérer les seeds depuis lidraughts.org/player"}
 
@@ -1611,10 +1614,7 @@ async def lidraughts_top_players(
         except Exception:
             return ""
 
-    # Fetch all seeds in parallel
-    texts = await asyncio.gather(*[asyncio.to_thread(_fetch_games, s) for s in seed_list])
-
-    for text in texts:
+    def _extract_opponents(text: str) -> None:
         for line in text.splitlines():
             line = line.strip()
             if not line:
@@ -1629,6 +1629,20 @@ async def lidraughts_top_players(
                         found[name] = max(found.get(name, 0), int(rating))
             except Exception:
                 pass
+
+    # Hop 1 — fetch games of seed players in parallel
+    texts = await asyncio.gather(*[asyncio.to_thread(_fetch_games, s) for s in seed_list])
+    for text in texts:
+        _extract_opponents(text)
+
+    # Hop 2 — pick a random sample of newly discovered players as new seeds
+    # to reach the wider player graph (players who never met the original seeds)
+    hop2_candidates = [u for u in found if u not in set(seed_list)]
+    if hop2_candidates:
+        hop2_seeds = random.sample(hop2_candidates, min(15, len(hop2_candidates)))
+        texts2 = await asyncio.gather(*[asyncio.to_thread(_fetch_games, s) for s in hop2_seeds])
+        for text in texts2:
+            _extract_opponents(text)
 
     sorted_players = sorted(found.items(), key=lambda x: -x[1])[:nb]
     players = [{"username": name, "rating": rating, "game_count": 0} for name, rating in sorted_players]

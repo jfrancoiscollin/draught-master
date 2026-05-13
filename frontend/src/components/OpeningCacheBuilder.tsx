@@ -133,9 +133,7 @@ export default function OpeningCacheBuilder({ onClose }: Props) {
               .sort((a, b) => b[1] - a[1])
               .map(([username, rating]) => ({ username, rating, gameCount: mergedCount.get(username) ?? 0 }))
           })
-          // Show which seeds were actually used (useful when auto-discovered)
-          if (data.seeds_used?.length && !topSeeds.trim())
-            setTopSeeds(data.seeds_used.join(','))
+          // Don't pre-fill seeds — keep field empty so each click re-scrapes fresh seeds
           if (incoming.length === 0)
             setTopFetchError('Aucun nouveau joueur trouvé — baisse l\'Elo min ou change les seeds.')
         }
