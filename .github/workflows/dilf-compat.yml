@@ -1,0 +1,40 @@
+name: dilf-compat
+
+# Catches breakage in the dilf <-> draught-master contract documented
+# in backend/pedagogy/INTEROP.md. Installs the dilf pin from
+# backend/requirements.txt (currently the main-branch tarball) and
+# runs the import smoke test. Failure here means dilf removed or
+# renamed something this repo imports — coordinate via the two-step
+# dance in INTEROP.md.
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+  schedule:
+    # Daily 06:00 UTC, in case dilf:main moves while no PR is open.
+    - cron: "0 6 * * *"
+
+jobs:
+  smoke-imports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Echo current dilf pin
+        run: grep -E "dilf" backend/requirements.txt || echo "(no dilf pin found)"
+
+      - name: Install runtime deps (resolves dilf from requirements.txt pin)
+        run: pip install -r backend/requirements.txt
+
+      - name: Install dev deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Run dilf-imports smoke test
+        working-directory: backend
+        run: pytest tests/test_dilf_imports.py -v
