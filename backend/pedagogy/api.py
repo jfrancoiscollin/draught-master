@@ -9,7 +9,7 @@ from dataclasses import asdict
 from typing import Any, Optional
 
 import aiosqlite
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from pedagogy.explanations import explain_verdict
 from pedagogy.profile.aggregator import aggregate_user_profile
@@ -36,16 +36,24 @@ from .motif_descriptions import get_motif as _get_motif_desc
 
 router = APIRouter(prefix="/api/pedagogy", tags=["pedagogy"])
 
-# Rate limiter for Claude mode (5/min) — imported lazily to avoid circular import
+# Rate limiters for /explain-move. claude burns API tokens so it gets 5/min;
+# template is free but capped at 60/min per IP for courtesy (spec §14.6).
+# Built lazily because importing _make_limiter at module load creates a
+# circular import via main.py -> pedagogy.api -> main.
 _claude_limiter = None
+_template_limiter = None
 
 
-def _get_claude_limiter():
-    global _claude_limiter
-    if _claude_limiter is None:
-        from ..main import _make_limiter  # noqa: PLC0415
-        _claude_limiter = _make_limiter(max_calls=5, window=60)
-    return _claude_limiter
+def _ensure_explain_limiters() -> None:
+    global _claude_limiter, _template_limiter
+    if _claude_limiter is not None:
+        return
+    try:
+        from main import _make_limiter  # noqa: PLC0415
+    except ImportError:
+        from ..main import _make_limiter  # type: ignore[assignment]  # noqa: PLC0415
+    _claude_limiter = _make_limiter(max_calls=5, window=60)
+    _template_limiter = _make_limiter(max_calls=60, window=60)
 
 
 # ---------------------------------------------------------------------------
@@ -328,17 +336,18 @@ async def get_move_verdict(
 @router.post("/explain-move", response_model=ExplainMoveResponse)
 async def explain_move(
     req: ExplainMoveRequest,
+    request: Request,
     user: Any = Depends(current_user),
 ) -> ExplainMoveResponse:
     """Return a 1-3 sentence commentary for one verdict.
 
-    Caches in `pedagogy_explanations`. Rate-limited 5/min for claude mode.
+    Caches in `pedagogy_explanations`. Rate-limited per IP — 5/min for
+    `mode=claude`, 60/min for everything else (spec §14.6).
     """
-    from fastapi import Request  # noqa: PLC0415
-
-    if req.mode == "claude":
-        # Build a dummy request for the IP-based limiter
-        pass  # Rate limiting handled at infrastructure level for now
+    _ensure_explain_limiters()
+    limiter = _claude_limiter if req.mode == "claude" else _template_limiter
+    assert limiter is not None
+    await limiter(request)
 
     async with aiosqlite.connect(_db_path()) as conn:
         v = await storage.get_move_verdict(conn, req.game_id, req.move_number)
@@ -360,11 +369,16 @@ async def explain_move(
 
         # Retrieve the shared BookRAG singleton (may be None if corpus not loaded)
         try:
-            from ..main import shared_book_rag  # noqa: PLC0415
+            from main import shared_book_rag  # noqa: PLC0415
         except ImportError:
-            shared_book_rag = None
+            try:
+                from ..main import shared_book_rag  # noqa: PLC0415
+            except ImportError:
+                shared_book_rag = None
 
-        text = explain_verdict(v, mode=req.mode, book_rag=shared_book_rag, lang=req.lang)
+        text = await explain_verdict(
+            v, mode=req.mode, book_rag=shared_book_rag, lang=req.lang
+        )
 
         await storage.upsert_explanation(conn, verdict_id, req.mode, req.lang, text)
         return ExplainMoveResponse(text=text, mode=req.mode, lang=req.lang, cached=False)
