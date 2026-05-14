@@ -225,4 +225,27 @@ async def test_tables_exist_in_fresh_db():
     assert "move_verdicts" in tables
     assert "pedagogy_explanations" in tables
     assert "exercise_tags" in tables
+
+
+@pytest.mark.asyncio
+async def test_fetch_user_games_with_verdicts_orders_desc():
+    """The most recent game should come first (spec §10)."""
+    from pedagogy import storage
+    conn = await _fresh_conn()
+    await conn.execute(
+        "INSERT INTO games (id, date, user_id, user_side, opening_name, status) "
+        "VALUES (?, '2026-01-01', 1, 'white', '', 'finished')",
+        ("game-old",),
+    )
+    await conn.execute(
+        "INSERT INTO games (id, date, user_id, user_side, opening_name, status) "
+        "VALUES (?, '2026-05-01', 1, 'white', '', 'finished')",
+        ("game-new",),
+    )
+    await conn.commit()
+    await storage.upsert_move_verdict(conn, "game-old", _make_verdict(move_number=1))
+    await storage.upsert_move_verdict(conn, "game-new", _make_verdict(move_number=1))
+    games = await storage.fetch_user_games_with_verdicts(conn, user_id=1, lookback=30)
+    assert [g.game_id for g in games] == ["game-new", "game-old"]
+    await conn.close()
     await conn.close()

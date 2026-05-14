@@ -152,6 +152,12 @@ async def init_db() -> None:
         await db.execute(
             "CREATE INDEX IF NOT EXISTS idx_move_verdicts_verdict ON move_verdicts(verdict)"
         )
+        # JSON-extract index on motifs_json for profile aggregation queries
+        # that filter by motif name (spec §10).
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_move_verdicts_motifs "
+            "ON move_verdicts(json_extract(motifs_json, '$'))"
+        )
         await db.execute("""
             CREATE TABLE IF NOT EXISTS pedagogy_explanations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
