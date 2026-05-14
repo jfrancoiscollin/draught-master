@@ -187,12 +187,13 @@ async def analyze_game(
 
     # ------------------------------------------------------------------
     # 4. Evaluate all positions sequentially (off the event loop)
-    # 200 ms per position keeps a 40-move game under ~17 s total.
+    # _scan_eval_sync expects seconds (not ms) — budget 60s total.
     # ------------------------------------------------------------------
-    MS_PER_POS = 200.0
+    n_pos = len(ge_states)
+    S_PER_POS = min(0.5, 60.0 / max(n_pos, 1))
 
     def _eval_all() -> list[dict]:
-        return [_scan_eval_sync(s, ms=MS_PER_POS) for s in ge_states]
+        return [_scan_eval_sync(s, ms=S_PER_POS) for s in ge_states]
 
     evals = await asyncio.to_thread(_eval_all)
 
