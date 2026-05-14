@@ -531,17 +531,9 @@ def test_import_lidraughts_routes_each_game_through_analyze(monkeypatch, tmp_pat
         lidraughts_fetcher, "fetch_user_games_pdn",
         lambda username, max_games: _SAMPLE_MULTI_PDN,
     )
-    # The fetcher's split_pdn_games is currently over-eager (splits on each
-    # tag instead of each game). The endpoint's correctness does not depend
-    # on that helper's exact heuristic — only on receiving N PDN strings.
-    # We pre-split here so the endpoint sees 2 games as intended.
-    _games_pdn = [
-        _SAMPLE_MULTI_PDN.split("\n\n[Event")[0],
-        "[Event" + _SAMPLE_MULTI_PDN.split("\n\n[Event", 1)[1],
-    ]
-    monkeypatch.setattr(
-        lidraughts_fetcher, "split_pdn_games", lambda text: _games_pdn,
-    )
+    # split_pdn_games is exercised end-to-end here (no mock) since its
+    # post-fix behaviour is what we rely on. See test_lidraughts_fetcher.py
+    # for the standalone regression coverage.
 
     # Stub analyze_game so we don't actually run Scan in unit tests. Each
     # call records its inputs and returns a canned response.
