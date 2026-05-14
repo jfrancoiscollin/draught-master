@@ -82,3 +82,23 @@ class UserProfileOut(BaseModel):
 
 class RecommendationsResponse(BaseModel):
     exercises: list[dict[str, Any]]
+
+
+class MotifExerciseOut(BaseModel):
+    id: int
+    name: str
+    description: Optional[str]
+    initial_fen: str
+    solution_moves: list[str]
+    difficulty: int
+    category: str
+    hint: Optional[str]
+
+
+class MotifInfoOut(BaseModel):
+    slug: str
+    name_fr: str
+    name_en: str
+    description_fr: str
+    description_en: str
+    exercises: list[MotifExerciseOut] = []

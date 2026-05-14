@@ -10,6 +10,7 @@ interface Props {
   lang: string
   onAnalyze: () => void
   error?: string | null
+  onMotifClick?: (slug: string) => void
 }
 
 // ── Verdict styling ────────────────────────────────────────────────────────
@@ -97,7 +98,7 @@ function VerdictBadge({ verdict }: { verdict: VerdictOut['verdict'] }) {
   )
 }
 
-function MoveRow({ verdict, gameId, lang }: { verdict: VerdictOut; gameId: string; lang: string }) {
+function MoveRow({ verdict, gameId, lang, onMotifClick }: { verdict: VerdictOut; gameId: string; lang: string; onMotifClick?: (slug: string) => void }) {
   const [expanded, setExpanded] = useState(false)
   const [explanation, setExplanation] = useState<string | null>(null)
   const [loadingExpl, setLoadingExpl] = useState(false)
@@ -187,17 +188,24 @@ function MoveRow({ verdict, gameId, lang }: { verdict: VerdictOut; gameId: strin
             <p className="text-gray-500 italic">Pas d'explication disponible.</p>
           )}
 
-          {/* Motifs */}
+          {/* Motifs — clickable to open motif drill */}
           {verdict.motifs.length > 0 && (
             <div className="mt-1 flex flex-wrap gap-1">
               {verdict.motifs.map((m, i) => (
-                <span key={i} className="px-1.5 py-0.5 rounded text-xs"
+                <button
+                  key={i}
+                  onClick={e => { e.stopPropagation(); onMotifClick?.(m.motif) }}
+                  className="px-1.5 py-0.5 rounded text-xs transition-opacity hover:opacity-80"
                   style={{
                     background: m.role === 'missed' ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.15)',
                     color: m.role === 'missed' ? '#fca5a5' : '#a5b4fc',
-                  }}>
+                    cursor: onMotifClick ? 'pointer' : 'default',
+                  }}
+                  title={onMotifClick ? 'Travailler ce motif →' : undefined}
+                >
                   {m.role === 'missed' ? '↗ ' : ''}{m.motif.replace(/_/g, ' ')}
-                </span>
+                  {onMotifClick && ' →'}
+                </button>
               ))}
             </div>
           )}
@@ -209,7 +217,7 @@ function MoveRow({ verdict, gameId, lang }: { verdict: VerdictOut; gameId: strin
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function PedagogyPanel({ gameId, analysis, loading, userSide, lang, onAnalyze, error }: Props) {
+export default function PedagogyPanel({ gameId, analysis, loading, userSide, lang, onAnalyze, error, onMotifClick }: Props) {
   const [filter, setFilter] = useState<'all' | 'errors'>('all')
 
   if (!analysis && !loading) {
@@ -322,7 +330,7 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
         {shown.length === 0 ? (
           <p className="text-xs text-center text-gray-500 py-4">Aucune erreur détectée 🎉</p>
         ) : (
-          shown.map(v => <MoveRow key={v.move_number} verdict={v} gameId={gameId} lang={lang} />)
+          shown.map(v => <MoveRow key={v.move_number} verdict={v} gameId={gameId} lang={lang} onMotifClick={onMotifClick} />)
         )}
       </div>
     </div>

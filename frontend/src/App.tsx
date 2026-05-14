@@ -14,6 +14,7 @@ import ExerciseVerificationPanel from './components/ExerciseVerificationPanel'
 import OpeningExplorer from './components/OpeningExplorer'
 import LearnFromMistakes from './components/LearnFromMistakes'
 import PedagogyPanel from './components/PedagogyPanel'
+import MotifDetailPage from './components/MotifDetailPage'
 import EvalBar from './components/EvalBar'
 import UserStatsCard from './components/UserStatsCard'
 import Toast from './components/Toast'
@@ -252,6 +253,8 @@ export default function App() {
   const [pedagogyAnalysis, setPedagogyAnalysis] = useState<PedagogyAnalysis | null>(null)
   const [pedagogyLoading, setPedagogyLoading] = useState(false)
   const [pedagogyError, setPedagogyError] = useState<string | null>(null)
+  // Motif drill — slug of the motif currently displayed, null = closed
+  const [motifDetailSlug, setMotifDetailSlug] = useState<string | null>(null)
 
   // Pre-load WASM engine on startup so it's ready before the user requests analysis
   useEffect(() => { getScanEngine() }, [])
@@ -1011,6 +1014,7 @@ export default function App() {
       lang={language}
       onAnalyze={handleAnalyzePedagogy}
       error={pedagogyError}
+      onMotifClick={setMotifDetailSlug}
     />
   ) : null
 
@@ -1111,8 +1115,22 @@ export default function App() {
         {/* PLAY TAB */}
         {tab === 'play' && (
           <>
+            {/* Motif detail overlay — launched from PedagogyPanel or WeaknessPanel */}
+            {motifDetailSlug && (
+              <MotifDetailPage
+                slug={motifDetailSlug}
+                lang={language}
+                onClose={() => setMotifDetailSlug(null)}
+                onStartExercise={(id) => {
+                  setMotifDetailSlug(null)
+                  // Switch to exercises tab and open the exercise
+                  setTab('exercises')
+                  setLastExerciseId(id)
+                }}
+              />
+            )}
             {/* Learn from mistakes full-screen overlay */}
-            {playPanelMode === 'learn' && playAnnotations.length > 0 && (
+            {!motifDetailSlug && playPanelMode === 'learn' && playAnnotations.length > 0 && (
               <LearnFromMistakes
                 positions={buildPdnPositions(fenHistory, moveHistory)}
                 annotations={playAnnotations}
@@ -1634,7 +1652,7 @@ export default function App() {
         {/* ── Profil ── */}
         <div className="mb-4">
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">{t('profileSection')}</h4>
-          <UserStatsCard defaultOpen />
+          <UserStatsCard defaultOpen onMotifClick={setMotifDetailSlug} />
         </div>
         {/* ── Contrôles ── */}
         <div>

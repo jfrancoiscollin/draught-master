@@ -25,11 +25,14 @@ from .models import (
     AnalyzeGameResponse,
     ExplainMoveRequest,
     ExplainMoveResponse,
+    MotifExerciseOut,
+    MotifInfoOut,
     MotifMatchOut,
     MoveVerdictOut,
     RecommendationsResponse,
     UserProfileOut,
 )
+from .motif_descriptions import get_motif as _get_motif_desc
 
 router = APIRouter(prefix="/api/pedagogy", tags=["pedagogy"])
 
@@ -418,3 +421,56 @@ async def get_recommendations(
         )
     chosen = recommend_exercises(profile, pool, exclude_ids=set(excluded), n=n)
     return RecommendationsResponse(exercises=chosen)
+
+
+# ---------------------------------------------------------------------------
+# GET /api/pedagogy/profile/me  (convenience alias for the connected user)
+# ---------------------------------------------------------------------------
+
+
+@router.get("/profile/me", response_model=UserProfileOut)
+async def get_my_profile(
+    user: Any = Depends(current_user),
+) -> UserProfileOut:
+    async with aiosqlite.connect(_db_path()) as conn:
+        games = await storage.fetch_user_games_with_verdicts(conn, user["id"], lookback=30)
+    profile = aggregate_user_profile(user["id"], games)
+    return UserProfileOut(
+        user_id=profile.user_id,
+        games_count=profile.games_count,
+        average_accuracy=profile.average_accuracy,
+        strengths=profile.strengths,
+        weaknesses=profile.weaknesses,
+        weakest_phase=(
+            profile.weakest_phase.value
+            if hasattr(profile.weakest_phase, "value")
+            else profile.weakest_phase
+        ),
+        recommended_exercise_tags=profile.recommended_exercise_tags,
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /api/pedagogy/motifs/{slug}
+# ---------------------------------------------------------------------------
+
+
+@router.get("/motifs/{slug}", response_model=MotifInfoOut)
+async def get_motif_info(
+    slug: str,
+    _user: Any = Depends(current_user),
+) -> MotifInfoOut:
+    desc = _get_motif_desc(slug)
+    if desc is None:
+        raise HTTPException(404, f"Unknown motif: {slug!r}")
+    async with aiosqlite.connect(_db_path()) as conn:
+        raw_exercises = await storage.fetch_exercises_for_motif(conn, slug, limit=20)
+    exercises = [MotifExerciseOut(**ex) for ex in raw_exercises]
+    return MotifInfoOut(
+        slug=desc["slug"],
+        name_fr=desc["name_fr"],
+        name_en=desc["name_en"],
+        description_fr=desc["description_fr"],
+        description_en=desc["description_en"],
+        exercises=exercises,
+    )

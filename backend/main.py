@@ -158,6 +158,17 @@ async def startup_event() -> None:
     except Exception:
         pass  # corpus not present or scikit-learn not installed
 
+    # Auto-tag exercises with dilf motif detectors (idempotent, non-blocking).
+    async def _auto_tag_exercises() -> None:
+        try:
+            from pedagogy.scripts.tag_existing_exercises import _run as _tag_run
+            await _tag_run(only_ids=None, dry_run=False)
+            logging.info("startup: exercise tags refreshed")
+        except Exception:
+            logging.exception("startup: exercise auto-tagging failed (non-fatal)")
+
+    asyncio.create_task(_auto_tag_exercises())
+
 
 def _state_to_response(game_id: str, state: GameState, last_move: Optional[Move] = None) -> GameStateResponse:
     result = game_result(state)

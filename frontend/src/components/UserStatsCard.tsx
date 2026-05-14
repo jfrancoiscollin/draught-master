@@ -3,6 +3,7 @@ import { getUserStats } from '../api/client'
 import type { UserStats } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
+import WeaknessPanel from './WeaknessPanel'
 
 function StatBox({ label, value, color }: { label: string; value: number | string; color?: string }) {
   return (
@@ -37,9 +38,10 @@ function AccuracyRing({ pct }: { pct: number }) {
 
 interface UserStatsCardProps {
   defaultOpen?: boolean
+  onMotifClick?: (slug: string) => void
 }
 
-export default function UserStatsCard({ defaultOpen = false }: UserStatsCardProps) {
+export default function UserStatsCard({ defaultOpen = false, onMotifClick }: UserStatsCardProps) {
   const { user } = useAuth()
   const { t } = useLanguage()
   const [stats, setStats] = useState<UserStats | null>(null)
@@ -108,6 +110,7 @@ export default function UserStatsCard({ defaultOpen = false }: UserStatsCardProp
           )}
         </div>
       )}
+      {onMotifClick && <WeaknessPanel onMotifClick={onMotifClick} />}
     </div>
   )
 }

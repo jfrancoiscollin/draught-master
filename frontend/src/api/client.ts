@@ -478,3 +478,54 @@ export async function explainMovePedagogy(
     return null
   }
 }
+
+// ── Profile & weaknesses ────────────────────────────────────────────────────
+
+export interface MotifWeakness {
+  motif: string
+  missed: number
+  suffered: number
+  played: number
+  threatened: number
+  total_severity: number
+}
+
+export interface UserProfile {
+  user_id: number
+  games_count: number
+  average_accuracy: number
+  strengths: MotifWeakness[]
+  weaknesses: MotifWeakness[]
+  weakest_phase: string
+  recommended_exercise_tags: string[]
+}
+
+export interface MotifExercise {
+  id: number
+  name: string
+  description: string | null
+  initial_fen: string
+  solution_moves: string[]
+  difficulty: number
+  category: string
+  hint: string | null
+}
+
+export interface MotifInfo {
+  slug: string
+  name_fr: string
+  name_en: string
+  description_fr: string
+  description_en: string
+  exercises: MotifExercise[]
+}
+
+export async function getUserProfile(): Promise<UserProfile> {
+  const res = await api.get<UserProfile>('/pedagogy/profile/me')
+  return res.data
+}
+
+export async function getMotifInfo(slug: string): Promise<MotifInfo> {
+  const res = await api.get<MotifInfo>(`/pedagogy/motifs/${slug}`)
+  return res.data
+}

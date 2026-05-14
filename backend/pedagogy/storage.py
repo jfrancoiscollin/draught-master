@@ -284,7 +284,11 @@ async def fetch_exercises_by_tags(
     exclude_ids: list[int] | None = None,
     limit: int = 50,
 ) -> list[dict[str, Any]]:
-    """Return exercises matching ANY of `tags`, excluding `exclude_ids`."""
+    """Return exercises matching ANY of `tags`, including their full tag set.
+
+    The ``tags`` field is required by dilf's ``recommend_exercises()`` to
+    rank exercises by how many of their tags match the user's weaknesses.
+    """
     if not tags:
         return []
     placeholders = ",".join("?" * len(tags))
@@ -306,10 +310,56 @@ async def fetch_exercises_by_tags(
         """,
         params,
     )
-    return [
-        {"id": int(r[0]), "title": r[1], "fen_start": r[2]}
-        for r in await cur.fetchall()
-    ]
+    rows = await cur.fetchall()
+    result: list[dict[str, Any]] = []
+    for r in rows:
+        ex_id = int(r[0])
+        full_tags = await get_exercise_tags(conn, ex_id)
+        result.append({"id": ex_id, "title": r[1], "fen_start": r[2], "tags": full_tags})
+    return result
+
+
+async def fetch_exercises_for_motif(
+    conn: aiosqlite.Connection,
+    motif_slug: str,
+    limit: int = 20,
+) -> list[dict[str, Any]]:
+    """Return full exercise data for exercises tagged with ``motif_slug``.
+
+    Results are ordered by difficulty ascending so the drill starts easy.
+    """
+    import json as _json  # noqa: PLC0415
+
+    cur = await conn.execute(
+        """
+        SELECT e.id, e.name, e.description, e.initial_fen, e.solution_moves,
+               e.difficulty, e.category, e.hint
+          FROM exercises e
+          JOIN exercise_tags et ON et.exercise_id = e.id
+         WHERE et.tag = ?
+         ORDER BY e.difficulty ASC, e.id ASC
+         LIMIT ?
+        """,
+        (motif_slug, limit),
+    )
+    rows = await cur.fetchall()
+    result: list[dict[str, Any]] = []
+    for r in rows:
+        try:
+            solution_moves = _json.loads(r[4])
+        except Exception:  # noqa: BLE001
+            solution_moves = []
+        result.append({
+            "id": int(r[0]),
+            "name": r[1],
+            "description": r[2],
+            "initial_fen": r[3],
+            "solution_moves": solution_moves,
+            "difficulty": int(r[5]),
+            "category": r[6],
+            "hint": r[7],
+        })
+    return result
 
 
 async def fetch_already_solved_exercise_ids(
