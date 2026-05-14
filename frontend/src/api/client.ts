@@ -408,3 +408,77 @@ export async function getExerciseVerificationStatus(): Promise<ExerciseVerificat
   const res = await api.get('/admin/verify-exercises/status')
   return res.data
 }
+
+// ---------------------------------------------------------------------------
+// Pedagogy (dilf) API
+// ---------------------------------------------------------------------------
+
+export interface MotifOut {
+  motif: string
+  role: string
+  squares: number[]
+  pv: string[]
+  severity: number
+}
+
+export interface VerdictOut {
+  move_number: number
+  side: 'white' | 'black'
+  move_notation: string
+  fen_before: string
+  fen_after: string
+  score_before: number
+  score_after: number
+  delta_winchance: number
+  verdict: 'brilliant' | 'best' | 'excellent' | 'good' | 'inaccuracy' | 'mistake' | 'blunder' | 'forced' | 'book'
+  is_forced: boolean
+  phase: 'opening' | 'middlegame' | 'endgame'
+  motifs: MotifOut[]
+}
+
+export interface PedagogyAnalysis {
+  game_id: string
+  verdicts: VerdictOut[]
+  summary: {
+    total_half_moves: number
+    blunders: number
+    mistakes: number
+    average_accuracy: number
+    user_side: string
+  }
+}
+
+export async function analyzeGamePedagogy(
+  gameId: string,
+  userSide: 'white' | 'black',
+  lang: string = 'fr',
+): Promise<PedagogyAnalysis | null> {
+  try {
+    const res = await api.post<PedagogyAnalysis>(
+      '/pedagogy/analyze-game',
+      { game_id: gameId, user_side: userSide, lang },
+      { timeout: 90000 },
+    )
+    return res.data
+  } catch {
+    return null
+  }
+}
+
+export async function explainMovePedagogy(
+  gameId: string,
+  moveNumber: number,
+  mode: 'template' | 'template+book' | 'claude' = 'template',
+  lang: string = 'fr',
+): Promise<string | null> {
+  try {
+    const res = await api.post<{ text: string; mode: string; lang: string; cached: boolean }>(
+      '/pedagogy/explain-move',
+      { game_id: gameId, move_number: moveNumber, mode, lang },
+      { timeout: 15000 },
+    )
+    return res.data.text
+  } catch {
+    return null
+  }
+}

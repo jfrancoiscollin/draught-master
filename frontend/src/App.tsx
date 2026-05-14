@@ -13,6 +13,7 @@ import OpeningCacheBuilder from './components/OpeningCacheBuilder'
 import ExerciseVerificationPanel from './components/ExerciseVerificationPanel'
 import OpeningExplorer from './components/OpeningExplorer'
 import LearnFromMistakes from './components/LearnFromMistakes'
+import PedagogyPanel from './components/PedagogyPanel'
 import EvalBar from './components/EvalBar'
 import UserStatsCard from './components/UserStatsCard'
 import Toast from './components/Toast'
@@ -35,8 +36,9 @@ import {
   getAiMove,
   getReadLessons,
   saveGameAnnotations,
+  analyzeGamePedagogy,
 } from './api/client'
-import type { PdnPosition } from './api/client'
+import type { PdnPosition, PedagogyAnalysis } from './api/client'
 import { getScanEngine, matchHubMove } from './lib/scanEngine'
 import {
   annotateGame, computeStats,
@@ -246,6 +248,10 @@ export default function App() {
   const [playLastCacheHits, setPlayLastCacheHits] = useState<{ hits: number; total: number } | null>(null)
   const [playPanelMode, setPlayPanelMode] = useState<'game' | 'learn'>('game')
 
+  // Pedagogy (dilf) post-game analysis
+  const [pedagogyAnalysis, setPedagogyAnalysis] = useState<PedagogyAnalysis | null>(null)
+  const [pedagogyLoading, setPedagogyLoading] = useState(false)
+
   // Pre-load WASM engine on startup so it's ready before the user requests analysis
   useEffect(() => { getScanEngine() }, [])
 
@@ -310,6 +316,8 @@ export default function App() {
       setPlayLastCacheHits(null)
       setPlayPanelMode('game')
       setExplorerArrows([])
+      setPedagogyAnalysis(null)
+      setPedagogyLoading(false)
     } catch {
       showToast(t('errorCreatingGame'))
     } finally {
@@ -875,6 +883,14 @@ export default function App() {
     return () => clearTimeout(id)
   }, [gameState?.result])
 
+  const handleAnalyzePedagogy = useCallback(async () => {
+    if (!gameState?.game_id || pedagogyLoading) return
+    setPedagogyLoading(true)
+    const result = await analyzeGamePedagogy(gameState.game_id, humanColor, language)
+    setPedagogyAnalysis(result)
+    setPedagogyLoading(false)
+  }, [gameState?.game_id, humanColor, language, pedagogyLoading])
+
   // Reconstruct all board positions from move history for replay
   const boardPositions = useMemo(() => {
     const positions: number[][] = [getInitialBoard()]
@@ -973,6 +989,17 @@ export default function App() {
         </div>
       )}
     </div>
+  ) : null
+
+  const pedagogyPanel = gameState?.result ? (
+    <PedagogyPanel
+      gameId={gameState.game_id}
+      analysis={pedagogyAnalysis}
+      loading={pedagogyLoading}
+      userSide={humanColor}
+      lang={language}
+      onAnalyze={handleAnalyzePedagogy}
+    />
   ) : null
 
   return (
@@ -1207,6 +1234,7 @@ export default function App() {
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                     <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                     {playAnnotationPanel}
+                    {pedagogyPanel}
                   </div>
                 </>
               ) : (
@@ -1278,6 +1306,7 @@ export default function App() {
                       <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                       <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                       {playAnnotationPanel}
+                      {pedagogyPanel}
                     </div>
                   </div>
                 </>
@@ -1396,6 +1425,7 @@ export default function App() {
                     <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                     {playAnnotationPanel}
+                    {pedagogyPanel}
                   </div>
                 </div>
               )}
@@ -1431,6 +1461,7 @@ export default function App() {
                   <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                   <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                   {playAnnotationPanel}
+                  {pedagogyPanel}
                 </div>
               )}
 
