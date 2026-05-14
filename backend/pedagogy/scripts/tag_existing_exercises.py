@@ -152,7 +152,7 @@ async def _run(only_ids: Optional[list[int]], dry_run: bool) -> int:
     unchanged = 0
     skipped = 0
 
-    from db.config import DB_PATH  # ai-draught DB path
+    from db.config import DB_PATH  # draught-master DB path
 
     async with aiosqlite.connect(DB_PATH) as conn:
         exercises = await _iter_exercises(conn, only_ids)

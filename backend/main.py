@@ -1494,7 +1494,7 @@ async def export_fens():
     from opening_book_db import _get_conn, _lock
     from fastapi.responses import PlainTextResponse
 
-    lines: list[str] = ["# ai-draught positions export", ""]
+    lines: list[str] = ["# draught-master positions export", ""]
 
     # 1. Opening book FENs
     try:

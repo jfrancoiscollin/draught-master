@@ -152,7 +152,7 @@ npm run dev
 ## Structure du projet
 
 ```
-Ai-draught/
+draught-master/
 │
 ├── backend/
 │   ├── main.py                 # API FastAPI — tous les endpoints REST
