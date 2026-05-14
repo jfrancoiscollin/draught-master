@@ -220,12 +220,18 @@ async def analyze_game(
             if bm_ge is not None:
                 best_dilf = ge_move_to_dilf(bm_ge, state_before.board)
 
+        # Scan reports scores from side-to-move perspective; dilf expects white's perspective.
+        raw_before = float(ev_before.get("score", 0.0))
+        raw_after = float(ev_after.get("score", 0.0))
+        score_before_white = raw_before if state_before.turn == "white" else -raw_before
+        score_after_white = raw_after if state_after.turn == "white" else -raw_after
+
         verdict = assemble_verdict(
             dilf_before,
             dilf_move,
             dilf_after,
-            score_before=float(ev_before.get("score", 0.0)),
-            score_after=float(ev_after.get("score", 0.0)),
+            score_before=score_before_white,
+            score_after=score_after_white,
             best_move=best_dilf,
             half_move_number=i + 1,
             is_book=bool(ev_before.get("forced") and ev_before.get("score", 0) == 0),

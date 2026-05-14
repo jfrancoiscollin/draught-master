@@ -52,11 +52,10 @@ const VERDICT_FR: Record<VerdictOut['verdict'], string> = {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-/** Format a Scan score (pawn units, side-to-move) as white-perspective string. */
-function fmtScore(scoreSideToMove: number, side: 'white' | 'black'): string {
-  const w = side === 'white' ? scoreSideToMove : -scoreSideToMove
-  const sign = w >= 0 ? '+' : ''
-  return `${sign}${w.toFixed(2)}`
+/** Format a score (pawn units, white's perspective) as a signed string. */
+function fmtScore(scoreWhitePerspective: number): string {
+  const sign = scoreWhitePerspective >= 0 ? '+' : ''
+  return `${sign}${scoreWhitePerspective.toFixed(2)}`
 }
 
 /** Centipawn loss for one move (same formula as scan_advisor). */
@@ -115,11 +114,9 @@ function MoveRow({ verdict, gameId, lang }: { verdict: VerdictOut; gameId: strin
 
   const cp = cpLoss(verdict)
   const showCp = cp >= 2 && verdict.verdict !== 'forced' && verdict.verdict !== 'book'
-  // Score from white's perspective (Scan pawn units)
-  const scoreStr = fmtScore(verdict.score_before, verdict.side)
-  const scoreColor = verdict.side === 'white'
-    ? (verdict.score_before >= 0 ? '#86efac' : '#fca5a5')
-    : (verdict.score_before >= 0 ? '#fca5a5' : '#86efac')  // inverted: positive = good for black
+  // score_before is already white's perspective from the backend
+  const scoreStr = fmtScore(verdict.score_before)
+  const scoreColor = verdict.score_before >= 0 ? '#86efac' : '#fca5a5'
 
   return (
     <div className="border-b border-gray-800 last:border-0">
@@ -174,8 +171,8 @@ function MoveRow({ verdict, gameId, lang }: { verdict: VerdictOut; gameId: strin
         <div className="px-3 pb-2 pt-0.5 bg-gray-900/60 text-xs text-gray-300 leading-relaxed">
           {/* Scan raw data */}
           <div className="flex gap-3 mb-1.5 text-gray-500 font-mono">
-            <span>avant : <span className="text-gray-300">{fmtScore(verdict.score_before, verdict.side)}</span></span>
-            <span>après : <span className="text-gray-300">{fmtScore(verdict.score_after, verdict.side === 'white' ? 'black' : 'white')}</span></span>
+            <span>avant : <span className="text-gray-300">{fmtScore(verdict.score_before)}</span></span>
+            <span>après : <span className="text-gray-300">{fmtScore(verdict.score_after)}</span></span>
             <span>Δwc : <span style={{ color: VERDICT_COLOR[verdict.verdict] }}>
               {verdict.delta_winchance >= 0 ? '-' : '+'}{Math.abs(Math.round(verdict.delta_winchance * 100))}%
             </span></span>
