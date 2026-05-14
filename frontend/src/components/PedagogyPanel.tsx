@@ -49,6 +49,27 @@ const VERDICT_FR: Record<VerdictOut['verdict'], string> = {
   book:       'Théorie',
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+/** Format a Scan score (pawn units, side-to-move) as white-perspective string. */
+function fmtScore(scoreSideToMove: number, side: 'white' | 'black'): string {
+  const w = side === 'white' ? scoreSideToMove : -scoreSideToMove
+  const sign = w >= 0 ? '+' : ''
+  return `${sign}${w.toFixed(2)}`
+}
+
+/** Centipawn loss for one move (same formula as scan_advisor). */
+function cpLoss(v: VerdictOut): number {
+  return Math.round(Math.max(v.delta_winchance, 0) * 100)
+}
+
+/** Average centipawn loss across a set of verdicts. */
+function acpl(vs: VerdictOut[]): number {
+  const movable = vs.filter(v => v.verdict !== 'forced' && v.verdict !== 'book')
+  if (!movable.length) return 0
+  return Math.round(movable.reduce((s, v) => s + cpLoss(v), 0) / movable.length)
+}
+
 // ── Sub-components ─────────────────────────────────────────────────────────
 
 function AccuracyBar({ accuracy }: { accuracy: number }) {
@@ -59,7 +80,7 @@ function AccuracyBar({ accuracy }: { accuracy: number }) {
       <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
       </div>
-      <span className="text-sm font-bold tabular-nums" style={{ color }}>{pct}%</span>
+      <span className="text-xs font-bold tabular-nums" style={{ color }}>{pct}%</span>
     </div>
   )
 }
@@ -67,7 +88,7 @@ function AccuracyBar({ accuracy }: { accuracy: number }) {
 function VerdictBadge({ verdict }: { verdict: VerdictOut['verdict'] }) {
   return (
     <span
-      className="inline-block w-6 text-center font-bold text-xs"
+      className="inline-block w-6 text-center font-bold text-xs flex-shrink-0"
       style={{ color: VERDICT_COLOR[verdict] }}
       title={VERDICT_FR[verdict]}
     >
@@ -76,15 +97,7 @@ function VerdictBadge({ verdict }: { verdict: VerdictOut['verdict'] }) {
   )
 }
 
-function MoveRow({
-  verdict,
-  gameId,
-  lang,
-}: {
-  verdict: VerdictOut
-  gameId: string
-  lang: string
-}) {
+function MoveRow({ verdict, gameId, lang }: { verdict: VerdictOut; gameId: string; lang: string }) {
   const [expanded, setExpanded] = useState(false)
   const [explanation, setExplanation] = useState<string | null>(null)
   const [loadingExpl, setLoadingExpl] = useState(false)
@@ -99,41 +112,75 @@ function MoveRow({
     setExpanded(prev => !prev)
   }, [expanded, explanation, gameId, verdict.move_number, lang])
 
-  const delta = Math.abs(verdict.delta_winchance)
-  const showDelta = delta >= 0.02 && verdict.verdict !== 'forced' && verdict.verdict !== 'book'
+  const cp = cpLoss(verdict)
+  const showCp = cp >= 2 && verdict.verdict !== 'forced' && verdict.verdict !== 'book'
+  // Score from white's perspective (Scan pawn units)
+  const scoreStr = fmtScore(verdict.score_before, verdict.side)
+  const scoreColor = verdict.side === 'white'
+    ? (verdict.score_before >= 0 ? '#86efac' : '#fca5a5')
+    : (verdict.score_before >= 0 ? '#fca5a5' : '#86efac')  // inverted: positive = good for black
 
   return (
     <div className="border-b border-gray-800 last:border-0">
       <button
         onClick={handleToggle}
-        className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-800/60 transition-colors text-left"
+        className="w-full flex items-center gap-1.5 px-2 py-1.5 hover:bg-gray-800/60 transition-colors text-left"
       >
-        <span className="text-xs text-gray-500 w-4 tabular-nums flex-shrink-0">
-          {verdict.side === 'white' ? Math.ceil(verdict.move_number / 2) + '.' : ''}
+        {/* Move number (white moves only) */}
+        <span className="text-xs text-gray-600 w-4 tabular-nums flex-shrink-0 text-right">
+          {verdict.side === 'white' ? `${Math.ceil(verdict.move_number / 2)}.` : ''}
         </span>
-        <span
-          className="text-xs font-medium w-5 text-center flex-shrink-0"
-          style={{ color: verdict.side === 'white' ? '#e5e7eb' : '#9ca3af' }}
-        >
+
+        {/* Side indicator */}
+        <span className="text-xs w-4 text-center flex-shrink-0"
+          style={{ color: verdict.side === 'white' ? '#e5e7eb' : '#6b7280' }}>
           {verdict.side === 'white' ? '⬜' : '⬛'}
         </span>
-        <span className="font-mono text-xs text-white flex-1">{verdict.move_notation}</span>
+
+        {/* Move notation */}
+        <span className="font-mono text-xs text-white flex-1 min-w-0">{verdict.move_notation}</span>
+
+        {/* Scan score (white perspective) — cross-check column */}
+        <span className="text-xs font-mono tabular-nums flex-shrink-0 w-12 text-right" style={{ color: scoreColor }}>
+          {scoreStr}
+        </span>
+
+        {/* Verdict badge */}
         <VerdictBadge verdict={verdict.verdict} />
-        {showDelta && (
-          <span className="text-xs tabular-nums" style={{ color: VERDICT_COLOR[verdict.verdict] }}>
-            -{Math.round(delta * 100)}%
+
+        {/* CP loss — mirrors scan_advisor ACPL metric */}
+        {showCp ? (
+          <span className="text-xs tabular-nums w-10 text-right flex-shrink-0"
+            style={{ color: VERDICT_COLOR[verdict.verdict] }}>
+            -{cp}cp
           </span>
+        ) : (
+          <span className="w-10 flex-shrink-0" />
         )}
+
+        {/* Motif indicator */}
         {verdict.motifs.length > 0 && (
-          <span className="text-xs text-indigo-400" title={verdict.motifs.map(m => m.motif).join(', ')}>
+          <span className="text-xs text-indigo-400 flex-shrink-0"
+            title={verdict.motifs.map(m => m.motif).join(', ')}>
             ◆{verdict.motifs.length}
           </span>
         )}
-        <span className="text-gray-600 text-xs">{expanded ? '▲' : '▼'}</span>
+
+        <span className="text-gray-600 text-xs flex-shrink-0">{expanded ? '▲' : '▼'}</span>
       </button>
 
       {expanded && (
         <div className="px-3 pb-2 pt-0.5 bg-gray-900/60 text-xs text-gray-300 leading-relaxed">
+          {/* Scan raw data */}
+          <div className="flex gap-3 mb-1.5 text-gray-500 font-mono">
+            <span>avant : <span className="text-gray-300">{fmtScore(verdict.score_before, verdict.side)}</span></span>
+            <span>après : <span className="text-gray-300">{fmtScore(verdict.score_after, verdict.side === 'white' ? 'black' : 'white')}</span></span>
+            <span>Δwc : <span style={{ color: VERDICT_COLOR[verdict.verdict] }}>
+              {verdict.delta_winchance >= 0 ? '-' : '+'}{Math.abs(Math.round(verdict.delta_winchance * 100))}%
+            </span></span>
+          </div>
+
+          {/* Explanation */}
           {loadingExpl ? (
             <span className="text-gray-500 animate-pulse">Chargement…</span>
           ) : explanation ? (
@@ -141,17 +188,16 @@ function MoveRow({
           ) : (
             <p className="text-gray-500 italic">Pas d'explication disponible.</p>
           )}
+
+          {/* Motifs */}
           {verdict.motifs.length > 0 && (
             <div className="mt-1 flex flex-wrap gap-1">
               {verdict.motifs.map((m, i) => (
-                <span
-                  key={i}
-                  className="px-1.5 py-0.5 rounded text-xs"
+                <span key={i} className="px-1.5 py-0.5 rounded text-xs"
                   style={{
                     background: m.role === 'missed' ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.15)',
                     color: m.role === 'missed' ? '#fca5a5' : '#a5b4fc',
-                  }}
-                >
+                  }}>
                   {m.role === 'missed' ? '↗ ' : ''}{m.motif.replace(/_/g, ' ')}
                 </span>
               ))}
@@ -173,10 +219,10 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
       <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-3 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-gray-300">Analyse pédagogique</span>
-          <span className="text-xs text-gray-500">dilf</span>
+          <span className="text-xs text-gray-500">dilf · cross-check Scan</span>
         </div>
         <p className="text-xs text-gray-500">
-          Analyse coup par coup avec détection des motifs tactiques.
+          Verdicts dilf + score Scan brut par coup, pour valider la cohérence du framework.
         </p>
         <button
           onClick={onAnalyze}
@@ -197,10 +243,10 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
     )
   }
 
-  const { verdicts, summary } = analysis!
-  const userVerdicts = verdicts.filter(v => v.side === userSide)
+  const { verdicts } = analysis!
   const opponentSide = userSide === 'white' ? 'black' : 'white'
-  const oppVerdicts = verdicts.filter(v => v.side === opponentSide)
+  const userVerdicts = verdicts.filter(v => v.side === userSide)
+  const oppVerdicts  = verdicts.filter(v => v.side === opponentSide)
 
   const shown = filter === 'errors'
     ? verdicts.filter(v => ['inaccuracy', 'mistake', 'blunder'].includes(v.verdict))
@@ -208,57 +254,71 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
 
   return (
     <div className="bg-gray-800/50 border border-gray-700 rounded-xl flex flex-col">
-      {/* Header summary */}
+
+      {/* Summary header */}
       <div className="px-3 py-2 border-b border-gray-700 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-gray-300">Analyse pédagogique</span>
-          <span className="text-xs text-gray-500">{verdicts.length} demi-coups</span>
+          <span className="text-xs text-gray-500">{verdicts.length} demi-coups · Scan</span>
         </div>
 
-        {/* Accuracy bars */}
-        {[
-          { side: userSide, label: userSide === 'white' ? '⬜' : '⬛', vs: userVerdicts },
+        {/* Accuracy + ACPL bars — one per side */}
+        {([
+          { side: userSide,     label: userSide === 'white' ? '⬜' : '⬛', vs: userVerdicts },
           { side: opponentSide, label: opponentSide === 'white' ? '⬜' : '⬛', vs: oppVerdicts },
-        ].map(({ side, label, vs }) => {
-          const bl = vs.filter(v => v.verdict === 'blunder').length
-          const mk = vs.filter(v => v.verdict === 'mistake').length
+        ] as const).map(({ side, label, vs }) => {
+          const bl  = vs.filter(v => v.verdict === 'blunder').length
+          const mk  = vs.filter(v => v.verdict === 'mistake').length
           const acc = vs.length
             ? 1 - vs.reduce((s, v) => s + Math.max(v.delta_winchance, 0), 0) / vs.length
             : 1
+          const a = acpl(vs)
           return (
             <div key={side} className="flex items-center gap-1.5">
-              <span className="text-xs w-4">{label}</span>
+              <span className="text-xs w-4 flex-shrink-0">{label}</span>
               <AccuracyBar accuracy={acc} />
-              {bl > 0 && <span className="text-xs font-bold" style={{ color: '#ef4444' }}>{bl}??</span>}
-              {mk > 0 && <span className="text-xs font-bold" style={{ color: '#f97316' }}>{mk}?</span>}
+              {/* ACPL — same metric as the Scan annotation panel */}
+              <span className="text-xs tabular-nums font-mono text-gray-400 w-12 text-right flex-shrink-0"
+                title="Perte moyenne en centipions (même calcul que l'annotation Scan)">
+                {a}cp
+              </span>
+              {bl > 0 && <span className="text-xs font-bold flex-shrink-0" style={{ color: '#ef4444' }}>{bl}??</span>}
+              {mk > 0 && <span className="text-xs font-bold flex-shrink-0" style={{ color: '#f97316' }}>{mk}?</span>}
             </div>
           )
         })}
+
+        {/* Column headers */}
+        <div className="flex items-center gap-1.5 text-xs text-gray-600 border-t border-gray-800 pt-1">
+          <span className="w-4" />
+          <span className="w-4" />
+          <span className="flex-1">coup</span>
+          <span className="w-12 text-right">éval.</span>
+          <span className="w-6 text-center">verdict</span>
+          <span className="w-10 text-right">Δcp</span>
+          <span className="w-4" />
+          <span className="w-3" />
+        </div>
       </div>
 
       {/* Filter toggle */}
       <div className="flex border-b border-gray-700">
         {(['all', 'errors'] as const).map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
+          <button key={f} onClick={() => setFilter(f)}
             className={`flex-1 py-1 text-xs font-medium transition-colors ${
               filter === f ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
-            }`}
-          >
+            }`}>
             {f === 'all' ? 'Tous les coups' : 'Erreurs uniquement'}
           </button>
         ))}
       </div>
 
       {/* Move list */}
-      <div className="overflow-y-auto max-h-64">
+      <div className="overflow-y-auto max-h-72">
         {shown.length === 0 ? (
           <p className="text-xs text-center text-gray-500 py-4">Aucune erreur détectée 🎉</p>
         ) : (
-          shown.map(v => (
-            <MoveRow key={v.move_number} verdict={v} gameId={gameId} lang={lang} />
-          ))
+          shown.map(v => <MoveRow key={v.move_number} verdict={v} gameId={gameId} lang={lang} />)
         )}
       </div>
     </div>
