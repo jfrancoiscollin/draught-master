@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
+import hashlib
+import re
 from dataclasses import asdict
-from typing import Any
+from typing import Any, Optional
 
 import aiosqlite
 from fastapi import APIRouter, Depends, HTTPException
@@ -73,6 +76,34 @@ def _db_path() -> str:
         return DB_PATH
 
 
+def _parse_pdn_moves(pdn: str) -> list[str]:
+    """Extract the ordered list of move tokens from a PDN string.
+
+    Strips headers ([...]), move numbers (1. 2. ...) and result tokens,
+    then returns the remaining '-' / 'x' notation tokens.
+    """
+    # Remove header tags
+    pdn = re.sub(r'\[[^\]]*\]', '', pdn)
+    # Remove move numbers like "1." "12."
+    pdn = re.sub(r'\b\d+\.', '', pdn)
+    tokens = pdn.split()
+    moves: list[str] = []
+    for t in tokens:
+        t = t.strip()
+        if not t:
+            continue
+        # Skip result markers and bare numbers
+        if t in ('1-0', '0-1', '1/2-1/2', '*'):
+            continue
+        if re.fullmatch(r'\d+', t):
+            continue
+        # Valid move token contains '-' or 'x'
+        if '-' in t or 'x' in t:
+            # Strip optional leading king prefix 'K' used in some PDN dialects
+            moves.append(t.lstrip('K'))
+    return moves
+
+
 # ---------------------------------------------------------------------------
 # POST /api/pedagogy/analyze-game
 # ---------------------------------------------------------------------------
@@ -83,14 +114,170 @@ async def analyze_game(
     req: AnalyzeGameRequest,
     user: Any = Depends(current_user),
 ) -> AnalyzeGameResponse:
-    """Run dilf's `assemble_verdict` on every half-move of a game.
+    """Run dilf's assemble_verdict on every half-move of a game.
 
-    Not yet implemented — wire up to game_engine.py + dilf.verdicts.assembler.
-    Tracked in ROADMAP Tier 1.
+    Accepts either a game_id (looked up from the games table) or a raw PDN
+    string. Evaluates every position with the Scan engine (200 ms/pos),
+    assembles a MoveVerdict per half-move, persists the analysis, and
+    returns the full verdict list plus a summary.
     """
+    from game_engine import (
+        apply_move as ge_apply,
+        get_legal_moves as ge_legal,
+        initial_state as ge_initial,
+    )
+    from pedagogy.types import GameAnalysis
+    from pedagogy.verdicts.assembler import assemble_verdict
+    from scan_advisor import _scan_eval_sync
+
+    from .engine_adapter import GameEngineAdapter, ge_move_to_dilf, ge_state_to_dilf
+
+    # ------------------------------------------------------------------
+    # 1. Retrieve PDN text
+    # ------------------------------------------------------------------
     if req.game_id is None and not req.pdn:
         raise HTTPException(422, "game_id or pdn is required")
-    raise HTTPException(501, "analyze-game not yet implemented")
+
+    if req.game_id:
+        async with aiosqlite.connect(_db_path()) as conn:
+            cur = await conn.execute(
+                "SELECT pdn FROM games WHERE id = ?", (req.game_id,)
+            )
+            row = await cur.fetchone()
+        if row is None:
+            raise HTTPException(404, f"Game {req.game_id!r} not found")
+        pdn_str = row[0] or ""
+    else:
+        pdn_str = req.pdn or ""
+
+    if not pdn_str.strip():
+        raise HTTPException(422, "PDN content is empty")
+
+    # ------------------------------------------------------------------
+    # 2. Parse move tokens
+    # ------------------------------------------------------------------
+    move_tokens = _parse_pdn_moves(pdn_str)
+    if not move_tokens:
+        raise HTTPException(422, "No moves found in PDN")
+
+    # ------------------------------------------------------------------
+    # 3. Replay moves through game_engine
+    # ------------------------------------------------------------------
+    try:
+        from main import _find_move_by_pdn  # noqa: PLC0415
+    except ImportError:
+        from ..main import _find_move_by_pdn  # type: ignore[assignment]  # noqa: PLC0415
+
+    ge_state = ge_initial()
+    ge_states = [ge_state]
+    ge_moves_played = []
+
+    for token in move_tokens:
+        legal = ge_legal(ge_state)
+        move = _find_move_by_pdn(token, legal)
+        if move is None:
+            break  # stop at first unrecognised token (e.g. result in PDN body)
+        ge_state = ge_apply(ge_state, move)
+        ge_moves_played.append(move)
+        ge_states.append(ge_state)
+
+    n_moves = len(ge_moves_played)
+    if n_moves == 0:
+        raise HTTPException(422, "Could not replay any moves from PDN")
+
+    # ------------------------------------------------------------------
+    # 4. Evaluate all positions sequentially (off the event loop)
+    # 200 ms per position keeps a 40-move game under ~17 s total.
+    # ------------------------------------------------------------------
+    MS_PER_POS = 200.0
+
+    def _eval_all() -> list[dict]:
+        return [_scan_eval_sync(s, ms=MS_PER_POS) for s in ge_states]
+
+    evals = await asyncio.to_thread(_eval_all)
+
+    # ------------------------------------------------------------------
+    # 5. Assemble verdicts via dilf
+    # ------------------------------------------------------------------
+    adapter = GameEngineAdapter()
+    verdicts = []
+
+    for i, ge_move in enumerate(ge_moves_played):
+        state_before = ge_states[i]
+        state_after = ge_states[i + 1]
+        ev_before = evals[i]
+        ev_after = evals[i + 1]
+
+        dilf_before = ge_state_to_dilf(state_before)
+        dilf_after = ge_state_to_dilf(state_after)
+        dilf_move = ge_move_to_dilf(ge_move, state_before.board)
+
+        # Best move from engine for the position before this half-move
+        best_dilf: Optional[Any] = None
+        if ev_before.get("bestMove"):
+            bm_ge = _find_move_by_pdn(ev_before["bestMove"], ge_legal(state_before))
+            if bm_ge is not None:
+                best_dilf = ge_move_to_dilf(bm_ge, state_before.board)
+
+        verdict = assemble_verdict(
+            dilf_before,
+            dilf_move,
+            dilf_after,
+            score_before=float(ev_before.get("score", 0.0)),
+            score_after=float(ev_after.get("score", 0.0)),
+            best_move=best_dilf,
+            half_move_number=i + 1,
+            is_book=bool(ev_before.get("forced") and ev_before.get("score", 0) == 0),
+            engine=adapter,
+        )
+        verdicts.append(verdict)
+
+    # ------------------------------------------------------------------
+    # 6. Persist analysis
+    # ------------------------------------------------------------------
+    game_id_str = req.game_id or (
+        "pdn-" + hashlib.sha1(pdn_str.encode()).hexdigest()[:16]
+    )
+
+    analysis = GameAnalysis(
+        game_id=game_id_str,  # type: ignore[arg-type]
+        user_id=user["id"],
+        user_side=req.user_side or "white",
+        opening_name="",
+        verdicts=verdicts,
+        summary={},
+    )
+    async with aiosqlite.connect(_db_path()) as conn:
+        await storage.upsert_game_analysis(conn, analysis)
+
+    # ------------------------------------------------------------------
+    # 7. Build summary
+    # ------------------------------------------------------------------
+    side = req.user_side or "white"
+    blunders = sum(1 for v in verdicts if v.verdict.value == "blunder")
+    mistakes = sum(1 for v in verdicts if v.verdict.value == "mistake")
+    user_verdicts = [v for v in verdicts if v.side == side]
+    if user_verdicts:
+        avg_accuracy = round(
+            1.0 - sum(max(v.delta_winchance, 0.0) for v in user_verdicts) / len(user_verdicts),
+            3,
+        )
+    else:
+        avg_accuracy = 1.0
+
+    summary: dict[str, Any] = {
+        "total_half_moves": n_moves,
+        "blunders": blunders,
+        "mistakes": mistakes,
+        "average_accuracy": avg_accuracy,
+        "user_side": side,
+    }
+
+    return AnalyzeGameResponse(
+        game_id=game_id_str,
+        verdicts=[_verdict_to_out(v) for v in verdicts],
+        summary=summary,
+    )
 
 
 # ---------------------------------------------------------------------------
