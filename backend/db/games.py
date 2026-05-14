@@ -31,6 +31,58 @@ async def save_game(
         await db.commit()
 
 
+async def save_imported_game(
+    game_id: str,
+    user_id: int,
+    date: str,
+    white_player: str,
+    black_player: str,
+    result: Optional[str],
+    pdn: str,
+    move_count: int,
+    source: str,
+    source_id: Optional[str],
+    user_side: Optional[str] = None,
+) -> bool:
+    """Insert a game imported from an external source.
+    Returns True if inserted, False if already present (idempotent on
+    (user_id, source, source_id)).
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        if source_id:
+            cur = await db.execute(
+                "SELECT 1 FROM games WHERE user_id = ? AND source = ? AND source_id = ?",
+                (user_id, source, source_id),
+            )
+            if await cur.fetchone():
+                return False
+        await db.execute(
+            """
+            INSERT OR IGNORE INTO games
+            (id, date, white_player, black_player, result, pdn, fen_positions,
+             move_count, user_id, source, source_id, user_side, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'finished')
+            """,
+            (
+                game_id, date, white_player, black_player, result, pdn,
+                json.dumps([]), move_count, user_id, source, source_id,
+                user_side,
+            ),
+        )
+        await db.commit()
+        return True
+
+
+async def count_user_games_by_source(user_id: int, source: str) -> int:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute(
+            "SELECT COUNT(*) FROM games WHERE user_id = ? AND source = ?",
+            (user_id, source),
+        )
+        row = await cur.fetchone()
+        return int(row[0]) if row else 0
+
+
 async def save_game_annotations(game_id: str, user_id: Optional[int], annotations: list) -> None:
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
@@ -58,6 +110,12 @@ async def get_user_stats(user_id: int) -> dict:
             (user_id,),
         )
         rows = await cursor.fetchall()
+        cur2 = await db.execute(
+            "SELECT COUNT(*) FROM games WHERE user_id = ? AND source = 'lidraughts'",
+            (user_id,),
+        )
+        lidraughts_count_row = await cur2.fetchone()
+        games_from_lidraughts = int(lidraughts_count_row[0]) if lidraughts_count_row else 0
 
     total_games = 0
     total_moves = 0
@@ -110,6 +168,7 @@ async def get_user_stats(user_id: int) -> dict:
         "inaccuracies": total_inaccuracies,
         "accuracy_pct": overall_acc,
         "recent_games": recent_games,
+        "games_from_lidraughts": games_from_lidraughts,
     }
 
 

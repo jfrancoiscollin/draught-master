@@ -28,9 +28,21 @@ async def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
 async def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        cursor = await db.execute("SELECT id, email, created_at FROM users WHERE id = ?", (user_id,))
+        cursor = await db.execute(
+            "SELECT id, email, created_at, lidraughts_username FROM users WHERE id = ?",
+            (user_id,),
+        )
         row = await cursor.fetchone()
         return dict(row) if row else None
+
+
+async def set_lidraughts_username(user_id: int, username: Optional[str]) -> None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "UPDATE users SET lidraughts_username = ? WHERE id = ?",
+            (username, user_id),
+        )
+        await db.commit()
 
 
 async def create_reset_token(email: str, token: str, expires_at: str) -> None:

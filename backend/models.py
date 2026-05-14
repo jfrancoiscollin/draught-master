@@ -158,6 +158,7 @@ class UserResponse(BaseModel):
     """Authenticated user identity (included in TokenResponse)."""
     id: int
     email: str
+    lidraughts_username: Optional[str] = None
 
 
 class TokenResponse(BaseModel):

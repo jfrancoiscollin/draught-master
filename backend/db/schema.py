@@ -191,12 +191,26 @@ async def init_db() -> None:
             "ALTER TABLE games ADD COLUMN user_side TEXT",
             "ALTER TABLE games ADD COLUMN opening_name TEXT",
             "ALTER TABLE games ADD COLUMN status TEXT DEFAULT 'finished'",
+            "ALTER TABLE games ADD COLUMN source TEXT",
+            "ALTER TABLE games ADD COLUMN source_id TEXT",
+            "ALTER TABLE users ADD COLUMN lidraughts_username TEXT",
         ]:
             try:
                 await db.execute(col_ddl)
                 await db.commit()
             except Exception:
                 pass  # column already exists
+
+        # Prevent duplicate imports of the same lidraughts game per user.
+        try:
+            await db.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_games_user_source "
+                "ON games(user_id, source, source_id) "
+                "WHERE source IS NOT NULL AND source_id IS NOT NULL"
+            )
+            await db.commit()
+        except Exception:
+            pass
 
         # Always upsert exercises with fixed IDs so Railway's persistent DB
         # picks up corrected FEN/solution data on each redeploy.
