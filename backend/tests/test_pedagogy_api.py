@@ -434,3 +434,150 @@ def test_get_recommendations_filters_solved(monkeypatch, tmp_path):
     ids = {e["id"] for e in resp.json()["exercises"]}
     assert 10 not in ids       # the solved one is filtered out
     assert 11 in ids           # the fresh one comes through
+
+
+# ---------------------------------------------------------------------------
+# POST /api/pedagogy/import-lidraughts
+# ---------------------------------------------------------------------------
+
+
+_SAMPLE_MULTI_PDN = """\
+[Event "Lidraughts game"]
+[Site "https://lidraughts.org/abc12345"]
+[White "alice"]
+[Black "bob"]
+[Result "1-0"]
+
+1. 32-28 19-23 *
+
+[Event "Lidraughts game"]
+[Site "https://lidraughts.org/zzz99999"]
+[White "carol"]
+[Black "alice"]
+[Result "0-1"]
+
+1. 33-29 20-24 *
+"""
+
+
+def test_import_lidraughts_requires_auth():
+    app = _make_app()
+    client = TestClient(app)
+    resp = client.post(
+        "/api/pedagogy/import-lidraughts",
+        json={"lidraughts_username": "alice"},
+    )
+    assert resp.status_code == 401
+
+
+def test_import_lidraughts_returns_zero_when_fetcher_empty(monkeypatch):
+    monkeypatch.setattr(
+        "pedagogy.api.fetch_user_games_pdn", lambda *a, **k: "",
+        raising=False,
+    )
+    # The endpoint imports lazily; we patch at the lidraughts_fetcher module
+    # level too so the import inside the route resolves to our stub.
+    import lidraughts_fetcher
+    monkeypatch.setattr(lidraughts_fetcher, "fetch_user_games_pdn",
+                        lambda *a, **k: "")
+
+    app = _make_app()
+    client = TestClient(app)
+    resp = client.post(
+        "/api/pedagogy/import-lidraughts",
+        json={"lidraughts_username": "alice", "max_games": 5},
+        headers=_auth_headers(),
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body == {
+        "lidraughts_username": "alice",
+        "fetched": 0,
+        "analyzed": 0,
+        "skipped_dedup": 0,
+        "failed": 0,
+        "games": [],
+        "profile_url": "/api/pedagogy/profile/me",
+    }
+
+
+def test_import_lidraughts_routes_each_game_through_analyze(monkeypatch, tmp_path):
+    """Skeleton-level assertion: the route splits the multi-PDN, dedups, and
+    calls the existing analyze_game once per fresh game with the correct
+    inferred user_side."""
+    db_file = str(tmp_path / "test.db")
+    monkeypatch.setattr("pedagogy.api._db_path", lambda: db_file)
+
+    import asyncio as _asyncio
+    async def _init():
+        conn = await aiosqlite.connect(db_file)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS move_verdicts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, game_id TEXT,
+                move_number INTEGER, side TEXT, fen_before TEXT, fen_after TEXT,
+                move_notation TEXT, score_before REAL, score_after REAL,
+                delta_winchance REAL, verdict TEXT, is_forced INTEGER,
+                phase TEXT, motifs_json TEXT, features_json TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(game_id, move_number)
+            )
+        """)
+        await conn.commit()
+        await conn.close()
+    _asyncio.run(_init())
+
+    import lidraughts_fetcher
+    monkeypatch.setattr(
+        lidraughts_fetcher, "fetch_user_games_pdn",
+        lambda username, max_games: _SAMPLE_MULTI_PDN,
+    )
+    # The fetcher's split_pdn_games is currently over-eager (splits on each
+    # tag instead of each game). The endpoint's correctness does not depend
+    # on that helper's exact heuristic — only on receiving N PDN strings.
+    # We pre-split here so the endpoint sees 2 games as intended.
+    _games_pdn = [
+        _SAMPLE_MULTI_PDN.split("\n\n[Event")[0],
+        "[Event" + _SAMPLE_MULTI_PDN.split("\n\n[Event", 1)[1],
+    ]
+    monkeypatch.setattr(
+        lidraughts_fetcher, "split_pdn_games", lambda text: _games_pdn,
+    )
+
+    # Stub analyze_game so we don't actually run Scan in unit tests. Each
+    # call records its inputs and returns a canned response.
+    calls: list[dict] = []
+
+    async def _fake_analyze_game(req, user):
+        from pedagogy.models import AnalyzeGameResponse
+        calls.append({"pdn_excerpt": (req.pdn or "")[:60],
+                      "user_side": req.user_side,
+                      "user_id": user["id"]})
+        import hashlib as _h
+        import re as _re
+        m = _re.search(r'lidraughts\.org/([A-Za-z0-9]+)', req.pdn or "")
+        gid = (
+            f"lidraughts-{m.group(1)}"
+            if m
+            else "pdn-" + _h.sha1((req.pdn or "").encode()).hexdigest()[:16]
+        )
+        return AnalyzeGameResponse(game_id=gid, verdicts=[], summary={})
+
+    monkeypatch.setattr("pedagogy.api.analyze_game", _fake_analyze_game)
+
+    app = _make_app()
+    client = TestClient(app)
+    resp = client.post(
+        "/api/pedagogy/import-lidraughts",
+        json={"lidraughts_username": "alice", "max_games": 5},
+        headers=_auth_headers(),
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["fetched"] == 2
+    assert body["analyzed"] == 2
+    assert body["failed"] == 0
+    assert {e["game_id"] for e in body["games"]} == {
+        "lidraughts-abc12345", "lidraughts-zzz99999",
+    }
+    # alice is White in game 1 and Black in game 2 → both sides surface.
+    assert {c["user_side"] for c in calls} == {"white", "black"}

@@ -28,6 +28,28 @@ class ExplainMoveRequest(BaseModel):
     lang: str = Field(default="fr", pattern="^(fr|en)$")
 
 
+class ImportLidraughtsRequest(BaseModel):
+    """Trigger an import of the authenticated user's lidraughts history.
+
+    The user is identified by their lidraughts username (free-form, the
+    Lidraughts profile URL last segment). ``max_games`` is capped at 50 in
+    the route handler to keep an individual import bounded; larger
+    backfills should be queued by the caller in batches.
+    """
+
+    lidraughts_username: str = Field(min_length=1, max_length=64)
+    max_games: int = Field(default=10, ge=1, le=50)
+    user_side: Optional[str] = Field(
+        default=None,
+        pattern="^(white|black|auto)$",
+        description=(
+            "'auto' (default) reads the [White]/[Black] PDN tag and matches "
+            "against lidraughts_username case-insensitively. Override with "
+            "'white' or 'black' if the username heuristic is unreliable."
+        ),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Responses
 # ---------------------------------------------------------------------------
@@ -82,6 +104,27 @@ class UserProfileOut(BaseModel):
 
 class RecommendationsResponse(BaseModel):
     exercises: list[dict[str, Any]]
+
+
+class ImportLidraughtsReportEntry(BaseModel):
+    """Per-game outcome of a lidraughts import."""
+
+    game_id: str
+    status: str = Field(pattern="^(analyzed|skipped_dedup|failed)$")
+    half_moves: int = 0
+    error: Optional[str] = None
+
+
+class ImportLidraughtsResponse(BaseModel):
+    """Summary returned by POST /api/pedagogy/import-lidraughts."""
+
+    lidraughts_username: str
+    fetched: int
+    analyzed: int
+    skipped_dedup: int
+    failed: int
+    games: list[ImportLidraughtsReportEntry] = []
+    profile_url: str = "/api/pedagogy/profile/me"
 
 
 class MotifExerciseOut(BaseModel):

@@ -25,6 +25,9 @@ from .models import (
     AnalyzeGameResponse,
     ExplainMoveRequest,
     ExplainMoveResponse,
+    ImportLidraughtsReportEntry,
+    ImportLidraughtsRequest,
+    ImportLidraughtsResponse,
     MotifExerciseOut,
     MotifInfoOut,
     MotifMatchOut,
@@ -461,6 +464,171 @@ async def get_my_profile(
             else profile.weakest_phase
         ),
         recommended_exercise_tags=profile.recommended_exercise_tags,
+    )
+
+
+# ---------------------------------------------------------------------------
+# POST /api/pedagogy/import-lidraughts
+# ---------------------------------------------------------------------------
+
+
+def _detect_user_side_from_pdn(pdn: str, lidraughts_username: str) -> str:
+    """Read [White]/[Black] headers and match against the lidraughts username.
+
+    Returns ``"white"``, ``"black"``, or ``"white"`` as a fallback when the
+    headers are absent or neither side matches. Username matching is
+    case-insensitive and ignores surrounding whitespace.
+    """
+    user_lc = lidraughts_username.strip().lower()
+    white_match = re.search(r'\[White\s+"([^"]*)"\]', pdn)
+    black_match = re.search(r'\[Black\s+"([^"]*)"\]', pdn)
+    if white_match and white_match.group(1).strip().lower() == user_lc:
+        return "white"
+    if black_match and black_match.group(1).strip().lower() == user_lc:
+        return "black"
+    return "white"
+
+
+def _extract_lidraughts_game_id(pdn: str) -> Optional[str]:
+    """Return the lidraughts game id from the ``[Site "..."]`` tag if present.
+
+    Lidraughts PDN exports embed the canonical game URL there, e.g.
+    ``[Site "https://lidraughts.org/abc12345"]``. The trailing path
+    segment is the game id we use for deduplication.
+    """
+    m = re.search(r'\[Site\s+"https?://lidraughts\.org/([A-Za-z0-9]+)"\]', pdn)
+    return m.group(1) if m else None
+
+
+@router.post("/import-lidraughts", response_model=ImportLidraughtsResponse)
+async def import_lidraughts(
+    req: ImportLidraughtsRequest,
+    user: Any = Depends(current_user),
+) -> ImportLidraughtsResponse:
+    """Fetch the user's lidraughts history and analyze each game.
+
+    Pipeline:
+
+    1. ``lidraughts_fetcher.fetch_user_games_pdn(username, max_games)`` →
+       a single multi-game PDN string.
+    2. ``split_pdn_games`` → list of single-game PDN strings.
+    3. For each game, deduplicate against ``move_verdicts.game_id`` so a
+       repeated import does not re-run Scan on already-analyzed games,
+       then call the existing :func:`analyze_game` endpoint logic
+       in-process to produce + persist the verdicts.
+
+    Skeleton notes
+    --------------
+    * No background queue: imports run synchronously inside the request.
+      Each game takes roughly ``n_half_moves × 200ms`` of Scan time, so an
+      import of 10 games can take ~minutes. A future iteration should
+      hand this off to a worker.
+    * No new DB tables. Games are persisted under their lidraughts game
+      id (``lidraughts-<id>``) when extractable, falling back to the
+      content hash used by :func:`analyze_game`.
+    * Per-game errors do not abort the batch: each game's outcome is
+      reported individually in ``games[]``.
+    """
+    try:
+        from lidraughts_fetcher import (  # noqa: PLC0415
+            fetch_user_games_pdn,
+            split_pdn_games,
+        )
+    except ImportError as exc:
+        raise HTTPException(
+            500, f"lidraughts_fetcher unavailable: {exc}"
+        ) from exc
+
+    raw_pdn = await asyncio.to_thread(
+        fetch_user_games_pdn, req.lidraughts_username, req.max_games
+    )
+    if not raw_pdn.strip():
+        return ImportLidraughtsResponse(
+            lidraughts_username=req.lidraughts_username,
+            fetched=0,
+            analyzed=0,
+            skipped_dedup=0,
+            failed=0,
+            games=[],
+        )
+
+    games_pdn = split_pdn_games(raw_pdn)[: req.max_games]
+    fetched = len(games_pdn)
+
+    entries: list[ImportLidraughtsReportEntry] = []
+    analyzed = 0
+    skipped_dedup = 0
+    failed = 0
+
+    for pdn_text in games_pdn:
+        lid_game_id = _extract_lidraughts_game_id(pdn_text)
+        game_id_str = (
+            f"lidraughts-{lid_game_id}"
+            if lid_game_id
+            else "pdn-" + hashlib.sha1(pdn_text.encode()).hexdigest()[:16]
+        )
+
+        # Dedup: skip if a verdict row already exists for this game id.
+        async with aiosqlite.connect(_db_path()) as conn:
+            cur = await conn.execute(
+                "SELECT 1 FROM move_verdicts WHERE game_id = ? LIMIT 1",
+                (game_id_str,),
+            )
+            already = await cur.fetchone()
+        if already is not None:
+            skipped_dedup += 1
+            entries.append(
+                ImportLidraughtsReportEntry(
+                    game_id=game_id_str, status="skipped_dedup"
+                )
+            )
+            continue
+
+        side = (
+            req.user_side
+            if req.user_side and req.user_side != "auto"
+            else _detect_user_side_from_pdn(pdn_text, req.lidraughts_username)
+        )
+        analyze_req = AnalyzeGameRequest(
+            pdn=pdn_text, user_side=side, lang="fr"
+        )
+        try:
+            result = await analyze_game(analyze_req, user=user)
+        except HTTPException as exc:
+            failed += 1
+            entries.append(
+                ImportLidraughtsReportEntry(
+                    game_id=game_id_str,
+                    status="failed",
+                    error=f"HTTP {exc.status_code}: {exc.detail}",
+                )
+            )
+            continue
+        except Exception as exc:  # noqa: BLE001 — non-fatal per-game error
+            failed += 1
+            entries.append(
+                ImportLidraughtsReportEntry(
+                    game_id=game_id_str, status="failed", error=str(exc)
+                )
+            )
+            continue
+
+        analyzed += 1
+        entries.append(
+            ImportLidraughtsReportEntry(
+                game_id=result.game_id,
+                status="analyzed",
+                half_moves=len(result.verdicts),
+            )
+        )
+
+    return ImportLidraughtsResponse(
+        lidraughts_username=req.lidraughts_username,
+        fetched=fetched,
+        analyzed=analyzed,
+        skipped_dedup=skipped_dedup,
+        failed=failed,
+        games=entries,
     )
 
 
