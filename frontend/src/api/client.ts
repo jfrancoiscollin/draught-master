@@ -116,8 +116,8 @@ export async function checkExercise(
   return res.data
 }
 
-export async function resignGame(gameId: string): Promise<{ result: string }> {
-  const res = await api.post<{ result: string }>(`/game/${gameId}/resign`)
+export async function resignGame(gameId: string, userSide: 'white' | 'black'): Promise<{ result: string }> {
+  const res = await api.post<{ result: string }>(`/game/${gameId}/resign`, { user_side: userSide })
   return res.data
 }
 

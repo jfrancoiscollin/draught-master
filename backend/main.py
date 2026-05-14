@@ -387,20 +387,26 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
 
     if result is not None:
         pdn = _build_pdn(state.move_history)
-        await save_game(
-            game_id=game_id,
-            date=entry["date"],
-            white_player=entry["white_player"],
-            black_player=entry["black_player"],
-            result=result,
-            pdn=pdn,
-            fen_positions=entry["fen_positions"],
-            move_count=len(state.move_history),
-            user_id=entry.get("user_id"),
-        )
-        await delete_active_game(game_id)
+        try:
+            await save_game(
+                game_id=game_id,
+                date=entry["date"],
+                white_player=entry["white_player"],
+                black_player=entry["black_player"],
+                result=result,
+                pdn=pdn,
+                fen_positions=entry["fen_positions"],
+                move_count=len(state.move_history),
+                user_id=entry.get("user_id"),
+            )
+            await delete_active_game(game_id)
+        except Exception:
+            logging.exception("save_game failed for game %s (result=%s)", game_id, result)
     else:
-        await save_active_game(game_id, _serialize_entry(entry))
+        try:
+            await save_active_game(game_id, _serialize_entry(entry))
+        except Exception:
+            logging.exception("save_active_game failed for game %s", game_id)
 
     final_legal = get_legal_moves(state) if result is None else []
     return MoveResponse(
@@ -418,27 +424,38 @@ async def make_move(game_id: str, req: MoveRequest) -> MoveResponse:
 
 
 @app.post("/api/game/{game_id}/resign")
-async def resign_game(game_id: str) -> Dict[str, Any]:
+async def resign_game(
+    game_id: str,
+    req: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     entry = await _get_game_entry(game_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="Partie introuvable")
     state: GameState = entry["state"]
-    if game_result(state) is not None:
-        raise HTTPException(status_code=400, detail="La partie est déjà terminée")
+
+    # If game already finished (e.g. race condition), return current result gracefully
+    existing_result = game_result(state)
+    if existing_result is not None:
+        return {"result": existing_result}
+
+    # Determine who resigned to compute winner correctly
+    user_side = (req or {}).get("user_side", "white")
+    result = "black" if user_side == "white" else "white"
+
     pdn = _build_pdn(state.move_history)
     await save_game(
         game_id=game_id,
         date=entry["date"],
         white_player=entry["white_player"],
         black_player=entry["black_player"],
-        result="black",
+        result=result,
         pdn=pdn,
         fen_positions=entry["fen_positions"],
         move_count=len(state.move_history),
         user_id=entry.get("user_id"),
     )
     await delete_active_game(game_id)
-    return {"result": "black"}
+    return {"result": result}
 
 
 @app.post("/api/game/{game_id}/undo", response_model=GameStateResponse)

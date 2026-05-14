@@ -562,12 +562,12 @@ export default function App() {
     if (!gameState || isAiThinking || gameState.result) return
     if (!window.confirm(t('resignConfirm'))) return
     try {
-      await resignGame(gameState.game_id)
-      setGameState(prev => prev ? { ...prev, result: 'black' } : prev)
+      const resp = await resignGame(gameState.game_id, humanColor)
+      setGameState(prev => prev ? { ...prev, result: resp.result } : prev)
     } catch {
       showToast('Erreur lors de l\'abandon.')
     }
-  }, [gameState, isAiThinking, t])
+  }, [gameState, isAiThinking, humanColor, t])
 
   const handleUndo = useCallback(async () => {
     if (!gameState || isAiThinking) return
