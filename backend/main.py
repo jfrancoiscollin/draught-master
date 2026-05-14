@@ -34,11 +34,12 @@ from ai_engine import get_best_move
 from scan_engine import get_scan_move
 from scan_advisor import analyze_position, analyze_full_game, analyze_full_game_pdn, explain_best_move_concise
 from database import (
-    init_db, save_game, save_game_annotations, get_user_stats,
+    init_db, save_game, save_imported_game, save_game_annotations, get_user_stats,
+    count_user_games_by_source,
     get_games, get_game,
     save_active_game, load_active_game, delete_active_game,
     get_exercises, get_exercise, record_progress,
-    create_user, get_user_by_email, get_user_by_id,
+    create_user, get_user_by_email, get_user_by_id, set_lidraughts_username,
     create_reset_token, get_reset_token, consume_reset_token,
     mark_exercise_solved, get_user_solved_exercise_ids,
     mark_lesson_read, get_user_read_lesson_chapters,
@@ -880,7 +881,12 @@ async def auth_login(req: LoginRequest) -> TokenResponse:
 
 @app.get("/api/auth/me", response_model=UserResponse)
 async def auth_me(current_user: Dict[str, Any] = Depends(_require_auth)) -> UserResponse:
-    return UserResponse(id=current_user["id"], email=current_user["email"])
+    user = await get_user_by_id(current_user["id"])
+    return UserResponse(
+        id=current_user["id"],
+        email=current_user["email"],
+        lidraughts_username=(user or {}).get("lidraughts_username"),
+    )
 
 
 @app.get("/api/auth/me/progress")
@@ -893,6 +899,109 @@ async def auth_me_progress(current_user: Dict[str, Any] = Depends(_require_auth)
 async def auth_me_stats(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
     stats = await get_user_stats(current_user["id"])
     return stats
+
+
+@app.post("/api/auth/me/lidraughts/import")
+async def auth_me_lidraughts_import(
+    body: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(_require_auth),
+) -> Dict[str, Any]:
+    """Download the user's last N games from Lidraughts and store them
+    in the database. Default N=50, capped at 100.
+    """
+    import re as _re
+    import uuid as _uuid
+    from datetime import datetime as _dt
+    from lidraughts_fetcher import fetch_user_games_pdn, split_pdn_games
+
+    raw_username = (body.get("username") or "").strip()
+    try:
+        count = int(body.get("count", 50))
+    except (TypeError, ValueError):
+        count = 50
+    count = max(1, min(count, 100))
+
+    db_user = await get_user_by_id(current_user["id"])
+    if not raw_username:
+        raw_username = ((db_user or {}).get("lidraughts_username") or "").strip()
+    if not raw_username:
+        raise HTTPException(status_code=400, detail="Nom d'utilisateur Lidraughts manquant")
+    if not _re.match(r"^[A-Za-z0-9_-]{2,30}$", raw_username):
+        raise HTTPException(status_code=400, detail="Nom d'utilisateur Lidraughts invalide")
+
+    # Persist the username so the user doesn't have to retype it next time.
+    if (db_user or {}).get("lidraughts_username") != raw_username:
+        await set_lidraughts_username(current_user["id"], raw_username)
+
+    pdn_text = await asyncio.to_thread(fetch_user_games_pdn, raw_username, count)
+    if not pdn_text:
+        raise HTTPException(
+            status_code=502,
+            detail="Impossible de récupérer les parties depuis Lidraughts",
+        )
+
+    games_pdn = split_pdn_games(pdn_text)[:count]
+    user_login = raw_username.lower()
+    imported = 0
+    skipped = 0
+    for pdn in games_pdn:
+        tags: Dict[str, str] = {}
+        for m in _re.finditer(r'\[(\w+)\s+"([^"]*)"\]', pdn):
+            tags[m.group(1).lower()] = m.group(2)
+        site = tags.get("site", "")
+        m_site = _re.search(r"lidraughts\.org/(\w+)", site)
+        source_id = m_site.group(1) if m_site else (tags.get("gameid") or None)
+        white_player = tags.get("white", "?")
+        black_player = tags.get("black", "?")
+        date_tag = tags.get("utcdate") or tags.get("date") or _dt.utcnow().date().isoformat()
+        result_tag = tags.get("result", "")
+        if result_tag in ("1-0", "2-0"):
+            result = "white"
+        elif result_tag in ("0-1", "0-2"):
+            result = "black"
+        elif result_tag in ("1/2-1/2", "1-1"):
+            result = "draw"
+        else:
+            result = None
+        if white_player.lower() == user_login:
+            user_side = "white"
+        elif black_player.lower() == user_login:
+            user_side = "black"
+        else:
+            user_side = None
+        move_tokens = _re.findall(r"\b\d+[-x]\d+(?:[-x]\d+)*\b", pdn)
+        game_id = source_id or _uuid.uuid4().hex
+        try:
+            inserted = await save_imported_game(
+                game_id=game_id,
+                user_id=current_user["id"],
+                date=date_tag,
+                white_player=white_player,
+                black_player=black_player,
+                result=result,
+                pdn=pdn,
+                move_count=len(move_tokens),
+                source="lidraughts",
+                source_id=source_id,
+                user_side=user_side,
+            )
+            if inserted:
+                imported += 1
+            else:
+                skipped += 1
+        except Exception as exc:
+            logging.warning("lidraughts import: failed to save game %s: %s", source_id, exc)
+            skipped += 1
+
+    total = await count_user_games_by_source(current_user["id"], "lidraughts")
+    return {
+        "requested": count,
+        "fetched": len(games_pdn),
+        "imported": imported,
+        "skipped": skipped,
+        "total_lidraughts_games": total,
+        "username": raw_username,
+    }
 
 
 @app.post("/api/history/{game_id}/annotations")

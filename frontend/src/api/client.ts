@@ -180,10 +180,32 @@ export interface UserStats {
     mistakes: number
     inaccuracies: number
   }>
+  games_from_lidraughts?: number
 }
 
 export async function getUserStats(): Promise<UserStats> {
   const res = await api.get<UserStats>('/auth/me/stats')
+  return res.data
+}
+
+export interface LidraughtsImportResult {
+  requested: number
+  fetched: number
+  imported: number
+  skipped: number
+  total_lidraughts_games: number
+  username: string
+}
+
+export async function importLidraughtsGames(
+  username: string,
+  count: number = 50,
+): Promise<LidraughtsImportResult> {
+  const res = await api.post<LidraughtsImportResult>(
+    '/auth/me/lidraughts/import',
+    { username, count },
+    { timeout: 120000 },
+  )
   return res.data
 }
 

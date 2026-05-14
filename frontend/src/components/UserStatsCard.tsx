@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getUserStats } from '../api/client'
+import { getUserStats, importLidraughtsGames } from '../api/client'
 import type { UserStats } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
@@ -42,11 +42,19 @@ interface UserStatsCardProps {
 }
 
 export default function UserStatsCard({ defaultOpen = false, onMotifClick }: UserStatsCardProps) {
-  const { user } = useAuth()
+  const { user, setUser } = useAuth()
   const { t } = useLanguage()
   const [stats, setStats] = useState<UserStats | null>(null)
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(defaultOpen)
+  const [lidraughtsUsername, setLidraughtsUsername] = useState<string>(user?.lidraughts_username ?? '')
+  const [lidraughtsCount, setLidraughtsCount] = useState<number>(50)
+  const [importing, setImporting] = useState(false)
+  const [importMsg, setImportMsg] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+
+  useEffect(() => {
+    setLidraughtsUsername(user?.lidraughts_username ?? '')
+  }, [user?.lidraughts_username])
 
   useEffect(() => {
     if (!user || !open) return
@@ -56,6 +64,31 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
       .catch(() => setStats(null))
       .finally(() => setLoading(false))
   }, [user, open])
+
+  const handleImport = async () => {
+    const uname = lidraughtsUsername.trim()
+    if (!uname) return
+    setImporting(true)
+    setImportMsg(null)
+    try {
+      const count = Math.max(1, Math.min(100, Math.floor(lidraughtsCount || 50)))
+      const res = await importLidraughtsGames(uname, count)
+      setImportMsg({
+        kind: 'success',
+        text: `${res.imported} / ${res.fetched} parties importées (${res.total_lidraughts_games} au total).`,
+      })
+      if (user && user.lidraughts_username !== res.username) {
+        setUser({ ...user, lidraughts_username: res.username })
+      }
+      const fresh = await getUserStats().catch(() => null)
+      if (fresh) setStats(fresh)
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail || t('lidraughtsImportError')
+      setImportMsg({ kind: 'error', text: detail })
+    } finally {
+      setImporting(false)
+    }
+  }
 
   if (!user) return null
 
@@ -85,6 +118,13 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
                   <StatBox label="Bévues" value={stats.blunders} color="text-red-400" />
                   <StatBox label="Erreurs" value={stats.mistakes} color="text-orange-400" />
                   <StatBox label="Imprécisions" value={stats.inaccuracies} color="text-yellow-400" />
+                  {(stats.games_from_lidraughts ?? 0) > 0 && (
+                    <StatBox
+                      label="Lidraughts"
+                      value={stats.games_from_lidraughts ?? 0}
+                      color="text-sky-400"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -107,6 +147,46 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
                 </div>
               )}
             </>
+          )}
+
+          {!loading && (
+            <div className="mt-4 border-t border-gray-700 pt-3">
+              <p className="text-xs text-gray-400 mb-2">{t('lidraughtsImportButton')}</p>
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={lidraughtsUsername}
+                  onChange={e => setLidraughtsUsername(e.target.value)}
+                  placeholder={t('lidraughtsUsernamePlaceholder')}
+                  className="bg-gray-700 text-white text-sm rounded px-2 py-1.5 border border-gray-600 focus:border-amber-500 focus:outline-none"
+                  disabled={importing}
+                />
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-400">{t('lidraughtsCountLabel')}</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={lidraughtsCount}
+                    onChange={e => setLidraughtsCount(Number(e.target.value))}
+                    className="w-20 bg-gray-700 text-white text-sm rounded px-2 py-1 border border-gray-600 focus:border-amber-500 focus:outline-none"
+                    disabled={importing}
+                  />
+                </div>
+                <button
+                  onClick={handleImport}
+                  disabled={importing || !lidraughtsUsername.trim()}
+                  className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm font-semibold rounded px-3 py-2 transition-colors"
+                >
+                  {importing ? t('lidraughtsImporting') : t('lidraughtsImportButton')}
+                </button>
+                {importMsg && (
+                  <p className={`text-xs mt-1 ${importMsg.kind === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                    {importMsg.text}
+                  </p>
+                )}
+              </div>
+            </div>
           )}
         </div>
       )}

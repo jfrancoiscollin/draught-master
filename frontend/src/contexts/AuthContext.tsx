@@ -4,10 +4,12 @@ import axios from 'axios'
 export interface AuthUser {
   id: number
   email: string
+  lidraughts_username?: string | null
 }
 
 interface AuthContextType {
   user: AuthUser | null
+  setUser: (u: AuthUser | null) => void
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
   logout: () => void
@@ -65,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )
