@@ -186,16 +186,20 @@ async def analyze_game(
         raise HTTPException(422, "Could not replay any moves from PDN")
 
     # ------------------------------------------------------------------
-    # 4. Evaluate all positions sequentially (off the event loop)
-    # _scan_eval_sync expects seconds (not ms) — budget 60s total.
+    # 4. Evaluate all positions — each in its own thread so the event
+    #    loop stays responsive between evals.  The Scan engine singleton
+    #    serialises concurrent calls internally via its own lock, so the
+    #    actual Scan CPU time is sequential; the gain here is a higher
+    #    per-position budget (2 s vs 0.5 s) that matches gameplay quality.
+    #    Total wall time ≈ n_pos × S_PER_POS, capped at 120 s.
     # ------------------------------------------------------------------
     n_pos = len(ge_states)
-    S_PER_POS = min(0.5, 60.0 / max(n_pos, 1))
+    S_PER_POS = min(2.0, 120.0 / max(n_pos, 1))
 
-    def _eval_all() -> list[dict]:
-        return [_scan_eval_sync(s, ms=S_PER_POS) for s in ge_states]
-
-    evals = await asyncio.to_thread(_eval_all)
+    evals: list[dict] = list(await asyncio.gather(*[
+        asyncio.to_thread(_scan_eval_sync, s, S_PER_POS)
+        for s in ge_states
+    ]))
 
     # ------------------------------------------------------------------
     # 5. Assemble verdicts via dilf

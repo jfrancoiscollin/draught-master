@@ -456,7 +456,7 @@ export async function analyzeGamePedagogy(
   const res = await api.post<PedagogyAnalysis>(
     '/pedagogy/analyze-game',
     { game_id: gameId, user_side: userSide, lang },
-    { timeout: 90000 },
+    { timeout: 180000 },
   )
   return res.data
 }
