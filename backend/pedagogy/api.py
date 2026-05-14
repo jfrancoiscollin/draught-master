@@ -247,8 +247,13 @@ async def analyze_game(
         verdicts=verdicts,
         summary={},
     )
-    async with aiosqlite.connect(_db_path()) as conn:
-        await storage.upsert_game_analysis(conn, analysis)
+    import logging as _logging  # noqa: PLC0415
+    _log = _logging.getLogger(__name__)
+    try:
+        async with aiosqlite.connect(_db_path()) as conn:
+            await storage.upsert_game_analysis(conn, analysis)
+    except Exception as exc:  # noqa: BLE001
+        _log.warning("Could not persist pedagogy analysis (non-fatal): %s", exc)
 
     # ------------------------------------------------------------------
     # 7. Build summary

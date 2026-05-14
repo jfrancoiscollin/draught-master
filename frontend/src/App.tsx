@@ -251,6 +251,7 @@ export default function App() {
   // Pedagogy (dilf) post-game analysis
   const [pedagogyAnalysis, setPedagogyAnalysis] = useState<PedagogyAnalysis | null>(null)
   const [pedagogyLoading, setPedagogyLoading] = useState(false)
+  const [pedagogyError, setPedagogyError] = useState<string | null>(null)
 
   // Pre-load WASM engine on startup so it's ready before the user requests analysis
   useEffect(() => { getScanEngine() }, [])
@@ -318,6 +319,7 @@ export default function App() {
       setExplorerArrows([])
       setPedagogyAnalysis(null)
       setPedagogyLoading(false)
+      setPedagogyError(null)
     } catch {
       showToast(t('errorCreatingGame'))
     } finally {
@@ -886,9 +888,18 @@ export default function App() {
   const handleAnalyzePedagogy = useCallback(async () => {
     if (!gameState?.game_id || pedagogyLoading) return
     setPedagogyLoading(true)
-    const result = await analyzeGamePedagogy(gameState.game_id, humanColor, language)
-    setPedagogyAnalysis(result)
-    setPedagogyLoading(false)
+    setPedagogyError(null)
+    try {
+      const result = await analyzeGamePedagogy(gameState.game_id, humanColor, language)
+      setPedagogyAnalysis(result)
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string }; status?: number } }
+      const detail = axiosErr?.response?.data?.detail
+      const msg = err instanceof Error ? err.message : String(err)
+      setPedagogyError(detail ? `Erreur ${axiosErr?.response?.status}: ${detail}` : msg)
+    } finally {
+      setPedagogyLoading(false)
+    }
   }, [gameState?.game_id, humanColor, language, pedagogyLoading])
 
   // Reconstruct all board positions from move history for replay
@@ -999,6 +1010,7 @@ export default function App() {
       userSide={humanColor}
       lang={language}
       onAnalyze={handleAnalyzePedagogy}
+      error={pedagogyError}
     />
   ) : null
 

@@ -452,17 +452,13 @@ export async function analyzeGamePedagogy(
   gameId: string,
   userSide: 'white' | 'black',
   lang: string = 'fr',
-): Promise<PedagogyAnalysis | null> {
-  try {
-    const res = await api.post<PedagogyAnalysis>(
-      '/pedagogy/analyze-game',
-      { game_id: gameId, user_side: userSide, lang },
-      { timeout: 90000 },
-    )
-    return res.data
-  } catch {
-    return null
-  }
+): Promise<PedagogyAnalysis> {
+  const res = await api.post<PedagogyAnalysis>(
+    '/pedagogy/analyze-game',
+    { game_id: gameId, user_side: userSide, lang },
+    { timeout: 90000 },
+  )
+  return res.data
 }
 
 export async function explainMovePedagogy(

@@ -9,6 +9,7 @@ interface Props {
   userSide: 'white' | 'black'
   lang: string
   onAnalyze: () => void
+  error?: string | null
 }
 
 // ── Verdict styling ────────────────────────────────────────────────────────
@@ -211,7 +212,7 @@ function MoveRow({ verdict, gameId, lang }: { verdict: VerdictOut; gameId: strin
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function PedagogyPanel({ gameId, analysis, loading, userSide, lang, onAnalyze }: Props) {
+export default function PedagogyPanel({ gameId, analysis, loading, userSide, lang, onAnalyze, error }: Props) {
   const [filter, setFilter] = useState<'all' | 'errors'>('all')
 
   if (!analysis && !loading) {
@@ -221,14 +222,20 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
           <span className="text-xs font-semibold text-gray-300">Analyse pédagogique</span>
           <span className="text-xs text-gray-500">dilf · cross-check Scan</span>
         </div>
-        <p className="text-xs text-gray-500">
-          Verdicts dilf + score Scan brut par coup, pour valider la cohérence du framework.
-        </p>
+        {error ? (
+          <div className="text-xs text-red-400 bg-red-900/20 border border-red-800/40 rounded p-2 font-mono break-all">
+            {error}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500">
+            Verdicts dilf + score Scan brut par coup, pour valider la cohérence du framework.
+          </p>
+        )}
         <button
           onClick={onAnalyze}
           className="w-full py-1.5 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-medium transition-colors"
         >
-          🎓 Analyser la partie
+          {error ? '↺ Réessayer' : '🎓 Analyser la partie'}
         </button>
       </div>
     )
