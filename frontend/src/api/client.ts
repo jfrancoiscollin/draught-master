@@ -144,8 +144,16 @@ export async function getUserProgress(): Promise<number[]> {
 }
 
 export async function getLessonTitles(book?: string): Promise<Record<string, { title: string; category: string }>> {
-  const res = await api.get('/lessons', { params: book ? { book } : undefined })
-  return res.data
+  // The legacy /api/lessons endpoint returns HTTP 410 Gone since the Dubois
+  // material was retired; the manuel pipeline does not yet expose prose
+  // chapters. Treat 410 (and any other non-2xx) as "no lessons" so the
+  // exercises page keeps rendering.
+  try {
+    const res = await api.get('/lessons', { params: book ? { book } : undefined })
+    return res.data
+  } catch {
+    return {}
+  }
 }
 
 export async function getLesson(chapter: number): Promise<{ title: string; text: string; category: string }> {
