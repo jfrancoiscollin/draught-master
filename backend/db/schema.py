@@ -1,13 +1,8 @@
 from __future__ import annotations
-import json
 import logging as _log
 import aiosqlite
 
 from .config import DB_PATH
-from .exercises_data import INITIAL_EXERCISES
-from .sens_du_jeu_exercises import SENS_DU_JEU_EXERCISES
-
-_SENS_DU_JEU_ID_OFFSET = 500  # IDs 501-509 for sens_du_jeu exercises
 
 
 async def init_db() -> None:
@@ -212,70 +207,7 @@ async def init_db() -> None:
         except Exception:
             pass
 
-        # Always upsert exercises with fixed IDs so Railway's persistent DB
-        # picks up corrected FEN/solution data on each redeploy.
-        batch_size = 50
-        for idx, ex in enumerate(INITIAL_EXERCISES, start=1):
-            try:
-                await db.execute(
-                    """
-                    INSERT INTO exercises (id, name, description, initial_fen, solution_moves, difficulty, category, hint, book_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'dubois_combinaisons')
-                    ON CONFLICT(id) DO UPDATE SET
-                        name=excluded.name,
-                        description=excluded.description,
-                        initial_fen=excluded.initial_fen,
-                        solution_moves=excluded.solution_moves,
-                        difficulty=excluded.difficulty,
-                        category=excluded.category,
-                        hint=excluded.hint,
-                        book_id='dubois_combinaisons'
-                    """,
-                    (
-                        idx,
-                        ex.get("name", ""),
-                        ex.get("description"),
-                        ex.get("initial_fen", ""),
-                        json.dumps(ex.get("solution_moves", [])),
-                        ex.get("difficulty", 1),
-                        ex.get("category", "general"),
-                        ex.get("hint"),
-                    ),
-                )
-            except Exception as e:
-                _log.error(f"init_db: failed to upsert combinaisons exercise {idx}: {e}")
-            if idx % batch_size == 0:
-                await db.commit()
-        await db.commit()
-
-        # Upsert "Apprendre le sens du jeu" exercises (IDs 501+)
-        for idx, ex in enumerate(SENS_DU_JEU_EXERCISES, start=_SENS_DU_JEU_ID_OFFSET + 1):
-            try:
-                await db.execute(
-                    """
-                    INSERT INTO exercises (id, name, description, initial_fen, solution_moves, difficulty, category, hint, book_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'dubois_sens_du_jeu')
-                    ON CONFLICT(id) DO UPDATE SET
-                        name=excluded.name,
-                        description=excluded.description,
-                        initial_fen=excluded.initial_fen,
-                        solution_moves=excluded.solution_moves,
-                        difficulty=excluded.difficulty,
-                        category=excluded.category,
-                        hint=excluded.hint,
-                        book_id='dubois_sens_du_jeu'
-                    """,
-                    (
-                        idx,
-                        ex.get("name", ""),
-                        ex.get("description"),
-                        ex.get("initial_fen", ""),
-                        json.dumps(ex.get("solution_moves", [])),
-                        ex.get("difficulty", 1),
-                        ex.get("category", "general"),
-                        ex.get("hint"),
-                    ),
-                )
-            except Exception as e:
-                _log.error(f"init_db: failed to upsert sens_du_jeu exercise {idx}: {e}")
-        await db.commit()
+        # Exercises are no longer seeded from static Dubois files. The
+        # `exercises` table is populated by the manuels pipeline (see
+        # `backend/manuels/` and `dilf/docs/MANUELS_PIPELINE.md`) once the
+        # integration of `manuel_debutant.md` lands.

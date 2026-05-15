@@ -224,22 +224,43 @@ def _run(exercises: List[Dict[str, Any]], use_scan: bool, movetime: float) -> No
 def start(
     use_scan: bool = False,
     movetime: float = 0.3,
-    dataset: str = "all",
 ) -> bool:
-    """Start verification job in background thread.  Returns False if already running."""
+    """Start verification job in background thread.
+
+    Reads exercises directly from the SQLite `exercises` table (synchronous
+    sqlite3 — runs in a worker thread, the rest of the app uses aiosqlite).
+
+    Returns False if already running.
+    """
     with _lock:
         if _state["status"] == "running":
             return False
 
-    from db.sens_du_jeu_exercises import SENS_DU_JEU_EXERCISES
-    from db.exercises_data import INITIAL_EXERCISES
+    import json as _json
+    import sqlite3 as _sqlite3
+    from db.config import DB_PATH
 
-    if dataset == "sens_du_jeu":
-        exercises = list(SENS_DU_JEU_EXERCISES)
-    elif dataset == "initial":
-        exercises = list(INITIAL_EXERCISES)
-    else:  # "all"
-        exercises = list(INITIAL_EXERCISES) + list(SENS_DU_JEU_EXERCISES)
+    conn = _sqlite3.connect(DB_PATH)
+    try:
+        rows = conn.execute(
+            "SELECT id, name, description, initial_fen, solution_moves, "
+            "difficulty, category, hint FROM exercises ORDER BY id"
+        ).fetchall()
+    finally:
+        conn.close()
+
+    exercises: List[Dict[str, Any]] = []
+    for r in rows:
+        exercises.append({
+            "id": r[0],
+            "name": r[1],
+            "description": r[2],
+            "initial_fen": r[3],
+            "solution_moves": _json.loads(r[4]) if r[4] else [],
+            "difficulty": r[5],
+            "category": r[6],
+            "hint": r[7],
+        })
 
     t = threading.Thread(
         target=_run,

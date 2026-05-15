@@ -8,108 +8,54 @@ interface Book {
   title: string
   titleEn: string
   author: string
-  category: 'apprentissage' | 'perfectionnement' | 'reference'
+  category: 'manuel'
   emoji: string
   hasExercises: boolean
 }
 
+// Manuels pédagogiques préprocessés par Claude via dilf (un par niveau).
+// Voir `dilf/docs/MANUELS_PIPELINE.md` et `backend/manuels/`.
 const BOOKS: Book[] = [
   {
-    id: 'dubois_combinaisons',
-    title: 'Apprendre les combinaisons',
-    titleEn: 'Learning combinations',
-    author: 'J-P. Dubois',
-    category: 'apprentissage',
-    emoji: '💥',
-    hasExercises: true,
-  },
-  {
-    id: 'dubois_fins_de_partie',
-    title: 'Apprendre les fins de partie',
-    titleEn: 'Learning endgames',
-    author: 'J-P. Dubois',
-    category: 'apprentissage',
-    emoji: '🏁',
+    id: 'manuel_debutant',
+    title: 'Manuel Débutant',
+    titleEn: 'Beginner Manual',
+    author: 'Draught Master',
+    category: 'manuel',
+    emoji: '🌱',
     hasExercises: false,
   },
   {
-    id: 'dubois_sens_du_jeu',
-    title: 'Apprendre le sens du jeu',
-    titleEn: 'Learning the sense of the game',
-    author: 'J-P. Dubois',
-    category: 'apprentissage',
-    emoji: '🧠',
-    hasExercises: true,
-  },
-  {
-    id: 'dubois_perf_combinaisons',
-    title: 'Perfectionnement : Combinaisons',
-    titleEn: 'Advanced: Combinations',
-    author: 'J-P. Dubois',
-    category: 'perfectionnement',
-    emoji: '⚡',
+    id: 'manuel_intermediaire',
+    title: 'Manuel Intermédiaire',
+    titleEn: 'Intermediate Manual',
+    author: 'Draught Master',
+    category: 'manuel',
+    emoji: '🌿',
     hasExercises: false,
   },
   {
-    id: 'dubois_perf_sens1',
-    title: 'Perfectionnement : Sens du jeu T.1',
-    titleEn: 'Advanced: Sense of game Vol.1',
-    author: 'J-P. Dubois',
-    category: 'perfectionnement',
-    emoji: '📘',
+    id: 'manuel_avance',
+    title: 'Manuel Avancé',
+    titleEn: 'Advanced Manual',
+    author: 'Draught Master',
+    category: 'manuel',
+    emoji: '🌳',
     hasExercises: false,
   },
   {
-    id: 'dubois_perf_sens2',
-    title: 'Perfectionnement : Sens du jeu T.2',
-    titleEn: 'Advanced: Sense of game Vol.2',
-    author: 'J-P. Dubois',
-    category: 'perfectionnement',
-    emoji: '📗',
-    hasExercises: false,
-  },
-  {
-    id: 'dubois_perf_sens3',
-    title: 'Perfectionnement : Sens du jeu T.3',
-    titleEn: 'Advanced: Sense of game Vol.3',
-    author: 'J-P. Dubois',
-    category: 'perfectionnement',
-    emoji: '📕',
-    hasExercises: false,
-  },
-  {
-    id: 'couttet_ouvertures',
-    title: 'Étude des ouvertures',
-    titleEn: 'Study of openings',
-    author: 'Couttet',
-    category: 'reference',
-    emoji: '📖',
-    hasExercises: false,
-  },
-  {
-    id: 'dubois_referentiel',
-    title: 'Référentiel systèmes de jeu',
-    titleEn: 'Reference: game systems',
-    author: 'J-P. Dubois',
-    category: 'reference',
-    emoji: '🗂️',
-    hasExercises: false,
-  },
-  {
-    id: 'les_enchainements',
-    title: 'Les enchaînements',
-    titleEn: 'Combination sequences',
-    author: '',
-    category: 'reference',
-    emoji: '🔗',
+    id: 'manuel_expert',
+    title: 'Manuel Expert',
+    titleEn: 'Expert Manual',
+    author: 'Draught Master',
+    category: 'manuel',
+    emoji: '🏆',
     hasExercises: false,
   },
 ]
 
 const CATEGORY_LABELS: Record<string, Record<'fr' | 'en', string>> = {
-  apprentissage: { fr: 'Apprentissage', en: 'Learning' },
-  perfectionnement: { fr: 'Perfectionnement', en: 'Advanced' },
-  reference: { fr: 'Référence', en: 'Reference' },
+  manuel: { fr: 'Manuels pédagogiques', en: 'Pedagogical manuals' },
 }
 
 interface BookStats {
@@ -213,7 +159,7 @@ export default function ExerciseLibraryPage({ onSelectBook }: ExerciseLibraryPag
     }).catch(() => {})
   }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const categories: Book['category'][] = ['apprentissage', 'perfectionnement', 'reference']
+  const categories: Book['category'][] = ['manuel']
 
   return (
     <div className="h-full overflow-y-auto">

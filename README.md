@@ -212,7 +212,6 @@ draught-master/
 │
 ├── docs/
 │   ├── parties/                # Parties PDN de référence
-│   ├── livres/                 # Livres de dames (PDF — archive, voir Manuels pédagogiques)
 │   └── manuels/                # Manuels pédagogiques préprocessés (prose)
 │       └── debutant/manuel_debutant.md
 │
@@ -375,10 +374,9 @@ SMOKE TEST OK — manuel Débutant intégralement consommable par draught-master
 
 ### Suite
 
-- Conversion des `BeginnerPosition` en `INITIAL_EXERCISES` (ou nouvelle table dédiée).
+- Conversion des `BeginnerPosition` du manuel Débutant vers la table `exercises` (le seed statique précédent, `INITIAL_EXERCISES`/`SENS_DU_JEU_EXERCISES`, a été retiré — voir `git log` pour l'historique).
 - API `/api/manuels/<niveau>` pour exposer les chapitres et fixtures au frontend.
-- Page Manuel côté frontend (lecture de la prose + exercice interactif sur chaque position).
-- Suppression progressive de `docs/livres/` une fois les 4 manuels livrés et intégrés.
+- Page Manuel côté frontend (lecture de la prose + exercice interactif sur chaque position). Les pages `LessonPanel` et `ExercisePanel` existantes sont conservées en attendant — toutes les entrées de la bibliothèque sont en *Coming Soon* jusqu'à intégration.
 
 ---
 

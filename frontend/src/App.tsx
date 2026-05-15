@@ -233,7 +233,7 @@ export default function App() {
     return sels.size > 0 ? sels : undefined
   }, [exerciseGameState, exerciseSolved, exerciseLegalMoves])
 
-  const [selectedBookId, setSelectedBookId] = useState<string>('dubois_combinaisons')
+  const [selectedBookId, setSelectedBookId] = useState<string>('')
   const [lessonOpen, setLessonOpen] = useState<{ chapter: number; fen: string } | null>(null)
   const [readChapters, setReadChapters] = useState<Set<number>>(new Set())
   const [resultFlash, setResultFlash] = useState<string | null>(null)

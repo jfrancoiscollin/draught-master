@@ -1064,41 +1064,17 @@ async def mark_lesson_read_endpoint(
     return {"ok": True}
 
 
-def _lessons_path_for_book(book: Optional[str]) -> str:
-    import os as _os
-    dirname = _os.path.dirname(__file__)
-    if book == "dubois_sens_du_jeu":
-        return _os.path.join(dirname, "sens_du_jeu_lessons.json")
-    return _os.path.join(dirname, "lessons.json")
-
-
 @app.get("/api/lessons")
 async def list_lessons(book: Optional[str] = Query(None)) -> Dict[str, Any]:
-    import json as _json_mod
-    lessons_path = _lessons_path_for_book(book)
-    try:
-        with open(lessons_path, encoding="utf-8") as f:
-            lessons = _json_mod.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Lessons file not found")
-    return {ch: {"title": v["title"], "category": v["category"]} for ch, v in lessons.items()}
+    # Old Dubois lesson endpoints retired. The new manuels pipeline (see
+    # `backend/manuels/` and `dilf/docs/MANUELS_PIPELINE.md`) will expose
+    # chapters through `/api/manuels/...` once integration lands.
+    raise HTTPException(status_code=410, detail="Lessons endpoint retired — see manuels pipeline")
 
 
 @app.get("/api/lessons/{chapter}")
 async def get_lesson(chapter: int) -> Dict[str, Any]:
-    import json as _json_mod
-    # Route to sens_du_jeu file for chapters 100+ (offset convention)
-    book = "dubois_sens_du_jeu" if chapter >= 100 else None
-    lessons_path = _lessons_path_for_book(book)
-    try:
-        with open(lessons_path, encoding="utf-8") as f:
-            lessons = _json_mod.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Lessons file not found")
-    lesson = lessons.get(str(chapter))
-    if not lesson:
-        raise HTTPException(status_code=404, detail=f"No lesson for chapter {chapter}")
-    return lesson
+    raise HTTPException(status_code=410, detail="Lessons endpoint retired — see manuels pipeline")
 
 
 @app.get("/api/health")
@@ -1377,10 +1353,7 @@ async def start_exercise_verification(body: Dict[str, Any] = {}) -> Dict[str, An
     import exercise_verifier
     use_scan = bool(body.get("use_scan", False))
     movetime = float(body.get("movetime", 0.3))
-    dataset = str(body.get("dataset", "all"))
-    if dataset not in ("all", "initial", "sens_du_jeu"):
-        dataset = "all"
-    started = exercise_verifier.start(use_scan=use_scan, movetime=movetime, dataset=dataset)
+    started = exercise_verifier.start(use_scan=use_scan, movetime=movetime)
     return {"started": started, "message": "Vérification lancée" if started else "Déjà en cours"}
 
 
