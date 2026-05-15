@@ -1066,15 +1066,26 @@ async def mark_lesson_read_endpoint(
 
 @app.get("/api/lessons")
 async def list_lessons(book: Optional[str] = Query(None)) -> Dict[str, Any]:
-    # Old Dubois lesson endpoints retired. The new manuels pipeline (see
-    # `backend/manuels/` and `dilf/docs/MANUELS_PIPELINE.md`) will expose
-    # chapters through `/api/manuels/...` once integration lands.
-    raise HTTPException(status_code=410, detail="Lessons endpoint retired — see manuels pipeline")
+    # The Dubois static lessons were retired (see PR #7). The manuel
+    # Débutant prose (`docs/manuels/debutant/manuel_debutant.md`) is now
+    # the source. `book` is accepted for compat with the existing client
+    # but only `manuel_debutant` has prose for now ; an empty mapping is
+    # returned for any other value.
+    from manuels.prose_loader import load_debutant_chapters
+    if book not in (None, "manuel_debutant"):
+        return {}
+    chapters = load_debutant_chapters()
+    return {ch: {"title": v["title"], "category": v["category"]} for ch, v in chapters.items()}
 
 
 @app.get("/api/lessons/{chapter}")
 async def get_lesson(chapter: int) -> Dict[str, Any]:
-    raise HTTPException(status_code=410, detail="Lessons endpoint retired — see manuels pipeline")
+    from manuels.prose_loader import load_debutant_chapters
+    chapters = load_debutant_chapters()
+    lesson = chapters.get(str(chapter))
+    if not lesson:
+        raise HTTPException(status_code=404, detail=f"No lesson for chapter {chapter}")
+    return lesson
 
 
 @app.get("/api/health")
