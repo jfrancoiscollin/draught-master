@@ -168,7 +168,7 @@ export default function ExercisePanel({
                         )}
                       </span>
                     </button>
-                    {onLessonOpen && (
+                    {onLessonOpen && Object.keys(lessonTitles).length > 0 && (
                       <button
                         onClick={() => onLessonOpen(ch, firstEx?.initial_fen ?? '')}
                         className="flex-shrink-0 w-10 flex items-center justify-center bg-gray-700 hover:bg-amber-900 border-0 border-l border-gray-600 cursor-pointer text-base"
