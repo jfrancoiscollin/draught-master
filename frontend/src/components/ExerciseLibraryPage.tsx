@@ -23,7 +23,7 @@ const BOOKS: Book[] = [
     author: 'Draught Master',
     category: 'manuel',
     emoji: '🌱',
-    hasExercises: false,
+    hasExercises: true,
   },
   {
     id: 'manuel_intermediaire',

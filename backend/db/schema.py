@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 import logging as _log
 import aiosqlite
 
@@ -207,7 +208,60 @@ async def init_db() -> None:
         except Exception:
             pass
 
-        # Exercises are no longer seeded from static Dubois files. The
-        # `exercises` table is populated by the manuels pipeline (see
-        # `backend/manuels/` and `dilf/docs/MANUELS_PIPELINE.md`) once the
-        # integration of `manuel_debutant.md` lands.
+        # Seed exercises from the preprocessed manuels (see
+        # backend/manuels/ and dilf/docs/MANUELS_PIPELINE.md). IDs are
+        # stable across redeploys: the manuel Débutant occupies
+        # DEBUTANT_ID_OFFSET + 1 ... + N.
+        try:
+            from manuels.loader import (
+                DEBUTANT_ID_OFFSET,
+                MANUEL_DEBUTANT_BOOK_ID,
+                all_debutant_exercises,
+            )
+        except Exception as e:
+            _log.error(f"init_db: failed to import manuels.loader: {e}")
+        else:
+            batch_size = 50
+            for idx, ex in enumerate(all_debutant_exercises(), start=DEBUTANT_ID_OFFSET + 1):
+                try:
+                    await db.execute(
+                        """
+                        INSERT INTO exercises (id, name, description, initial_fen, solution_moves, difficulty, category, hint, book_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT(id) DO UPDATE SET
+                            name=excluded.name,
+                            description=excluded.description,
+                            initial_fen=excluded.initial_fen,
+                            solution_moves=excluded.solution_moves,
+                            difficulty=excluded.difficulty,
+                            category=excluded.category,
+                            hint=excluded.hint,
+                            book_id=excluded.book_id
+                        """,
+                        (
+                            idx,
+                            ex["name"],
+                            ex["description"],
+                            ex["initial_fen"],
+                            json.dumps(ex["solution_moves"]),
+                            ex["difficulty"],
+                            ex["category"],
+                            ex["hint"],
+                            ex["book_id"],
+                        ),
+                    )
+                except Exception as e:
+                    _log.error(f"init_db: failed to upsert manuel_debutant exercise {idx}: {e}")
+                if (idx - DEBUTANT_ID_OFFSET) % batch_size == 0:
+                    await db.commit()
+            await db.commit()
+
+            # Drop legacy rows from the previous static seed (IDs 1..572).
+            # Idempotent: harmless on fresh DBs.
+            try:
+                await db.execute(
+                    "DELETE FROM exercises WHERE id <= ?", (DEBUTANT_ID_OFFSET,)
+                )
+                await db.commit()
+            except Exception as e:
+                _log.error(f"init_db: failed to drop legacy exercises: {e}")

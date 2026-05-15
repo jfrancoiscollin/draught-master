@@ -372,11 +372,16 @@ Doit produire :
 SMOKE TEST OK — manuel Débutant intégralement consommable par draught-master.
 ```
 
+### Intégration en place
+
+- `backend/manuels/loader.py` convertit chaque `BeginnerPosition` en ligne `exercises` (FEN, `solution_moves` parsée depuis `published_notation`, difficulté dérivée du chapitre, `category` = `theme`, `book_id = 'manuel_debutant'`). 151 exercices propres sur 166 fixtures — 9 fixtures illustratives (chapitres 1-2) sans solution publiée + 1 avec `(ad lib)` non-déterministe + 5 démonstrations de pièges où le 1er coup de la notation est une mise en place adverse, filtrés.
+- `backend/db/schema.py` upserte ces lignes aux IDs 2001-2151 à chaque `init_db()` (idempotent), et nettoie les anciennes lignes Dubois statiques (`id <= 2000`) sur les déploiements Railway existants.
+- `ExerciseLibraryPage` côté frontend affiche le Manuel Débutant comme actif ; les trois autres niveaux restent en *Coming Soon*.
+
 ### Suite
 
-- Conversion des `BeginnerPosition` du manuel Débutant vers la table `exercises` (le seed statique précédent, `INITIAL_EXERCISES`/`SENS_DU_JEU_EXERCISES`, a été retiré — voir `git log` pour l'historique).
-- API `/api/manuels/<niveau>` pour exposer les chapitres et fixtures au frontend.
-- Page Manuel côté frontend (lecture de la prose + exercice interactif sur chaque position). Les pages `LessonPanel` et `ExercisePanel` existantes sont conservées en attendant — toutes les entrées de la bibliothèque sont en *Coming Soon* jusqu'à intégration.
+- API `/api/manuels/<niveau>` pour exposer la prose des chapitres (les anciens endpoints `/api/lessons*` répondent 410 Gone). Page Manuel dédiée côté frontend.
+- Production des manuels Intermédiaire / Avancé / Expert (suit le pipeline dilf — voir `dilf/docs/MANUELS_PIPELINE.md`).
 
 ---
 
