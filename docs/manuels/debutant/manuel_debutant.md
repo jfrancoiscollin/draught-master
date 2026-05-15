@@ -57,41 +57,31 @@ Le damier international comporte **100 cases** (10×10), dont seules les
 **1 à 50** de gauche à droite et de haut en bas, **depuis le côté noir**
 (haut du diagramme).
 
-```
-   ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
- 1 │    │ 1  │    │ 2  │    │ 3  │    │ 4  │    │ 5  │
-   ├────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
- 2 │ 6  │    │ 7  │    │ 8  │    │ 9  │    │ 10 │    │
-   ├────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
- 3 │    │ 11 │    │ 12 │    │ 13 │    │ 14 │    │ 15 │
-   ├────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
- ...
-   ├────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
- 9 │    │ 41 │    │ 42 │    │ 43 │    │ 44 │    │ 45 │
-   ├────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
-10 │ 46 │    │ 47 │    │ 48 │    │ 49 │    │ 50 │    │
-   └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
-```
+Voir `BEG_CH01_001` (position initiale standard) : les noirs occupent
+les cases 1 à 20, les blancs les cases 31 à 50. Les rangées 21-30 sont
+vides. Le trait est aux blancs.
 
-**Position initiale standard** (`BEG_CH01_001`) : les noirs occupent les
-cases 1 à 20, les blancs les cases 31 à 50. Les rangées 21-30 sont vides.
-Le trait est aux blancs.
+Voir `BEG_CH01_002` (position après le premier coup blanc `32-28`) :
+le pion blanc de la case 32 a glissé sur la case 28, et c'est
+maintenant aux noirs de jouer.
 
-**Notation des coups** :
+### Notation des coups
 
-- **Coup simple** (déplacement non-capturant) : `cd-cf` où `cd` est la
-  case de départ et `cf` la case finale. Ex : `32-28` signifie « le pion
-  en 32 se déplace en 28 ».
+- **Coup simple** (déplacement non capturant) : `cd-cf` où `cd` est la
+  case de départ et `cf` la case finale. Exemple : `32-28` signifie
+  « le pion en 32 se déplace en 28 ».
 - **Coup de capture (rafle)** : `cd×cf` où `cd` est la case de départ
-  et `cf` la case d'arrivée. Les cases intermédiaires (et les pièces
-  capturées) ne sont pas explicitement notées — elles se déduisent
-  géométriquement. Ex : `32×16` signifie « le pion 32 effectue une
-  rafle qui le mène en case 16 ». Selon la position, cette rafle
+  et `cf` la case d'arrivée. Les cases intermédiaires et les pièces
+  capturées ne sont pas explicitement notées — elles se déduisent
+  géométriquement. Exemple : `32×16` signifie « le pion 32 effectue
+  une rafle qui le mène en case 16 ». Selon la position, cette rafle
   peut capturer un, deux, trois pions ou plus.
 - **Parenthèses autour d'un coup** : indique que c'est l'**adversaire**
   qui joue ce coup-là. Convention systématique chez Dubois.
-- **Le trait** : indiqué par `W` (blanc) ou `B` (noir) en tête de la
-  notation FEN d'une position.
+- **Le trait** : indiqué par `W` (blanc) ou `B` (noir) en tête d'une
+  notation FEN.
+
+### Notation FEN
 
 La notation FEN dames a la forme :
 
@@ -100,22 +90,8 @@ La notation FEN dames a la forme :
 ```
 
 Les dames sont préfixées d'un `K`. Exemple : `W:W31,32,K40:B7,K12,18`
-signifie « trait aux blancs ; pions blancs en 31, 32 et une dame en 40 ;
-pion noir en 7, dame noire en 12, pion noir en 18 ».
-
-Position initiale (`BEG_CH01_001`) en FEN :
-
-```
-W:W31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
-```
-
-Position après le premier coup blanc 32-28 (`BEG_CH01_002`) :
-
-```
-B:W28,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
-```
-
-(Le pion 32 a glissé en 28, c'est maintenant aux noirs de jouer.)
+signifie « trait aux blancs ; pions blancs en 31 et 32, dame blanche
+en 40 ; pion noir en 7, dame noire en 12, pion noir en 18 ».
 
 ---
 
@@ -128,8 +104,10 @@ uniquement** (vers le camp adverse). Pour un pion blanc, « vers l'avant »
 signifie vers les cases de numéros plus petits ; pour un pion noir, vers
 les cases de numéros plus grands.
 
-Voir `BEG_CH02_001` (pion blanc 32 → 27 ou 28) et `BEG_CH02_002` (pion
-noir 19 → 23 ou 24).
+Voir `BEG_CH02_001` : le pion blanc en case 35 peut se déplacer en 30
+(diagonale haut-gauche) ou en 31 (diagonale haut-droite). Voir aussi
+`BEG_CH02_002` : le pion blanc en 22 ne peut **pas** reculer en 27 ou 28
+librement ; ses seuls coups légaux sont 22-17 et 22-18 (vers l'avant).
 
 ### 2.2. Capture (prise simple)
 
@@ -139,7 +117,11 @@ soit **vide**. La capture peut se faire **en avant comme en arrière**
 (contrairement au déplacement normal). Le pion capturé est retiré du
 damier **à la fin de la séquence de prise**, pas pendant.
 
-Voir `BEG_CH02_003` (pion blanc 32 prend le noir 27 en sautant vers 21).
+Voir `BEG_CH02_003` : le pion blanc 31 saute par-dessus le pion noir 27
+et atterrit en 22 (notation `31x22`). Voir aussi `BEG_CH02_004` pour
+illustrer la **capture vers l'arrière** : le pion blanc 22 saute le
+noir 27 vers l'arrière et atterrit en 31 (notation `22x31`) — ce qui
+serait interdit pour un coup simple.
 
 ### 2.3. Rafle (capture multiple)
 
@@ -148,7 +130,9 @@ en capturer un autre** (en sautant à nouveau), il **doit** le faire. Il
 peut ainsi enchaîner plusieurs sauts dans la même séquence. C'est ce
 qu'on appelle une **rafle**.
 
-Voir `BEG_CH02_004` (rafle 32×23 capturant deux pions noirs successifs).
+Voir `BEG_CH02_005` : le pion blanc 31 saute le noir 27 (atterrit en 22),
+puis enchaîne en sautant le noir 17 pour atterrir en 11. Notation
+`31x11`, deux pions noirs capturés en une seule séquence.
 
 ### 2.4. Prise obligatoire
 
@@ -156,9 +140,9 @@ Quand un pion ou une dame **peut capturer**, la capture est
 **obligatoire**. Le joueur ne peut pas refuser de prendre. C'est l'une
 des règles les plus distinctives du jeu de dames international.
 
-Voir `BEG_CH02_005`. Si le blanc 32 a la possibilité de prendre le noir
-27, il doit le faire — même si stratégiquement il préférerait jouer
-ailleurs.
+Voir `BEG_CH02_006` : le pion blanc 31 ne peut pas jouer 31-26 (coup
+simple) parce que la prise `31x22` du noir 27 est disponible — il doit
+prendre, même s'il préférerait jouer ailleurs.
 
 ### 2.5. Prise maximale (règle du nombre)
 
@@ -167,20 +151,12 @@ celle qui **capture le maximum de pièces**. Si deux rafles capturent le
 même nombre de pièces, le joueur choisit librement (sauf cas spéciaux
 documentés dans la règlementation FMJD).
 
-Voir `BEG_CH02_006` (deux rafles possibles, on doit prendre la plus
-longue).
+Voir `BEG_CH02_007` : depuis la position W{31, 38} B{23, 27, 33}, le
+blanc a deux captures possibles — `31x22` ne prend qu'un seul pion (le
+27), tandis que `38x18` prend deux pions (33 et 23). La rafle `38x18`
+est **obligatoire** car elle capture le plus.
 
-### 2.6. Déplacement et capture de la dame
-
-La **dame** se déplace **librement** le long d'une diagonale, sur
-**autant de cases libres** qu'elle veut (similaire au fou aux échecs).
-Pour capturer, elle saute par-dessus un pion adverse sur sa diagonale et
-peut **atterrir sur n'importe quelle case libre derrière**.
-
-Voir `BEG_CH02_007` (déplacement de dame) et `BEG_CH02_008` (capture
-de dame avec choix d'atterrissage).
-
-### 2.7. Promotion en dame
+### 2.6. Promotion en dame
 
 Un pion qui atteint la **dernière rangée adverse** (cases 1-5 pour les
 blancs, 46-50 pour les noirs) **promeut en dame**. La promotion a lieu
@@ -188,18 +164,42 @@ uniquement si le pion **s'arrête** sur la dernière rangée. Si une rafle
 fait traverser la dernière rangée sans s'y arrêter, **il n'y a pas
 promotion** — c'est la fameuse règle du « non-soufflage de la dame ».
 
-Voir `BEG_CH02_009` (promotion en arrivant en 4) et `BEG_CH02_010`
-(traversée sans promotion — la rafle continue et le pion finit ailleurs).
+Voir `BEG_CH02_008` : le pion blanc 6 a deux coups possibles (6-1 ou
+6-2), et dans les deux cas il devient dame en arrivant sur la première
+rangée.
 
-### 2.8. Règle des 50 coups (nullité)
+### 2.7. La dame — déplacement et capture
+
+La **dame** se déplace **librement** le long d'une diagonale, sur
+**autant de cases libres** qu'elle veut (similaire au fou aux échecs).
+Pour capturer, elle saute par-dessus un pion adverse sur sa diagonale et
+peut **atterrir sur n'importe quelle case libre derrière**.
+
+Voir `BEG_CH02_009` : la dame blanche en 32 peut glisser sur n'importe
+quelle case libre des 4 diagonales qui la traversent. Voir
+`BEG_CH02_010` : la dame blanche en 46 saute le pion noir 23 et choisit
+sa case d'atterrissage parmi celles libres après lui sur la diagonale.
+
+### 2.8. Non-soufflage (les captures restent jusqu'à la fin de la rafle)
+
+Les pions capturés au cours d'une rafle **restent sur le plateau**
+jusqu'à ce que la rafle soit complètement terminée. Conséquence : le
+même pion ne peut pas être capturé deux fois dans une rafle, et la
+trajectoire peut s'en trouver bloquée.
+
+Voir `BEG_CH02_011` : la position W{23} B{18, 19, 28, 29} illustre cette
+règle — le blanc 23 ne peut pas faire de boucle qui re-saute un pion
+déjà capturé, ce qui limite ses trajectoires possibles.
+
+### 2.9. Règle des 50 coups (nullité)
 
 Si pendant **50 coups** consécutifs aucun pion n'est capturé ni promu,
-la partie est déclarée **nulle**. Voir `BEG_CH02_011`.
+la partie est déclarée **nulle**. Cette règle empêche les parties qui
+pourraient tourner indéfiniment.
 
-### 2.9. Position particulière : pas de coup légal
-
-Si un joueur n'a **aucun coup légal** (toutes ses pièces sont bloquées),
-il **perd** la partie. Voir `BEG_CH02_012`.
+Voir `BEG_CH02_012` : finale dame contre dame (W_king{28} vs B_king{23})
+— sans intervention extérieure, ces deux dames pourraient se poursuivre
+indéfiniment. La règle des 50 coups conclut la partie en nulle.
 
 ---
 
