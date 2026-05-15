@@ -47,51 +47,74 @@ def _db_path() -> str:
 
 
 def _detect_tags(fen_start: str, solution_moves: list[str]) -> set[str]:
-    """Run every detector on (state_before, first_move, state_after).
+    """Run every detector on each (state_before, move, state_after) tuple
+    of the puzzle's solution.
+
+    Manuel-style combination puzzles often start with a quiet sacrifice
+    (e.g. ``27-22`` to bait black) and only reveal the named motif on
+    the final rafle. Tagging only on the first move missed every such
+    case in production. We walk the whole solution and union the
+    matches.
 
     Returns the motif names that fired. We don't store severity or role —
     exercise_tags is just a coarse index for recommendations.
     """
-    state_before = parse_fen(fen_start)
     if not solution_moves:
         return set()
 
-    # Parse first move notation (e.g. "32-28" or "40x29x18") into a dilf Move.
-    # Try dilf's own parse_move; fall back to building Move manually.
-    first_move_notation = solution_moves[0]
     try:
-        from pedagogy.game import parse_move_notation  # dilf utility
-        first_move = parse_move_notation(first_move_notation, state_before)
-    except (ImportError, AttributeError):
-        first_move = _parse_move_fallback(first_move_notation)
-
-    if first_move is None:
-        return set()
+        from pedagogy.notation.dubois import parse_move_notation
+    except ImportError:
+        parse_move_notation = None  # type: ignore[assignment]
 
     try:
-        from pedagogy.game import apply_move as dilf_apply_move
-        state_after = dilf_apply_move(state_before, first_move)
-    except Exception:
+        from ..engine_adapter import GameEngineAdapter
+        engine = GameEngineAdapter()
+    except Exception as exc:
+        logger.debug("GameEngineAdapter unavailable: %s", exc)
         return set()
 
+    state = parse_fen(fen_start)
     tags: set[str] = set()
-    for detector_cls in ALL_DETECTORS:
+
+    for notation in solution_moves:
+        # Parse this ply. Capture-aware path first, fallback as safety net.
+        if parse_move_notation is not None:
+            try:
+                move = parse_move_notation(notation, state)
+            except Exception as exc:
+                logger.debug("parse_move_notation %r failed: %s", notation, exc)
+                move = _parse_move_fallback(notation)
+        else:
+            move = _parse_move_fallback(notation)
+        if move is None:
+            break
+
         try:
-            detector = detector_cls()
-            match = detector.detect(
-                state_before=state_before,
-                state_after=state_after,
-                move=first_move,
-                best_move=None,
-                pv=[],
-                score_before=0.0,
-                score_after=0.0,
-                engine=None,
-            )
-            if match is not None:
-                tags.add(match.motif)
+            state_after = engine.apply_move(state, move)
         except Exception as exc:
-            logger.debug("detector %s skipped: %s", detector_cls.__name__, exc)
+            logger.debug("apply_move %r failed: %s", notation, exc)
+            break
+
+        for detector_cls in ALL_DETECTORS:
+            try:
+                match = detector_cls().detect(
+                    state_before=state,
+                    move=move,
+                    state_after=state_after,
+                    pv=None,
+                    scan_score_before=0.0,
+                    scan_score_after=0.0,
+                    engine=engine,
+                )
+                if match is not None:
+                    tags.add(match.motif)
+            except Exception as exc:
+                logger.debug("detector %s on %r skipped: %s",
+                             detector_cls.__name__, notation, exc)
+
+        state = state_after
+
     return tags
 
 
