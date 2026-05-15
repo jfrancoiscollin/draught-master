@@ -40,7 +40,7 @@ export default function ExercisePanel({
   feedback,
   compact = true,
   readChapters = new Set(),
-  bookId = 'dubois_combinaisons',
+  bookId = '',
 }: ExercisePanelProps) {
   const { t } = useLanguage()
   const { user } = useAuth()

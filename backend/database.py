@@ -30,4 +30,3 @@ from db import (  # noqa: F401
     mark_lesson_read,
     get_user_read_lesson_chapters,
 )
-from db.exercises_data import INITIAL_EXERCISES  # noqa: F401
