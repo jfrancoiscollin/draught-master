@@ -164,9 +164,8 @@ uniquement si le pion **s'arrête** sur la dernière rangée. Si une rafle
 fait traverser la dernière rangée sans s'y arrêter, **il n'y a pas
 promotion** — c'est la fameuse règle du « non-soufflage de la dame ».
 
-Voir `BEG_CH02_008` : le pion blanc 6 a deux coups possibles (6-1 ou
-6-2), et dans les deux cas il devient dame en arrivant sur la première
-rangée.
+Voir `BEG_CH02_008` : le pion blanc 6 joue `6-1` et devient dame en
+arrivant sur la première rangée.
 
 ### 2.7. La dame — déplacement et capture
 
