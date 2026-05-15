@@ -47,11 +47,15 @@ function LessonText({
   onSquareClick,
   onDiagramClick,
   highlighted,
+  onRefClick,
+  activeRef,
 }: {
   text: string
   onSquareClick: (sq: number) => void
   onDiagramClick: (n: number) => void
   highlighted: number[]
+  onRefClick?: (ref: string) => void
+  activeRef?: string | null
 }) {
   // The legacy plain-text path with clickable square / diagram tokens is kept
   // around for any future content that doesn't use markdown. For manuel
@@ -78,7 +82,33 @@ function LessonText({
                 {children}
               </blockquote>
             ),
-            code: ({ children }) => <code style={{ background: 'rgba(251,191,36,0.12)', padding: '1px 4px', borderRadius: 3, fontSize: '0.88em' }}>{children}</code>,
+            code: ({ children }) => {
+              const raw = String(children ?? '')
+              const isRef = /^BEG_CH\d{2}_\d{3}$/.test(raw)
+              if (isRef && onRefClick) {
+                const isActive = activeRef === raw
+                return (
+                  <code
+                    onClick={() => onRefClick(raw)}
+                    style={{
+                      cursor: 'pointer',
+                      background: isActive ? 'rgba(34,211,238,0.25)' : 'rgba(34,211,238,0.12)',
+                      color: isActive ? '#a5f3fc' : '#67e8f9',
+                      border: isActive ? '1px solid #22d3ee' : '1px solid rgba(34,211,238,0.4)',
+                      padding: '1px 6px',
+                      borderRadius: 4,
+                      fontSize: '0.85em',
+                      fontWeight: 600,
+                      textDecoration: 'none',
+                    }}
+                    title={`Charger ${raw} sur le damier`}
+                  >
+                    {raw}
+                  </code>
+                )
+              }
+              return <code style={{ background: 'rgba(251,191,36,0.12)', padding: '1px 4px', borderRadius: 3, fontSize: '0.88em' }}>{children}</code>
+            },
             ul: ({ children }) => <ul style={{ listStyle: 'disc', paddingLeft: '1.4rem', marginBottom: '0.6rem' }}>{children}</ul>,
             ol: ({ children }) => <ol style={{ listStyle: 'decimal', paddingLeft: '1.4rem', marginBottom: '0.6rem' }}>{children}</ol>,
             li: ({ children }) => <li style={{ marginBottom: '0.2rem' }}>{children}</li>,
@@ -148,7 +178,7 @@ function LessonText({
 
 export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead, isRead: isReadProp }: LessonPanelProps) {
   const { user } = useAuth()
-  type LessonDiagram = string | { fen: string; label: string }
+  type LessonDiagram = string | { fen: string; label: string; ref?: string }
   const [lesson, setLesson] = useState<{ title: string; text: string; diagrams?: LessonDiagram[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -185,13 +215,20 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
   }, [chapter])
 
   const lessonDiagrams = lesson?.diagrams ?? []
-  const diagrams: Array<{ label: string; fen: string }> = lessonDiagrams.length > 0
+  const diagrams: Array<{ label: string; fen: string; ref?: string }> = lessonDiagrams.length > 0
     ? lessonDiagrams.map((d, i) =>
         typeof d === 'string'
           ? { label: `Diag. ${i + 1}`, fen: d }
-          : { label: d.label, fen: d.fen }
+          : { label: d.label, fen: d.fen, ref: d.ref }
       )
     : exercises.map((ex, i) => ({ label: `D${i + 1}`, fen: ex.initial_fen }))
+
+  // When diagrams come from the manuel pipeline they carry a `ref`
+  // (BEG_CHnn_mmm) — clicking inline code in the markdown picks one of
+  // these, and the legacy D1..Dn selector strip below the board is
+  // hidden in favour of a single "current ref" chip.
+  const hasRefs = diagrams.some(d => !!d.ref)
+  const refIndex = (ref: string) => diagrams.findIndex(d => d.ref === ref)
 
   const initialFen = diagrams[activeDiagram]?.fen ?? exampleFen
 
@@ -295,8 +332,19 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
           />
         </div>
 
-        {/* Diagram selector buttons + reset */}
-        {diagrams.length > 0 && (
+        {/* Diagram selector — single ref chip for manuel lessons,
+            multi-button strip for legacy lessons. */}
+        {diagrams.length > 0 && hasRefs && (
+          <div className="flex items-center justify-center mt-2 px-2">
+            <span
+              className="px-3 py-0.5 text-xs rounded border bg-cyan-900/40 border-cyan-600 text-cyan-200 font-mono"
+              title="Référence active — cliquer une autre référence dans le texte pour changer"
+            >
+              {diagrams[activeDiagram]?.ref ?? diagrams[activeDiagram]?.label}
+            </span>
+          </div>
+        )}
+        {diagrams.length > 0 && !hasRefs && (
           <div className="flex items-center gap-1 mt-2 px-2 flex-wrap justify-center">
             {diagrams.map((d, idx) => {
               const isActive = activeDiagram === idx
@@ -357,6 +405,11 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
               onSquareClick={handleSquareClick}
               onDiagramClick={handleDiagramClick}
               highlighted={highlighted}
+              onRefClick={hasRefs ? (ref => {
+                const idx = refIndex(ref)
+                if (idx >= 0) { setActiveDiagram(idx); setHighlighted([]) }
+              }) : undefined}
+              activeRef={hasRefs ? (diagrams[activeDiagram]?.ref ?? null) : null}
             />
             <div className="mt-6 mb-2 flex justify-center">
               {user && (
