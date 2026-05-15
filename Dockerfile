@@ -51,6 +51,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./
 COPY --from=frontend /app/frontend/dist /app/frontend/dist
 
+# Manuels pédagogiques (prose servie par /api/lessons via prose_loader.py)
+COPY docs/manuels /app/docs/manuels
+
 ENV PORT=8080
 EXPOSE 8080
 
