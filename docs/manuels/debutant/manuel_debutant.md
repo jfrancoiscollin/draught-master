@@ -207,7 +207,7 @@ indéfiniment. La règle des 50 coups conclut la partie en nulle.
 
 Une **combinaison** est un enchaînement forcé de coups qui aboutit à un
 gain matériel ou positionnel. Les combinaisons les plus simples se font
-en **deux demi-coups** : un sacrifice blanc, une prise forcée noire,
+en **trois demi-coups** : un sacrifice blanc, une prise forcée noire,
 puis une rafle blanche.
 
 Le schéma générique est :
@@ -219,41 +219,50 @@ Le schéma générique est :
 
 Les 10 exercices de ce chapitre sont les D1 à D10 de la page 6 du livre
 *Apprentissage Combinaisons* de Dubois. Ils illustrent trois mécanismes
-fondamentaux :
+fondamentaux : la **prise majoritaire**, le **collage**, et le **coup
+de Mazette**.
 
 ### 3.1. La prise majoritaire
 
 C'est le mécanisme de base. Le sacrifice blanc force le noir à effectuer
-une **prise multiple** (plusieurs pions à la fois), ce qui dégarnit son
-camp et ouvre la voie à une rafle blanche encore plus longue.
+une **prise multiple** (plusieurs pions à la fois) par la règle du
+nombre, ce qui dégarnit son camp et ouvre la voie à une rafle blanche
+encore plus longue.
 
-Voir `BEG_CH03_001` (Dubois D1) : `28-23 (19x39) 44x4`. Le sacrifice
-`28-23` est gobé par `(19x39)` — le noir doit capturer 4 pions
-successivement. La rafle blanche `44×4` traverse ensuite la grande
-diagonale.
+Voir `BEG_CH03_001` (Dubois D1) : `26-21 (17×28) 43×3`. Le sacrifice
+blanc `26-21` est gobé par le noir 17 qui doit prendre par la rafle
+majoritaire `17→26→37→28` (capturant 21, 31, 32). La rafle blanche
+finale `43×3` ramasse alors 38, 28, 19 et 9 en traversant la grande
+diagonale jusqu'à la promotion.
 
-Voir aussi `BEG_CH03_003`, `BEG_CH03_005`, `BEG_CH03_006`,
-`BEG_CH03_008`, `BEG_CH03_009`, `BEG_CH03_010` pour des variantes.
+Voir aussi `BEG_CH03_003` (`33-29 (23×21) 26×10`), `BEG_CH03_005`
+(`37-31 (27×20) 25×5`), `BEG_CH03_006` (`34-29 (25×32) 29×38`),
+`BEG_CH03_008` (`33-29 (24×31) 36×20` — oser sacrifier 3 pions
+consécutifs), `BEG_CH03_009` (`44-39 (25×43) 48×10`), `BEG_CH03_010`
+(`34-30 (23×32) 30×37`) pour différentes variantes.
 
 ### 3.2. Le collage
 
-Mécanisme plus subtil : un pion **attaqué par deux adversaires** se
-sacrifie sur la **case d'arrivée de l'un de ses attaquants**, forçant
-une prise majoritaire qui ouvre la rafle.
+Mécanisme plus subtil : quand le noir attaque **deux pions blancs**,
+un blanc se sacrifie sur la case-clé de l'attaque, forçant le noir à
+une prise majoritaire qui ouvre la rafle blanche.
 
-Voir `BEG_CH03_004` (Dubois D4) : `28-23` n'est pas une simple offre,
-c'est un collage qui exploite la formation noire spécifique.
+Voir `BEG_CH03_004` (Dubois D4) : `34-29 (23×21) 29×7`. Les noirs
+attaquaient deux pions blancs ; le sacrifice `34-29` exploite cette
+configuration pour transformer la menace en combinaison gagnante.
 
-Voir aussi `BEG_CH03_007`.
+Voir aussi `BEG_CH03_007` (`33-29 (17×37) 29×18`) — collage canonique
+quand le noir attaque 2 pions.
 
 ### 3.3. Le coup de Mazette
 
-Premier des **coups nommés** : un sacrifice central (souvent `28-22` ou
-symétrique) qui contraint l'adversaire à une prise simple, ouvrant une
-rafle sur la grande diagonale.
+Premier des **coups nommés** rencontrés dans ce manuel : un sacrifice
+central qui contraint l'adversaire à une prise, ouvrant une rafle sur
+la grande diagonale.
 
-Voir `BEG_CH03_002` (Dubois D2) : `28-22 (18x27) 32x5` — le sacrifice
-22 force la prise noire qui dégage la voie pour la rafle 32×5.
+Voir `BEG_CH03_002` (Dubois D2) : `28-22 (17×28) 32×5` — le sacrifice
+`28-22` force le noir 17 à prendre, et la rafle blanche `32→23→14→5`
+traverse jusqu'à la promotion en capturant 3 pions noirs.
 
 
 ---
@@ -280,9 +289,10 @@ Le mécanisme typique : un pion blanc se sacrifie sur la 1ère rangée
 (case 1 à 5), promeut en dame, et la dame blanche fait une rafle qui
 détruit la défense noire.
 
-Voir `BEG_CH04_005` : `35-30 (24x35) 34-29 (35x24) 30x4`. Le pion 30
-atteint la case 4 par rafle après deux sacrifices — promotion en dame
-+ avantage matériel décisif.
+Voir `BEG_CH04_005` (Dubois ch6 D7) : `29-24 (22×33) 32-28 (19×39) 28×6`.
+Deux sacrifices successifs forcent les noirs à des prises majoritaires,
+puis la rafle blanche `28→19→8→17→6` traverse jusqu'à la promotion en
+dame en case 6.
 
 ### 4.3. Envois à dame côté noir
 
@@ -292,14 +302,12 @@ Voir `BEG_CH04_006`, `BEG_CH04_007`.
 
 ### 4.4. Combinaisons longues à plusieurs phases
 
-Certaines combinaisons enchaînent plusieurs collages et envois à dame.
-Voir `BEG_CH04_010` (Dubois ch7 D5) : combinaison à 5 demi-coups avec
-rafle finale de dame `4x47`.
-
-> **Note technique** : les rafles de dame sont marquées `final_move=None`
-> dans les fixtures à cause d'une limitation actuelle du module de
-> reconstruction (PR #31). Cette limitation sera levée en V2 (cf
-> `ameliorations_dilf_debutant.md` §3).
+Certaines combinaisons enchaînent plusieurs collages successifs avant
+la rafle finale. Voir `BEG_CH04_010` (Dubois ch7 D8) :
+`34-29 (23×25) 27-22 (17×28) 32×3`. Deux sacrifices `34-29` puis
+`27-22` enchaînés, chacun forçant une prise majoritaire noire, suivis
+de la rafle finale `32→23→14→3` qui capture 3 pions et promeut en
+dame.
 
 ---
 
@@ -619,7 +627,8 @@ Les 10 exercices viennent du chapitre 17 de Dubois (pages 54-56).
 
 `BEG_CH13_009` (Dubois D9) : « un pur coup Napoléon » selon Dubois.
 `27-22 (18×29) 28-22 (17×28) 26-21 (16×27) 31×4`. Quatre sacrifices
-consécutifs qui dégagent la diagonale `31-22-13-4`.
+consécutifs ouvrent la trajectoire de la rafle finale `31→22→33→24→15→4`
+(promotion en dame avec 5 captures).
 
 ### 13.2. Variantes
 
