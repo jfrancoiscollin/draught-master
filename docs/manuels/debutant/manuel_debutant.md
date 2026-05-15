@@ -104,8 +104,10 @@ uniquement** (vers le camp adverse). Pour un pion blanc, « vers l'avant »
 signifie vers les cases de numéros plus petits ; pour un pion noir, vers
 les cases de numéros plus grands.
 
-Voir `BEG_CH02_001` : le pion blanc en case 35 peut se déplacer en 30
-(diagonale haut-gauche) ou en 31 (diagonale haut-droite). Voir aussi
+Voir `BEG_CH02_001` : le pion blanc en case 35 (à l'angle droit du
+damier) ne peut se déplacer qu'**en 30** — c'est sa seule case
+diagonale vers l'avant disponible, le bord droit du plateau bloque
+toute autre option. Voir aussi
 `BEG_CH02_002` : le pion blanc en 22 ne peut **pas** reculer en 27 ou 28
 librement ; ses seuls coups légaux sont 22-17 et 22-18 (vers l'avant).
 
