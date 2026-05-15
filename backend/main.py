@@ -969,7 +969,18 @@ async def auth_me_lidraughts_import(
             user_side = "black"
         else:
             user_side = None
-        move_tokens = _re.findall(r"\b\d+[-x]\d+(?:[-x]\d+)*\b", pdn)
+        # Scan only the moves section (after the last tag) and strip the
+        # trailing result token so it isn't counted as a phantom move.
+        # Without this, `1-0` / `2-0` / inner `2-1` in `1/2-1/2` would
+        # inflate move_count by 1 (cf smoke_test_lidraughts_import.py).
+        _move_section_match = _re.search(r"\][^\[]*$", pdn, _re.DOTALL)
+        _move_section = _move_section_match.group(0) if _move_section_match else pdn
+        _move_section = _re.sub(
+            r"(1-0|0-1|2-0|0-2|1-1|2-1|1-2|1/2-1/2|\*)\s*$",
+            "",
+            _move_section.strip(),
+        )
+        move_tokens = _re.findall(r"\b\d+[-x]\d+(?:[-x]\d+)*\b", _move_section)
         game_id = source_id or _uuid.uuid4().hex
         try:
             inserted = await save_imported_game(
