@@ -368,9 +368,14 @@ _STATIC_PLAYERS: list[dict] = [
 
 
 def split_pdn_games(pdn_text: str) -> list[str]:
-    """Split a multi-game PDN string into individual game strings."""
-    # Each game starts with a bracket tag block [Tag "..."]
-    parts = re.split(r'(?=\[\s*\w+\s+")', pdn_text)
+    """Split a multi-game PDN string into individual game strings.
+
+    Games are separated by one or more blank lines that precede the
+    next tag block. Earlier implementations split on every `[Tag "…"]`
+    occurrence, which produced one fragment per tag instead of one
+    fragment per game — see the smoke test (`scripts/smoke_test_lidraughts_import.py`).
+    """
+    parts = re.split(r"\n\s*\n+(?=\[\s*\w)", pdn_text)
     games: list[str] = []
     for part in parts:
         p = part.strip()
