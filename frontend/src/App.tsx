@@ -1751,6 +1751,32 @@ export default function App() {
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">Vérification des exercices</h4>
           <ExerciseVerificationPanel />
         </div>
+        {/* ── Crédits ── */}
+        <div className="mt-4">
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">{t('credits')}</h4>
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 text-sm text-gray-300 space-y-3">
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{t('creditsAuthor')}</p>
+              <p className="text-gray-100">Jean-François Collin</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{t('creditsThanks')}</p>
+              <p className="text-gray-100">Cham Cham</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{t('creditsSources')}</p>
+              <ul className="list-disc pl-5 space-y-0.5 text-gray-200">
+                <li>Jean-Pierre Dubois — <span className="italic">Apprentissage Combinaisons</span>, <span className="italic">Apprentissage Sens du jeu</span>, <span className="italic">Apprentissage Fins de partie</span>, <span className="italic">Perfectionnement Combinaisons</span>, <span className="italic">Perfectionnement Sens du jeu (T.1-3)</span>, <span className="italic">Référentiel systèmes de jeu</span></li>
+                <li>Couttet — <span className="italic">Étude des ouvertures</span></li>
+                <li><span className="italic">Les enchaînements</span></li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{t('creditsCorpus')}</p>
+              <p className="text-gray-100">FMJD — Fédération Mondiale du Jeu de Dames</p>
+            </div>
+          </div>
+        </div>
       </BottomSheet>
 
     </div>
