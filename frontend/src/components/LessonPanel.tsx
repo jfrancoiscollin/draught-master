@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import Board from './Board'
 import { getLesson, getExercises, markLessonRead, getPositionLegalMoves, applyPositionMove } from '../api/client'
 import { fenToBoard } from '../utils/fen'
@@ -51,6 +53,48 @@ function LessonText({
   onDiagramClick: (n: number) => void
   highlighted: number[]
 }) {
+  // The legacy plain-text path with clickable square / diagram tokens is kept
+  // around for any future content that doesn't use markdown. For manuel
+  // chapters (markdown source) we render via react-markdown.
+  // Heuristic : treat anything containing a markdown header (## / ### …) or
+  // a bold marker as markdown.
+  const isMarkdown = /(^|\n)#{1,6}\s|\*\*[^*]+\*\*/.test(text)
+
+  if (isMarkdown) {
+    return (
+      <div className="lesson-md" style={{ fontSize: '0.92rem', lineHeight: 1.6 }}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            h1: ({ children }) => <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fbbf24', marginTop: '0.8rem', marginBottom: '0.5rem' }}>{children}</h1>,
+            h2: ({ children }) => <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#fbbf24', marginTop: '0.8rem', marginBottom: '0.4rem' }}>{children}</h2>,
+            h3: ({ children }) => <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#fcd34d', marginTop: '0.7rem', marginBottom: '0.3rem' }}>{children}</h3>,
+            h4: ({ children }) => <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: '#fde68a', marginTop: '0.6rem', marginBottom: '0.25rem' }}>{children}</h4>,
+            p: ({ children }) => <p style={{ marginBottom: '0.6rem' }}>{children}</p>,
+            strong: ({ children }) => <strong style={{ fontWeight: 700, color: '#fbbf24' }}>{children}</strong>,
+            em: ({ children }) => <em style={{ fontStyle: 'italic', color: '#e5e7eb' }}>{children}</em>,
+            blockquote: ({ children }) => (
+              <blockquote style={{ borderLeft: '3px solid #d97706', paddingLeft: '0.75rem', marginLeft: 0, marginBottom: '0.6rem', color: '#d1d5db', fontStyle: 'italic' }}>
+                {children}
+              </blockquote>
+            ),
+            code: ({ children }) => <code style={{ background: 'rgba(251,191,36,0.12)', padding: '1px 4px', borderRadius: 3, fontSize: '0.88em' }}>{children}</code>,
+            ul: ({ children }) => <ul style={{ listStyle: 'disc', paddingLeft: '1.4rem', marginBottom: '0.6rem' }}>{children}</ul>,
+            ol: ({ children }) => <ol style={{ listStyle: 'decimal', paddingLeft: '1.4rem', marginBottom: '0.6rem' }}>{children}</ol>,
+            li: ({ children }) => <li style={{ marginBottom: '0.2rem' }}>{children}</li>,
+            a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: '#67e8f9', textDecoration: 'underline' }}>{children}</a>,
+            hr: () => <hr style={{ border: 0, borderTop: '1px solid #374151', margin: '1rem 0' }} />,
+            table: ({ children }) => <table style={{ borderCollapse: 'collapse', marginBottom: '0.6rem' }}>{children}</table>,
+            th: ({ children }) => <th style={{ border: '1px solid #374151', padding: '4px 8px', background: 'rgba(251,191,36,0.08)', fontWeight: 700 }}>{children}</th>,
+            td: ({ children }) => <td style={{ border: '1px solid #374151', padding: '4px 8px' }}>{children}</td>,
+          }}
+        >
+          {text}
+        </ReactMarkdown>
+      </div>
+    )
+  }
+
   const tokens = tokenize(text)
   return (
     <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.75, fontSize: '0.92rem' }}>
