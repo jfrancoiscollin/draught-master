@@ -9,6 +9,11 @@ import { useLanguage } from '../i18n/LanguageContext'
 
 interface GameHistoryProps {
   onReplay: (detail: GameDetailResponse) => void
+  /** Bump this from the parent to force a games-list refetch — used
+   *  after a "Réinitialiser les analyses" action so the dilf badges
+   *  flip back to – and the bulk-analyze button becomes clickable
+   *  again. */
+  refreshKey?: number
 }
 
 function formatDate(iso: string, language: string): string {
@@ -29,7 +34,7 @@ function formatDate(iso: string, language: string): string {
 
 type BulkMode = 'idle' | 'dilf'
 
-export default function GameHistory({ onReplay }: GameHistoryProps) {
+export default function GameHistory({ onReplay, refreshKey = 0 }: GameHistoryProps) {
   const { t, language } = useLanguage()
   const [games, setGames] = useState<HistoryItem[]>([])
   const [page, setPage] = useState(1)
@@ -49,7 +54,7 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
     }
   }, [page])
 
-  useEffect(() => { loadGames() }, [loadGames])
+  useEffect(() => { loadGames() }, [loadGames, refreshKey])
 
   const handleSelect = async (id: string) => {
     const detail = await getGameDetail(id)
