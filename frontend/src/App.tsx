@@ -1061,7 +1061,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setShowControls(true)}
-              className="lg:hidden text-gray-400 hover:text-white text-xl w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-700"
+              className="text-gray-400 hover:text-white text-xl w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-700"
               title={t('controls')}
             >
               ⚙️
@@ -1449,21 +1449,7 @@ export default function App() {
                       onLearn={handleLearnPlayedGame}
                       annotating={playAnnotating}
                     />
-                    <GameControls
-                      result={gameState?.result || null}
-                      turn={gameState?.turn || 'white'}
-                      moveCount={gameState?.move_count || 0}
-                      aiDepth={aiDepth}
-                      onNewGame={startNewGame}
-                      onAiDepthChange={setAiDepth}
-                      disabled={isAiThinking}
-                      showExplorer={showExplorer}
-                      onShowExplorerChange={toggleExplorer}
-                      explorerMaxMoves={explorerMaxMoves}
-                      onExplorerMaxMovesChange={changeExplorerMaxMoves}
-                      playerSide={playerSide}
-                      onPlayerSideChange={changePlayerSide}
-                    />
+                    {/* GameControls lives in the ⚙️ settings sheet only. */}
                     <OpeningExplorer fen={explorerFen} onArrows={setExplorerArrows} />
                     <MoveList moves={moveHistory} currentMoveIndex={moveHistory.length - 1} />
                     {playAnnotationPanel}
@@ -1507,24 +1493,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* Game controls (expanded only) */}
-              {analysisExpanded && (
-                <div style={{ gridColumn: '1', gridRow: '4' }} className="min-w-0">
-                  <GameControls
-                    result={gameState?.result || null}
-                    turn={gameState?.turn || 'white'}
-                    moveCount={gameState?.move_count || 0}
-                    aiDepth={aiDepth}
-                    onNewGame={startNewGame}
-                    onAiDepthChange={setAiDepth}
-                    disabled={isAiThinking}
-                    showExplorer={showExplorer}
-                    onShowExplorerChange={toggleExplorer}
-                    explorerMaxMoves={explorerMaxMoves}
-                    onExplorerMaxMovesChange={changeExplorerMaxMoves}
-                  />
-                </div>
-              )}
+              {/* GameControls lives in the ⚙️ settings sheet only. */}
             </div>
               </>
             )}
