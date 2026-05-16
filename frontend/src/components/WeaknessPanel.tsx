@@ -33,14 +33,22 @@ export default function WeaknessPanel({ onMotifClick }: Props) {
   const { user } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
     if (!user || !open || profile) return
     setLoading(true)
+    setError(null)
     getUserProfile()
       .then(setProfile)
-      .catch(() => setProfile(null))
+      .catch((err: unknown) => {
+        const status = (err as { response?: { status?: number } })?.response?.status
+        const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+        const msg = (err as { message?: string })?.message ?? String(err)
+        setError(status ? `${status} — ${detail || msg}` : msg)
+        setProfile(null)
+      })
       .finally(() => setLoading(false))
   }, [user, open, profile])
 
@@ -65,20 +73,28 @@ export default function WeaknessPanel({ onMotifClick }: Props) {
             <p className="text-gray-400 text-xs text-center py-2 animate-pulse">Chargement…</p>
           )}
 
-          {!loading && profile && weaknesses.length === 0 && (
+          {!loading && error && (
+            <p className="text-red-400 text-xs text-center py-2">
+              Erreur de chargement : {error}
+            </p>
+          )}
+
+          {!loading && !error && profile && weaknesses.length === 0 && (
             <div className="text-center py-3">
               <p className="text-gray-500 text-xs">
-                Pas encore assez de données.
+                {profile.games_count === 0
+                  ? 'Aucune partie analysée pour l’instant.'
+                  : `${profile.games_count} partie${profile.games_count > 1 ? 's' : ''} analysée${profile.games_count > 1 ? 's' : ''} — aucun motif n’apparaît encore au moins 3 fois.`}
               </p>
               <p className="text-gray-600 text-xs mt-1">
-                Analysez au moins 3 parties pour voir vos faiblesses.
+                Plus vous analysez de parties, mieux les faiblesses récurrentes ressortent.
               </p>
             </div>
           )}
 
-          {!loading && !profile && (
+          {!loading && !error && !profile && (
             <p className="text-gray-500 text-xs text-center py-2">
-              Aucune partie analysée.
+              Aucune donnée disponible.
             </p>
           )}
 
