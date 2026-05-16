@@ -745,9 +745,11 @@ async def check_exercise(
 async def get_history(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=50),
+    current_user: Optional[Dict[str, Any]] = Depends(_optional_auth),
 ) -> HistoryResponse:
     offset = (page - 1) * page_size
-    games = await get_games(limit=page_size, offset=offset)
+    user_id = current_user["id"] if current_user else None
+    games = await get_games(limit=page_size, offset=offset, user_id=user_id)
     items = [
         HistoryItem(
             id=g["id"],
@@ -756,6 +758,8 @@ async def get_history(
             black_player=g["black_player"],
             result=g.get("result"),
             move_count=g.get("move_count", 0),
+            has_scan_analysis=bool(g.get("has_scan_analysis", 0)),
+            has_dilf_analysis=bool(g.get("has_dilf_analysis", 0)),
         )
         for g in games
     ]
