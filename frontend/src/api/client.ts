@@ -513,6 +513,16 @@ export async function getMotifDebug(): Promise<MotifDebug> {
   return res.data
 }
 
+export interface ResetAnalysesResult {
+  verdicts_deleted: number
+  games_cleared: number
+}
+
+export async function resetMyAnalyses(): Promise<ResetAnalysesResult> {
+  const res = await api.post<ResetAnalysesResult>('/auth/me/analyses/reset')
+  return res.data
+}
+
 export async function explainMovePedagogy(
   gameId: string,
   moveNumber: number,
