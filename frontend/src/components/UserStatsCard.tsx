@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getUserStats, importLidraughtsGames } from '../api/client'
+import { getUserStats, importLidraughtsGames, resetMyAnalyses } from '../api/client'
 import type { UserStats } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
@@ -70,6 +70,8 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
   const [lidraughtsCount, setLidraughtsCount] = useState<number>(50)
   const [importing, setImporting] = useState(false)
   const [importMsg, setImportMsg] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+  const [resetting, setResetting] = useState(false)
+  const [resetMsg, setResetMsg] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     setLidraughtsUsername(user?.lidraughts_username ?? '')
@@ -106,6 +108,33 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
       setImportMsg({ kind: 'error', text: detail })
     } finally {
       setImporting(false)
+    }
+  }
+
+  const handleReset = async () => {
+    if (resetting) return
+    const confirmed = window.confirm(
+      "Réinitialiser toutes les analyses de vos parties ?\n\n" +
+      "Les verdicts dilf et les notations Scan seront effacés. " +
+      "Les parties elles-mêmes sont conservées en base et pourront " +
+      "être ré-analysées. Action irréversible."
+    )
+    if (!confirmed) return
+    setResetting(true)
+    setResetMsg(null)
+    try {
+      const res = await resetMyAnalyses()
+      setResetMsg({
+        kind: 'success',
+        text: `${res.verdicts_deleted} verdicts supprimés · ${res.games_cleared} partie(s) remise(s) à zéro.`,
+      })
+      const fresh = await getUserStats().catch(() => null)
+      if (fresh) setStats(fresh)
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail || 'Erreur lors du reset'
+      setResetMsg({ kind: 'error', text: detail })
+    } finally {
+      setResetting(false)
     }
   }
 
@@ -188,6 +217,19 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
                 {importMsg && (
                   <p className={`text-xs mt-1 ${importMsg.kind === 'success' ? 'text-green-400' : 'text-red-400'}`}>
                     {importMsg.text}
+                  </p>
+                )}
+                <button
+                  onClick={handleReset}
+                  disabled={resetting}
+                  className="w-full bg-gray-700 hover:bg-red-900 border border-gray-600 hover:border-red-700 disabled:bg-gray-800 disabled:cursor-not-allowed text-gray-300 hover:text-white text-xs font-semibold rounded px-3 py-2 transition-colors mt-2"
+                  title="Effacer les verdicts et annotations sur toutes les parties (les parties sont conservées)"
+                >
+                  {resetting ? 'Réinitialisation…' : '↺ Réinitialiser les analyses'}
+                </button>
+                {resetMsg && (
+                  <p className={`text-xs mt-1 ${resetMsg.kind === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                    {resetMsg.text}
                   </p>
                 )}
               </div>

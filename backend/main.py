@@ -1044,6 +1044,43 @@ async def auth_me_lidraughts_import(
     }
 
 
+@app.post("/api/auth/me/analyses/reset")
+async def auth_me_analyses_reset(
+    current_user: Dict[str, Any] = Depends(_require_auth),
+) -> Dict[str, Any]:
+    """Wipe every persisted analysis for the current user's games :
+
+    - clears `games.annotations_json` (legacy Scan per-move verdicts)
+    - deletes every `move_verdicts` row tied to a game the user owns
+      (the dilf pedagogy verdicts + motifs)
+
+    The `games` rows themselves are kept — only the analysis layer is
+    wiped, so the user can re-run "Analyser avec dilf" cleanly without
+    losing their imported library.
+    """
+    import aiosqlite as _aiosqlite
+    from db.config import DB_PATH as _DB_PATH
+
+    async with _aiosqlite.connect(_DB_PATH) as db:
+        cur = await db.execute(
+            "DELETE FROM move_verdicts "
+            "WHERE game_id IN (SELECT id FROM games WHERE user_id = ?)",
+            (current_user["id"],),
+        )
+        verdicts_deleted = cur.rowcount
+        cur = await db.execute(
+            "UPDATE games SET annotations_json = NULL WHERE user_id = ?",
+            (current_user["id"],),
+        )
+        games_cleared = cur.rowcount
+        await db.commit()
+
+    return {
+        "verdicts_deleted": verdicts_deleted,
+        "games_cleared": games_cleared,
+    }
+
+
 @app.post("/api/history/{game_id}/annotations")
 async def save_annotations(
     game_id: str,
