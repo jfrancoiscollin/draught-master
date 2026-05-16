@@ -226,8 +226,29 @@ export default function ImportGamePanel({
     }
   }, [currentFen, language, result, currentIdx])
 
-  // Direct PDN file upload removed (chat) — the panel reaches its
-  // game data via the `initialPdn` / `initialGameId` props now.
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    setPdn(text)
+    setImportError(null)
+    setImporting(true)
+    try {
+      const data = await importPdn(text)
+      setResult(data)
+      setCurrentIdx(0)
+      setCurrentFen(data.positions[0].fen)
+      loadLegalMoves(data.positions[0].fen)
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      setImportError(detail ?? 'Erreur lors de l\'import')
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   function hubNotationToArrow(hub: string): Arrow | null {
     const sep = hub.includes('x') ? 'x' : hub.includes('-') ? '-' : null
@@ -360,6 +381,11 @@ export default function ImportGamePanel({
   // show a spinner ; if someone reaches this page without a preloaded
   // game we send them back to the home screen.
   if (!result) {
+    // Two cases :
+    //  1. Replay from <GameHistory> (initialPdn / initialGameId set) →
+    //     spinner while the auto-load runs.
+    //  2. Direct PDN upload (no preload) → file-picker.
+    const isReplayLoad = !!(initialPdn || initialGameId)
     return (
       <div className="flex flex-col h-full bg-gray-900 text-gray-100">
         <div className="flex items-center gap-3 px-4 py-3 bg-gray-800 border-b border-gray-700 flex-shrink-0">
@@ -369,35 +395,51 @@ export default function ImportGamePanel({
           >
             ←
           </button>
-          <h2 className="font-bold text-amber-500 text-base">Analyse de partie</h2>
+          <h2 className="font-bold text-amber-500 text-base">
+            {isReplayLoad ? 'Analyse de partie' : 'Importer une partie'}
+          </h2>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-center gap-4 text-center">
-          {importing ? (
-            <>
-              <div className="spinner" />
-              <p className="text-gray-300 text-sm">Chargement de la partie…</p>
-            </>
-          ) : importError ? (
-            <p className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded px-3 py-2 max-w-md">
-              {importError}
-            </p>
-          ) : (
-            <>
-              <span className="text-5xl">👤</span>
-              <p className="text-gray-300 text-sm max-w-md">
-                Pour analyser une partie, ouvrez votre <strong className="text-amber-400">Profil</strong> et
-                cliquez sur la partie souhaitée dans la liste de l'historique.
+        {isReplayLoad ? (
+          <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-center gap-4 text-center">
+            {importError ? (
+              <p className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded px-3 py-2 max-w-md">
+                {importError}
               </p>
-              <button
-                onClick={onClose}
-                className="mt-2 px-4 py-2 rounded bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold"
-              >
-                Retour à l'accueil
-              </button>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <div className="spinner" />
+                <p className="text-gray-300 text-sm">Chargement de la partie…</p>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
+            <p className="text-gray-400 text-sm text-center">
+              Sélectionnez un fichier <span className="text-amber-400 font-mono">.pdn</span> exporté depuis lidraughts ou un autre logiciel.
+            </p>
+
+            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="w-full flex flex-col items-center gap-3 border-2 border-dashed border-gray-600 hover:border-amber-500 rounded-xl py-12 px-4 transition-colors disabled:opacity-40 cursor-pointer"
+            >
+              <span className="text-5xl">📂</span>
+              <span className="text-white font-semibold text-sm">
+                {importing ? 'Chargement…' : 'Choisir un fichier .pdn'}
+              </span>
+              <span className="text-gray-500 text-xs">lidraughts · DraughtsBoard · etc.</span>
+            </button>
+
+            {importError && (
+              <p className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded px-3 py-2">
+                {importError}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     )
   }
