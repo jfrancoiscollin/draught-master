@@ -491,6 +491,11 @@ export async function analyzeGamePedagogy(
   return res.data
 }
 
+export async function getGameAnalysis(gameId: string): Promise<PedagogyAnalysis> {
+  const res = await api.get<PedagogyAnalysis>(`/pedagogy/game/${gameId}/analysis`)
+  return res.data
+}
+
 export async function explainMovePedagogy(
   gameId: string,
   moveNumber: number,

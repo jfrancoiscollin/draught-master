@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { HistoryItem, GameDetailResponse } from '../types'
 import {
   getHistory,
   getGameDetail,
-  saveGameAnnotations,
   analyzeGamePedagogy,
 } from '../api/client'
-import { annotateGame } from '../lib/gameAnnotations'
 import { useLanguage } from '../i18n/LanguageContext'
 
 interface GameHistoryProps {
@@ -29,7 +27,7 @@ function formatDate(iso: string, language: string): string {
   }
 }
 
-type BulkMode = 'idle' | 'dilf' | 'scan'
+type BulkMode = 'idle' | 'dilf'
 
 export default function GameHistory({ onReplay }: GameHistoryProps) {
   const { t, language } = useLanguage()
@@ -93,7 +91,6 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
 
   // ─── Bulk analyse ────────────────────────────────────────────────────
   const dilfPending = games.filter(g => !g.has_dilf_analysis)
-  const scanPending = games.filter(g => !g.has_scan_analysis)
 
   const runBulkDilf = async () => {
     if (bulkMode !== 'idle' || dilfPending.length === 0) return
@@ -106,49 +103,20 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
       try {
         const detail = await getGameDetail(g.id)
         // Pick the user's side from the saved game, fallback to white.
+        // dilf's /analyze-game also persists legacy Scan annotations as a
+        // side-effect (cf cascade in pedagogy/api.py), so a single click
+        // suffices to populate both the move_verdicts table and
+        // games.annotations_json.
         const userSide = ((detail as { user_side?: string }).user_side as 'white' | 'black') ?? 'white'
         await analyzeGamePedagogy(g.id, userSide, language)
       } catch (err: unknown) {
         const msg = (err as { message?: string })?.message ?? String(err)
-        // Keep going even on per-game error.
         setBulkError(`Échec partiel : ${g.id.slice(0, 8)}… (${msg})`)
       }
     }
     setBulkProgress({ done: dilfPending.length, total: dilfPending.length, current: '' })
     setBulkMode('idle')
     await loadGames()  // refresh checkmarks
-  }
-
-  const runBulkScan = async () => {
-    if (bulkMode !== 'idle' || scanPending.length === 0) return
-    setBulkMode('scan')
-    setBulkError(null)
-    setBulkProgress({ done: 0, total: scanPending.length, current: '' })
-    for (let i = 0; i < scanPending.length; i++) {
-      const g = scanPending[i]
-      setBulkProgress({ done: i, total: scanPending.length, current: `${g.white_player} vs ${g.black_player}` })
-      try {
-        const detail = await getGameDetail(g.id)
-        if (!detail.fen_positions || detail.fen_positions.length === 0) continue
-        const positions = detail.fen_positions.map((fen: string) => ({ fen, notation: '' }))
-        const controller = new AbortController()
-        const { annotations } = await annotateGame(
-          positions,
-          200,
-          () => {},
-          controller.signal,
-        )
-        if (annotations && annotations.length > 0) {
-          await saveGameAnnotations(g.id, annotations as unknown as Array<{ move_number: number }>)
-        }
-      } catch (err: unknown) {
-        const msg = (err as { message?: string })?.message ?? String(err)
-        setBulkError(`Échec partiel : ${g.id.slice(0, 8)}… (${msg})`)
-      }
-    }
-    setBulkProgress({ done: scanPending.length, total: scanPending.length, current: '' })
-    setBulkMode('idle')
-    await loadGames()
   }
 
   const bulkRunning = bulkMode !== 'idle'
@@ -160,37 +128,26 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
       <div className="panel">
         <h3 className="text-lg font-bold text-amber-600 mb-2">Analyser mes parties</h3>
         <p className="text-xs text-gray-400 mb-3">
-          Analyse en lot des parties non encore analysées.
-          dilf détecte les motifs tactiques ; Scan note chaque coup
-          (Parfait / Imprécision / Erreur / Gaffe).
+          Analyse en lot avec dilf : détection des motifs tactiques et
+          notation de chaque coup (Parfait / Imprécision / Erreur / Gaffe).
         </p>
-        <div className="flex flex-col sm:flex-row gap-2 mb-3">
-          <button
-            onClick={runBulkDilf}
-            disabled={bulkRunning || dilfPending.length === 0}
-            className="flex-1 px-3 py-2 rounded font-semibold text-sm transition-colors bg-purple-700 hover:bg-purple-600 text-white disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
-          >
-            🎓 Analyser avec dilf
-            {dilfPending.length > 0 && ` (${dilfPending.length})`}
-          </button>
-          <button
-            onClick={runBulkScan}
-            disabled={bulkRunning || scanPending.length === 0}
-            className="flex-1 px-3 py-2 rounded font-semibold text-sm transition-colors bg-cyan-700 hover:bg-cyan-600 text-white disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
-          >
-            🤖 Analyser avec Scan
-            {scanPending.length > 0 && ` (${scanPending.length})`}
-          </button>
-        </div>
+        <button
+          onClick={runBulkDilf}
+          disabled={bulkRunning || dilfPending.length === 0}
+          className="w-full px-3 py-2 mb-3 rounded font-semibold text-sm transition-colors bg-purple-700 hover:bg-purple-600 text-white disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+        >
+          🎓 Analyser avec dilf
+          {dilfPending.length > 0 && ` (${dilfPending.length})`}
+        </button>
         {bulkRunning && bulkProgress.total > 0 && (
           <div>
             <div className="flex justify-between text-xs text-gray-300 mb-1">
-              <span>{bulkMode === 'dilf' ? '🎓 dilf' : '🤖 Scan'} — {bulkProgress.done}/{bulkProgress.total}</span>
+              <span>🎓 dilf — {bulkProgress.done}/{bulkProgress.total}</span>
               {bulkProgress.current && <span className="text-gray-500 truncate ml-2">{bulkProgress.current}</span>}
             </div>
             <div className="w-full h-2 bg-gray-700 rounded overflow-hidden">
               <div
-                className={`h-full transition-all duration-300 ${bulkMode === 'dilf' ? 'bg-purple-500' : 'bg-cyan-500'}`}
+                className="h-full transition-all duration-300 bg-purple-500"
                 style={{ width: `${Math.round((bulkProgress.done / bulkProgress.total) * 100)}%` }}
               />
             </div>
@@ -234,7 +191,6 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
                 </button>
                 <div className="flex items-center gap-1 pr-3 flex-shrink-0">
                   {analysisSlot(game.has_dilf_analysis, 'dilf')}
-                  {analysisSlot(game.has_scan_analysis, 'Scan')}
                 </div>
               </div>
             ))}

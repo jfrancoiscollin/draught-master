@@ -169,6 +169,8 @@ export default function App() {
   const { user, logout } = useAuth()
   const [tab, setTab] = useState<Tab>('home')
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
+  const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
+  const [preloadedUserSide, setPreloadedUserSide] = useState<'white' | 'black' | null>(null)
 
   const [gameState, setGameState] = useState<GameStateResponse | null>(null)
   const [selectedSquare, setSelectedSquare] = useState<number | null>(null)
@@ -1613,8 +1615,15 @@ export default function App() {
         {tab === 'import-game' && (
           <div className="h-full">
             <ImportGamePanel
-              onClose={() => { setPreloadedPdn(null); setTab('home') }}
+              onClose={() => {
+                setPreloadedPdn(null)
+                setPreloadedGameId(null)
+                setPreloadedUserSide(null)
+                setTab('home')
+              }}
               initialPdn={preloadedPdn}
+              initialGameId={preloadedGameId}
+              initialUserSide={preloadedUserSide}
             />
           </div>
         )}
@@ -1626,6 +1635,9 @@ export default function App() {
             <GameHistory
               onReplay={(detail) => {
                 setPreloadedPdn(detail.pdn || '')
+                setPreloadedGameId(detail.id)
+                const side = (detail as { user_side?: string }).user_side
+                setPreloadedUserSide(side === 'black' ? 'black' : 'white')
                 setTab('import-game')
               }}
             />
