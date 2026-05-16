@@ -552,6 +552,77 @@ async def get_user_profile(
 
 
 # ---------------------------------------------------------------------------
+# GET /api/pedagogy/profile/me/motif-debug  — diagnostic
+# ---------------------------------------------------------------------------
+
+
+@router.get("/profile/me/motif-debug")
+async def get_motif_debug(
+    user: Any = Depends(current_user),
+) -> dict[str, Any]:
+    """Diagnostic : count motif hits per (motif, role) across the user's
+    last 30 games. Helps explain why the Points faibles panel is empty
+    even with many analysed games.
+
+    Returns a JSON dict :
+      {
+        "games_count": int,
+        "games_with_verdicts": int,
+        "verdicts_total": int,
+        "verdicts_with_motifs": int,
+        "by_motif_role": {"<motif>/<role>": count, ...},
+        "by_motif": {"<motif>": count, ...},
+        "missed_threshold": 3,
+        "weakness_score": {"<motif>": missed+suffered, ...},
+        "would_be_weakness": [<motif> where score >= threshold]
+      }
+    """
+    async with aiosqlite.connect(_db_path()) as conn:
+        games = await storage.fetch_user_games_with_verdicts(conn, user["id"], lookback=30)
+
+    by_motif_role: dict[str, int] = {}
+    by_motif: dict[str, int] = {}
+    weakness_score: dict[str, int] = {}
+    verdicts_total = 0
+    verdicts_with_motifs = 0
+    games_with_verdicts = 0
+
+    for g in games:
+        if g.verdicts:
+            games_with_verdicts += 1
+        for v in g.verdicts:
+            verdicts_total += 1
+            if v.motifs:
+                verdicts_with_motifs += 1
+            for m in v.motifs:
+                # User-perspective role: own moves keep their role,
+                # opponent's `played` motifs become `suffered` for user.
+                if v.side == g.user_side:
+                    role = m.role
+                else:
+                    role = "suffered" if m.role == "played" else m.role
+                key = f"{m.motif}/{role}"
+                by_motif_role[key] = by_motif_role.get(key, 0) + 1
+                by_motif[m.motif] = by_motif.get(m.motif, 0) + 1
+                if role in ("missed", "suffered"):
+                    weakness_score[m.motif] = weakness_score.get(m.motif, 0) + 1
+
+    would_be = [m for m, s in weakness_score.items() if s >= 3]
+
+    return {
+        "games_count": len(games),
+        "games_with_verdicts": games_with_verdicts,
+        "verdicts_total": verdicts_total,
+        "verdicts_with_motifs": verdicts_with_motifs,
+        "by_motif_role": dict(sorted(by_motif_role.items(), key=lambda kv: -kv[1])),
+        "by_motif": dict(sorted(by_motif.items(), key=lambda kv: -kv[1])),
+        "missed_threshold": 3,
+        "weakness_score": weakness_score,
+        "would_be_weakness": would_be,
+    }
+
+
+# ---------------------------------------------------------------------------
 # GET /api/pedagogy/motifs/{slug}
 # ---------------------------------------------------------------------------
 
