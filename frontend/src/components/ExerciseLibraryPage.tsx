@@ -307,6 +307,21 @@ const MOTIF_FAMILIES: Array<{
         desc_fr: 'Sacrifice général (motif catch-all).' },
     ],
   },
+  {
+    id: 'combinaisons',
+    fr: 'Combinaisons génériques',
+    en: 'Generic combinations',
+    motifs: [
+      { slug: 'combinaison_2_temps', fr: 'Combinaison en 2 temps', en: '2-move combination',
+        desc_fr: 'Enchaînement forcé de 2 coups attaquants menant à un gain matériel.' },
+      { slug: 'combinaison_3_temps', fr: 'Combinaison en 3 temps', en: '3-move combination',
+        desc_fr: 'Enchaînement forcé de 3 coups attaquants menant à un gain matériel.' },
+      { slug: 'combinaison_4_temps', fr: 'Combinaison en 4 temps', en: '4-move combination',
+        desc_fr: 'Enchaînement forcé de 4 coups attaquants menant à un gain matériel.' },
+      { slug: 'combinaison_5_temps', fr: 'Combinaison en 5+ temps', en: '5+ move combination',
+        desc_fr: 'Enchaînement forcé de 5 coups ou plus menant à un gain matériel.' },
+    ],
+  },
 ]
 
 function MotifCatalogSection({ language }: { language: 'fr' | 'en' }) {

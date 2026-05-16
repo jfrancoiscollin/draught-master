@@ -18,6 +18,10 @@ const MOTIF_NAME_FR: Record<string, string> = {
   coup_manoury: 'Coup Manoury',
   coup_enfilade: 'Coup d’enfilade',
   coup_du_bruleur: 'Coup du brûleur',
+  combinaison_2_temps: 'Combinaison en 2 temps',
+  combinaison_3_temps: 'Combinaison en 3 temps',
+  combinaison_4_temps: 'Combinaison en 4 temps',
+  combinaison_5_temps: 'Combinaison en 5 temps',
 }
 
 interface Props {
