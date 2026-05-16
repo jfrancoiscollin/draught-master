@@ -474,33 +474,10 @@ async def explain_move(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/pedagogy/profile/{user_id}
-# ---------------------------------------------------------------------------
-
-
-@router.get("/profile/{user_id}", response_model=UserProfileOut)
-async def get_user_profile(
-    user_id: int,
-    user: Any = Depends(current_user),
-) -> UserProfileOut:
-    if user["id"] != user_id and not user.get("is_admin", False):
-        raise HTTPException(403, "Forbidden")
-    async with aiosqlite.connect(_db_path()) as conn:
-        games = await storage.fetch_user_games_with_verdicts(conn, user_id, lookback=30)
-    profile = aggregate_user_profile(user_id, games)
-    return UserProfileOut(
-        user_id=profile.user_id,
-        games_count=profile.games_count,
-        average_accuracy=profile.average_accuracy,
-        strengths=profile.strengths,
-        weaknesses=profile.weaknesses,
-        weakest_phase=profile.weakest_phase.value if hasattr(profile.weakest_phase, "value") else profile.weakest_phase,
-        recommended_exercise_tags=profile.recommended_exercise_tags,
-    )
-
-
-# ---------------------------------------------------------------------------
-# GET /api/pedagogy/profile/me/recommendations
+# GET /api/pedagogy/profile/me*  — declared BEFORE `/profile/{user_id}` so
+# the literal "me" doesn't get sucked into the int-typed wildcard route
+# and produce a 422 "Input should be a valid integer @ path.user_id"
+# (FastAPI matches routes in declaration order).
 # ---------------------------------------------------------------------------
 
 
@@ -526,11 +503,6 @@ async def get_recommendations(
     return RecommendationsResponse(exercises=chosen)
 
 
-# ---------------------------------------------------------------------------
-# GET /api/pedagogy/profile/me  (convenience alias for the connected user)
-# ---------------------------------------------------------------------------
-
-
 @router.get("/profile/me", response_model=UserProfileOut)
 async def get_my_profile(
     user: Any = Depends(current_user),
@@ -549,6 +521,32 @@ async def get_my_profile(
             if hasattr(profile.weakest_phase, "value")
             else profile.weakest_phase
         ),
+        recommended_exercise_tags=profile.recommended_exercise_tags,
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /api/pedagogy/profile/{user_id}
+# ---------------------------------------------------------------------------
+
+
+@router.get("/profile/{user_id}", response_model=UserProfileOut)
+async def get_user_profile(
+    user_id: int,
+    user: Any = Depends(current_user),
+) -> UserProfileOut:
+    if user["id"] != user_id and not user.get("is_admin", False):
+        raise HTTPException(403, "Forbidden")
+    async with aiosqlite.connect(_db_path()) as conn:
+        games = await storage.fetch_user_games_with_verdicts(conn, user_id, lookback=30)
+    profile = aggregate_user_profile(user_id, games)
+    return UserProfileOut(
+        user_id=profile.user_id,
+        games_count=profile.games_count,
+        average_accuracy=profile.average_accuracy,
+        strengths=profile.strengths,
+        weaknesses=profile.weaknesses,
+        weakest_phase=profile.weakest_phase.value if hasattr(profile.weakest_phase, "value") else profile.weakest_phase,
         recommended_exercise_tags=profile.recommended_exercise_tags,
     )
 
