@@ -10,6 +10,7 @@ import ExerciseLibraryPage from './components/ExerciseLibraryPage'
 import LessonPanel from './components/LessonPanel'
 import ImportGamePanel from './components/ImportGamePanel'
 import OpeningCacheBuilder from './components/OpeningCacheBuilder'
+import GameHistory from './components/GameHistory'
 import ExerciseVerificationPanel from './components/ExerciseVerificationPanel'
 import OpeningExplorer from './components/OpeningExplorer'
 import LearnFromMistakes from './components/LearnFromMistakes'
@@ -161,12 +162,13 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder'
+type Tab = 'home' | 'play' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history'
 
 export default function App() {
   const { t, language } = useLanguage()
   const { user, logout } = useAuth()
   const [tab, setTab] = useState<Tab>('home')
+  const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
 
   const [gameState, setGameState] = useState<GameStateResponse | null>(null)
   const [selectedSquare, setSelectedSquare] = useState<number | null>(null)
@@ -1108,6 +1110,16 @@ export default function App() {
                 <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📂</span>
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabImport')}</span>
               </button>
+              {/* My games (history) */}
+              {user && (
+                <button
+                  onClick={() => setTab('game-history')}
+                  className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
+                >
+                  <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📜</span>
+                  <span className="flex-1 text-lg font-bold text-white text-right">{t('tabHistory')}</span>
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -1631,7 +1643,22 @@ export default function App() {
         {/* IMPORT & ANALYZE TAB */}
         {tab === 'import-game' && (
           <div className="h-full">
-            <ImportGamePanel onClose={() => setTab('home')} />
+            <ImportGamePanel
+              onClose={() => { setPreloadedPdn(null); setTab('home') }}
+              initialPdn={preloadedPdn}
+            />
+          </div>
+        )}
+
+        {/* GAME HISTORY TAB */}
+        {tab === 'game-history' && (
+          <div className="h-full overflow-y-auto px-4 py-4 max-w-3xl mx-auto">
+            <GameHistory
+              onReplay={(detail) => {
+                setPreloadedPdn(detail.pdn || '')
+                setTab('import-game')
+              }}
+            />
           </div>
         )}
 
