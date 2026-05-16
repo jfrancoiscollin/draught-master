@@ -128,24 +128,10 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
                 </div>
               </div>
 
-              {stats.recent_games.length > 0 && (
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Parties récentes</p>
-                  <div className="flex flex-col gap-1">
-                    {stats.recent_games.map(g => (
-                      <div key={g.id} className="flex items-center gap-2 bg-gray-750 rounded px-2 py-1.5 text-xs" style={{ backgroundColor: '#1e2a3a' }}>
-                        <span className="text-gray-300 flex-1 truncate">{g.white_player} vs {g.black_player}</span>
-                        <span className={`font-bold flex-shrink-0 ${g.result === 'white' ? 'text-amber-300' : g.result === 'black' ? 'text-blue-300' : 'text-gray-400'}`}>
-                          {g.result === 'white' ? 'Blancs' : g.result === 'black' ? 'Noirs' : '='}
-                        </span>
-                        {(g.blunders > 0 || g.mistakes > 0) && (
-                          <span className="flex-shrink-0 text-red-400">{g.blunders > 0 ? `${g.blunders}✗` : ''}{g.mistakes > 0 ? ` ${g.mistakes}?` : ''}</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* "Parties récentes" block removed (chat) — redundant
+                  with the full Historique des parties list shown
+                  below in the Profil tab, and the truncated player
+                  names made it unreadable. */}
             </>
           )}
 
