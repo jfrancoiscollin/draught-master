@@ -141,10 +141,10 @@ export default function WeaknessPanel({ onMotifClick }: Props) {
                   </summary>
                   <div className="mt-2 space-y-2 text-gray-300">
                     <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
-                      <span className="text-gray-500">Parties</span>
-                      <span className="tabular-nums">{debug.games_count}</span>
-                      <span className="text-gray-500">avec verdicts</span>
+                      <span className="text-gray-500">Parties analysées</span>
                       <span className="tabular-nums">{debug.games_with_verdicts}</span>
+                      <span className="text-gray-500">Parties (lookback)</span>
+                      <span className="tabular-nums text-gray-400">{debug.games_count}</span>
                       <span className="text-gray-500">Verdicts total</span>
                       <span className="tabular-nums">{debug.verdicts_total}</span>
                       <span className="text-gray-500">avec motifs</span>
