@@ -194,7 +194,7 @@ class ScanEngine:
         'go think' forces a real neural-network search unlike 'go analyze' which
         returns score=0 for book positions. The score comes from 'info' lines;
         the best move comes from the final 'done' line.
-        Returns {"score": int, "bestMove": str|None}."""
+        Returns {"score": float, "bestMove": str|None, "pv": list[str], "forced": bool}."""
         with self._lock:
             while True:
                 try:
@@ -208,6 +208,7 @@ class ScanEngine:
 
             last_score: float = 0.0
             last_best: Optional[str] = None
+            last_pv: list[str] = []
             had_info_score = False
             deadline = time.monotonic() + movetime_s + 10.0
             raw_lines: list[str] = []
@@ -228,12 +229,17 @@ class ScanEngine:
                         if p:
                             words = p.group(1).strip().split()
                             if words:
+                                last_pv = words
                                 last_best = words[0]
                         elif not p:
                             # pv without quotes = forced move (no score emitted)
                             pf = re.search(r'\bpv=(\S+)', line)
-                            if pf and not last_best:
-                                last_best = pf.group(1).split()[0]
+                            if pf:
+                                forced_pv = pf.group(1).split()
+                                if forced_pv:
+                                    last_pv = forced_pv
+                                    if not last_best:
+                                        last_best = forced_pv[0]
                     elif line.startswith("done") and (len(line) == 4 or line[4] == ' '):
                         move_m = re.search(r'\bmove=(\S+)', line)
                         score_m = re.search(r'\bscore=\s*([+-]?\d+(?:\.\d+)?)', line)
@@ -242,8 +248,8 @@ class ScanEngine:
                         # forced=True when no info line had a score (Scan returned
                         # the move immediately without searching — forced capture)
                         forced = not had_info_score and score == 0.0
-                        logger.debug("evaluate_pos done: score=%.3f best=%s forced=%s", score, best, forced)
-                        return {"bestMove": best, "score": score, "forced": forced}
+                        logger.debug("evaluate_pos done: score=%.3f best=%s pv_len=%d forced=%s", score, best, len(last_pv), forced)
+                        return {"bestMove": best, "score": score, "pv": last_pv, "forced": forced}
                 except queue.Empty:
                     pass
 
