@@ -225,6 +225,7 @@ async def test_tables_exist_in_fresh_db():
     assert "move_verdicts" in tables
     assert "pedagogy_explanations" in tables
     assert "exercise_tags" in tables
+    await conn.close()
 
 
 @pytest.mark.asyncio
