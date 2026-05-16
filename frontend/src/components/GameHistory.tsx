@@ -97,6 +97,9 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
     setBulkMode('dilf')
     setBulkError(null)
     setBulkProgress({ done: 0, total: dilfPending.length, current: '' })
+    let ok = 0
+    let fail = 0
+    const lastErrors: string[] = []
     for (let i = 0; i < dilfPending.length; i++) {
       const g = dilfPending[i]
       setBulkProgress({ done: i, total: dilfPending.length, current: `${g.white_player} vs ${g.black_player}` })
@@ -109,12 +112,20 @@ export default function GameHistory({ onReplay }: GameHistoryProps) {
         // games.annotations_json.
         const userSide = ((detail as { user_side?: string }).user_side as 'white' | 'black') ?? 'white'
         await analyzeGamePedagogy(g.id, userSide, language)
+        ok += 1
       } catch (err: unknown) {
+        fail += 1
+        const status = (err as { response?: { status?: number } })?.response?.status
         const msg = (err as { message?: string })?.message ?? String(err)
-        setBulkError(`Échec partiel : ${g.id.slice(0, 8)}… (${msg})`)
+        const label = `${g.white_player} vs ${g.black_player}`
+        lastErrors.push(`${label}${status ? ` [${status}]` : ''}: ${msg}`)
       }
     }
     setBulkProgress({ done: dilfPending.length, total: dilfPending.length, current: '' })
+    if (fail > 0) {
+      const summary = `${ok} OK · ${fail} échec(s). Détails : ${lastErrors.slice(-3).join(' | ')}`
+      setBulkError(summary)
+    }
     setBulkMode('idle')
     await loadGames()  // refresh checkmarks
   }
