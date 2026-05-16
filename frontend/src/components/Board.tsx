@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useLayoutEffect, useRef } from 'react'
+import React, { useCallback, useState, useLayoutEffect, useRef, useId } from 'react'
 import { rcToSq, EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING } from '../types'
 import type { MoveData } from '../types'
 
@@ -131,7 +131,13 @@ function PieceDisc({ piece, moveable, selected }: { piece: number; moveable: boo
   const isWhite = piece === WHITE_MAN || piece === WHITE_KING
   const isKing  = piece === WHITE_KING || piece === BLACK_KING
   const scale   = selected ? 1.05 : moveable ? 1.01 : 1
-  const pfx     = isWhite ? 'pw' : 'pb'
+  // Make every `<defs>` id unique on the page. Inline SVGs share the
+  // global document scope, so reusing 'pw-side' / 'pb-side' for the
+  // 40 pieces on the board lets some browsers (notably Edge / Chromium
+  // on Windows) resolve every `url(#pw-side)` to the wrong gradient
+  // and render the pieces as almost-invisible outlines.
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '')
+  const pfx = `${isWhite ? 'pw' : 'pb'}-${uid}`
 
   return (
     <svg
