@@ -120,6 +120,8 @@ class HistoryItem(BaseModel):
     black_player: str
     result: Optional[str]
     move_count: int
+    has_scan_analysis: bool = False
+    has_dilf_analysis: bool = False
 
 
 class HistoryResponse(BaseModel):

@@ -172,12 +172,38 @@ async def get_user_stats(user_id: int) -> dict:
     }
 
 
-async def get_games(limit: int = 20, offset: int = 0) -> List[Dict[str, Any]]:
+async def get_games(
+    limit: int = 20,
+    offset: int = 0,
+    user_id: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    """Return a page of games, enriched with two analysis-state flags :
+
+    - ``has_scan_analysis``: a non-NULL ``annotations_json`` (set by
+      ``POST /api/pdn/annotate`` or ``POST /api/history/{id}/annotations``)
+    - ``has_dilf_analysis``: at least one row in ``move_verdicts`` for
+      this game (set by ``POST /api/pedagogy/analyze-game``)
+    """
+    where = "1=1"
+    params: List[Any] = []
+    if user_id is not None:
+        where += " AND g.user_id = ?"
+        params.append(user_id)
+    params.extend([limit, offset])
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute(
-            "SELECT * FROM games ORDER BY date DESC LIMIT ? OFFSET ?",
-            (limit, offset),
+            f"""
+            SELECT g.*,
+                   (g.annotations_json IS NOT NULL) AS has_scan_analysis,
+                   EXISTS(SELECT 1 FROM move_verdicts mv WHERE mv.game_id = g.id)
+                       AS has_dilf_analysis
+            FROM games g
+            WHERE {where}
+            ORDER BY g.date DESC
+            LIMIT ? OFFSET ?
+            """,
+            tuple(params),
         )
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]

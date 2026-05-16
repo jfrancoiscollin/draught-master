@@ -1116,7 +1116,7 @@ export default function App() {
                   onClick={() => setTab('game-history')}
                   className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
                 >
-                  <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📜</span>
+                  <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>👤</span>
                   <span className="flex-1 text-lg font-bold text-white text-right">{t('tabHistory')}</span>
                 </button>
               )}
@@ -1652,7 +1652,8 @@ export default function App() {
 
         {/* GAME HISTORY TAB */}
         {tab === 'game-history' && (
-          <div className="h-full overflow-y-auto px-4 py-4 max-w-3xl mx-auto">
+          <div className="h-full overflow-y-auto px-4 py-4 max-w-3xl mx-auto flex flex-col gap-3">
+            <UserStatsCard defaultOpen onMotifClick={setMotifDetailSlug} />
             <GameHistory
               onReplay={(detail) => {
                 setPreloadedPdn(detail.pdn || '')
@@ -1676,11 +1677,7 @@ export default function App() {
         onClose={() => setShowControls(false)}
         title={t('settings')}
       >
-        {/* ── Profil ── */}
-        <div className="mb-4">
-          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">{t('profileSection')}</h4>
-          <UserStatsCard defaultOpen onMotifClick={setMotifDetailSlug} />
-        </div>
+        {/* Profil moved to the dedicated 👤 Profil tab on the home page. */}
         {/* ── Contrôles ── */}
         <div>
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">{t('controls')}</h4>

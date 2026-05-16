@@ -91,6 +91,8 @@ export interface HistoryItem {
   black_player: string
   result: string | null
   move_count: number
+  has_scan_analysis?: boolean
+  has_dilf_analysis?: boolean
 }
 
 export interface HistoryResponse {
