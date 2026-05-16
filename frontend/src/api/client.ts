@@ -496,6 +496,23 @@ export async function getGameAnalysis(gameId: string): Promise<PedagogyAnalysis>
   return res.data
 }
 
+export interface MotifDebug {
+  games_count: number
+  games_with_verdicts: number
+  verdicts_total: number
+  verdicts_with_motifs: number
+  by_motif_role: Record<string, number>
+  by_motif: Record<string, number>
+  missed_threshold: number
+  weakness_score: Record<string, number>
+  would_be_weakness: string[]
+}
+
+export async function getMotifDebug(): Promise<MotifDebug> {
+  const res = await api.get<MotifDebug>('/pedagogy/profile/me/motif-debug')
+  return res.data
+}
+
 export async function explainMovePedagogy(
   gameId: string,
   moveNumber: number,
