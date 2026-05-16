@@ -367,18 +367,50 @@ _STATIC_PLAYERS: list[dict] = [
 ]
 
 
+_PDN_TAG_LINE = re.compile(r'^\s*\[\s*\w+\s+"')
+
+
 def split_pdn_games(pdn_text: str) -> list[str]:
     """Split a multi-game PDN string into individual game strings.
 
-    Games are separated by one or more blank lines that precede the
-    next tag block. Earlier implementations split on every `[Tag "…"]`
-    occurrence, which produced one fragment per tag instead of one
-    fragment per game — see the smoke test (`scripts/smoke_test_lidraughts_import.py`).
+    Per the PDN/PGN spec, a game consists of a "tag pair section" (one or
+    more ``[Tag "value"]`` lines) immediately followed by a "movetext
+    section" (the moves themselves plus the result token). A new game
+    starts when we see a tag-pair line **after** at least one non-tag
+    line of the previous game's movetext.
+
+    Implementation: stateful pass over the lines, tracking whether the
+    cursor is still inside the current game's tag block or has crossed
+    into its movetext. The previous regex-split implementation broke
+    every tag line into its own "game", producing 10 fragments where a
+    real lidraughts dump only contained 2.
     """
-    parts = re.split(r"\n\s*\n+(?=\[\s*\w)", pdn_text)
-    games: list[str] = []
-    for part in parts:
-        p = part.strip()
-        if p and ("[" in p):
-            games.append(p)
-    return games
+    if not pdn_text:
+        return []
+
+    games: list[list[str]] = []
+    current: list[str] | None = None
+    in_movetext = False
+
+    for line in pdn_text.splitlines():
+        is_tag = bool(_PDN_TAG_LINE.match(line))
+        if is_tag:
+            if in_movetext and current is not None:
+                games.append(current)
+                current = []
+                in_movetext = False
+            elif current is None:
+                current = []
+            current.append(line)
+        else:
+            if current is None:
+                # Pre-first-tag content (header garbage, comments). Skip.
+                continue
+            current.append(line)
+            if line.strip():
+                in_movetext = True
+
+    if current is not None and any(line.strip() for line in current):
+        games.append(current)
+
+    return ["\n".join(lines).strip() for lines in games]
