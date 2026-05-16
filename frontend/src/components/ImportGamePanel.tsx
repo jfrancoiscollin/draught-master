@@ -583,19 +583,23 @@ export default function ImportGamePanel({
             </div>
           )}
 
-          {/* AnalysisPanel — 6 buttons (4 AI + Coup par coup + Apprendre) */}
-          <AnalysisPanel
-            gameId="import"
-            onAnalyze={handleAnalyze}
-            onBestMove={handleBestMove}
-            analysis={analysis}
-            loading={analysisLoading}
-            onHighlightSquare={setHighlighted}
-            aiThinking={aiThinking}
-            onAnnotate={handleAnnotateGame}
-            onLearn={handleLearnClick}
-            annotating={annotating}
-          />
+          {/* AnalysisPanel — 6 buttons (4 AI + Coup par coup + Apprendre).
+              Hidden in history-replay mode (initialGameId) to leave the
+              floor to <PedagogyPanel>. */}
+          {!initialGameId && (
+            <AnalysisPanel
+              gameId="import"
+              onAnalyze={handleAnalyze}
+              onBestMove={handleBestMove}
+              analysis={analysis}
+              loading={analysisLoading}
+              onHighlightSquare={setHighlighted}
+              aiThinking={aiThinking}
+              onAnnotate={handleAnnotateGame}
+              onLearn={handleLearnClick}
+              annotating={annotating}
+            />
+          )}
 
           {initialGameId && (
             <PedagogyPanel
@@ -611,7 +615,12 @@ export default function ImportGamePanel({
 
         </div>
 
-        {/* ── Move list ── */}
+        {/* ── Move list ──
+            In history-replay mode, this table is redundant with the
+            move-by-move verdicts already shown inside <PedagogyPanel>
+            once dilf has run. Keep it for uploaded PDNs (no pedagogy
+            data) and for the brief loading window. */}
+        {!(initialGameId && pedagogyAnalysis) && (
         <div className="px-2 pt-2 pb-3">
           <table className="w-full border-collapse text-xs font-mono">
             <tbody>
@@ -667,6 +676,7 @@ export default function ImportGamePanel({
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </div>
   )
