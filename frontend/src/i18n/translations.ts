@@ -111,7 +111,7 @@ export const translations: Record<Language, Record<string, string>> = {
     comingSoon: "Bientôt",
     exercisesAvailable: "Exercices disponibles",
     myStats: "Mes statistiques",
-    lidraughtsImportButton: "Analyser vos parties Lidraughts",
+    lidraughtsImportButton: "Importer mes parties Lidraughts",
     lidraughtsUsernameLabel: "Votre pseudo Lidraughts",
     lidraughtsUsernamePlaceholder: "ex. monpseudo",
     lidraughtsCountLabel: "Nombre de parties (max 100)",
