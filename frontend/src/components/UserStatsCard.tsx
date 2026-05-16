@@ -4,11 +4,30 @@ import type { UserStats } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
 import WeaknessPanel from './WeaknessPanel'
+import MotifsCatalogPanel from './MotifsCatalogPanel'
 
-function StatBox({ label, value, color }: { label: string; value: number | string; color?: string }) {
+function StatBox({
+  label,
+  value,
+  color,
+  pctOf,
+}: {
+  label: string
+  value: number | string
+  color?: string
+  /** When set and `value` is a number, render "N (XX%)" with the
+   *  percentage computed as `value / pctOf * 100`, rounded. Used for
+   *  Bévues / Erreurs / Imprécisions to put each count in context of
+   *  the total move count. */
+  pctOf?: number
+}) {
+  const display =
+    pctOf != null && typeof value === 'number' && pctOf > 0
+      ? `${value} (${Math.round((value / pctOf) * 100)}%)`
+      : value
   return (
     <div className="flex flex-col items-center bg-gray-700 rounded-lg px-4 py-3 min-w-[80px]">
-      <span className={`text-2xl font-bold ${color ?? 'text-white'}`}>{value}</span>
+      <span className={`text-2xl font-bold ${color ?? 'text-white'}`}>{display}</span>
       <span className="text-xs text-gray-400 text-center mt-1">{label}</span>
     </div>
   )
@@ -115,9 +134,9 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
                 <div className="flex flex-wrap gap-2">
                   <StatBox label="Parties" value={stats.total_games} />
                   <StatBox label="Coups" value={stats.total_moves} />
-                  <StatBox label="Bévues" value={stats.blunders} color="text-red-400" />
-                  <StatBox label="Erreurs" value={stats.mistakes} color="text-orange-400" />
-                  <StatBox label="Imprécisions" value={stats.inaccuracies} color="text-yellow-400" />
+                  <StatBox label="Bévues" value={stats.blunders} color="text-red-400" pctOf={stats.total_moves} />
+                  <StatBox label="Erreurs" value={stats.mistakes} color="text-orange-400" pctOf={stats.total_moves} />
+                  <StatBox label="Imprécisions" value={stats.inaccuracies} color="text-yellow-400" pctOf={stats.total_moves} />
                   {(stats.games_from_lidraughts ?? 0) > 0 && (
                     <StatBox
                       label="Lidraughts"
@@ -177,6 +196,7 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
         </div>
       )}
       {onMotifClick && <WeaknessPanel onMotifClick={onMotifClick} />}
+      <MotifsCatalogPanel onMotifClick={onMotifClick} />
     </div>
   )
 }

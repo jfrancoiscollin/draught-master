@@ -12,7 +12,7 @@ import aiosqlite
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from pedagogy.explanations import explain_verdict
-from pedagogy.profile.aggregator import aggregate_user_profile
+from pedagogy.profile.aggregator import aggregate_user_profile, _MOTIF_THRESHOLD
 from pedagogy.profile.recommender import recommend_exercises
 
 try:
@@ -572,7 +572,7 @@ async def get_motif_debug(
         "verdicts_with_motifs": int,
         "by_motif_role": {"<motif>/<role>": count, ...},
         "by_motif": {"<motif>": count, ...},
-        "missed_threshold": 3,
+        "missed_threshold": _MOTIF_THRESHOLD,
         "weakness_score": {"<motif>": missed+suffered, ...},
         "would_be_weakness": [<motif> where score >= threshold]
       }
@@ -607,7 +607,7 @@ async def get_motif_debug(
                 if role in ("missed", "suffered"):
                     weakness_score[m.motif] = weakness_score.get(m.motif, 0) + 1
 
-    would_be = [m for m, s in weakness_score.items() if s >= 3]
+    would_be = [m for m, s in weakness_score.items() if s >= _MOTIF_THRESHOLD]
 
     return {
         "games_count": len(games),
@@ -616,7 +616,7 @@ async def get_motif_debug(
         "verdicts_with_motifs": verdicts_with_motifs,
         "by_motif_role": dict(sorted(by_motif_role.items(), key=lambda kv: -kv[1])),
         "by_motif": dict(sorted(by_motif.items(), key=lambda kv: -kv[1])),
-        "missed_threshold": 3,
+        "missed_threshold": _MOTIF_THRESHOLD,
         "weakness_score": weakness_score,
         "would_be_weakness": would_be,
     }
