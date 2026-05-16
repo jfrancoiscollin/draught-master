@@ -639,18 +639,6 @@ export default function ImportGamePanel({
             />
           )}
 
-          {initialGameId && (
-            <PedagogyPanel
-              gameId={initialGameId}
-              analysis={pedagogyAnalysis}
-              loading={pedagogyLoading}
-              userSide={initialUserSide ?? 'white'}
-              lang={language}
-              onAnalyze={handleAnalyzePedagogy}
-              error={pedagogyError}
-            />
-          )}
-
         </div>
 
         {/* ── Move list ──
