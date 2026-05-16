@@ -942,6 +942,31 @@ async def auth_me_lidraughts_import(
 
     games_pdn = split_pdn_games(pdn_text)[:count]
     user_login = raw_username.lower()
+
+    # Auto-cleanup of ghost rows left by the pre-PR #20 split_pdn_games
+    # bug (one row per PDN tag fragment, white_player='?'). Without this
+    # purge, those ghosts share the same source_id as real games and
+    # cause dedup to silently swallow every fresh import. Scoped to the
+    # current user. Idempotent : no-op once the DB is clean.
+    try:
+        import aiosqlite as _aiosqlite
+        from db.config import DB_PATH as _DB_PATH
+        async with _aiosqlite.connect(_DB_PATH) as _db:
+            _cur = await _db.execute(
+                "DELETE FROM games WHERE user_id = ? AND source = 'lidraughts' "
+                "AND (white_player = '?' OR black_player = '?')",
+                (current_user["id"],),
+            )
+            _purged = _cur.rowcount
+            await _db.commit()
+        if _purged > 0:
+            logging.info(
+                "lidraughts import: purged %d ghost row(s) for user %s",
+                _purged, current_user["id"],
+            )
+    except Exception as exc:
+        logging.warning("lidraughts import: ghost cleanup skipped: %s", exc)
+
     imported = 0
     skipped = 0
     for pdn in games_pdn:
