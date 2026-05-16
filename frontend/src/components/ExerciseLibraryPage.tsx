@@ -239,6 +239,109 @@ export default function ExerciseLibraryPage({ onSelectBook }: ExerciseLibraryPag
             </div>
           )
         })}
+
+        {/* ── Motifs détectables par l'analyse pédagogique ────────── */}
+        <MotifCatalogSection language={language} />
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Catalogue des motifs reconnus par dilf, groupés par famille. Affichés en
+// bas de la page Apprendre via des <details> repliables.
+// ---------------------------------------------------------------------------
+
+interface MotifEntry {
+  slug: string
+  fr: string
+  en: string
+  desc_fr: string
+}
+
+const MOTIF_FAMILIES: Array<{
+  id: string
+  fr: string
+  en: string
+  motifs: MotifEntry[]
+}> = [
+  {
+    id: 'coups_nommes',
+    fr: 'Coups nommés tactiques',
+    en: 'Named tactical coups',
+    motifs: [
+      { slug: 'coup_royal',     fr: 'Coup royal',     en: 'Royal coup',
+        desc_fr: 'Sacrifice → rafle finale qui prend tout.' },
+      { slug: 'coup_turc',      fr: 'Coup turc',      en: 'Turkish coup',
+        desc_fr: 'La dame traverse une case déjà visitée pendant la rafle.' },
+      { slug: 'coup_de_talon',  fr: 'Coup du talon',  en: 'Heel coup',
+        desc_fr: 'La rafle change de direction en cours de route.' },
+      { slug: 'coup_express',   fr: 'Coup express',   en: 'Express coup',
+        desc_fr: 'Rafle longue (4-5 prises) sur une diagonale.' },
+      { slug: 'coup_napoleon',  fr: 'Coup Napoléon',  en: 'Napoleon coup',
+        desc_fr: 'Sacrifice par enfilade ouvrant une grande diagonale.' },
+      { slug: 'coup_bonnard',   fr: 'Coup Bonnard',   en: 'Bonnard coup',
+        desc_fr: 'Envoi à dame avec sacrifice préliminaire.' },
+      { slug: 'coup_philippe',  fr: 'Coup Philippe',  en: 'Philippe coup',
+        desc_fr: 'Motif Philippe.' },
+      { slug: 'coup_raphael',   fr: 'Coup Raphaël',   en: 'Raphaël coup',
+        desc_fr: 'Motif Raphaël.' },
+      { slug: 'coup_manoury',   fr: 'Coup Manoury',   en: 'Manoury coup',
+        desc_fr: 'Motif Manoury.' },
+      { slug: 'coup_enfilade',  fr: 'Coup d’enfilade', en: 'Enfilade coup',
+        desc_fr: 'Alignement diagonal exploité par rafle.' },
+      { slug: 'coup_du_bruleur', fr: 'Coup du brûleur', en: 'Burner coup',
+        desc_fr: 'Sacrifice qui « brûle » la dame adverse.' },
+      { slug: 'envoi_a_dame',   fr: 'Envoi à dame',   en: 'Promotion sacrifice',
+        desc_fr: 'Sacrifice + promotion + rafle de dame.' },
+    ],
+  },
+  {
+    id: 'erreurs',
+    fr: 'Erreurs tactiques',
+    en: 'Tactical mistakes',
+    motifs: [
+      { slug: 'prise_max_ratee', fr: 'Prise maximale ratée', en: 'Missed maximum capture',
+        desc_fr: 'Vous avez manqué la prise maximale obligatoire.' },
+      { slug: 'sacrifice',       fr: 'Sacrifice',            en: 'Sacrifice',
+        desc_fr: 'Sacrifice général (motif catch-all).' },
+    ],
+  },
+]
+
+function MotifCatalogSection({ language }: { language: 'fr' | 'en' }) {
+  return (
+    <div className="mt-8 mb-4">
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3 border-b border-gray-700 pb-1">
+        {language === 'en' ? 'Detectable motifs (analysis)' : 'Motifs détectables (analyse pédagogique)'}
+      </h3>
+      <p className="text-xs text-gray-500 mb-3">
+        {language === 'en'
+          ? 'These motifs are detected by dilf when you analyse a game from your Profil page.'
+          : 'Ces motifs sont détectés par dilf lorsque vous analysez une partie depuis votre page Profil.'}
+      </p>
+      <div className="flex flex-col gap-2">
+        {MOTIF_FAMILIES.map(fam => (
+          <details
+            key={fam.id}
+            className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-2"
+          >
+            <summary className="cursor-pointer text-sm font-semibold text-amber-500 select-none flex items-center justify-between">
+              <span>{language === 'en' ? fam.en : fam.fr}</span>
+              <span className="text-xs text-gray-500 font-normal">×{fam.motifs.length}</span>
+            </summary>
+            <ul className="mt-2 space-y-1.5">
+              {fam.motifs.map(m => (
+                <li key={m.slug} className="flex flex-col gap-0.5">
+                  <span className="text-sm text-gray-200">{language === 'en' ? m.en : m.fr}</span>
+                  {language === 'fr' && (
+                    <span className="text-xs text-gray-500">{m.desc_fr}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </details>
+        ))}
       </div>
     </div>
   )
