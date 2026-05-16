@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { getUserProfile } from '../api/client'
-import type { MotifWeakness, UserProfile } from '../api/client'
+import { getUserProfile, getMotifDebug } from '../api/client'
+import type { MotifWeakness, UserProfile, MotifDebug } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
 
 const MOTIF_NAME_FR: Record<string, string> = {
@@ -32,6 +32,7 @@ function FreqBar({ score, max }: { score: number; max: number }) {
 export default function WeaknessPanel({ onMotifClick }: Props) {
   const { user } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [debug, setDebug] = useState<MotifDebug | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
@@ -40,6 +41,10 @@ export default function WeaknessPanel({ onMotifClick }: Props) {
     if (!user || !open || profile) return
     setLoading(true)
     setError(null)
+    // Profile (for the weakness list) + debug (for the empty-state
+    // breakdown) fetched in parallel. Failure of the debug call is
+    // non-fatal — the profile still drives the main UI.
+    getMotifDebug().then(setDebug).catch(() => setDebug(null))
     getUserProfile()
       .then(setProfile)
       .catch((err: unknown) => {
@@ -102,15 +107,71 @@ export default function WeaknessPanel({ onMotifClick }: Props) {
           )}
 
           {!loading && !error && profile && weaknesses.length === 0 && (
-            <div className="text-center py-3">
-              <p className="text-gray-500 text-xs">
+            <div className="py-3">
+              <p className="text-gray-500 text-xs text-center">
                 {profile.games_count === 0
                   ? 'Aucune partie analysée pour l’instant.'
                   : `${profile.games_count} partie${profile.games_count > 1 ? 's' : ''} analysée${profile.games_count > 1 ? 's' : ''} — aucun motif n’apparaît encore au moins 3 fois.`}
               </p>
-              <p className="text-gray-600 text-xs mt-1">
+              <p className="text-gray-600 text-xs mt-1 text-center">
                 Plus vous analysez de parties, mieux les faiblesses récurrentes ressortent.
               </p>
+
+              {/* Diagnostic breakdown — visible when no weakness rises
+                  above the threshold. Lets the user (and us in chat)
+                  see whether motifs are detected at all and how the
+                  threshold filter affects them. */}
+              {debug && (
+                <details className="mt-3 bg-gray-800/60 border border-gray-700 rounded px-2 py-1.5 text-xs">
+                  <summary className="cursor-pointer text-gray-400 select-none">
+                    Détail diagnostic
+                  </summary>
+                  <div className="mt-2 space-y-2 text-gray-300">
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                      <span className="text-gray-500">Parties</span>
+                      <span className="tabular-nums">{debug.games_count}</span>
+                      <span className="text-gray-500">avec verdicts</span>
+                      <span className="tabular-nums">{debug.games_with_verdicts}</span>
+                      <span className="text-gray-500">Verdicts total</span>
+                      <span className="tabular-nums">{debug.verdicts_total}</span>
+                      <span className="text-gray-500">avec motifs</span>
+                      <span className="tabular-nums">{debug.verdicts_with_motifs}</span>
+                      <span className="text-gray-500">Seuil faiblesse</span>
+                      <span className="tabular-nums">≥{debug.missed_threshold}</span>
+                    </div>
+
+                    {Object.keys(debug.by_motif).length > 0 ? (
+                      <div>
+                        <p className="text-gray-500 mb-1">Motifs détectés (toutes rôles) :</p>
+                        <ul className="space-y-0.5 ml-2">
+                          {Object.entries(debug.by_motif).map(([motif, n]) => {
+                            const wScore = debug.weakness_score[motif] ?? 0
+                            return (
+                              <li key={motif} className="flex justify-between gap-2">
+                                <span className="truncate">
+                                  {MOTIF_NAME_FR[motif] ?? motif}
+                                </span>
+                                <span className="text-gray-500 tabular-nums flex-shrink-0">
+                                  ×{n}{' '}
+                                  <span className={wScore >= debug.missed_threshold ? 'text-amber-400' : 'text-gray-600'}>
+                                    (faiblesse {wScore})
+                                  </span>
+                                </span>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">
+                        Aucun motif détecté par dilf sur ces parties. Les coups
+                        sont passés au crible mais aucun ne correspond à un
+                        motif tactique reconnu.
+                      </p>
+                    )}
+                  </div>
+                </details>
+              )}
             </div>
           )}
 
