@@ -58,9 +58,18 @@ function AccuracyRing({ pct }: { pct: number }) {
 interface UserStatsCardProps {
   defaultOpen?: boolean
   onMotifClick?: (slug: string) => void
+  /** Called after the user clicks "Réinitialiser les analyses" and
+   *  the server returns success. Lets the parent refresh sibling
+   *  components (e.g. <GameHistory>) whose state otherwise stays out
+   *  of sync with the wiped DB. */
+  onAnalysesReset?: () => void
 }
 
-export default function UserStatsCard({ defaultOpen = false, onMotifClick }: UserStatsCardProps) {
+export default function UserStatsCard({
+  defaultOpen = false,
+  onMotifClick,
+  onAnalysesReset,
+}: UserStatsCardProps) {
   const { user, setUser } = useAuth()
   const { t } = useLanguage()
   const [stats, setStats] = useState<UserStats | null>(null)
@@ -130,6 +139,7 @@ export default function UserStatsCard({ defaultOpen = false, onMotifClick }: Use
       })
       const fresh = await getUserStats().catch(() => null)
       if (fresh) setStats(fresh)
+      onAnalysesReset?.()
     } catch (err: any) {
       const detail = err?.response?.data?.detail || 'Erreur lors du reset'
       setResetMsg({ kind: 'error', text: detail })

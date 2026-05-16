@@ -171,6 +171,10 @@ export default function App() {
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
   const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
   const [preloadedUserSide, setPreloadedUserSide] = useState<'white' | 'black' | null>(null)
+  // Bumped whenever the user resets their analyses — forces
+  // <GameHistory> to refetch so the dilf badges flip back to – and
+  // the bulk-analyze button becomes clickable again.
+  const [historyRefresh, setHistoryRefresh] = useState(0)
 
   const [gameState, setGameState] = useState<GameStateResponse | null>(null)
   const [selectedSquare, setSelectedSquare] = useState<number | null>(null)
@@ -1635,8 +1639,13 @@ export default function App() {
         {/* GAME HISTORY TAB */}
         {tab === 'game-history' && (
           <div className="h-full overflow-y-auto px-4 py-4 max-w-3xl mx-auto flex flex-col gap-3">
-            <UserStatsCard defaultOpen onMotifClick={setMotifDetailSlug} />
+            <UserStatsCard
+              defaultOpen
+              onMotifClick={setMotifDetailSlug}
+              onAnalysesReset={() => setHistoryRefresh(v => v + 1)}
+            />
             <GameHistory
+              refreshKey={historyRefresh}
               onReplay={(detail) => {
                 setPreloadedPdn(detail.pdn || '')
                 setPreloadedGameId(detail.id)
