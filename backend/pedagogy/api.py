@@ -259,6 +259,7 @@ async def analyze_game(
             score_before=score_before_white,
             score_after=score_after_white,
             best_move=best_dilf,
+            best_pv=ev_before.get("pv") or [],
             half_move_number=i + 1,
             is_book=bool(ev_before.get("forced") and ev_before.get("score", 0) == 0),
             engine=adapter,
