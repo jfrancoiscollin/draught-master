@@ -1104,14 +1104,8 @@ export default function App() {
                 <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📖</span>
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabExercises')}</span>
               </button>
-              {/* Import & Analyze */}
-              <button
-                onClick={() => setTab('import-game')}
-                className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
-              >
-                <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📂</span>
-                <span className="flex-1 text-lg font-bold text-white text-right">{t('tabImport')}</span>
-              </button>
+              {/* Import & Analyze (PDN upload) removed — replay
+                  flows now exclusively via the 👤 Profil tab. */}
               {/* My games (history) */}
               {user && (
                 <button
