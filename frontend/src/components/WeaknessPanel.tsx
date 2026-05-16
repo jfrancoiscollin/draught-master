@@ -109,9 +109,22 @@ export default function WeaknessPanel({ onMotifClick }: Props) {
           {!loading && !error && profile && weaknesses.length === 0 && (
             <div className="py-3">
               <p className="text-gray-500 text-xs text-center">
-                {profile.games_count === 0
-                  ? 'Aucune partie analysée pour l’instant.'
-                  : `${profile.games_count} partie${profile.games_count > 1 ? 's' : ''} analysée${profile.games_count > 1 ? 's' : ''} — aucun motif n’apparaît encore au moins 3 fois.`}
+                {(() => {
+                  // Prefer the actual analysed-count from /motif-debug,
+                  // not profile.games_count (which counts every game in
+                  // the lookback window, analysed or not). After a
+                  // "Réinitialiser les analyses" the latter still shows
+                  // 30 even though zero verdicts remain.
+                  const analysedN = debug?.games_with_verdicts ?? 0
+                  const thresh = debug?.missed_threshold ?? 2
+                  if (analysedN === 0) {
+                    return 'Aucune partie analysée pour l’instant.'
+                  }
+                  return (
+                    `${analysedN} partie${analysedN > 1 ? 's' : ''} analysée${analysedN > 1 ? 's' : ''}` +
+                    ` — aucun motif n’apparaît encore au moins ${thresh} fois.`
+                  )
+                })()}
               </p>
               <p className="text-gray-600 text-xs mt-1 text-center">
                 Plus vous analysez de parties, mieux les faiblesses récurrentes ressortent.
