@@ -44,9 +44,31 @@ export default function WeaknessPanel({ onMotifClick }: Props) {
       .then(setProfile)
       .catch((err: unknown) => {
         const status = (err as { response?: { status?: number } })?.response?.status
-        const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+        const rawDetail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
         const msg = (err as { message?: string })?.message ?? String(err)
-        setError(status ? `${status} — ${detail || msg}` : msg)
+        // FastAPI 422 returns `detail` as an array of {loc, msg, type}
+        // objects. JS string concat would render those as
+        // "[object Object]" — extract the human-readable message
+        // instead so the user (and us in chat) can act on it.
+        let detailStr: string
+        if (Array.isArray(rawDetail)) {
+          detailStr = rawDetail
+            .map(d => {
+              if (typeof d === 'string') return d
+              const obj = d as { msg?: unknown; loc?: unknown[] }
+              const msgPart = typeof obj?.msg === 'string' ? obj.msg : JSON.stringify(d)
+              const locPart = Array.isArray(obj?.loc) ? ` @ ${obj.loc.join('.')}` : ''
+              return msgPart + locPart
+            })
+            .join(' ; ')
+        } else if (typeof rawDetail === 'string') {
+          detailStr = rawDetail
+        } else if (rawDetail != null) {
+          detailStr = JSON.stringify(rawDetail)
+        } else {
+          detailStr = msg
+        }
+        setError(status ? `${status} — ${detailStr}` : detailStr)
         setProfile(null)
       })
       .finally(() => setLoading(false))
