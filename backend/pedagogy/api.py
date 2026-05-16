@@ -278,6 +278,56 @@ async def analyze_game(
         _log.warning("Could not persist pedagogy analysis (non-fatal): %s", exc)
 
     # ------------------------------------------------------------------
+    # 6b. Cascade : also persist legacy Scan annotations into
+    #     games.annotations_json. The Scan scores are already computed
+    #     above, so this is a free side-effect that flips the
+    #     `has_scan_analysis` badge ✓ alongside `has_dilf_analysis` ✓.
+    #     Same shape as the frontend `MoveAnnotation` so AnalysisPanel
+    #     renders the legacy view unchanged.
+    # ------------------------------------------------------------------
+    if req.game_id:  # only persist annotations on real DB-backed games
+        import math as _math  # noqa: PLC0415
+        annotations_payload: list[dict[str, Any]] = []
+        for i in range(len(ge_moves_played)):
+            ev_before = evals[i]
+            ev_after = evals[i + 1]
+            score_before = float(ev_before.get("score", 0.0))
+            score_after = float(ev_after.get("score", 0.0))
+            raw_loss = score_before + score_after
+            loss_cp = int(min(1000, max(0, round(raw_loss * 100))))
+            # winChance(cp) = 2 / (1 + exp(-2 cp)) - 1, see gameAnnotations.ts
+            dwc = (
+                (2 / (1 + _math.exp(-2.0 * score_before)) - 1)
+                + (2 / (1 + _math.exp(-2.0 * score_after)) - 1)
+            )
+            delta_winchance = max(0.0, dwc)
+            if delta_winchance >= 0.30:
+                ann_verdict: Optional[str] = "blunder"
+            elif delta_winchance >= 0.15:
+                ann_verdict = "mistake"
+            elif delta_winchance >= 0.075:
+                ann_verdict = "inaccuracy"
+            else:
+                ann_verdict = None
+            annotations_payload.append({
+                "posIdx": i + 1,
+                "color": ge_states[i].turn,
+                "scoreBefore": score_before,
+                "scoreAfter": score_after,
+                "lossCp": loss_cp,
+                "deltaWinChance": delta_winchance,
+                "verdict": ann_verdict,
+                "bestMove": ev_before.get("bestMove"),
+            })
+        try:
+            from db.games import save_game_annotations  # noqa: PLC0415
+            await save_game_annotations(req.game_id, user["id"], annotations_payload)
+        except Exception as exc:  # noqa: BLE001
+            _log.warning(
+                "Could not persist legacy annotations cascade (non-fatal): %s", exc,
+            )
+
+    # ------------------------------------------------------------------
     # 7. Build summary
     # ------------------------------------------------------------------
     side = req.user_side or "white"
