@@ -379,6 +379,45 @@ async def get_move_verdict(
 
 
 # ---------------------------------------------------------------------------
+# GET /api/pedagogy/game/{game_id}/analysis
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/game/{game_id}/analysis",
+    response_model=AnalyzeGameResponse,
+)
+async def get_game_analysis(
+    game_id: str,
+    user: Any = Depends(current_user),
+) -> AnalyzeGameResponse:
+    """Return the persisted pedagogy verdicts for an already-analysed game.
+
+    Same response shape as POST `/analyze-game`, but does **no** Scan
+    work — purely reads what's in `move_verdicts`. 404 if the game has
+    never been analysed.
+    """
+    async with aiosqlite.connect(_db_path()) as conn:
+        verdicts = await storage._fetch_verdicts_for_game(conn, game_id)
+    if not verdicts:
+        raise HTTPException(404, f"No persisted analysis for game {game_id!r}")
+    blunders = sum(1 for v in verdicts if v.verdict.value == "blunder")
+    mistakes = sum(1 for v in verdicts if v.verdict.value == "mistake")
+    inaccuracies = sum(1 for v in verdicts if v.verdict.value == "inaccuracy")
+    summary: dict[str, Any] = {
+        "blunders": blunders,
+        "mistakes": mistakes,
+        "inaccuracies": inaccuracies,
+        "total_moves": len(verdicts),
+    }
+    return AnalyzeGameResponse(
+        game_id=game_id,
+        verdicts=[_verdict_to_out(v) for v in verdicts],
+        summary=summary,
+    )
+
+
+# ---------------------------------------------------------------------------
 # POST /api/pedagogy/explain-move
 # ---------------------------------------------------------------------------
 

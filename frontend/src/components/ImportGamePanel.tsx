@@ -9,8 +9,10 @@ import type { Arrow } from './Board'
 import {
   importPdn, getPositionLegalMoves, applyPositionMove,
   analyzePositionFen, getPositionBestMove, precomputePositions,
+  getGameAnalysis, analyzeGamePedagogy,
 } from '../api/client'
-import type { PdnPosition, PdnImportResult } from '../api/client'
+import type { PdnPosition, PdnImportResult, PedagogyAnalysis } from '../api/client'
+import PedagogyPanel from './PedagogyPanel'
 import { fenToBoard } from '../utils/fen'
 import { useLanguage } from '../i18n/LanguageContext'
 import type { MoveData, AnalysisResponse } from '../types'
@@ -23,11 +25,18 @@ import {
 interface ImportGamePanelProps {
   onClose: () => void
   initialPdn?: string | null
+  initialGameId?: string | null
+  initialUserSide?: 'white' | 'black' | null
 }
 
 type PanelMode = 'review' | 'learn'
 
-export default function ImportGamePanel({ onClose, initialPdn }: ImportGamePanelProps) {
+export default function ImportGamePanel({
+  onClose,
+  initialPdn,
+  initialGameId,
+  initialUserSide,
+}: ImportGamePanelProps) {
   const { language } = useLanguage()
 
   // ── Import phase ──────────────────────────────────────────────
@@ -58,6 +67,51 @@ export default function ImportGamePanel({ onClose, initialPdn }: ImportGamePanel
       .finally(() => setImporting(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPdn])
+
+  // ── Pedagogy analysis (dilf) for a game loaded from history ────
+  const [pedagogyAnalysis, setPedagogyAnalysis] = useState<PedagogyAnalysis | null>(null)
+  const [pedagogyLoading, setPedagogyLoading] = useState(false)
+  const [pedagogyError, setPedagogyError] = useState<string | null>(null)
+
+  // On mount with initialGameId, fetch any persisted dilf analysis.
+  // 404 is normal (game never analysed) and we leave the panel empty so
+  // the "Analyser" button shows.
+  useEffect(() => {
+    if (!initialGameId) {
+      setPedagogyAnalysis(null)
+      return
+    }
+    setPedagogyLoading(true)
+    setPedagogyError(null)
+    getGameAnalysis(initialGameId)
+      .then(data => setPedagogyAnalysis(data))
+      .catch((err: unknown) => {
+        const status = (err as { response?: { status?: number } })?.response?.status
+        if (status !== 404) {
+          setPedagogyError(String((err as { message?: string })?.message ?? err))
+        }
+        setPedagogyAnalysis(null)
+      })
+      .finally(() => setPedagogyLoading(false))
+  }, [initialGameId])
+
+  const handleAnalyzePedagogy = useCallback(async () => {
+    if (!initialGameId) return
+    setPedagogyLoading(true)
+    setPedagogyError(null)
+    try {
+      const data = await analyzeGamePedagogy(
+        initialGameId,
+        initialUserSide ?? 'white',
+        language,
+      )
+      setPedagogyAnalysis(data)
+    } catch (err: unknown) {
+      setPedagogyError(String((err as { message?: string })?.message ?? err))
+    } finally {
+      setPedagogyLoading(false)
+    }
+  }, [initialGameId, initialUserSide, language])
 
   // ── Review phase ──────────────────────────────────────────────
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -542,6 +596,18 @@ export default function ImportGamePanel({ onClose, initialPdn }: ImportGamePanel
             onLearn={handleLearnClick}
             annotating={annotating}
           />
+
+          {initialGameId && (
+            <PedagogyPanel
+              gameId={initialGameId}
+              analysis={pedagogyAnalysis}
+              loading={pedagogyLoading}
+              userSide={initialUserSide ?? 'white'}
+              lang={language}
+              onAnalyze={handleAnalyzePedagogy}
+              error={pedagogyError}
+            />
+          )}
 
         </div>
 
