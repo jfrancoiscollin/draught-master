@@ -22,11 +22,12 @@ import {
 
 interface ImportGamePanelProps {
   onClose: () => void
+  initialPdn?: string | null
 }
 
 type PanelMode = 'review' | 'learn'
 
-export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
+export default function ImportGamePanel({ onClose, initialPdn }: ImportGamePanelProps) {
   const { language } = useLanguage()
 
   // ── Import phase ──────────────────────────────────────────────
@@ -34,6 +35,29 @@ export default function ImportGamePanel({ onClose }: ImportGamePanelProps) {
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
   const [result, setResult] = useState<PdnImportResult | null>(null)
+
+  // Auto-load a PDN passed in by the caller (e.g. from GameHistory click)
+  useEffect(() => {
+    if (!initialPdn || result) return
+    setPdn(initialPdn)
+    setImportError(null)
+    setImporting(true)
+    importPdn(initialPdn)
+      .then(data => {
+        setResult(data)
+        setCurrentIdx(0)
+        if (data.positions.length > 0) {
+          setCurrentFen(data.positions[0].fen)
+          loadLegalMoves(data.positions[0].fen)
+        }
+      })
+      .catch((err: unknown) => {
+        const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+        setImportError(detail ?? 'Erreur lors de l\'import')
+      })
+      .finally(() => setImporting(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPdn])
 
   // ── Review phase ──────────────────────────────────────────────
   const [currentIdx, setCurrentIdx] = useState(0)
