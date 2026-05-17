@@ -1,0 +1,30 @@
+<svg width="1280" height="512" viewBox="0 0 1280 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="512" fill="#1A1A1A"/>
+
+  <!-- Cercle noir collé au bord gauche -->
+
+  <circle cx="140" cy="256" r="140" fill="#111111" stroke="#EAE2D6" stroke-width="3"/>
+
+  <!-- Croissant ivoire (le "D" de DRAUGHT) — aligné verticalement -->
+
+  <path d="M 249 116 A 140 140 0 1 1 249 396 L 249 344 A 88 88 0 1 0 249 168 Z" fill="#EAE2D6"/>
+
+  <!-- "RAUGHT" — démarre après le croissant (le "D"), baseline alignée -->
+
+<text x="420" y="320"
+font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+font-size="180"
+font-weight="300"
+letter-spacing="12"
+fill="#EAE2D6">RAUGHT</text>
+
+  <!-- "MASTER" centré horizontalement sur le canvas, en bas -->
+
+<text x="640" y="485"
+font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+font-size="80"
+font-weight="300"
+letter-spacing="84"
+text-anchor="middle"
+fill="#EAE2D6">MASTER</text>
+</svg>
