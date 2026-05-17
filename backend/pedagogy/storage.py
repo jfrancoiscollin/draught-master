@@ -159,14 +159,23 @@ async def fetch_user_games_with_verdicts(
     lookback: int = 30,
 ) -> list[GameAnalysis]:
     """Fetch the last `lookback` finished games of `user_id` and
-    materialise their verdicts. Used by aggregate_user_profile()."""
+    materialise their verdicts. Used by aggregate_user_profile().
+
+    Ordering: ``ORDER BY date DESC`` so the lookback window matches what
+    the user sees in ``/api/history`` (the panel UI). Using ``rowid``
+    instead would silently diverge whenever the lidraughts API returns
+    games in non-chronological INSERT order — the 30 lookback games
+    would then be a different subset than the 30 the user analyses,
+    leaving the Points faibles panel empty even with many analyses
+    completed.
+    """
     cur = await conn.execute(
         """
         SELECT id, user_side, opening_name
           FROM games
          WHERE user_id = ?
            AND (status = 'finished' OR status IS NULL)
-         ORDER BY rowid DESC
+         ORDER BY date DESC
          LIMIT ?
         """,
         (user_id, lookback),

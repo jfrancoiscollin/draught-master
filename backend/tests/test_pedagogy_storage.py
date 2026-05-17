@@ -249,4 +249,35 @@ async def test_fetch_user_games_with_verdicts_orders_desc():
     games = await storage.fetch_user_games_with_verdicts(conn, user_id=1, lookback=30)
     assert [g.game_id for g in games] == ["game-new", "game-old"]
     await conn.close()
+
+
+@pytest.mark.asyncio
+async def test_fetch_user_games_with_verdicts_orders_by_date_not_rowid():
+    """Lookback window must follow date, not INSERT order.
+
+    Regression: the lidraughts import inserts games in API-response
+    order, which is not always chronological. If the lookback used
+    ``ORDER BY rowid DESC`` the 30 newest-by-date games (the ones the
+    user sees in ``/api/history`` and analyses first) could end up
+    outside the window — leaving Points faibles empty for hours of
+    analysing.
+    """
+    from pedagogy import storage
+    conn = await _fresh_conn()
+    # Insert the MOST RECENT date FIRST (low rowid), older date last
+    # (high rowid). With rowid-based ordering the old game would come
+    # first, breaking the assertion.
+    await conn.execute(
+        "INSERT INTO games (id, date, user_id, user_side, opening_name, status) "
+        "VALUES (?, '2026-12-01', 1, 'white', '', 'finished')",
+        ("g-recent",),
+    )
+    await conn.execute(
+        "INSERT INTO games (id, date, user_id, user_side, opening_name, status) "
+        "VALUES (?, '2020-01-01', 1, 'white', '', 'finished')",
+        ("g-ancient",),
+    )
+    await conn.commit()
+    games = await storage.fetch_user_games_with_verdicts(conn, user_id=1, lookback=30)
+    assert [g.game_id for g in games] == ["g-recent", "g-ancient"]
     await conn.close()
