@@ -1659,6 +1659,7 @@ export default function App() {
               defaultOpen
               onMotifClick={setMotifDetailSlug}
               onAnalysesReset={() => setHistoryRefresh(v => v + 1)}
+              refreshKey={historyRefresh}
             />
             <GameHistory
               refreshKey={historyRefresh}

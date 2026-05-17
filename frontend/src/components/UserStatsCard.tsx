@@ -63,12 +63,17 @@ interface UserStatsCardProps {
    *  components (e.g. <GameHistory>) whose state otherwise stays out
    *  of sync with the wiped DB. */
   onAnalysesReset?: () => void
+  /** Bumped externally to force WeaknessPanel and MotifsCatalogPanel
+   *  to drop their cached profile/debug data and refetch. Wire to the
+   *  same signal as <GameHistory refreshKey>. */
+  refreshKey?: number
 }
 
 export default function UserStatsCard({
   defaultOpen = false,
   onMotifClick,
   onAnalysesReset,
+  refreshKey = 0,
 }: UserStatsCardProps) {
   const { user, setUser } = useAuth()
   const { t } = useLanguage()
@@ -247,8 +252,8 @@ export default function UserStatsCard({
           )}
         </div>
       )}
-      {onMotifClick && <WeaknessPanel onMotifClick={onMotifClick} />}
-      <MotifsCatalogPanel onMotifClick={onMotifClick} />
+      {onMotifClick && <WeaknessPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />}
+      <MotifsCatalogPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />
     </div>
   )
 }
