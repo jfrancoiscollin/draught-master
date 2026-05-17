@@ -20,9 +20,9 @@ import EvalBar from './components/EvalBar'
 import UserStatsCard from './components/UserStatsCard'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
-import Logo from './components/Logo'
 import logoBothSrc from './assets/logo-both.svg'
 import logoPlaySrc from './assets/logo-play.svg'
+import logoWordmarkSrc from './assets/logo-wordmark.svg'
 import BottomSheet from './components/BottomSheet'
 import LoginPage from './components/LoginPage'
 import { useAuth } from './contexts/AuthContext'
@@ -1034,9 +1034,8 @@ export default function App() {
       <header className="bg-gray-800 border-b border-gray-700 px-4 py-3 flex-shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-amber-600 whitespace-nowrap flex items-center gap-2">
-              <Logo size={28} />
-              Draught Master
+            <h1 className="whitespace-nowrap flex items-center">
+              <img src={logoWordmarkSrc} alt="Draught Master" style={{ height: 40, width: 'auto' }} />
             </h1>
             {tab !== 'home' && (
               <button
