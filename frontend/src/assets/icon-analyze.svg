@@ -1,0 +1,20 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#1A1A1A"/>
+
+  <!-- Mini damier en arrière-plan, en bas à gauche -->
+
+  <g opacity="0.55">
+    <rect x="25" y="100" width="75" height="75" fill="#EAE2D6"/>
+    <g fill="#1A1A1A">
+      <rect x="50" y="100" width="25" height="25"/>
+      <rect x="25" y="125" width="25" height="25"/>
+      <rect x="75" y="125" width="25" height="25"/>
+      <rect x="50" y="150" width="25" height="25"/>
+    </g>
+  </g>
+
+  <!-- Loupe par-dessus, classique -->
+
+  <circle cx="115" cy="85" r="38" fill="none" stroke="#EAE2D6" stroke-width="8"/>
+  <line x1="143" y1="113" x2="172" y2="142" stroke="#EAE2D6" stroke-width="10" stroke-linecap="round"/>
+</svg>

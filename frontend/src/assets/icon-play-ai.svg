@@ -1,0 +1,30 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#1A1A1A"/>
+
+  <!-- Mini-damier 4×4 -->
+
+  <!-- Cases claires (fond) -->
+
+  <rect x="40" y="40" width="120" height="120" fill="#EAE2D6"/>
+
+  <!-- Cases sombres -->
+
+  <g fill="#1A1A1A">
+    <rect x="70" y="40" width="30" height="30"/>
+    <rect x="130" y="40" width="30" height="30"/>
+    <rect x="40" y="70" width="30" height="30"/>
+    <rect x="100" y="70" width="30" height="30"/>
+    <rect x="70" y="100" width="30" height="30"/>
+    <rect x="130" y="100" width="30" height="30"/>
+    <rect x="40" y="130" width="30" height="30"/>
+    <rect x="100" y="130" width="30" height="30"/>
+  </g>
+
+  <!-- Pion blanc en haut (sur case sombre) -->
+
+  <circle cx="85" cy="55" r="10" fill="#EAE2D6" stroke="#1A1A1A" stroke-width="1.5"/>
+
+  <!-- Pion noir en bas (sur case sombre) -->
+
+  <circle cx="115" cy="145" r="10" fill="#1A1A1A" stroke="#EAE2D6" stroke-width="1.5"/>
+</svg>
