@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import type { PedagogyAnalysis, VerdictOut } from '../api/client'
 import { explainMovePedagogy } from '../api/client'
 
@@ -11,6 +11,13 @@ interface Props {
   onAnalyze: () => void
   error?: string | null
   onMotifClick?: (slug: string) => void
+  /** Currently displayed half-move on the board (0 = initial position,
+   *  1 = after the first move, etc.). Used to highlight & auto-scroll
+   *  the matching verdict row. */
+  currentHalfMove?: number
+  /** Called when the user clicks a verdict row to jump the board to
+   *  that half-move. Receives the verdict's ``move_number``. */
+  onJumpTo?: (halfMove: number) => void
 }
 
 // ── Verdict styling ────────────────────────────────────────────────────────
@@ -98,20 +105,48 @@ function VerdictBadge({ verdict }: { verdict: VerdictOut['verdict'] }) {
   )
 }
 
-function MoveRow({ verdict, gameId, lang, onMotifClick }: { verdict: VerdictOut; gameId: string; lang: string; onMotifClick?: (slug: string) => void }) {
+function MoveRow({
+  verdict, gameId, lang, onMotifClick, isActive, onJump,
+}: {
+  verdict: VerdictOut
+  gameId: string
+  lang: string
+  onMotifClick?: (slug: string) => void
+  isActive: boolean
+  onJump?: (halfMove: number) => void
+}) {
   const [expanded, setExpanded] = useState(false)
   const [explanation, setExplanation] = useState<string | null>(null)
   const [loadingExpl, setLoadingExpl] = useState(false)
+  const rowRef = useRef<HTMLDivElement | null>(null)
 
-  const handleToggle = useCallback(async () => {
-    if (!expanded && explanation === null) {
+  // Scroll the active row into view whenever the board navigation moves
+  // to a different half-move. ``nearest`` avoids jumping the page when
+  // the row is already visible.
+  useEffect(() => {
+    if (isActive && rowRef.current) {
+      rowRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  }, [isActive])
+
+  const fetchExplanation = useCallback(async () => {
+    if (explanation === null) {
       setLoadingExpl(true)
       const text = await explainMovePedagogy(gameId, verdict.move_number, 'template', lang)
       setExplanation(text)
       setLoadingExpl(false)
     }
+  }, [explanation, gameId, verdict.move_number, lang])
+
+  const handleRowClick = useCallback(() => {
+    onJump?.(verdict.move_number)
+  }, [onJump, verdict.move_number])
+
+  const handleToggleExpand = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!expanded) void fetchExplanation()
     setExpanded(prev => !prev)
-  }, [expanded, explanation, gameId, verdict.move_number, lang])
+  }, [expanded, fetchExplanation])
 
   const cp = cpLoss(verdict)
   const showCp = cp >= 2 && verdict.verdict !== 'forced' && verdict.verdict !== 'book'
@@ -120,53 +155,67 @@ function MoveRow({ verdict, gameId, lang, onMotifClick }: { verdict: VerdictOut;
   const scoreColor = verdict.score_before >= 0 ? '#86efac' : '#fca5a5'
 
   return (
-    <div className="border-b border-gray-800 last:border-0">
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center gap-1.5 px-2 py-1.5 hover:bg-gray-800/60 transition-colors text-left"
-      >
-        {/* Move number (white moves only) */}
-        <span className="text-xs text-gray-600 w-4 tabular-nums flex-shrink-0 text-right">
-          {verdict.side === 'white' ? `${Math.ceil(verdict.move_number / 2)}.` : ''}
-        </span>
-
-        {/* Side indicator */}
-        <span className="text-xs w-4 text-center flex-shrink-0"
-          style={{ color: verdict.side === 'white' ? '#e5e7eb' : '#6b7280' }}>
-          {verdict.side === 'white' ? '⬜' : '⬛'}
-        </span>
-
-        {/* Move notation */}
-        <span className="font-mono text-xs text-white flex-1 min-w-0">{verdict.move_notation}</span>
-
-        {/* Scan score (white perspective) — cross-check column */}
-        <span className="text-xs font-mono tabular-nums flex-shrink-0 w-12 text-right" style={{ color: scoreColor }}>
-          {scoreStr}
-        </span>
-
-        {/* Verdict badge */}
-        <VerdictBadge verdict={verdict.verdict} />
-
-        {/* CP loss — mirrors scan_advisor ACPL metric */}
-        {showCp ? (
-          <span className="text-xs tabular-nums w-10 text-right flex-shrink-0"
-            style={{ color: VERDICT_COLOR[verdict.verdict] }}>
-            -{cp}cp
+    <div
+      ref={rowRef}
+      className={`border-b border-gray-800 last:border-0 ${isActive ? 'bg-amber-700/30' : ''}`}
+    >
+      <div className="w-full flex items-center gap-1.5 px-2 py-1.5 hover:bg-gray-800/60 transition-colors">
+        <button
+          onClick={handleRowClick}
+          className="flex-1 flex items-center gap-1.5 min-w-0 text-left cursor-pointer"
+          title="Aller à cette position"
+        >
+          {/* Move number (white moves only) */}
+          <span className="text-xs text-gray-600 w-4 tabular-nums flex-shrink-0 text-right">
+            {verdict.side === 'white' ? `${Math.ceil(verdict.move_number / 2)}.` : ''}
           </span>
-        ) : (
-          <span className="w-10 flex-shrink-0" />
-        )}
 
-        {/* Motif indicator */}
-        {verdict.motifs.length > 0 && (
-          <span className="text-xs text-indigo-400 flex-shrink-0"
-            title={verdict.motifs.map(m => m.motif).join(', ')}>
-            ◆{verdict.motifs.length}
+          {/* Side indicator */}
+          <span className="text-xs w-4 text-center flex-shrink-0"
+            style={{ color: verdict.side === 'white' ? '#e5e7eb' : '#6b7280' }}>
+            {verdict.side === 'white' ? '⬜' : '⬛'}
           </span>
-        )}
 
-        <span className="text-gray-600 text-xs flex-shrink-0">{expanded ? '▲' : '▼'}</span>
-      </button>
+          {/* Move notation */}
+          <span className={`font-mono text-xs flex-1 min-w-0 ${isActive ? 'text-white font-bold' : 'text-white'}`}>
+            {verdict.move_notation}
+          </span>
+
+          {/* Scan score (white perspective) — cross-check column */}
+          <span className="text-xs font-mono tabular-nums flex-shrink-0 w-12 text-right" style={{ color: scoreColor }}>
+            {scoreStr}
+          </span>
+
+          {/* Verdict badge */}
+          <VerdictBadge verdict={verdict.verdict} />
+
+          {/* CP loss — mirrors scan_advisor ACPL metric */}
+          {showCp ? (
+            <span className="text-xs tabular-nums w-10 text-right flex-shrink-0"
+              style={{ color: VERDICT_COLOR[verdict.verdict] }}>
+              -{cp}cp
+            </span>
+          ) : (
+            <span className="w-10 flex-shrink-0" />
+          )}
+
+          {/* Motif indicator */}
+          {verdict.motifs.length > 0 && (
+            <span className="text-xs text-indigo-400 flex-shrink-0"
+              title={verdict.motifs.map(m => m.motif).join(', ')}>
+              ◆{verdict.motifs.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={handleToggleExpand}
+          className="text-gray-600 hover:text-gray-300 text-xs flex-shrink-0 w-4 text-center cursor-pointer"
+          title={expanded ? 'Replier' : 'Déplier'}
+        >
+          {expanded ? '▲' : '▼'}
+        </button>
+      </div>
 
       {expanded && (
         <div className="px-3 pb-2 pt-0.5 bg-gray-900/60 text-xs text-gray-300 leading-relaxed">
@@ -217,7 +266,7 @@ function MoveRow({ verdict, gameId, lang, onMotifClick }: { verdict: VerdictOut;
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function PedagogyPanel({ gameId, analysis, loading, userSide, lang, onAnalyze, error, onMotifClick }: Props) {
+export default function PedagogyPanel({ gameId, analysis, loading, userSide, lang, onAnalyze, error, onMotifClick, currentHalfMove, onJumpTo }: Props) {
   const [filter, setFilter] = useState<'all' | 'errors'>('all')
 
   if (!analysis && !loading) {
@@ -330,7 +379,17 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
         {shown.length === 0 ? (
           <p className="text-xs text-center text-gray-500 py-4">Aucune erreur détectée 🎉</p>
         ) : (
-          shown.map(v => <MoveRow key={v.move_number} verdict={v} gameId={gameId} lang={lang} onMotifClick={onMotifClick} />)
+          shown.map(v => (
+            <MoveRow
+              key={v.move_number}
+              verdict={v}
+              gameId={gameId}
+              lang={lang}
+              onMotifClick={onMotifClick}
+              isActive={currentHalfMove === v.move_number}
+              onJump={onJumpTo}
+            />
+          ))
         )}
       </div>
     </div>

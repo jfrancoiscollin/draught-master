@@ -636,6 +636,8 @@ export default function ImportGamePanel({
               lang={language}
               onAnalyze={handleAnalyzePedagogy}
               error={pedagogyError}
+              currentHalfMove={currentIdx}
+              onJumpTo={(hm) => goTo(hm, positions)}
             />
           )}
 
