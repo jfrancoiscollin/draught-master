@@ -21,8 +21,8 @@ import UserStatsCard from './components/UserStatsCard'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
 import Logo from './components/Logo'
-import logoBothSrc from './assets/logo-both.png'
-import logoPlaySrc from './assets/logo-play.png'
+import logoBothSrc from './assets/logo-both.svg'
+import logoPlaySrc from './assets/logo-play.svg'
 import BottomSheet from './components/BottomSheet'
 import LoginPage from './components/LoginPage'
 import { useAuth } from './contexts/AuthContext'
@@ -1718,7 +1718,7 @@ export default function App() {
                   <div style={{
                     padding: 3,
                     borderRadius: 8,
-                    border: `2px solid ${boardTheme === id ? '#d97706' : '#374151'}`,
+                    border: `2px solid ${boardTheme === id ? '#A89770' : '#374151'}`,
                     transition: 'border-color 0.15s',
                   }}>
                     <svg width="56" height="56" viewBox="0 0 10 10" style={{ display: 'block', borderRadius: 4, overflow: 'hidden' }}>
@@ -1745,7 +1745,7 @@ export default function App() {
                       <rect width="10" height="10" fill="none" stroke={border} strokeWidth="0.5"/>
                     </svg>
                   </div>
-                  <span className="text-xs" style={{ color: boardTheme === id ? '#fbbf24' : '#6b7280' }}>{label}</span>
+                  <span className="text-xs" style={{ color: boardTheme === id ? '#D9C89F' : '#6b7280' }}>{label}</span>
                 </button>
                 )
               })}

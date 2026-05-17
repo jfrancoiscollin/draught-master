@@ -1,5 +1,4 @@
 import React from 'react'
-import logoSrc from '../assets/logo.png'
 
 interface LogoProps {
   size?: number
@@ -8,13 +7,18 @@ interface LogoProps {
 
 export default function Logo({ size = 32, className = '' }: LogoProps) {
   return (
-    <img
-      src={logoSrc}
-      alt="Draught Master"
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 200 200"
       width={size}
       height={size}
       className={className}
-      style={{ objectFit: 'contain' }}
-    />
+      role="img"
+      aria-label="Draught Master"
+    >
+      <rect width="200" height="200" rx="22" fill="#EFE3CB" />
+      <circle cx="128" cy="108" r="56" fill="#E8DBC0" />
+      <circle cx="82" cy="92" r="56" fill="#0F0F0F" />
+    </svg>
   )
 }
