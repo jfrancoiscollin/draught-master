@@ -18,6 +18,7 @@ const MOTIF_NAME_FR: Record<string, string> = {
 
 interface Props {
   onMotifClick: (slug: string) => void
+  refreshKey?: number
 }
 
 function FreqBar({ score, max }: { score: number; max: number }) {
@@ -29,13 +30,19 @@ function FreqBar({ score, max }: { score: number; max: number }) {
   )
 }
 
-export default function WeaknessPanel({ onMotifClick }: Props) {
+export default function WeaknessPanel({ onMotifClick, refreshKey = 0 }: Props) {
   const { user } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [debug, setDebug] = useState<MotifDebug | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
+
+  // Invalidate cache when refreshKey bumps (e.g. after "Réinitialiser les analyses").
+  useEffect(() => {
+    setProfile(null)
+    setDebug(null)
+  }, [refreshKey])
 
   useEffect(() => {
     if (!user || !open || profile) return

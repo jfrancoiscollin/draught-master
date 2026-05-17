@@ -26,17 +26,23 @@ const MOTIF_NAME_FR: Record<string, string> = {
 
 interface Props {
   onMotifClick?: (slug: string) => void
+  refreshKey?: number
 }
 
 /** Always-visible roll-up of every motif detected across the user's
  *  analysed games. Complements <WeaknessPanel> which only surfaces
  *  motifs that crossed the missed+suffered threshold. */
-export default function MotifsCatalogPanel({ onMotifClick }: Props) {
+export default function MotifsCatalogPanel({ onMotifClick, refreshKey = 0 }: Props) {
   const { user } = useAuth()
   const [debug, setDebug] = useState<MotifDebug | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
+
+  // Invalidate cache when refreshKey bumps (e.g. after "Réinitialiser les analyses").
+  useEffect(() => {
+    setDebug(null)
+  }, [refreshKey])
 
   useEffect(() => {
     if (!user || !open || debug) return
