@@ -1086,12 +1086,22 @@ export default function App() {
         {tab === 'home' && (
           <div className="h-full flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
             <div className="flex flex-col gap-3 w-full max-w-lg">
+              {/* My games (history) */}
+              {user && (
+                <button
+                  onClick={() => setTab('game-history')}
+                  className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
+                >
+                  <img src={iconProfileSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                  <span className="flex-1 text-lg font-bold text-white text-right">{t('tabHistory')}</span>
+                </button>
+              )}
               {/* Play */}
               <button
                 onClick={() => handleGoToPlay(false)}
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <img src={iconPlayAiSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
+                <img src={iconPlayAiSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabPlay')}</span>
               </button>
               {/* Play both sides */}
@@ -1099,7 +1109,7 @@ export default function App() {
                 onClick={() => handleGoToPlay(true)}
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <img src={logoBothSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
+                <img src={logoBothSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('playBothSides')}</span>
               </button>
               {/* Exercises */}
@@ -1107,7 +1117,7 @@ export default function App() {
                 onClick={() => setTab('exercise-library')}
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <img src={iconLearnSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
+                <img src={iconLearnSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabExercises')}</span>
               </button>
               {/* Import & Analyze */}
@@ -1115,19 +1125,9 @@ export default function App() {
                 onClick={() => setTab('import-game')}
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <img src={iconAnalyzeSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
+                <img src={iconAnalyzeSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabImport')}</span>
               </button>
-              {/* My games (history) */}
-              {user && (
-                <button
-                  onClick={() => setTab('game-history')}
-                  className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
-                >
-                  <img src={iconProfileSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
-                  <span className="flex-1 text-lg font-bold text-white text-right">{t('tabHistory')}</span>
-                </button>
-              )}
             </div>
           </div>
         )}
