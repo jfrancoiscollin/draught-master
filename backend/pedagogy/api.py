@@ -283,9 +283,27 @@ async def analyze_game(
     )
     import logging as _logging  # noqa: PLC0415
     _log = _logging.getLogger(__name__)
+    # Diagnostic: surface motif-detection counts per game so Railway logs
+    # explain a "0 motifs across N games" complaint without DB access.
+    _motif_total = sum(len(v.motifs) for v in verdicts)
+    _verdicts_with_motifs = sum(1 for v in verdicts if v.motifs)
+    _per_motif: dict[str, int] = {}
+    for v in verdicts:
+        for m in v.motifs:
+            _per_motif[m.motif] = _per_motif.get(m.motif, 0) + 1
+    _log.info(
+        "analyze-game motifs: game_id=%s user_id=%s verdicts=%d "
+        "verdicts_with_motifs=%d motifs_total=%d by_motif=%s",
+        game_id_str, user["id"], len(verdicts),
+        _verdicts_with_motifs, _motif_total, _per_motif,
+    )
     try:
         async with aiosqlite.connect(_db_path()) as conn:
             await storage.upsert_game_analysis(conn, analysis)
+        _log.info(
+            "analyze-game persisted: game_id=%s verdicts=%d motifs_total=%d",
+            game_id_str, len(verdicts), _motif_total,
+        )
     except Exception:  # noqa: BLE001
         # DEBUG: full traceback + structural info to diagnose the silent
         # persist failure observed in prod. Remove once root cause found.

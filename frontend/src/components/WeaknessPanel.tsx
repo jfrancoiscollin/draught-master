@@ -142,7 +142,7 @@ export default function WeaknessPanel({ onMotifClick, refreshKey = 0 }: Props) {
                   see whether motifs are detected at all and how the
                   threshold filter affects them. */}
               {debug && (
-                <details className="mt-3 bg-gray-800/60 border border-gray-700 rounded px-2 py-1.5 text-xs">
+                <details open className="mt-3 bg-gray-800/60 border border-gray-700 rounded px-2 py-1.5 text-xs">
                   <summary className="cursor-pointer text-gray-400 select-none">
                     Détail diagnostic
                   </summary>
