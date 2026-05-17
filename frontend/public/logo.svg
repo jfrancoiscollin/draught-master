@@ -1,48 +1,16 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" fill="#F4EFE7"/>
+  <rect width="512" height="512" fill="#1A1A1A"/>
 
-  <!-- Ombres -->
-  <ellipse cx="220" cy="220" rx="92" ry="92" fill="#00000010"/>
-  <ellipse cx="292" cy="250" rx="92" ry="92" fill="#00000010"/>
+  <!-- Pièce noire (avec fin liseré ivoire pour ressortir) -->
 
-  <!-- Pièce noire -->
-  <circle cx="220" cy="220" r="92" fill="#111111"/>
+  <circle cx="220" cy="220" r="92" fill="#111111" stroke="#EAE2D6" stroke-width="2"/>
 
-  <!-- Découpe intérieure -->
-  <circle cx="270" cy="250" r="58" fill="#F4EFE7"/>
+  <!-- Pièce ivoire (croissant) -->
 
-  <!-- Pièce ivoire -->
-  <path
-    d="
-      M292 158
-      A92 92 0 1 1 292 342
-      L292 308
-      A58 58 0 1 0 292 192
-      Z
-    "
-    fill="#EAE2D6"
-  />
+  <path d="M292 158 A92 92 0 1 1 292 342 L292 308 A58 58 0 1 0 292 192 Z" fill="#EAE2D6"/>
 
-  <!-- Texte -->
-  <text
-    x="256"
-    y="430"
-    text-anchor="middle"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="26"
-    letter-spacing="10"
-    fill="#111111">
-    DRAUGHT
-  </text>
+  <!-- Texte ivoire -->
 
-  <text
-    x="256"
-    y="470"
-    text-anchor="middle"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="26"
-    letter-spacing="10"
-    fill="#111111">
-    MASTER
-  </text>
+<text x="256" y="430" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="10" fill="#EAE2D6">DRAUGHT</text>
+<text x="256" y="470" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="10" fill="#EAE2D6">MASTER</text>
 </svg>
