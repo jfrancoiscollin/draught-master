@@ -1038,17 +1038,15 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="whitespace-nowrap flex items-center">
-              <img src={logoWordmarkSrc} alt="Draught Master" style={{ height: 40, width: 'auto' }} />
-            </h1>
-            {tab !== 'home' && (
               <button
                 onClick={() => setTab('home')}
-                className="text-gray-400 hover:text-amber-500 text-lg w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors"
+                className="flex items-center rounded-lg hover:opacity-80 transition-opacity cursor-pointer"
                 title={t('home')}
+                aria-label={t('home')}
               >
-                🏠
+                <img src={logoWordmarkSrc} alt="Draught Master" style={{ height: 40, width: 'auto' }} />
               </button>
-            )}
+            </h1>
             {isAiThinking && (
               <span className="flex items-center gap-1 text-yellow-400 text-xs">
                 <div className="spinner" style={{ width: 12, height: 12 }} />
