@@ -21,8 +21,11 @@ import UserStatsCard from './components/UserStatsCard'
 import Toast from './components/Toast'
 import LanguageSelector from './components/LanguageSelector'
 import logoBothSrc from './assets/logo-both.svg'
-import logoPlaySrc from './assets/logo-play.svg'
 import logoWordmarkSrc from './assets/logo-wordmark.svg'
+import iconPlayAiSrc from './assets/icon-play-ai.svg'
+import iconLearnSrc from './assets/icon-learn.svg'
+import iconAnalyzeSrc from './assets/icon-analyze.svg'
+import iconProfileSrc from './assets/icon-profile.svg'
 import BottomSheet from './components/BottomSheet'
 import LoginPage from './components/LoginPage'
 import { useAuth } from './contexts/AuthContext'
@@ -1088,7 +1091,7 @@ export default function App() {
                 onClick={() => handleGoToPlay(false)}
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <img src={logoPlaySrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
+                <img src={iconPlayAiSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabPlay')}</span>
               </button>
               {/* Play both sides */}
@@ -1104,7 +1107,7 @@ export default function App() {
                 onClick={() => setTab('exercise-library')}
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📖</span>
+                <img src={iconLearnSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabExercises')}</span>
               </button>
               {/* Import & Analyze */}
@@ -1112,7 +1115,7 @@ export default function App() {
                 onClick={() => setTab('import-game')}
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>📂</span>
+                <img src={iconAnalyzeSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabImport')}</span>
               </button>
               {/* My games (history) */}
@@ -1121,7 +1124,7 @@ export default function App() {
                   onClick={() => setTab('game-history')}
                   className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
                 >
-                  <span className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ fontSize: 60, lineHeight: '72px', width: 72, display: 'inline-block', textAlign: 'center' }}>👤</span>
+                  <img src={iconProfileSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
                   <span className="flex-1 text-lg font-bold text-white text-right">{t('tabHistory')}</span>
                 </button>
               )}

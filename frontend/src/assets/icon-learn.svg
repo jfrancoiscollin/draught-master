@@ -1,0 +1,19 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#1A1A1A"/>
+
+  <!-- Mortier (le carré plat du chapeau) -->
+
+  <path d="M 25 80 L 100 50 L 175 80 L 100 110 Z" fill="#EAE2D6"/>
+
+  <!-- Bande circulaire sous le mortier (le crâne du chapeau) -->
+
+<path d="M 60 95 L 60 125 Q 100 145 140 125 L 140 95"
+fill="none" stroke="#EAE2D6" stroke-width="6" stroke-linejoin="round"/>
+<path d="M 60 95 Q 100 115 140 95"
+fill="none" stroke="#EAE2D6" stroke-width="6" stroke-linejoin="round"/>
+
+  <!-- Cordon avec pompon -->
+
+  <line x1="175" y1="80" x2="175" y2="130" stroke="#EAE2D6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="175" cy="140" r="8" fill="#EAE2D6"/>
+</svg>
