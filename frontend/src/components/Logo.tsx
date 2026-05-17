@@ -18,33 +18,11 @@ export default function Logo({ size = 32, className = '' }: LogoProps) {
       aria-label="Draught Master"
     >
       <rect width="512" height="512" fill="#1A1A1A" />
-      <circle cx="220" cy="220" r="92" fill="#111111" stroke="#EAE2D6" strokeWidth="2" />
+      <circle cx="191.9" cy="229.8" r="166.1" fill="#111111" stroke="#EAE2D6" strokeWidth="3.6" />
       <path
-        d="M292 158 A92 92 0 1 1 292 342 L292 308 A58 58 0 1 0 292 192 Z"
+        d="M 321.9 117.9 A 166.1 166.1 0 1 1 321.9 450.0 L 321.9 388.7 A 104.7 104.7 0 1 0 321.9 179.3 Z"
         fill="#EAE2D6"
       />
-      <text
-        x="256"
-        y="430"
-        textAnchor="middle"
-        fontFamily="Arial, Helvetica, sans-serif"
-        fontSize="26"
-        letterSpacing="10"
-        fill="#EAE2D6"
-      >
-        DRAUGHT
-      </text>
-      <text
-        x="256"
-        y="470"
-        textAnchor="middle"
-        fontFamily="Arial, Helvetica, sans-serif"
-        fontSize="26"
-        letterSpacing="10"
-        fill="#EAE2D6"
-      >
-        MASTER
-      </text>
     </svg>
   )
 }
