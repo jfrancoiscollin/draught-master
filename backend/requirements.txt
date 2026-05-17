@@ -8,4 +8,4 @@ aiosqlite==0.20.0
 passlib==1.7.4
 requests>=2.31.0
 sentry-sdk[fastapi]>=2.0.0
-https://github.com/jfrancoiscollin/dilf/archive/635d3c1d18176fbacbccbc5d221ed959a0786732.tar.gz
+https://github.com/jfrancoiscollin/dilf/archive/9fccc1f1a906c75876ce8c4099c053b38ef17d1b.tar.gz

@@ -4,7 +4,7 @@ Maintained here (Draught Master) because this is editorial content, not
 detection logic. If dilf ever exposes an official MOTIF_METADATA dict
 in pedagogy.motifs, import from there instead.
 
-Each entry mirrors the detector's ``name`` class attribute (10 motifs total).
+Each entry mirrors the detector's ``name`` class attribute.
 """
 
 from __future__ import annotations
@@ -175,6 +175,78 @@ MOTIFS: dict[str, dict[str, str]] = {
             "Bonnard's shot is a subtle combination involving a piece sacrifice on a "
             "key square to block an opponent's piece or open a decisive diagonal, "
             "creating an unstoppable threat."
+        ),
+    },
+    "combinaison_2_temps": {
+        "slug": "combinaison_2_temps",
+        "name_fr": "Combinaison en 2 temps",
+        "name_en": "2-move combination",
+        "description_fr": (
+            "Combinaison forcée en deux coups d'attaque : on offre une pièce, l'adversaire "
+            "est contraint de capturer (souvent par la règle de la prise majoritaire), puis "
+            "on réplique par une seconde frappe qui récupère plus de matériel qu'on en a "
+            "donné. Le motif générique des combinaisons courtes : pas de nom particulier, "
+            "juste une séquence où chaque réponse adverse est forcée et le bilan matériel "
+            "final est positif."
+        ),
+        "description_en": (
+            "A forced combination with two attacker moves: offer a piece, the opponent "
+            "is compelled to capture (often under the maximum-capture rule), then strike "
+            "back with a second move that nets more material than was given up. The "
+            "generic short-combination pattern — every opponent reply is forced and the "
+            "final material balance is positive."
+        ),
+    },
+    "combinaison_3_temps": {
+        "slug": "combinaison_3_temps",
+        "name_fr": "Combinaison en 3 temps",
+        "name_en": "3-move combination",
+        "description_fr": (
+            "Combinaison forcée en trois coups d'attaque, avec deux répliques adverses "
+            "forcées en chaîne. Plus profonde qu'une combinaison en 2 temps, elle exige "
+            "de visualiser une séquence où chaque demi-coup de l'adversaire est imposé "
+            "par la position, et où le gain matériel net apparaît seulement au troisième "
+            "coup attaquant. Reconnaître ces chaînes plus longues distingue les joueurs "
+            "tactiquement aguerris."
+        ),
+        "description_en": (
+            "A forced combination with three attacker moves and two forced opponent "
+            "replies chained between them. Deeper than a 2-move combination — requires "
+            "visualising a sequence where every opponent half-move is forced and the "
+            "material gain only materialises on the third attacker move."
+        ),
+    },
+    "combinaison_4_temps": {
+        "slug": "combinaison_4_temps",
+        "name_fr": "Combinaison en 4 temps",
+        "name_en": "4-move combination",
+        "description_fr": (
+            "Combinaison forcée en quatre coups d'attaque, avec trois répliques adverses "
+            "forcées. Calcul profond : on enchaîne sacrifices et frappes successives en "
+            "vérifiant que l'adversaire n'a aucune échappatoire à chaque demi-coup. Ces "
+            "combinaisons spectaculaires ne se laissent voir qu'aux joueurs qui calculent "
+            "loin et précisément."
+        ),
+        "description_en": (
+            "A forced combination with four attacker moves and three forced opponent "
+            "replies. Deep calculation territory: stacking sacrifices and strikes while "
+            "verifying the opponent has no escape at every half-move."
+        ),
+    },
+    "combinaison_5_temps": {
+        "slug": "combinaison_5_temps",
+        "name_fr": "Combinaison en 5 temps ou plus",
+        "name_en": "5-move (or deeper) combination",
+        "description_fr": (
+            "Combinaison forcée en au moins cinq coups d'attaque, le seau le plus profond "
+            "détecté. Très rare en partie pratique — quand elle survient, c'est souvent "
+            "le couronnement d'une préparation positionnelle minutieuse. Le simple fait "
+            "de la voir à l'œuvre vaut le détour."
+        ),
+        "description_en": (
+            "A forced combination with five or more attacker moves — the deepest detection "
+            "bucket. Rare in practical play; when it occurs it typically caps a careful "
+            "positional build-up."
         ),
     },
 }
