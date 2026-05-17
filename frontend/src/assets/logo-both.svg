@@ -1,5 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <rect width="200" height="200" rx="22" fill="#EFE3CB"/>
-  <circle cx="128" cy="108" r="56" fill="#E8DBC0"/>
-  <circle cx="82" cy="92" r="56" fill="#0F0F0F"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230" role="img" aria-label="Draught Master">
+  <defs>
+    <filter id="ds" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="#000" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect width="200" height="230" rx="22" fill="#EFE3CB"/>
+  <circle cx="118" cy="95" r="48" fill="#CFB98C" filter="url(#ds)"/>
+  <circle cx="82" cy="82" r="48" fill="#0F0F0F" filter="url(#ds)"/>
+  <g font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="700" font-size="26" letter-spacing="3" text-anchor="middle" fill="#1A1410">
+    <text x="100" y="184">DRAUGHT</text>
+    <text x="100" y="213">MASTER</text>
+  </g>
 </svg>
