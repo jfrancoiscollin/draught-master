@@ -8,22 +8,46 @@ interface LogoProps {
 export default function Logo({ size = 32, className = '' }: LogoProps) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 200 200"
       width={size}
       height={size}
+      viewBox="0 0 512 512"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
       className={className}
       role="img"
       aria-label="Draught Master"
     >
-      <defs>
-        <filter id="logoShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="3" stdDeviation="2.5" floodColor="#000" floodOpacity="0.22" />
-        </filter>
-      </defs>
-      <rect width="200" height="200" rx="22" fill="#EFE3CB" />
-      <circle cx="128" cy="108" r="56" fill="#CFB98C" filter="url(#logoShadow)" />
-      <circle cx="82" cy="92" r="56" fill="#0F0F0F" filter="url(#logoShadow)" />
+      <rect width="512" height="512" fill="#F4EFE7" />
+      <ellipse cx="220" cy="220" rx="92" ry="92" fill="#00000010" />
+      <ellipse cx="292" cy="250" rx="92" ry="92" fill="#00000010" />
+      <circle cx="220" cy="220" r="92" fill="#111111" />
+      <circle cx="270" cy="250" r="58" fill="#F4EFE7" />
+      <path
+        d="M292 158 A92 92 0 1 1 292 342 L292 308 A58 58 0 1 0 292 192 Z"
+        fill="#EAE2D6"
+      />
+      <text
+        x="256"
+        y="430"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="26"
+        letterSpacing="10"
+        fill="#111111"
+      >
+        DRAUGHT
+      </text>
+      <text
+        x="256"
+        y="470"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="26"
+        letterSpacing="10"
+        fill="#111111"
+      >
+        MASTER
+      </text>
     </svg>
   )
 }

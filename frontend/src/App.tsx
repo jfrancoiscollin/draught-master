@@ -1089,7 +1089,7 @@ export default function App() {
                 onClick={() => handleGoToPlay(false)}
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <img src={logoPlaySrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 88, height: 96, objectFit: 'contain' }} />
+                <img src={logoPlaySrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabPlay')}</span>
               </button>
               {/* Play both sides */}
@@ -1097,7 +1097,7 @@ export default function App() {
                 onClick={() => handleGoToPlay(true)}
                 className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
               >
-                <img src={logoBothSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 88, height: 96, objectFit: 'contain' }} />
+                <img src={logoBothSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 96, height: 96, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('playBothSides')}</span>
               </button>
               {/* Exercises */}
