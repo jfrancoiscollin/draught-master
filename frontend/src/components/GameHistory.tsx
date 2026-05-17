@@ -14,6 +14,10 @@ interface GameHistoryProps {
    *  flip back to – and the bulk-analyze button becomes clickable
    *  again. */
   refreshKey?: number
+  /** Called after the bulk dilf analyze loop finishes (success or with
+   *  partial failures). Lets the parent invalidate the WeaknessPanel /
+   *  MotifsCatalogPanel caches so they refetch with the new verdicts. */
+  onBatchAnalyzed?: () => void
 }
 
 function formatDate(iso: string, language: string): string {
@@ -34,7 +38,7 @@ function formatDate(iso: string, language: string): string {
 
 type BulkMode = 'idle' | 'dilf'
 
-export default function GameHistory({ onReplay, refreshKey = 0 }: GameHistoryProps) {
+export default function GameHistory({ onReplay, refreshKey = 0, onBatchAnalyzed }: GameHistoryProps) {
   const { t, language } = useLanguage()
   const [games, setGames] = useState<HistoryItem[]>([])
   const [page, setPage] = useState(1)
@@ -133,6 +137,7 @@ export default function GameHistory({ onReplay, refreshKey = 0 }: GameHistoryPro
     }
     setBulkMode('idle')
     await loadGames()  // refresh checkmarks
+    onBatchAnalyzed?.()  // signal parent to invalidate Motifs/Weakness panel caches
   }
 
   const bulkRunning = bulkMode !== 'idle'

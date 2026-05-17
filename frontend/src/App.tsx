@@ -1663,6 +1663,7 @@ export default function App() {
             />
             <GameHistory
               refreshKey={historyRefresh}
+              onBatchAnalyzed={() => setHistoryRefresh(v => v + 1)}
               onReplay={(detail) => {
                 setPreloadedPdn(detail.pdn || '')
                 setPreloadedGameId(detail.id)
