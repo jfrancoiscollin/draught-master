@@ -1,16 +1,11 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="512" height="512" fill="#1A1A1A"/>
 
-  <!-- Pièce noire (avec fin liseré ivoire pour ressortir) -->
+  <!-- Pièce noire -->
 
-  <circle cx="220" cy="220" r="92" fill="#111111" stroke="#EAE2D6" stroke-width="2"/>
+  <circle cx="191.9" cy="229.8" r="166.1" fill="#111111" stroke="#EAE2D6" stroke-width="3.6"/>
 
   <!-- Pièce ivoire (croissant) -->
 
-  <path d="M292 158 A92 92 0 1 1 292 342 L292 308 A58 58 0 1 0 292 192 Z" fill="#EAE2D6"/>
-
-  <!-- Texte ivoire -->
-
-<text x="256" y="430" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="10" fill="#EAE2D6">DRAUGHT</text>
-<text x="256" y="470" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="10" fill="#EAE2D6">MASTER</text>
+  <path d="M 321.9 117.9 A 166.1 166.1 0 1 1 321.9 450.0 L 321.9 388.7 A 104.7 104.7 0 1 0 321.9 179.3 Z" fill="#EAE2D6"/>
 </svg>
