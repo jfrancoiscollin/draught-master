@@ -286,8 +286,17 @@ async def analyze_game(
     try:
         async with aiosqlite.connect(_db_path()) as conn:
             await storage.upsert_game_analysis(conn, analysis)
-    except Exception as exc:  # noqa: BLE001
-        _log.warning("Could not persist pedagogy analysis (non-fatal): %s", exc)
+    except Exception:  # noqa: BLE001
+        # DEBUG: full traceback + structural info to diagnose the silent
+        # persist failure observed in prod. Remove once root cause found.
+        _log.exception(
+            "DEBUG persist failure | game_id=%s user_id=%s verdicts=%d "
+            "first_verdict_motifs=%s",
+            analysis.game_id,
+            analysis.user_id,
+            len(analysis.verdicts),
+            [m.motif for m in analysis.verdicts[0].motifs] if analysis.verdicts else [],
+        )
 
     # ------------------------------------------------------------------
     # 6b. Cascade : also persist legacy Scan annotations into
