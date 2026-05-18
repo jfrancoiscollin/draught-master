@@ -613,6 +613,27 @@ export async function getUserProfile(): Promise<UserProfile> {
   return res.data
 }
 
+export interface SquareWeaknessCounts {
+  isolated: number
+  backward: number
+  holes: number
+  outposts: number
+}
+
+export interface WeaknessHeatmap {
+  by_square: Record<string, SquareWeaknessCounts>
+  games_analyzed: number
+  half_moves_analyzed: number
+  lookback: number
+}
+
+export async function getWeaknessHeatmap(lookback = 30): Promise<WeaknessHeatmap> {
+  const res = await api.get<WeaknessHeatmap>('/pedagogy/profile/me/weakness-heatmap', {
+    params: { lookback },
+  })
+  return res.data
+}
+
 export async function getMotifInfo(slug: string): Promise<MotifInfo> {
   const res = await api.get<MotifInfo>(`/pedagogy/motifs/${slug}`)
   return res.data

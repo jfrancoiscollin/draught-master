@@ -121,3 +121,20 @@ class MotifInfoOut(BaseModel):
     description_fr: str
     description_en: str
     exercises: list[MotifExerciseOut] = []
+
+
+class SquareWeaknessCounts(BaseModel):
+    isolated: int = 0
+    backward: int = 0
+    holes: int = 0
+    outposts: int = 0
+
+
+class WeaknessHeatmapOut(BaseModel):
+    # Square index (1..50, FMJD numbering) -> per-metric occurrence count
+    # across the lookback window. Only the user's own side is counted, so
+    # users see *their* recurring weaknesses, not the opponent's.
+    by_square: dict[int, SquareWeaknessCounts]
+    games_analyzed: int
+    half_moves_analyzed: int
+    lookback: int

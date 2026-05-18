@@ -30,7 +30,9 @@ from .models import (
     MotifMatchOut,
     MoveVerdictOut,
     RecommendationsResponse,
+    SquareWeaknessCounts,
     UserProfileOut,
+    WeaknessHeatmapOut,
 )
 from .motif_descriptions import get_motif as _get_motif_desc
 
@@ -574,6 +576,89 @@ async def get_my_profile(
             else profile.weakest_phase
         ),
         recommended_exercise_tags=profile.recommended_exercise_tags,
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /api/pedagogy/profile/me/weakness-heatmap
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/profile/me/weakness-heatmap",
+    response_model=WeaknessHeatmapOut,
+)
+async def get_my_weakness_heatmap(
+    lookback: int = 30,
+    user: Any = Depends(current_user),
+) -> WeaknessHeatmapOut:
+    """Per-square occurrence counts of isolated / backward / holes / outposts
+    across the user's last ``lookback`` games.
+
+    Filters to the user's own side: white games contribute *_white lists,
+    black games contribute *_black. The frontend renders this as a 10×10
+    heatmap so the user sees *where* their structural weaknesses (and
+    outposts) cluster across their recent play.
+
+    Iterates over features_after_json blobs in Python rather than pushing
+    the JSON traversal into SQLite — keeps the SQL simple and the
+    lookback budget (~30 games × ~50 half-moves = ~1500 rows) cheap
+    enough to do in-process.
+    """
+    import json as _json  # noqa: PLC0415
+
+    by_square: dict[int, dict[str, int]] = {}
+    games_analyzed = 0
+    half_moves_analyzed = 0
+    async with aiosqlite.connect(_db_path()) as conn:
+        cur = await conn.execute(
+            """
+            SELECT id, user_side FROM games
+             WHERE user_id = ?
+               AND (status = 'finished' OR status IS NULL)
+             ORDER BY date DESC
+             LIMIT ?
+            """,
+            (user["id"], lookback),
+        )
+        games = await cur.fetchall()
+        for game_row in games:
+            game_id = str(game_row[0])
+            side = (game_row[1] or "white").lower()
+            suffix = "white" if side == "white" else "black"
+            vcur = await conn.execute(
+                "SELECT features_after_json FROM move_verdicts "
+                "WHERE game_id = ? AND features_after_json IS NOT NULL",
+                (game_id,),
+            )
+            v_rows = await vcur.fetchall()
+            if not v_rows:
+                continue
+            games_analyzed += 1
+            for (blob,) in v_rows:
+                try:
+                    feats = _json.loads(blob)
+                except (TypeError, ValueError):
+                    continue
+                half_moves_analyzed += 1
+                for metric, key in (
+                    ("isolated", f"isolated_pawns_{suffix}"),
+                    ("backward", f"backward_pawns_{suffix}"),
+                    ("holes",    f"holes_{suffix}"),
+                    ("outposts", f"outposts_{suffix}"),
+                ):
+                    for sq in feats.get(key, []) or []:
+                        bucket = by_square.setdefault(int(sq), {
+                            "isolated": 0, "backward": 0, "holes": 0, "outposts": 0,
+                        })
+                        bucket[metric] += 1
+    return WeaknessHeatmapOut(
+        by_square={
+            sq: SquareWeaknessCounts(**counts) for sq, counts in by_square.items()
+        },
+        games_analyzed=games_analyzed,
+        half_moves_analyzed=half_moves_analyzed,
+        lookback=lookback,
     )
 
 
