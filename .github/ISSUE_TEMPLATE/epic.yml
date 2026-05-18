@@ -1,0 +1,61 @@
+name: Epic (cross-repo initiative)
+description: A multi-week initiative that spans jass / dilf / draught-master.
+title: "[Epic]: "
+labels: ["type:epic", "status:in-discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Epics live in this umbrella repo and are referenced as the
+        "Parent issue" from issues in jass and dilf. Keep the body
+        narrative; the checklist of child issues below is the source
+        of truth for progress.
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome / definition of done
+      description: What does the world look like when this epic is closed?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is in scope? What is explicitly out of scope?
+    validations:
+      required: true
+  - type: textarea
+    id: children
+    attributes:
+      label: Child issues
+      description: |
+        Track the work as a checklist of links to issues in each repo.
+        Convert each line into a sub-issue via the GitHub UI once created
+        -- the Project will then roll up progress automatically.
+      value: |
+        ### jass
+        - [ ] jfrancoiscollin/jass#
+
+        ### dilf
+        - [ ] jfrancoiscollin/dilf#
+
+        ### draught-master
+        - [ ] jfrancoiscollin/draught-master#
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - "p1 -- high (default for epics)"
+        - "p0 -- critical / drop everything"
+        - "p2 -- medium"
+        - "p3 -- low / nice-to-have"
+    validations:
+      required: true
+  - type: input
+    id: target
+    attributes:
+      label: Target milestone / release
+      placeholder: "v1.0-alpha"
