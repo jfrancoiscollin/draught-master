@@ -74,6 +74,11 @@ class MoveVerdictOut(BaseModel):
     # Named formations detected on the position (e.g. "roozenburg_blancs").
     # Phase is already on MoveVerdict.phase above — no duplicate needed.
     formations: list[str] = []
+    # Captures the opponent would play next turn — for the board arrow
+    # overlay. Each entry mirrors the dilf ThreatenedCapture dataclass:
+    # {"path": [from, to, ...], "captures": [sq, ...]}.
+    threatened_captures_white: list[dict[str, list[int]]] = []
+    threatened_captures_black: list[dict[str, list[int]]] = []
 
 
 class AnalyzeGameResponse(BaseModel):

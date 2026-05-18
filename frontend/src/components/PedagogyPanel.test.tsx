@@ -46,6 +46,8 @@ const verdict = (over: Partial<VerdictOut> = {}): VerdictOut => ({
   outposts_white: [],
   outposts_black: [],
   formations: [],
+  threatened_captures_white: [],
+  threatened_captures_black: [],
   ...over,
 })
 

@@ -139,6 +139,7 @@ async def test_upsert_move_verdict_roundtrips_features_after_and_hanging():
         outposts_white=[], outposts_black=[],
         white_legal_moves=7, black_legal_moves=8,
         hanging_pieces_white=[28], hanging_pieces_black=[],
+        threatened_captures_white=[], threatened_captures_black=[],
         white_promotion_distance=5, black_promotion_distance=4,
         formations=[], phase=Phase.MIDDLEGAME,
     )

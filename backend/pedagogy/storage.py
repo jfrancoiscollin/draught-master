@@ -58,10 +58,23 @@ def _features_from_json(blob: Optional[str]) -> Optional[Features]:
     raw = json.loads(blob)
     raw["phase"] = Phase(raw["phase"])
     # Backfill fields added to Features over time so blobs persisted by
-    # older deploys still rehydrate cleanly. hanging_pieces_{w,b} are
-    # always [] in legacy blobs — they weren't computed back then.
+    # older deploys still rehydrate cleanly. hanging_pieces_{w,b} +
+    # threatened_captures_{w,b} are always [] in legacy blobs — they
+    # weren't computed back then. ThreatenedCapture entries persisted as
+    # plain dicts via asdict need rebuilding into instances so the
+    # downstream contract (dataclass attribute access) still works.
+    from pedagogy.types import ThreatenedCapture
     raw.setdefault("hanging_pieces_white", [])
     raw.setdefault("hanging_pieces_black", [])
+    for key in ("threatened_captures_white", "threatened_captures_black"):
+        items = raw.get(key) or []
+        raw[key] = [
+            ThreatenedCapture(
+                path=tuple(it.get("path", ())),
+                captures=tuple(it.get("captures", ())),
+            )
+            for it in items
+        ]
     return Features(**raw)
 
 

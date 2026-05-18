@@ -225,6 +225,10 @@ export default function ImportGamePanel({
   // backward / holes / outposts). Kept separate from `highlighted` so
   // the AnalysisPanel's hover-highlight doesn't fight with it.
   const [diagKey, setDiagKey] = useState<string | null>(null)
+  // Show red arrows for the captures the opponent could play next turn.
+  // Hidden by default — even one big capture sequence clutters the
+  // board, and users who want it just toggle the pill.
+  const [showThreats, setShowThreats] = useState(false)
   const loadingMovesRef = useRef(false)
 
   // ── Analysis ──────────────────────────────────────────────────
@@ -602,6 +606,35 @@ export default function ImportGamePanel({
   } : {}
   const diagSquares = diagKey && diagSquaresByKey[diagKey] ? diagSquaresByKey[diagKey] : []
 
+  // Threat arrows — captures the side-to-move could play in features_after.
+  // The side-to-move in features_after is the *opposite* of activeVerdict.side
+  // (whoever just moved is no longer to move). We split each capture path
+  // into adjacent (from, to) pairs so multi-jump captures render as a
+  // chain of arrows, mirroring the actual move geometry.
+  const threatArrows: Arrow[] = (showThreats && activeVerdict) ? (() => {
+    const threats = activeVerdict.side === 'white'
+      ? activeVerdict.threatened_captures_black
+      : activeVerdict.threatened_captures_white
+    const arr: Arrow[] = []
+    for (const t of threats) {
+      for (let i = 0; i < t.path.length - 1; i++) {
+        arr.push({
+          from: t.path[i],
+          to: t.path[i + 1],
+          color: '#ef4444',
+          opacity: 0.55,
+          width: 2.4,
+        })
+      }
+    }
+    return arr
+  })() : []
+  const threatCount = activeVerdict
+    ? (activeVerdict.side === 'white'
+        ? activeVerdict.threatened_captures_black.length
+        : activeVerdict.threatened_captures_white.length)
+    : 0
+
   return (
     <div className="flex flex-col h-full bg-gray-900 text-gray-100">
       {/* Header */}
@@ -637,7 +670,7 @@ export default function ImportGamePanel({
             disabled={false}
             highlightSquares={diagSquares.length > 0 ? diagSquares : highlighted}
             warningSquares={hangingSquares}
-            arrows={arrow ? [arrow] : []}
+            arrows={[...(arrow ? [arrow] : []), ...threatArrows]}
             flipped={flipped}
           />
         </div>
@@ -670,6 +703,20 @@ export default function ImportGamePanel({
                 <span className="font-bold text-red-400" title="Pièces capturables au coup suivant">
                   ⚠ {hangingSquares.length} pièce{hangingSquares.length > 1 ? 's' : ''} en l'air
                 </span>
+              )}
+              {threatCount > 0 && (
+                <button
+                  onClick={() => setShowThreats(v => !v)}
+                  className={
+                    'px-1.5 py-0.5 rounded text-xs transition-colors ' +
+                    (showThreats
+                      ? 'bg-red-600/40 text-red-200 cursor-pointer'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer')
+                  }
+                  title={`${threatCount} capture${threatCount > 1 ? 's' : ''} possible${threatCount > 1 ? 's' : ''} pour l'adversaire`}
+                >
+                  {showThreats ? '✓ ' : ''}Menaces {threatCount}
+                </button>
               )}
             </div>
             {activeVerdict.formations.length > 0 && (

@@ -476,6 +476,13 @@ export interface VerdictOut {
   outposts_white: number[]
   outposts_black: number[]
   formations: string[]
+  threatened_captures_white: ThreatenedCaptureOut[]
+  threatened_captures_black: ThreatenedCaptureOut[]
+}
+
+export interface ThreatenedCaptureOut {
+  path: number[]
+  captures: number[]
 }
 
 export interface PedagogyAnalysis {

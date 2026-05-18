@@ -63,6 +63,22 @@ def _ensure_explain_limiters() -> None:
 # ---------------------------------------------------------------------------
 
 
+def _threats_to_payload(items: Any) -> list[dict[str, list[int]]]:
+    """Coerce ``items`` (list of ThreatenedCapture or dicts) to JSONable."""
+    out: list[dict[str, list[int]]] = []
+    for it in items or []:
+        path = getattr(it, "path", None)
+        captures = getattr(it, "captures", None)
+        if path is None and isinstance(it, dict):
+            path = it.get("path")
+            captures = it.get("captures")
+        out.append({
+            "path": [int(x) for x in (path or ())],
+            "captures": [int(x) for x in (captures or ())],
+        })
+    return out
+
+
 def _verdict_to_out(v: Any) -> MoveVerdictOut:
     feats_after = getattr(v, "features_after", None)
     return MoveVerdictOut(
@@ -90,6 +106,12 @@ def _verdict_to_out(v: Any) -> MoveVerdictOut:
         outposts_white=list(getattr(feats_after, "outposts_white", []) or []),
         outposts_black=list(getattr(feats_after, "outposts_black", []) or []),
         formations=list(getattr(feats_after, "formations", []) or []),
+        threatened_captures_white=_threats_to_payload(
+            getattr(feats_after, "threatened_captures_white", [])
+        ),
+        threatened_captures_black=_threats_to_payload(
+            getattr(feats_after, "threatened_captures_black", [])
+        ),
     )
 
 
