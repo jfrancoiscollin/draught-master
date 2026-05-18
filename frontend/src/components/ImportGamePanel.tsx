@@ -31,6 +31,33 @@ interface ImportGamePanelProps {
 
 type PanelMode = 'review' | 'learn'
 
+// ── Phase + formations ────────────────────────────────────────────────────
+// Mirrors dilf/pedagogy/features/formations.py:KNOWN_FORMATIONS. The slugs
+// must stay byte-identical with the dilf registry — drift means the badge
+// won't render, click-highlight won't work.
+
+const PHASE_FR: Record<'opening' | 'middlegame' | 'endgame', string> = {
+  opening: 'ouverture',
+  middlegame: 'milieu de jeu',
+  endgame: 'finale',
+}
+
+const FORMATION_SQUARES: Record<string, number[]> = {
+  classique_blancs:   [32, 37, 41],
+  classique_noirs:    [10, 14, 19],
+  roozenburg_blancs:  [28, 32, 37],
+  roozenburg_noirs:   [14, 19, 23],
+  ghestem_blancs:     [27, 32, 38],
+}
+
+function prettyFormation(slug: string): { name: string; side: '⬜' | '⬛' | null } {
+  const isWhite = slug.endsWith('_blancs')
+  const isBlack = slug.endsWith('_noirs')
+  const stem = slug.replace(/_(blancs|noirs)$/, '')
+  const name = stem.charAt(0).toUpperCase() + stem.slice(1)
+  return { name, side: isWhite ? '⬜' : isBlack ? '⬛' : null }
+}
+
 // ── Position diagnostic ───────────────────────────────────────────────────
 // Four geometric weakness families surfaced from dilf's features_after.
 // One row per family, two clickable counts (white / black) per row; the
@@ -557,7 +584,9 @@ export default function ImportGamePanel({
     : []
   // Mapping diagKey -> the list of squares it pulls from activeVerdict.
   // Defined here so both the panel buttons and the highlight overlay stay
-  // in sync without re-walking the verdict shape in two places.
+  // in sync without re-walking the verdict shape in two places. Formation
+  // slugs (e.g. "roozenburg_blancs") also enter this map and resolve to
+  // their fixed 3-square signature.
   const diagSquaresByKey: Record<string, number[]> = activeVerdict ? {
     'iso-w': activeVerdict.isolated_pawns_white,
     'iso-b': activeVerdict.isolated_pawns_black,
@@ -567,6 +596,9 @@ export default function ImportGamePanel({
     'tro-b': activeVerdict.holes_black,
     'pos-w': activeVerdict.outposts_white,
     'pos-b': activeVerdict.outposts_black,
+    ...Object.fromEntries(
+      activeVerdict.formations.map(f => [f, FORMATION_SQUARES[f] ?? []]),
+    ),
   } : {}
   const diagSquares = diagKey && diagSquaresByKey[diagKey] ? diagSquaresByKey[diagKey] : []
 
@@ -613,7 +645,11 @@ export default function ImportGamePanel({
         {/* Pedagogy overlay summary — only when an analysed half-move is displayed */}
         {activeVerdict && (
           <div className="flex flex-col gap-1 mt-1.5 px-2 w-full max-w-xs">
-            <div className="flex items-center gap-3 text-xs text-gray-400">
+            <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
+              <span title={`Phase : ${PHASE_FR[activeVerdict.phase]}`}>
+                <span className="text-gray-600">Phase </span>
+                <span className="font-semibold text-indigo-300">{PHASE_FR[activeVerdict.phase]}</span>
+              </span>
               {activeVerdict.material_balance !== null && (
                 <span title="Solde matériel (dames = 3 pions), point de vue blancs">
                   <span className="text-gray-600">Matériel </span>
@@ -636,6 +672,34 @@ export default function ImportGamePanel({
                 </span>
               )}
             </div>
+            {activeVerdict.formations.length > 0 && (
+              <div className="flex items-center gap-1 flex-wrap text-xs">
+                <span className="text-gray-600">Formations</span>
+                {activeVerdict.formations.map(slug => {
+                  const { name, side } = prettyFormation(slug)
+                  const active = diagKey === slug
+                  const clickable = (FORMATION_SQUARES[slug] ?? []).length > 0
+                  return (
+                    <button
+                      key={slug}
+                      disabled={!clickable}
+                      onClick={() => setDiagKey(prev => prev === slug ? null : slug)}
+                      className={
+                        'px-1.5 py-0.5 rounded transition-colors ' +
+                        (active
+                          ? 'bg-amber-600/40 text-amber-200 cursor-pointer'
+                          : clickable
+                          ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer'
+                          : 'bg-gray-800/40 text-gray-500 cursor-default')
+                      }
+                      title={clickable ? `Surligner les cases ${(FORMATION_SQUARES[slug] ?? []).join(', ')}` : slug}
+                    >
+                      {side} {name}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
             <PositionDiagnostic
               verdict={activeVerdict}
               activeKey={diagKey}

@@ -71,6 +71,9 @@ class MoveVerdictOut(BaseModel):
     holes_black: list[int] = []
     outposts_white: list[int] = []
     outposts_black: list[int] = []
+    # Named formations detected on the position (e.g. "roozenburg_blancs").
+    # Phase is already on MoveVerdict.phase above — no duplicate needed.
+    formations: list[str] = []
 
 
 class AnalyzeGameResponse(BaseModel):

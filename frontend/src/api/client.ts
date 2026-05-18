@@ -475,6 +475,7 @@ export interface VerdictOut {
   holes_black: number[]
   outposts_white: number[]
   outposts_black: number[]
+  formations: string[]
 }
 
 export interface PedagogyAnalysis {

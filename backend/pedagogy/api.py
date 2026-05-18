@@ -87,6 +87,7 @@ def _verdict_to_out(v: Any) -> MoveVerdictOut:
         holes_black=list(getattr(feats_after, "holes_black", []) or []),
         outposts_white=list(getattr(feats_after, "outposts_white", []) or []),
         outposts_black=list(getattr(feats_after, "outposts_black", []) or []),
+        formations=list(getattr(feats_after, "formations", []) or []),
     )
 
 
