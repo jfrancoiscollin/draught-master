@@ -31,6 +31,80 @@ interface ImportGamePanelProps {
 
 type PanelMode = 'review' | 'learn'
 
+// ── Position diagnostic ───────────────────────────────────────────────────
+// Four geometric weakness families surfaced from dilf's features_after.
+// One row per family, two clickable counts (white / black) per row; the
+// active count drives the board's highlightSquares overlay.
+
+type VerdictForDiag = {
+  isolated_pawns_white: number[]; isolated_pawns_black: number[]
+  backward_pawns_white: number[]; backward_pawns_black: number[]
+  holes_white: number[]; holes_black: number[]
+  outposts_white: number[]; outposts_black: number[]
+}
+
+const DIAG_ROWS: ReadonlyArray<{
+  label: string; hint: string
+  keys: readonly [string, string]
+  pick: (v: VerdictForDiag) => readonly [number[], number[]]
+}> = [
+  { label: 'Isolés',  hint: 'Pions sans soutien diagonal (côtés vulnérables)',
+    keys: ['iso-w', 'iso-b'], pick: v => [v.isolated_pawns_white, v.isolated_pawns_black] },
+  { label: 'Retardés', hint: 'Pions de la rangée de base privés d\'avance soutenue',
+    keys: ['ret-w', 'ret-b'], pick: v => [v.backward_pawns_white, v.backward_pawns_black] },
+  { label: 'Trous',   hint: 'Cases vides cernées de pièces amies — faiblesses géométriques',
+    keys: ['tro-w', 'tro-b'], pick: v => [v.holes_white, v.holes_black] },
+  { label: 'Postes',  hint: 'Cases avancées, soutenues, à l\'abri d\'une simple prise',
+    keys: ['pos-w', 'pos-b'], pick: v => [v.outposts_white, v.outposts_black] },
+]
+
+function PositionDiagnostic({
+  verdict, activeKey, onToggle,
+}: {
+  verdict: VerdictForDiag
+  activeKey: string | null
+  onToggle: (key: string) => void
+}) {
+  return (
+    <div className="grid grid-cols-[auto_repeat(2,1fr)] gap-x-1.5 gap-y-0.5 text-xs">
+      {DIAG_ROWS.map(row => {
+        const [w, b] = row.pick(verdict)
+        const [kw, kb] = row.keys
+        return (
+          <React.Fragment key={row.label}>
+            <span className="text-gray-500" title={row.hint}>{row.label}</span>
+            {[
+              { sqs: w, key: kw, side: '⬜' as const },
+              { sqs: b, key: kb, side: '⬛' as const },
+            ].map(({ sqs, key, side }) => {
+              const active = activeKey === key
+              const disabled = sqs.length === 0
+              return (
+                <button
+                  key={key}
+                  disabled={disabled}
+                  onClick={() => onToggle(key)}
+                  className={
+                    'px-1 rounded text-left font-mono tabular-nums transition-colors ' +
+                    (disabled
+                      ? 'text-gray-700 cursor-default'
+                      : active
+                      ? 'bg-amber-600/40 text-amber-200 cursor-pointer'
+                      : 'text-gray-300 hover:bg-gray-700/60 cursor-pointer')
+                  }
+                  title={disabled ? '—' : `${sqs.length} case(s) : ${sqs.join(', ')}`}
+                >
+                  {side} {sqs.length}
+                </button>
+              )
+            })}
+          </React.Fragment>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function ImportGamePanel({
   onClose,
   initialPdn,
@@ -120,6 +194,10 @@ export default function ImportGamePanel({
   const [selectedSquare, setSelectedSquare] = useState<number | null>(null)
   const [isDiverted, setIsDiverted] = useState(false)
   const [highlighted, setHighlighted] = useState<number[]>([])
+  // Squares highlighted from the position-diagnostic panel (isolated /
+  // backward / holes / outposts). Kept separate from `highlighted` so
+  // the AnalysisPanel's hover-highlight doesn't fight with it.
+  const [diagKey, setDiagKey] = useState<string | null>(null)
   const loadingMovesRef = useRef(false)
 
   // ── Analysis ──────────────────────────────────────────────────
@@ -477,6 +555,20 @@ export default function ImportGamePanel({
   const hangingSquares = activeVerdict
     ? [...activeVerdict.hanging_pieces_white, ...activeVerdict.hanging_pieces_black]
     : []
+  // Mapping diagKey -> the list of squares it pulls from activeVerdict.
+  // Defined here so both the panel buttons and the highlight overlay stay
+  // in sync without re-walking the verdict shape in two places.
+  const diagSquaresByKey: Record<string, number[]> = activeVerdict ? {
+    'iso-w': activeVerdict.isolated_pawns_white,
+    'iso-b': activeVerdict.isolated_pawns_black,
+    'ret-w': activeVerdict.backward_pawns_white,
+    'ret-b': activeVerdict.backward_pawns_black,
+    'tro-w': activeVerdict.holes_white,
+    'tro-b': activeVerdict.holes_black,
+    'pos-w': activeVerdict.outposts_white,
+    'pos-b': activeVerdict.outposts_black,
+  } : {}
+  const diagSquares = diagKey && diagSquaresByKey[diagKey] ? diagSquaresByKey[diagKey] : []
 
   return (
     <div className="flex flex-col h-full bg-gray-900 text-gray-100">
@@ -511,7 +603,7 @@ export default function ImportGamePanel({
             selectedSquare={selectedSquare}
             onSelectSquare={setSelectedSquare}
             disabled={false}
-            highlightSquares={highlighted}
+            highlightSquares={diagSquares.length > 0 ? diagSquares : highlighted}
             warningSquares={hangingSquares}
             arrows={arrow ? [arrow] : []}
             flipped={flipped}
@@ -520,28 +612,35 @@ export default function ImportGamePanel({
 
         {/* Pedagogy overlay summary — only when an analysed half-move is displayed */}
         {activeVerdict && (
-          <div className="flex items-center gap-3 mt-1.5 px-2 text-xs text-gray-400">
-            {activeVerdict.material_balance !== null && (
-              <span title="Solde matériel (dames = 3 pions), point de vue blancs">
-                <span className="text-gray-600">Matériel </span>
-                <span
-                  className={
-                    activeVerdict.material_balance > 0
-                      ? 'font-mono font-bold text-green-400'
-                      : activeVerdict.material_balance < 0
-                      ? 'font-mono font-bold text-red-400'
-                      : 'font-mono font-bold text-gray-400'
-                  }
-                >
-                  {activeVerdict.material_balance > 0 ? '+' : ''}{activeVerdict.material_balance}
+          <div className="flex flex-col gap-1 mt-1.5 px-2 w-full max-w-xs">
+            <div className="flex items-center gap-3 text-xs text-gray-400">
+              {activeVerdict.material_balance !== null && (
+                <span title="Solde matériel (dames = 3 pions), point de vue blancs">
+                  <span className="text-gray-600">Matériel </span>
+                  <span
+                    className={
+                      activeVerdict.material_balance > 0
+                        ? 'font-mono font-bold text-green-400'
+                        : activeVerdict.material_balance < 0
+                        ? 'font-mono font-bold text-red-400'
+                        : 'font-mono font-bold text-gray-400'
+                    }
+                  >
+                    {activeVerdict.material_balance > 0 ? '+' : ''}{activeVerdict.material_balance}
+                  </span>
                 </span>
-              </span>
-            )}
-            {hangingSquares.length > 0 && (
-              <span className="font-bold text-red-400" title="Pièces capturables au coup suivant">
-                ⚠ {hangingSquares.length} pièce{hangingSquares.length > 1 ? 's' : ''} en l'air
-              </span>
-            )}
+              )}
+              {hangingSquares.length > 0 && (
+                <span className="font-bold text-red-400" title="Pièces capturables au coup suivant">
+                  ⚠ {hangingSquares.length} pièce{hangingSquares.length > 1 ? 's' : ''} en l'air
+                </span>
+              )}
+            </div>
+            <PositionDiagnostic
+              verdict={activeVerdict}
+              activeKey={diagKey}
+              onToggle={k => setDiagKey(prev => prev === k ? null : k)}
+            />
           </div>
         )}
 

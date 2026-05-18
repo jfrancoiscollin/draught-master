@@ -61,6 +61,16 @@ class MoveVerdictOut(BaseModel):
     material_balance: Optional[int] = None
     hanging_pieces_white: list[int] = []
     hanging_pieces_black: list[int] = []
+    # Structural weaknesses (also from features_after) — the position
+    # diagnostic panel highlights one set at a time on the board.
+    isolated_pawns_white: list[int] = []
+    isolated_pawns_black: list[int] = []
+    backward_pawns_white: list[int] = []
+    backward_pawns_black: list[int] = []
+    holes_white: list[int] = []
+    holes_black: list[int] = []
+    outposts_white: list[int] = []
+    outposts_black: list[int] = []
 
 
 class AnalyzeGameResponse(BaseModel):

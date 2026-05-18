@@ -79,6 +79,14 @@ def _verdict_to_out(v: Any) -> MoveVerdictOut:
         material_balance=getattr(feats_after, "material_balance", None),
         hanging_pieces_white=list(getattr(feats_after, "hanging_pieces_white", []) or []),
         hanging_pieces_black=list(getattr(feats_after, "hanging_pieces_black", []) or []),
+        isolated_pawns_white=list(getattr(feats_after, "isolated_pawns_white", []) or []),
+        isolated_pawns_black=list(getattr(feats_after, "isolated_pawns_black", []) or []),
+        backward_pawns_white=list(getattr(feats_after, "backward_pawns_white", []) or []),
+        backward_pawns_black=list(getattr(feats_after, "backward_pawns_black", []) or []),
+        holes_white=list(getattr(feats_after, "holes_white", []) or []),
+        holes_black=list(getattr(feats_after, "holes_black", []) or []),
+        outposts_white=list(getattr(feats_after, "outposts_white", []) or []),
+        outposts_black=list(getattr(feats_after, "outposts_black", []) or []),
     )
 
 

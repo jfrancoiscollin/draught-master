@@ -467,6 +467,14 @@ export interface VerdictOut {
   material_balance: number | null
   hanging_pieces_white: number[]
   hanging_pieces_black: number[]
+  isolated_pawns_white: number[]
+  isolated_pawns_black: number[]
+  backward_pawns_white: number[]
+  backward_pawns_black: number[]
+  holes_white: number[]
+  holes_black: number[]
+  outposts_white: number[]
+  outposts_black: number[]
 }
 
 export interface PedagogyAnalysis {
