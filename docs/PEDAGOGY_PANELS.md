@@ -163,7 +163,64 @@ en haut à droite te dit où tu en es.
 
 ---
 
-## 8. Précision technique : d'où viennent ces nombres ?
+## 8. Faiblesses partie-par-partie (PedagogyPanel)
+
+Sous la timeline matériel, deux vues complémentaires sur la même donnée
+sous-jacente : les listes `isolated_pawns_*` / `backward_pawns_*` /
+`holes_*` / `outposts_*` calculées sur **chaque** demi-coup de la
+partie courante.
+
+### 8.1 Faiblesses distinctes (carte 10×10)
+
+Même format visuel que la carte du profil, mais sur **une seule
+partie**. Cinq onglets, ta couleur uniquement.
+
+**Ce qui est compté** : une faiblesse persistante (par ex. trou sur 23
+qui survit pendant 40 demi-coups) = **1 occurrence**. Si elle disparaît
+puis réapparaît plus tard, +1. C'est un comptage de **streaks**, pas de
+demi-coups.
+
+**Pourquoi pas de demi-coups ?** Parce que ça gonflerait artificiellement
+les faiblesses persistantes (un pion isolé qui dure 50 demi-coups
+pèserait 50× plus qu'un trou tactique éclair, alors qu'on a affaire à
+*une seule* erreur de placement chacune). La carte 10×10 répond à la
+question "où ai-je eu des faiblesses dans cette partie" — pas "combien
+de temps".
+
+**Le warning "10 parties" du §7 ne s'applique pas ici** : on n'agrège
+pas sur plusieurs parties, on décompose UNE partie. Le signal est
+descriptif, pas statistique.
+
+### 8.2 Gantt — durée des faiblesses
+
+Si tu veux savoir *combien de temps* chaque faiblesse a duré, le Gantt
+juste en-dessous le montre. Une ligne par case (top 12 par durée totale),
+chaque streak = une barre horizontale colorée selon sa famille :
+
+- 🟦 cyan = isolés
+- 🟧 ambre = retardés
+- 🟪 violet = trous
+- 🟩 vert = postes
+
+L'axe X = numéro de demi-coup (1 à N). Survoler une barre montre la
+fenêtre exacte. Filtres : 5 boutons "Toutes / Isolés / Retardés / Trous /
+Postes".
+
+**À regarder** :
+
+- Une barre qui couvre 50% de la partie sur un trou en 23 = "le centre
+  était cédé sur la moitié de la partie".
+- Plusieurs barres courtes décalées dans le temps = faiblesses
+  tactiques transitoires, pas une faute structurelle.
+- Une barre verte longue = poste solide tenu longtemps. C'est une
+  réussite.
+
+Les deux vues sont **complémentaires** : la carte dit *où*, le Gantt
+dit *quand et combien de temps*.
+
+---
+
+## 9. Précision technique : d'où viennent ces nombres ?
 
 Tous les panneaux ci-dessus sont alimentés par **un seul calcul** :
 [`dilf.compute_features(state, half_move, engine) → Features`](https://github.com/jfrancoiscollin/dilf/blob/develop/pedagogy/features/formations.py).
@@ -185,7 +242,7 @@ l'ancien `features_after_json`).
 
 ---
 
-## 9. À lire ensuite
+## 10. À lire ensuite
 
 - [`PEDAGOGY_WEAKNESSES.md`](./PEDAGOGY_WEAKNESSES.md) — contrat dilf ↔ Draught Master
 - [Code dilf, registry des motifs](https://github.com/jfrancoiscollin/dilf/blob/develop/pedagogy/motifs/) — liste exhaustive des coups tactiques détectés

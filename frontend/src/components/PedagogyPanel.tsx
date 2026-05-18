@@ -157,11 +157,24 @@ function MaterialTimeline({
   )
 }
 
-// ── Per-game heatmap ──────────────────────────────────────────────────────
+// ── Per-game weakness persistence ─────────────────────────────────────────
 // Aggregates the same 4 geometric families as the cross-game heatmap, but
 // only over the verdicts of the currently-open game. Filtered to the
-// user's own side so the framing matches WeaknessPanel ("ton placement
-// dans cette partie", not "le placement des deux camps").
+// user's own side.
+//
+// IMPORTANT — what this counts. The naive approach (increment per
+// half-move occurrence) measures *duration*: a hole that stays on
+// square 23 for 40 half-moves contributes 40 to the count, even though
+// it's the same hole. That inflates persistent issues out of all
+// proportion to distinct ones.
+//
+// Instead, we count *streaks*: a contiguous run of half-moves where a
+// (square, metric) pair is active counts as 1. A hole-on-23 that
+// disappears and re-appears later counts as 2. This is the meaningful
+// "how many distinct weaknesses did I have on this square" reading.
+//
+// For the duration view (which is also useful pedagogically — a
+// long-lived weakness is worth flagging), see the Gantt panel below.
 
 function aggregateGameHeatmap(
   verdicts: VerdictOut[],
@@ -175,13 +188,17 @@ function aggregateGameHeatmap(
     { key: 'holes',    pick: v => (v as any)[`holes_${suffix}`] ?? [] },
     { key: 'outposts', pick: v => (v as any)[`outposts_${suffix}`] ?? [] },
   ]
-  for (const v of verdicts) {
-    for (const { key, pick } of lists) {
-      for (const sq of pick(v)) {
+  for (const { key, pick } of lists) {
+    let prev = new Set<number>()
+    for (const v of verdicts) {
+      const curr = new Set<number>(pick(v))
+      for (const sq of curr) {
+        if (prev.has(sq)) continue
         const bucket = by[String(sq)] ?? { isolated: 0, backward: 0, holes: 0, outposts: 0 }
         bucket[key] += 1
         by[String(sq)] = bucket
       }
+      prev = curr
     }
   }
   return by
@@ -230,7 +247,7 @@ function GameHeatmap({
         className="flex items-center justify-between text-xs text-gray-400 hover:text-gray-200 cursor-pointer bg-transparent border-0 p-0 text-left"
       >
         <span>
-          {open ? '▾' : '▸'} Carte de la partie ({userSide === 'white' ? '⬜' : '⬛'})
+          {open ? '▾' : '▸'} Faiblesses distinctes ({userSide === 'white' ? '⬜' : '⬛'})
         </span>
         <span className="text-gray-600">
           {total === 0 ? 'pas de données' : `${total} occurrences`}
@@ -258,14 +275,226 @@ function GameHeatmap({
               )}
             </div>
           )}
-          <p className="text-xs text-gray-600">
-            Agrégé sur les {verdicts.length} demi-coups de la partie ·{' '}
-            {metric === 'outposts' ? 'vert = postes (fort)' : 'rouge = récurrence (faible)'}
+          <p className="text-xs text-gray-600 leading-relaxed">
+            {verdicts.length} demi-coups · une faiblesse persistante = 1 occurrence
+            (réapparaît après interruption = +1). Voir le Gantt ci-dessous pour
+            la durée réelle.
           </p>
         </>
       )}
     </div>
   )
+}
+
+// ── Per-game weakness Gantt ───────────────────────────────────────────────
+// Companion to the streak-deduped heatmap above: shows *when* each
+// (square, metric) was active in the game. Each row is a (square,
+// metric) pair; each bar is a contiguous streak. Same colour palette
+// as the corner-dot flags on the board.
+
+type GanttStreak = { metric: HeatMetric; startIdx: number; endIdx: number }
+
+function computeGanttStreaks(
+  verdicts: VerdictOut[],
+  userSide: 'white' | 'black',
+): Map<number, GanttStreak[]> {
+  const out = new Map<number, GanttStreak[]>()
+  const suffix = userSide === 'white' ? 'white' : 'black'
+  const families: Array<{ metric: Exclude<HeatMetric, 'all'>; pick: (v: VerdictOut) => number[] }> = [
+    { metric: 'isolated', pick: v => (v as any)[`isolated_pawns_${suffix}`] ?? [] },
+    { metric: 'backward', pick: v => (v as any)[`backward_pawns_${suffix}`] ?? [] },
+    { metric: 'holes',    pick: v => (v as any)[`holes_${suffix}`] ?? [] },
+    { metric: 'outposts', pick: v => (v as any)[`outposts_${suffix}`] ?? [] },
+  ]
+  // Track open streaks: (sq, metric) -> startIdx. When the square
+  // disappears from the metric, close the streak; when it reappears,
+  // open a fresh one. End of verdicts closes everything still open.
+  type Key = string
+  const openStarts = new Map<Key, number>()
+  const k = (sq: number, m: HeatMetric) => `${m}:${sq}`
+
+  for (let i = 0; i < verdicts.length; i++) {
+    const v = verdicts[i]
+    const seenThisVerdict = new Set<Key>()
+    for (const { metric, pick } of families) {
+      for (const sq of pick(v)) {
+        const key = k(sq, metric)
+        seenThisVerdict.add(key)
+        if (!openStarts.has(key)) openStarts.set(key, i)
+      }
+    }
+    // Close any streak that was open last verdict but isn't here now.
+    for (const [key, start] of [...openStarts.entries()]) {
+      if (seenThisVerdict.has(key)) continue
+      const [metric, sqStr] = key.split(':')
+      const sq = Number(sqStr)
+      const streaks = out.get(sq) ?? []
+      streaks.push({ metric: metric as HeatMetric, startIdx: start, endIdx: i - 1 })
+      out.set(sq, streaks)
+      openStarts.delete(key)
+    }
+  }
+  // Close anything still open at end-of-game.
+  for (const [key, start] of openStarts) {
+    const [metric, sqStr] = key.split(':')
+    const sq = Number(sqStr)
+    const streaks = out.get(sq) ?? []
+    streaks.push({ metric: metric as HeatMetric, startIdx: start, endIdx: verdicts.length - 1 })
+    out.set(sq, streaks)
+  }
+  return out
+}
+
+const GANTT_COLORS: Record<Exclude<HeatMetric, 'all'>, string> = {
+  isolated: '#06b6d4',
+  backward: '#f59e0b',
+  holes:    '#a855f7',
+  outposts: '#22c55e',
+}
+
+function WeaknessGantt({
+  verdicts, userSide,
+}: {
+  verdicts: VerdictOut[]
+  userSide: 'white' | 'black'
+}) {
+  const [open, setOpen] = useState(false)
+  const [filter, setFilter] = useState<HeatMetric>('all')
+
+  if (verdicts.length < 2) return null
+  const streaks = computeGanttStreaks(verdicts, userSide)
+  if (streaks.size === 0) return null
+
+  // One row per square. Rank by total streak duration desc so the
+  // most pedagogically interesting (long-lived weaknesses) come first.
+  const rows = [...streaks.entries()]
+    .map(([sq, ss]) => {
+      const filtered = filter === 'all' ? ss : ss.filter(s => s.metric === filter)
+      const dur = filtered.reduce((s, x) => s + (x.endIdx - x.startIdx + 1), 0)
+      return { sq, streaks: filtered, dur }
+    })
+    .filter(r => r.streaks.length > 0)
+    .sort((a, b) => b.dur - a.dur)
+    .slice(0, 12)
+
+  if (rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <button
+          onClick={() => setOpen(v => !v)}
+          className="flex items-center justify-between text-xs text-gray-400 hover:text-gray-200 cursor-pointer bg-transparent border-0 p-0 text-left"
+        >
+          <span>{open ? '▾' : '▸'} Durée des faiblesses (Gantt)</span>
+          <span className="text-gray-600">pas de données</span>
+        </button>
+        {open && (
+          <p className="text-xs text-gray-500 italic">
+            Aucune faiblesse de la famille « {HEAT_FILTER_LABEL[filter]} » sur cette partie.
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  const N = verdicts.length
+  const W = 280
+  const ROW_H = 14
+  const LABEL_W = 28
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center justify-between text-xs text-gray-400 hover:text-gray-200 cursor-pointer bg-transparent border-0 p-0 text-left"
+      >
+        <span>{open ? '▾' : '▸'} Durée des faiblesses (Gantt)</span>
+        <span className="text-gray-600">
+          {rows.length} case{rows.length > 1 ? 's' : ''} · {N} demi-coups
+        </span>
+      </button>
+      {open && (
+        <>
+          <div className="flex gap-1 flex-wrap">
+            {(['all', 'isolated', 'backward', 'holes', 'outposts'] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => setFilter(m)}
+                className={
+                  'px-1.5 py-0.5 rounded text-xs transition-colors ' +
+                  (filter === m
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 cursor-pointer')
+                }
+              >
+                {HEAT_FILTER_LABEL[m]}
+              </button>
+            ))}
+          </div>
+          <svg
+            viewBox={`0 0 ${W} ${rows.length * ROW_H + 14}`}
+            preserveAspectRatio="none"
+            style={{ width: '100%', maxWidth: 320, background: 'rgba(0,0,0,0.2)', borderRadius: 4 }}
+          >
+            {/* X-axis ticks */}
+            {[0, 0.25, 0.5, 0.75, 1].map(t => {
+              const x = LABEL_W + t * (W - LABEL_W)
+              return (
+                <g key={t}>
+                  <line x1={x} y1={0} x2={x} y2={rows.length * ROW_H + 14}
+                    stroke="#374151" strokeWidth={0.4} />
+                  <text x={x} y={rows.length * ROW_H + 12}
+                    fontSize={8} fill="#6b7280" textAnchor="middle">
+                    {Math.round(t * N)}
+                  </text>
+                </g>
+              )
+            })}
+            {rows.map((r, i) => {
+              const y = i * ROW_H
+              return (
+                <g key={r.sq}>
+                  <text x={LABEL_W - 4} y={y + ROW_H * 0.7}
+                    fontSize={9} fill="#d1d5db" textAnchor="end" fontFamily="monospace">
+                    {r.sq}
+                  </text>
+                  <line x1={LABEL_W} y1={y + ROW_H / 2} x2={W} y2={y + ROW_H / 2}
+                    stroke="#1f2937" strokeWidth={0.5} />
+                  {r.streaks.map((s, k) => {
+                    const x1 = LABEL_W + (s.startIdx / Math.max(N - 1, 1)) * (W - LABEL_W)
+                    const x2 = LABEL_W + (s.endIdx   / Math.max(N - 1, 1)) * (W - LABEL_W)
+                    return (
+                      <rect
+                        key={k}
+                        x={x1} y={y + 2}
+                        width={Math.max(2, x2 - x1)} height={ROW_H - 4}
+                        rx={1.5}
+                        fill={GANTT_COLORS[s.metric as Exclude<HeatMetric, 'all'>]}
+                        opacity={0.85}
+                      >
+                        <title>
+                          case {r.sq} · {HEAT_FILTER_LABEL[s.metric]} ·
+                          demi-coups {s.startIdx + 1}–{s.endIdx + 1}
+                          ({s.endIdx - s.startIdx + 1} demi-coups)
+                        </title>
+                      </rect>
+                    )
+                  })}
+                </g>
+              )
+            })}
+          </svg>
+          <p className="text-xs text-gray-600">
+            Une ligne par case · barres = streaks contigus · trier par durée totale ·
+            top 12. Couleurs = mêmes que les pastilles du diagnostic.
+          </p>
+        </>
+      )}
+    </div>
+  )
+}
+
+const HEAT_FILTER_LABEL: Record<HeatMetric, string> = {
+  all: 'Toutes', isolated: 'Isolés', backward: 'Retardés', holes: 'Trous', outposts: 'Postes',
 }
 
 function AccuracyBar({ accuracy }: { accuracy: number }) {
@@ -524,8 +753,15 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
 
         {/* Per-game weakness heatmap — same visual language as the
             cross-game variant in WeaknessPanel, aggregated only over
-            this game's verdicts. Collapsed by default. */}
+            this game's verdicts. Counts distinct streaks, not raw
+            half-move occurrences (see aggregateGameHeatmap docstring). */}
         <GameHeatmap verdicts={verdicts} userSide={userSide} />
+
+        {/* Companion Gantt — shows *when* each weakness was active.
+            Heatmap answers "where", Gantt answers "for how long and
+            in what window". Collapsed by default to keep the timeline
+            + accuracy bars above the fold. */}
+        <WeaknessGantt verdicts={verdicts} userSide={userSide} />
 
         {/* Accuracy + ACPL bars — one per side */}
         {([
