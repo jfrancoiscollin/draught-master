@@ -649,6 +649,19 @@ export async function getWeaknessHeatmap(lookback = 30): Promise<WeaknessHeatmap
   return res.data
 }
 
+/** Caption an arbitrary pre-aggregated heatmap. Used by the per-game
+ *  view in PedagogyPanel, which aggregates client-side from verdicts.
+ *  Returns the same { metric -> HeatmapNarrative | null } shape as the
+ *  embedded narratives in the cross-game endpoint. */
+export async function narrateHeatmap(
+  bySquare: Record<string, SquareWeaknessCounts>,
+): Promise<Record<string, HeatmapNarrative | null>> {
+  const res = await api.post<{ narratives: Record<string, HeatmapNarrative | null> }>(
+    '/pedagogy/narrate-heatmap', { by_square: bySquare },
+  )
+  return res.data.narratives
+}
+
 export async function getMotifInfo(slug: string): Promise<MotifInfo> {
   const res = await api.get<MotifInfo>(`/pedagogy/motifs/${slug}`)
   return res.data

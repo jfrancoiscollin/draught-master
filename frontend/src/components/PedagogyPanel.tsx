@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import type { ExplainResult, PedagogyAnalysis, SquareWeaknessCounts, VerdictOut } from '../api/client'
-import { explainMovePedagogy } from '../api/client'
+import type { ExplainResult, HeatmapNarrative, PedagogyAnalysis, SquareWeaknessCounts, VerdictOut } from '../api/client'
+import { explainMovePedagogy, narrateHeatmap } from '../api/client'
 import {
   HeatmapBoard,
   HeatMetricSelector,
@@ -195,13 +195,33 @@ function GameHeatmap({
 }) {
   const [metric, setMetric] = useState<HeatMetric>('all')
   const [open, setOpen] = useState(false)
-  if (verdicts.length === 0) return null
-  // Cheap enough to recompute on every render (≤120 verdicts × 8 lists).
+  const [narratives, setNarratives] = useState<Record<string, HeatmapNarrative | null> | null>(null)
+  // Recompute on every render so a re-analysis of the game refreshes
+  // the aggregation. Cheap (≤120 verdicts × 8 lists).
   const bySquare = aggregateGameHeatmap(verdicts, userSide)
   const total = Object.values(bySquare).reduce(
     (s, b) => s + b.isolated + b.backward + b.holes + b.outposts, 0,
   )
+
+  // Lazy-fetch narratives the first time the panel opens for this
+  // verdict set. Re-fetch when verdicts identity changes (a re-analysis
+  // returns a new array) so the captions don't go stale. Failure is
+  // non-fatal — we just hide the narrative block.
+  useEffect(() => {
+    if (!open || total === 0) return
+    let cancelled = false
+    narrateHeatmap(bySquare)
+      .then(n => { if (!cancelled) setNarratives(n) })
+      .catch(() => { if (!cancelled) setNarratives(null) })
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- bySquare
+    // is rebuilt every render; we only want the fetch on open / verdicts.
+  }, [open, verdicts])
+
+  if (verdicts.length === 0) return null
   if (total === 0) return null
+
+  const narrative = narratives?.[metric]
   return (
     <div className="flex flex-col gap-1.5">
       <button
@@ -217,6 +237,17 @@ function GameHeatmap({
         <>
           <HeatMetricSelector value={metric} onChange={setMetric} />
           <HeatmapBoard bySquare={bySquare} metric={metric} maxWidth={220} />
+          {narrative && (
+            <div className="flex flex-col gap-1 text-xs">
+              <p className="text-gray-400">
+                <span className="text-gray-600">Top cases : </span>
+                <span className="font-mono text-gray-200">{narrative.top_line}</span>
+              </p>
+              {narrative.hint && (
+                <p className="text-gray-400 leading-relaxed">{narrative.hint}</p>
+              )}
+            </div>
+          )}
           <p className="text-xs text-gray-600">
             Agrégé sur les {verdicts.length} demi-coups de la partie ·{' '}
             {metric === 'outposts' ? 'vert = postes (fort)' : 'rouge = récurrence (faible)'}

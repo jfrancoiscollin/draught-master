@@ -30,6 +30,8 @@ from .models import (
     MotifInfoOut,
     MotifMatchOut,
     MoveVerdictOut,
+    NarrateHeatmapRequest,
+    NarrateHeatmapResponse,
     RecommendationsResponse,
     SquareWeaknessCounts,
     UserProfileOut,
@@ -62,6 +64,26 @@ def _ensure_explain_limiters() -> None:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _compute_narratives(
+    by_square: dict[int, dict[str, int]] | dict[int, Any],
+) -> dict[str, Optional[HeatmapNarrativeOut]]:
+    """Run dilf's narrator on every metric and pack the results for the
+    wire. Shared by the per-user aggregated endpoint and the generic
+    POST /narrate-heatmap consumer-driven endpoint, so any future
+    enrichment in dilf surfaces once in both places.
+    """
+    from pedagogy.profile import weakness_heatmap_narrative  # noqa: PLC0415
+
+    out: dict[str, Optional[HeatmapNarrativeOut]] = {}
+    for metric in ("all", "isolated", "backward", "holes", "outposts"):
+        n = weakness_heatmap_narrative(by_square, metric)  # type: ignore[arg-type]
+        out[metric] = (
+            HeatmapNarrativeOut(top_line=n["top_line"], hint=n["hint"])
+            if n is not None else None
+        )
+    return out
 
 
 def _threats_to_payload(items: Any) -> list[dict[str, list[int]]]:
@@ -676,17 +698,8 @@ async def get_my_weakness_heatmap(
                         })
                         bucket[metric] += 1
     # Pre-compute one narrative per metric so the frontend toggles
-    # without a round-trip. Lives in dilf so all UIs share the wording —
-    # see pedagogy/profile/heatmap_narrator.py for the enrichment backlog.
-    from pedagogy.profile import weakness_heatmap_narrative  # noqa: PLC0415
-
-    narratives: dict[str, Optional[HeatmapNarrativeOut]] = {}
-    for metric in ("all", "isolated", "backward", "holes", "outposts"):
-        n = weakness_heatmap_narrative(by_square, metric)  # type: ignore[arg-type]
-        narratives[metric] = (
-            HeatmapNarrativeOut(top_line=n["top_line"], hint=n["hint"])
-            if n is not None else None
-        )
+    # without a round-trip. See _compute_narratives for the dilf hand-off.
+    narratives = _compute_narratives(by_square)
 
     return WeaknessHeatmapOut(
         by_square={
@@ -697,6 +710,40 @@ async def get_my_weakness_heatmap(
         lookback=lookback,
         narratives=narratives,
     )
+
+
+# ---------------------------------------------------------------------------
+# POST /api/pedagogy/narrate-heatmap
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/narrate-heatmap",
+    response_model=NarrateHeatmapResponse,
+)
+async def narrate_heatmap(
+    req: NarrateHeatmapRequest,
+    user: Any = Depends(current_user),
+) -> NarrateHeatmapResponse:
+    """Narrate any pre-aggregated weakness heatmap.
+
+    Generic counterpart to the cross-user endpoint: callers (frontend
+    per-game view, batch report, future mobile client, …) build their
+    own ``by_square`` aggregation and ask the backend to caption it. No
+    DB access, no auth-scoped data — but ``current_user`` is kept on
+    the route to match every other /pedagogy/* endpoint.
+
+    Same dilf hand-off (:func:`pedagogy.profile.weakness_heatmap_narrative`)
+    and same wire shape (5 metrics including ``all``) as the embedded
+    ``narratives`` block in ``/profile/me/weakness-heatmap``.
+    """
+    # Pydantic gives us SquareWeaknessCounts instances; the dilf
+    # narrator wants TypedDict-shaped mappings — model_dump() lifts them
+    # to plain dicts without losing the field set.
+    payload: dict[int, dict[str, int]] = {
+        int(sq): bucket.model_dump() for sq, bucket in req.by_square.items()
+    }
+    return NarrateHeatmapResponse(narratives=_compute_narratives(payload))
 
 
 # ---------------------------------------------------------------------------

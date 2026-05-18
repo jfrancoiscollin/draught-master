@@ -142,6 +142,18 @@ class HeatmapNarrativeOut(BaseModel):
     hint: str
 
 
+class NarrateHeatmapRequest(BaseModel):
+    # Same shape as WeaknessHeatmapOut.by_square. Keys are FMJD square
+    # indices 1..50 sent as ints by the wire; Pydantic accepts the
+    # canonical JSON form (numeric keys become str on the JSON side and
+    # are coerced back here).
+    by_square: dict[int, SquareWeaknessCounts]
+
+
+class NarrateHeatmapResponse(BaseModel):
+    narratives: dict[str, Optional[HeatmapNarrativeOut]]
+
+
 class WeaknessHeatmapOut(BaseModel):
     # Square index (1..50, FMJD numbering) -> per-metric occurrence count
     # across the lookback window. Only the user's own side is counted, so
