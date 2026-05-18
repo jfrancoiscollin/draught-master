@@ -194,10 +194,12 @@ function GameHeatmap({
   userSide: 'white' | 'black'
 }) {
   const [metric, setMetric] = useState<HeatMetric>('all')
-  const [open, setOpen] = useState(false)
+  // Default to open: the cross-game variant is permanently visible at
+  // the bottom of WeaknessPanel, so the per-game counterpart should
+  // match — making it discoverable on first land instead of buried
+  // behind a small disclosure triangle.
+  const [open, setOpen] = useState(true)
   const [narratives, setNarratives] = useState<Record<string, HeatmapNarrative | null> | null>(null)
-  // Recompute on every render so a re-analysis of the game refreshes
-  // the aggregation. Cheap (≤120 verdicts × 8 lists).
   const bySquare = aggregateGameHeatmap(verdicts, userSide)
   const total = Object.values(bySquare).reduce(
     (s, b) => s + b.isolated + b.backward + b.holes + b.outposts, 0,
@@ -219,7 +221,6 @@ function GameHeatmap({
   }, [open, verdicts])
 
   if (verdicts.length === 0) return null
-  if (total === 0) return null
 
   const narrative = narratives?.[metric]
   return (
@@ -231,9 +232,18 @@ function GameHeatmap({
         <span>
           {open ? '▾' : '▸'} Carte de la partie ({userSide === 'white' ? '⬜' : '⬛'})
         </span>
-        <span className="text-gray-600">{total} occurrences</span>
+        <span className="text-gray-600">
+          {total === 0 ? 'pas de données' : `${total} occurrences`}
+        </span>
       </button>
-      {open && (
+      {open && total === 0 && (
+        <p className="text-xs text-gray-500 italic">
+          Aucune faiblesse géométrique détectée sur cette partie — soit le placement
+          est resté propre, soit la partie a été analysée avant l'arrivée de la
+          carte par-partie (relance "🎓 Analyser la partie" pour rafraîchir).
+        </p>
+      )}
+      {open && total > 0 && (
         <>
           <HeatMetricSelector value={metric} onChange={setMetric} />
           <HeatmapBoard bySquare={bySquare} metric={metric} maxWidth={220} />
