@@ -80,6 +80,78 @@ function acpl(vs: VerdictOut[]): number {
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
+// ── Material timeline ─────────────────────────────────────────────────────
+// Compact line chart of material_balance and score_before across the
+// game. White-perspective Y axis: above zero = white ahead. Clicking a
+// column jumps the board to that half-move (same contract as the move
+// rows). Score is clipped to ±5 pawns so a single mate-bound eval
+// doesn't squash the whole curve flat.
+
+function MaterialTimeline({
+  verdicts, currentHalfMove, onJumpTo,
+}: {
+  verdicts: VerdictOut[]
+  currentHalfMove?: number
+  onJumpTo?: (hm: number) => void
+}) {
+  if (verdicts.length < 2) return null
+  const W = 280
+  const H = 56
+  const PAD_X = 4
+  const PAD_Y = 6
+  const innerW = W - 2 * PAD_X
+  const innerH = H - 2 * PAD_Y
+
+  const mats = verdicts.map(v => v.material_balance ?? 0)
+  const scores = verdicts.map(v => Math.max(-5, Math.min(5, v.score_before)))
+  const yMax = Math.max(2, ...mats.map(Math.abs), ...scores.map(Math.abs))
+
+  const xFor = (i: number) => PAD_X + (i / (verdicts.length - 1)) * innerW
+  const yFor = (val: number) => PAD_Y + (1 - (val + yMax) / (2 * yMax)) * innerH
+  const yZero = yFor(0)
+
+  const matPath = mats.map((v, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i)} ${yFor(v)}`).join(' ')
+  const scoPath = scores.map((v, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i)} ${yFor(v)}`).join(' ')
+
+  const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!onJumpTo) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const px = e.clientX - rect.left
+    const ratio = (px / rect.width) * (W / W)  // identity, viewBox = W
+    const i = Math.round((ratio - PAD_X / W) * (verdicts.length - 1))
+    const clamped = Math.max(0, Math.min(verdicts.length - 1, i))
+    onJumpTo(verdicts[clamped].move_number)
+  }
+
+  const cursorX = currentHalfMove
+    ? xFor(Math.max(0, verdicts.findIndex(v => v.move_number === currentHalfMove)))
+    : null
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-xs text-gray-600 w-4 text-right tabular-nums" title="Échelle Y">±{yMax}</span>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        onClick={handleClick}
+        className="flex-1 cursor-pointer"
+        style={{ height: H, background: 'rgba(0,0,0,0.2)', borderRadius: 4 }}
+      >
+        {/* Zero baseline */}
+        <line x1={PAD_X} y1={yZero} x2={W - PAD_X} y2={yZero} stroke="#4b5563" strokeWidth={0.5} strokeDasharray="2 2" />
+        {/* Score (Scan) — thin secondary */}
+        <path d={scoPath} fill="none" stroke="#6366f1" strokeWidth={1} opacity={0.55} />
+        {/* Material — main signal */}
+        <path d={matPath} fill="none" stroke="#fbbf24" strokeWidth={1.5} />
+        {/* Current cursor */}
+        {cursorX !== null && cursorX !== undefined && (
+          <line x1={cursorX} y1={PAD_Y} x2={cursorX} y2={H - PAD_Y} stroke="#f59e0b" strokeWidth={1} opacity={0.9} />
+        )}
+      </svg>
+    </div>
+  )
+}
+
 function AccuracyBar({ accuracy }: { accuracy: number }) {
   const pct = Math.round(accuracy * 100)
   const color = pct >= 90 ? '#22c55e' : pct >= 75 ? '#86efac' : pct >= 60 ? '#fbbf24' : '#ef4444'
@@ -330,6 +402,9 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
           <span className="text-xs font-semibold text-gray-300">Analyse pédagogique</span>
           <span className="text-xs text-gray-500">{verdicts.length} demi-coups · Scan</span>
         </div>
+
+        {/* Material + score timeline — click to jump */}
+        <MaterialTimeline verdicts={verdicts} currentHalfMove={currentHalfMove} onJumpTo={onJumpTo} />
 
         {/* Accuracy + ACPL bars — one per side */}
         {([

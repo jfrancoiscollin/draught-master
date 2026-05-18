@@ -37,6 +37,15 @@ const verdict = (over: Partial<VerdictOut> = {}): VerdictOut => ({
   material_balance: 0,
   hanging_pieces_white: [],
   hanging_pieces_black: [],
+  isolated_pawns_white: [],
+  isolated_pawns_black: [],
+  backward_pawns_white: [],
+  backward_pawns_black: [],
+  holes_white: [],
+  holes_black: [],
+  outposts_white: [],
+  outposts_black: [],
+  formations: [],
   ...over,
 })
 
