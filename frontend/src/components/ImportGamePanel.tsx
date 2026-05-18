@@ -683,9 +683,13 @@ export default function ImportGamePanel({
         <button onClick={onClose} className="text-gray-600 hover:text-gray-300 text-sm px-1">✕</button>
       </div>
 
-      {/* Board + navigation */}
-      <div className="flex-shrink-0 flex flex-col items-center py-2 bg-gray-900 border-b border-gray-700">
-        <div style={{ width: '100%', maxWidth: 240 }}>
+      {/* Board (left) + navigation / scan / pedagogy summary (right).
+          Two-column layout on screens that can fit it; falls back to
+          stacked on narrow phones so the board doesn't get crushed
+          under 200 px. */}
+      <div className="flex-shrink-0 flex flex-col sm:flex-row sm:items-start gap-3 py-2 px-2 bg-gray-900 border-b border-gray-700">
+        {/* LEFT: board */}
+        <div className="flex-shrink-0" style={{ width: '100%', maxWidth: 280 }}>
           <Board
             board={board}
             legalMoves={legalMoves}
@@ -701,115 +705,121 @@ export default function ImportGamePanel({
           />
         </div>
 
-        {/* Pedagogy overlay summary — only when an analysed half-move is displayed */}
-        {activeVerdict && (
-          <div className="flex flex-col gap-1 mt-1.5 px-2 w-full max-w-xs">
-            <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
-              <span title={`Phase : ${PHASE_FR[activeVerdict.phase]}`}>
-                <span className="text-gray-600">Phase </span>
-                <span className="font-semibold text-indigo-300">{PHASE_FR[activeVerdict.phase]}</span>
-              </span>
-              {activeVerdict.material_balance !== null && (
-                <span title="Solde matériel (dames = 3 pions), point de vue blancs">
-                  <span className="text-gray-600">Matériel </span>
-                  <span
-                    className={
-                      activeVerdict.material_balance > 0
-                        ? 'font-mono font-bold text-green-400'
-                        : activeVerdict.material_balance < 0
-                        ? 'font-mono font-bold text-red-400'
-                        : 'font-mono font-bold text-gray-400'
-                    }
-                  >
-                    {activeVerdict.material_balance > 0 ? '+' : ''}{activeVerdict.material_balance}
-                  </span>
-                </span>
-              )}
-              {hangingSquares.length > 0 && (
-                <span className="font-bold text-red-400" title="Pièces capturables au coup suivant">
-                  ⚠ {hangingSquares.length} pièce{hangingSquares.length > 1 ? 's' : ''} en l'air
-                </span>
-              )}
-              {threatCount > 0 && (
-                <button
-                  onClick={() => setShowThreats(v => !v)}
-                  className={
-                    'px-1.5 py-0.5 rounded text-xs transition-colors ' +
-                    (showThreats
-                      ? 'bg-red-600/40 text-red-200 cursor-pointer'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer')
-                  }
-                  title={`${threatCount} capture${threatCount > 1 ? 's' : ''} possible${threatCount > 1 ? 's' : ''} pour l'adversaire`}
-                >
-                  {showThreats ? '✓ ' : ''}Menaces {threatCount}
-                </button>
-              )}
+        {/* RIGHT: navigation, scan engine bar, pedagogy overlay. */}
+        <div className="flex-1 min-w-0 flex flex-col gap-2">
+          {/* Move-by-move navigation */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => goTo(Math.max(0, currentIdx - 1), positions)}
+              disabled={currentIdx === 0}
+              className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-800 border border-gray-600 text-white disabled:opacity-25 text-2xl hover:bg-gray-700 transition-colors cursor-pointer"
+            >‹</button>
+            <div className="flex-1 min-w-0 text-center">
+              <p className="text-xs text-gray-200 truncate">{moveLabel}</p>
+              <p className="text-xs text-gray-600">{currentIdx} / {result.total_moves}</p>
             </div>
-            {activeVerdict.formations.length > 0 && (
-              <div className="flex items-center gap-1 flex-wrap text-xs">
-                <span className="text-gray-600">Formations</span>
-                {activeVerdict.formations.map(slug => {
-                  const { name, side } = prettyFormation(slug)
-                  const active = diagKey === slug
-                  const clickable = (FORMATION_SQUARES[slug] ?? []).length > 0
-                  return (
-                    <button
-                      key={slug}
-                      disabled={!clickable}
-                      onClick={() => setDiagKey(prev => prev === slug ? null : slug)}
+            <button
+              onClick={() => goTo(Math.min(positions.length - 1, currentIdx + 1), positions)}
+              disabled={currentIdx >= positions.length - 1}
+              className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-800 border border-gray-600 text-white disabled:opacity-25 text-2xl hover:bg-gray-700 transition-colors cursor-pointer"
+            >›</button>
+          </div>
+
+          {isDiverted && (
+            <button
+              onClick={() => goTo(currentIdx, positions)}
+              className="text-xs text-amber-500 hover:text-amber-300 underline cursor-pointer self-start"
+            >
+              ↺ Revenir à la partie importée
+            </button>
+          )}
+
+          {/* Scan WASM engine bar — moved from below the board into the
+              right column. Keeps engine info adjacent to nav, not far
+              from the position it describes. */}
+          <ScanBar info={scanInfo} loading={annotating} />
+
+          {/* Pedagogy overlay summary — only when an analysed half-move is displayed */}
+          {activeVerdict && (
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
+                <span title={`Phase : ${PHASE_FR[activeVerdict.phase]}`}>
+                  <span className="text-gray-600">Phase </span>
+                  <span className="font-semibold text-indigo-300">{PHASE_FR[activeVerdict.phase]}</span>
+                </span>
+                {activeVerdict.material_balance !== null && (
+                  <span title="Solde matériel (dames = 3 pions), point de vue blancs">
+                    <span className="text-gray-600">Matériel </span>
+                    <span
                       className={
-                        'px-1.5 py-0.5 rounded transition-colors ' +
-                        (active
-                          ? 'bg-amber-600/40 text-amber-200 cursor-pointer'
-                          : clickable
-                          ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer'
-                          : 'bg-gray-800/40 text-gray-500 cursor-default')
+                        activeVerdict.material_balance > 0
+                          ? 'font-mono font-bold text-green-400'
+                          : activeVerdict.material_balance < 0
+                          ? 'font-mono font-bold text-red-400'
+                          : 'font-mono font-bold text-gray-400'
                       }
-                      title={clickable ? `Surligner les cases ${(FORMATION_SQUARES[slug] ?? []).join(', ')}` : slug}
                     >
-                      {side} {name}
-                    </button>
-                  )
-                })}
+                      {activeVerdict.material_balance > 0 ? '+' : ''}{activeVerdict.material_balance}
+                    </span>
+                  </span>
+                )}
+                {hangingSquares.length > 0 && (
+                  <span className="font-bold text-red-400" title="Pièces capturables au coup suivant">
+                    ⚠ {hangingSquares.length} pièce{hangingSquares.length > 1 ? 's' : ''} en l'air
+                  </span>
+                )}
+                {threatCount > 0 && (
+                  <button
+                    onClick={() => setShowThreats(v => !v)}
+                    className={
+                      'px-1.5 py-0.5 rounded text-xs transition-colors ' +
+                      (showThreats
+                        ? 'bg-red-600/40 text-red-200 cursor-pointer'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer')
+                    }
+                    title={`${threatCount} capture${threatCount > 1 ? 's' : ''} possible${threatCount > 1 ? 's' : ''} pour l'adversaire`}
+                  >
+                    {showThreats ? '✓ ' : ''}Menaces {threatCount}
+                  </button>
+                )}
               </div>
-            )}
-            <PositionDiagnostic
-              verdict={activeVerdict}
-              activeKey={diagKey}
-              onToggle={k => setDiagKey(prev => prev === k ? null : k)}
-            />
-          </div>
-        )}
-
-        <div className="flex items-center gap-2 mt-2 w-full max-w-xs px-2">
-          <button
-            onClick={() => goTo(Math.max(0, currentIdx - 1), positions)}
-            disabled={currentIdx === 0}
-            className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800 border border-gray-600 text-white disabled:opacity-25 text-2xl hover:bg-gray-700 transition-colors cursor-pointer"
-          >‹</button>
-          <div className="flex-1 text-center">
-            <p className="text-xs text-gray-200 truncate">{moveLabel}</p>
-            <p className="text-xs text-gray-600">{currentIdx} / {result.total_moves}</p>
-          </div>
-          <button
-            onClick={() => goTo(Math.min(positions.length - 1, currentIdx + 1), positions)}
-            disabled={currentIdx >= positions.length - 1}
-            className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800 border border-gray-600 text-white disabled:opacity-25 text-2xl hover:bg-gray-700 transition-colors cursor-pointer"
-          >›</button>
+              {activeVerdict.formations.length > 0 && (
+                <div className="flex items-center gap-1 flex-wrap text-xs">
+                  <span className="text-gray-600">Formations</span>
+                  {activeVerdict.formations.map(slug => {
+                    const { name, side } = prettyFormation(slug)
+                    const active = diagKey === slug
+                    const clickable = (FORMATION_SQUARES[slug] ?? []).length > 0
+                    return (
+                      <button
+                        key={slug}
+                        disabled={!clickable}
+                        onClick={() => setDiagKey(prev => prev === slug ? null : slug)}
+                        className={
+                          'px-1.5 py-0.5 rounded transition-colors ' +
+                          (active
+                            ? 'bg-amber-600/40 text-amber-200 cursor-pointer'
+                            : clickable
+                            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer'
+                            : 'bg-gray-800/40 text-gray-500 cursor-default')
+                        }
+                        title={clickable ? `Surligner les cases ${(FORMATION_SQUARES[slug] ?? []).join(', ')}` : slug}
+                      >
+                        {side} {name}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              <PositionDiagnostic
+                verdict={activeVerdict}
+                activeKey={diagKey}
+                onToggle={k => setDiagKey(prev => prev === k ? null : k)}
+              />
+            </div>
+          )}
         </div>
-
-        {isDiverted && (
-          <button
-            onClick={() => goTo(currentIdx, positions)}
-            className="mt-1.5 text-xs text-amber-500 hover:text-amber-300 underline cursor-pointer"
-          >
-            ↺ Revenir à la partie importée
-          </button>
-        )}
       </div>
-
-      {/* Scan WASM engine bar */}
-      <ScanBar info={scanInfo} loading={annotating} />
 
       {/* Scrollable content: analysis first, then move list */}
       <div className="flex-1 overflow-y-auto overscroll-contain">

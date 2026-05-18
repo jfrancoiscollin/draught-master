@@ -358,7 +358,10 @@ function WeaknessGantt({
   verdicts: VerdictOut[]
   userSide: 'white' | 'black'
 }) {
-  const [open, setOpen] = useState(false)
+  // Open by default — the heatmap above answers "where", the Gantt
+  // answers "when and for how long", and the latter is often the
+  // more pedagogically actionable read.
+  const [open, setOpen] = useState(true)
   const [filter, setFilter] = useState<HeatMetric>('all')
 
   if (verdicts.length < 2) return null
