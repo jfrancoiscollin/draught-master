@@ -467,6 +467,17 @@ export default function ImportGamePanel({
     ? 'Position initiale'
     : `Coup ${currentPos.move_number} · ${currentPos.color === 'white' ? '⬜' : '⬛'} ${currentPos.notation}`
 
+  // Verdict of the half-move that produced the currently displayed
+  // position. Used to overlay "hanging pieces" warnings and surface the
+  // material balance under the board. currentIdx === 0 means the initial
+  // position (no move played yet) — no verdict.
+  const activeVerdict = pedagogyAnalysis && currentIdx > 0
+    ? pedagogyAnalysis.verdicts.find(v => v.move_number === currentIdx) ?? null
+    : null
+  const hangingSquares = activeVerdict
+    ? [...activeVerdict.hanging_pieces_white, ...activeVerdict.hanging_pieces_black]
+    : []
+
   return (
     <div className="flex flex-col h-full bg-gray-900 text-gray-100">
       {/* Header */}
@@ -501,10 +512,38 @@ export default function ImportGamePanel({
             onSelectSquare={setSelectedSquare}
             disabled={false}
             highlightSquares={highlighted}
+            warningSquares={hangingSquares}
             arrows={arrow ? [arrow] : []}
             flipped={flipped}
           />
         </div>
+
+        {/* Pedagogy overlay summary — only when an analysed half-move is displayed */}
+        {activeVerdict && (
+          <div className="flex items-center gap-3 mt-1.5 px-2 text-xs text-gray-400">
+            {activeVerdict.material_balance !== null && (
+              <span title="Solde matériel (dames = 3 pions), point de vue blancs">
+                <span className="text-gray-600">Matériel </span>
+                <span
+                  className={
+                    activeVerdict.material_balance > 0
+                      ? 'font-mono font-bold text-green-400'
+                      : activeVerdict.material_balance < 0
+                      ? 'font-mono font-bold text-red-400'
+                      : 'font-mono font-bold text-gray-400'
+                  }
+                >
+                  {activeVerdict.material_balance > 0 ? '+' : ''}{activeVerdict.material_balance}
+                </span>
+              </span>
+            )}
+            {hangingSquares.length > 0 && (
+              <span className="font-bold text-red-400" title="Pièces capturables au coup suivant">
+                ⚠ {hangingSquares.length} pièce{hangingSquares.length > 1 ? 's' : ''} en l'air
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-2 mt-2 w-full max-w-xs px-2">
           <button

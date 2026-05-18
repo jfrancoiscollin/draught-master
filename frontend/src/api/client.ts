@@ -464,6 +464,9 @@ export interface VerdictOut {
   is_forced: boolean
   phase: 'opening' | 'middlegame' | 'endgame'
   motifs: MotifOut[]
+  material_balance: number | null
+  hanging_pieces_white: number[]
+  hanging_pieces_black: number[]
 }
 
 export interface PedagogyAnalysis {

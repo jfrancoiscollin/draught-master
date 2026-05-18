@@ -62,6 +62,7 @@ def _ensure_explain_limiters() -> None:
 
 
 def _verdict_to_out(v: Any) -> MoveVerdictOut:
+    feats_after = getattr(v, "features_after", None)
     return MoveVerdictOut(
         move_number=v.move_number,
         side=v.side,
@@ -75,6 +76,9 @@ def _verdict_to_out(v: Any) -> MoveVerdictOut:
         is_forced=v.is_forced,
         phase=v.phase.value if hasattr(v.phase, "value") else v.phase,
         motifs=[MotifMatchOut(**asdict(m)) for m in v.motifs],
+        material_balance=getattr(feats_after, "material_balance", None),
+        hanging_pieces_white=list(getattr(feats_after, "hanging_pieces_white", []) or []),
+        hanging_pieces_black=list(getattr(feats_after, "hanging_pieces_black", []) or []),
     )
 
 

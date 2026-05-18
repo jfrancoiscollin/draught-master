@@ -190,6 +190,7 @@ async def init_db() -> None:
             "ALTER TABLE games ADD COLUMN source TEXT",
             "ALTER TABLE games ADD COLUMN source_id TEXT",
             "ALTER TABLE users ADD COLUMN lidraughts_username TEXT",
+            "ALTER TABLE move_verdicts ADD COLUMN features_after_json TEXT",
         ]:
             try:
                 await db.execute(col_ddl)

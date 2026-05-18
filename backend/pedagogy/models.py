@@ -55,6 +55,12 @@ class MoveVerdictOut(BaseModel):
     is_forced: bool
     phase: str
     motifs: list[MotifMatchOut] = []
+    # Slim slice of features_after — what the frontend needs to render
+    # the position AFTER this move. material_balance feeds the timeline;
+    # hanging_pieces_{white,black} feed the board overlay.
+    material_balance: Optional[int] = None
+    hanging_pieces_white: list[int] = []
+    hanging_pieces_black: list[int] = []
 
 
 class AnalyzeGameResponse(BaseModel):

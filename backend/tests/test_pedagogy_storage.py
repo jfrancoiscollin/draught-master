@@ -81,7 +81,7 @@ async def _fresh_conn():
             side TEXT, fen_before TEXT, fen_after TEXT, move_notation TEXT,
             score_before REAL, score_after REAL, delta_winchance REAL,
             verdict TEXT, is_forced INTEGER, phase TEXT,
-            motifs_json TEXT, features_json TEXT,
+            motifs_json TEXT, features_json TEXT, features_after_json TEXT,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             UNIQUE (game_id, move_number)
         )
@@ -121,6 +121,61 @@ async def test_upsert_move_verdict_round_trip():
     assert result.move_notation == "32-28"
     assert result.verdict.value == "good"
     await conn.close()
+
+
+@pytest.mark.asyncio
+async def test_upsert_move_verdict_roundtrips_features_after_and_hanging():
+    from pedagogy import storage
+    from pedagogy.types import Features, Phase
+    feats_after = Features(
+        white_men=15, white_kings=0, black_men=14, black_kings=0,
+        material_balance=1,
+        center_count_white=3, center_count_black=2,
+        left_wing_white=2, right_wing_white=2,
+        left_wing_black=2, right_wing_black=3,
+        isolated_pawns_white=[], isolated_pawns_black=[],
+        backward_pawns_white=[], backward_pawns_black=[],
+        holes_white=[], holes_black=[],
+        outposts_white=[], outposts_black=[],
+        white_legal_moves=7, black_legal_moves=8,
+        hanging_pieces_white=[28], hanging_pieces_black=[],
+        white_promotion_distance=5, black_promotion_distance=4,
+        formations=[], phase=Phase.MIDDLEGAME,
+    )
+    conn = await _fresh_conn()
+    v = _make_verdict(features_after=feats_after)
+    await storage.upsert_move_verdict(conn, "game-feat", v)
+    got = await storage.get_move_verdict(conn, "game-feat", 1)
+    assert got is not None and got.features_after is not None
+    assert got.features_after.hanging_pieces_white == [28]
+    assert got.features_after.material_balance == 1
+    await conn.close()
+
+
+@pytest.mark.asyncio
+async def test_features_from_json_backfills_missing_hanging_fields():
+    # Legacy blob written before the hanging_pieces fields existed: the
+    # deserialiser must still rehydrate it without raising.
+    from pedagogy.storage import _features_from_json
+    import json as _json
+    legacy_blob = _json.dumps({
+        "white_men": 10, "white_kings": 0, "black_men": 10, "black_kings": 0,
+        "material_balance": 0,
+        "center_count_white": 2, "center_count_black": 2,
+        "left_wing_white": 1, "right_wing_white": 1,
+        "left_wing_black": 1, "right_wing_black": 1,
+        "isolated_pawns_white": [], "isolated_pawns_black": [],
+        "backward_pawns_white": [], "backward_pawns_black": [],
+        "holes_white": [], "holes_black": [],
+        "outposts_white": [], "outposts_black": [],
+        "white_legal_moves": 0, "black_legal_moves": 0,
+        "white_promotion_distance": 5, "black_promotion_distance": 5,
+        "formations": [], "phase": "middlegame",
+    })
+    f = _features_from_json(legacy_blob)
+    assert f is not None
+    assert f.hanging_pieces_white == []
+    assert f.hanging_pieces_black == []
 
 
 @pytest.mark.asyncio

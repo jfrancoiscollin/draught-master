@@ -98,6 +98,10 @@ interface BoardProps {
   disabled?: boolean
   lastMove?: MoveData | null
   highlightSquares?: number[]
+  /** Pieces visually marked "in danger" (e.g. hanging, can be captured
+   *  next turn). Rendered as a red ring so it's distinguishable from
+   *  generic highlightSquares (which are used for hover/motif hints). */
+  warningSquares?: number[]
   spokenSquares?: number[]
   arrows?: Arrow[]
   // When provided, these squares can be selected even if not in legalMoves,
@@ -294,6 +298,7 @@ export default function Board({
   disabled = false,
   lastMove = null,
   highlightSquares = [],
+  warningSquares = [],
   spokenSquares = [],
   arrows = [],
   freeSelectSquares,
@@ -479,6 +484,7 @@ export default function Board({
       const isMoveable    = sq !== null && (froms.has(sq) || (freeSelectSquares ? freeSelectSquares.has(sq) : false))
       const isLastMove    = sq !== null && lastMovePath.has(sq) && !animVisible
       const isHighlighted = sq !== null && highlightSquares.includes(sq)
+      const isWarning     = sq !== null && warningSquares.includes(sq)
       const isSpoken      = sq !== null && spokenSquares.includes(sq)
 
       // Square background color
@@ -555,6 +561,17 @@ export default function Board({
               inset: 0,
               border: '3px solid rgba(186,220,255,0.55)',
               pointerEvents: 'none',
+            }} />
+          )}
+
+          {/* Warning ring — piece is hanging / capturable next turn */}
+          {isDark && sq !== null && isWarning && piece !== EMPTY && !isLegalTarget && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              border: '3px solid rgba(239,68,68,0.85)',
+              pointerEvents: 'none',
+              boxShadow: 'inset 0 0 10px rgba(239,68,68,0.45)',
             }} />
           )}
         </div>

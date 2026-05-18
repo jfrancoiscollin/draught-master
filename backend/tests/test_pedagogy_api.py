@@ -73,7 +73,7 @@ def test_get_move_verdict_404_when_not_computed(monkeypatch, tmp_path):
                 move_number INTEGER, side TEXT, fen_before TEXT, fen_after TEXT,
                 move_notation TEXT, score_before REAL, score_after REAL,
                 delta_winchance REAL, verdict TEXT, is_forced INTEGER,
-                phase TEXT, motifs_json TEXT, features_json TEXT,
+                phase TEXT, motifs_json TEXT, features_json TEXT, features_after_json TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(game_id, move_number)
             )
@@ -102,7 +102,7 @@ def test_get_move_verdict_returns_persisted_row(monkeypatch, tmp_path):
                 move_number INTEGER, side TEXT, fen_before TEXT, fen_after TEXT,
                 move_notation TEXT, score_before REAL, score_after REAL,
                 delta_winchance REAL, verdict TEXT, is_forced INTEGER,
-                phase TEXT, motifs_json TEXT, features_json TEXT,
+                phase TEXT, motifs_json TEXT, features_json TEXT, features_after_json TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(game_id, move_number)
             )
@@ -143,7 +143,7 @@ def test_explain_move_404_when_verdict_missing(monkeypatch, tmp_path):
                 move_number INTEGER, side TEXT, fen_before TEXT, fen_after TEXT,
                 move_notation TEXT, score_before REAL, score_after REAL,
                 delta_winchance REAL, verdict TEXT, is_forced INTEGER,
-                phase TEXT, motifs_json TEXT, features_json TEXT,
+                phase TEXT, motifs_json TEXT, features_json TEXT, features_after_json TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(game_id, move_number)
             )
@@ -190,7 +190,7 @@ def test_get_user_profile_forbidden_for_other_user(monkeypatch, tmp_path):
                 move_number INTEGER, side TEXT, fen_before TEXT, fen_after TEXT,
                 move_notation TEXT, score_before REAL, score_after REAL,
                 delta_winchance REAL, verdict TEXT, is_forced INTEGER,
-                phase TEXT, motifs_json TEXT, features_json TEXT,
+                phase TEXT, motifs_json TEXT, features_json TEXT, features_after_json TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(game_id, move_number)
             )
@@ -222,7 +222,7 @@ def _init_pedagogy_tables(db_file: str) -> None:
                 move_number INTEGER, side TEXT, fen_before TEXT, fen_after TEXT,
                 move_notation TEXT, score_before REAL, score_after REAL,
                 delta_winchance REAL, verdict TEXT, is_forced INTEGER,
-                phase TEXT, motifs_json TEXT, features_json TEXT,
+                phase TEXT, motifs_json TEXT, features_json TEXT, features_after_json TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(game_id, move_number)
             )
@@ -365,7 +365,7 @@ def test_get_recommendations_filters_solved(monkeypatch, tmp_path):
                 move_number INTEGER, side TEXT, fen_before TEXT, fen_after TEXT,
                 move_notation TEXT, score_before REAL, score_after REAL,
                 delta_winchance REAL, verdict TEXT, is_forced INTEGER,
-                phase TEXT, motifs_json TEXT, features_json TEXT,
+                phase TEXT, motifs_json TEXT, features_json TEXT, features_after_json TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(game_id, move_number)
             )

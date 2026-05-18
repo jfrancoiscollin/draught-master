@@ -34,6 +34,9 @@ const verdict = (over: Partial<VerdictOut> = {}): VerdictOut => ({
   is_forced: false,
   phase: 'opening',
   motifs: [],
+  material_balance: 0,
+  hanging_pieces_white: [],
+  hanging_pieces_black: [],
   ...over,
 })
 

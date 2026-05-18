@@ -57,6 +57,11 @@ def _features_from_json(blob: Optional[str]) -> Optional[Features]:
         return None
     raw = json.loads(blob)
     raw["phase"] = Phase(raw["phase"])
+    # Backfill fields added to Features over time so blobs persisted by
+    # older deploys still rehydrate cleanly. hanging_pieces_{w,b} are
+    # always [] in legacy blobs — they weren't computed back then.
+    raw.setdefault("hanging_pieces_white", [])
+    raw.setdefault("hanging_pieces_black", [])
     return Features(**raw)
 
 
@@ -76,8 +81,8 @@ async def upsert_move_verdict(
         INSERT OR REPLACE INTO move_verdicts
             (game_id, move_number, side, fen_before, fen_after, move_notation,
              score_before, score_after, delta_winchance, verdict, is_forced,
-             phase, motifs_json, features_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             phase, motifs_json, features_json, features_after_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             game_id,
@@ -94,6 +99,7 @@ async def upsert_move_verdict(
             verdict.phase.value,
             _motifs_to_json(verdict.motifs),
             _features_to_json(verdict.features_before),
+            _features_to_json(verdict.features_after),
         ),
     )
     await conn.commit()
@@ -126,7 +132,7 @@ async def get_move_verdict(
         """
         SELECT move_number, side, fen_before, fen_after, move_notation,
                score_before, score_after, delta_winchance, verdict,
-               is_forced, phase, motifs_json, features_json
+               is_forced, phase, motifs_json, features_json, features_after_json
           FROM move_verdicts
          WHERE game_id = ? AND move_number = ?
         """,
@@ -149,7 +155,7 @@ async def get_move_verdict(
         phase=Phase(row[10]),
         motifs=_motifs_from_json(row[11]),
         features_before=_features_from_json(row[12]),
-        features_after=None,
+        features_after=_features_from_json(row[13]),
     )
 
 
