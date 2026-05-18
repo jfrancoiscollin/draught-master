@@ -46,11 +46,75 @@ const HEAT_METRIC_LABEL: Record<HeatMetric, string> = {
   outposts: 'Postes',
 }
 
-function sqToRowCol(sq: number): { row: number; col: number } {
-  const row = Math.floor((sq - 1) / 5)
-  const colInRow = (sq - 1) % 5
-  const col = colInRow * 2 + (row % 2 === 0 ? 1 : 0)
-  return { row, col }
+// Zone labels for the auto-narrative below the heatmap.
+// Mirrors dilf/pedagogy/features/geometry.py — must stay consistent
+// with CENTER_EXTENDED / LEFT_WING / RIGHT_WING / *_PROMOTION_ROW.
+const CENTER_EXTENDED = new Set([16,17,18,19,21,22,23,24,26,27,28,29,31,32,33,34])
+const LEFT_WING       = new Set([6,11,16,21,26,31,36,41,46])
+const RIGHT_WING      = new Set([5,10,15,20,25,30,35,40,45,50])
+const WHITE_BACK_ROW  = new Set([46,47,48,49,50])
+const BLACK_BACK_ROW  = new Set([1,2,3,4,5])
+
+function zoneOf(sq: number): string {
+  if (CENTER_EXTENDED.has(sq)) return 'centre'
+  if (LEFT_WING.has(sq))       return 'aile gauche'
+  if (RIGHT_WING.has(sq))      return 'aile droite'
+  if (WHITE_BACK_ROW.has(sq))  return 'rangée arrière ⬜'
+  if (BLACK_BACK_ROW.has(sq))  return 'rangée arrière ⬛'
+  return 'milieu'
+}
+
+function summarizeZones(squares: number[]): string {
+  const counts: Record<string, number> = {}
+  for (const sq of squares) {
+    const z = zoneOf(sq)
+    counts[z] = (counts[z] ?? 0) + 1
+  }
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1])
+  if (sorted.length === 0) return ''
+  return sorted.slice(0, 2).map(([z]) => z).join(' + ')
+}
+
+// Generated narrative under each heatmap variant. Identifies the top 3
+// squares by count and pairs them with a metric-specific 1-liner so the
+// user can read the heatmap without checking the doc each time.
+function heatmapNarrative(
+  heatmap: WeaknessHeatmap,
+  metric: HeatMetric,
+): { topLine: string; hint: string } | null {
+  const pairs: Array<[number, number]> = []
+  for (const [sqStr, bucket] of Object.entries(heatmap.by_square)) {
+    const sq = Number(sqStr)
+    const n = metric === 'all'
+      ? bucket.isolated + bucket.backward + bucket.holes + bucket.outposts
+      : bucket[metric]
+    if (n > 0) pairs.push([sq, n])
+  }
+  if (pairs.length === 0) return null
+  pairs.sort((a, b) => b[1] - a[1])
+  const top = pairs.slice(0, 3)
+  const topLine = top.map(([sq, n]) => `${sq} (×${n})`).join(' · ')
+  const zones = summarizeZones(top.map(([sq]) => sq))
+
+  // 1-liner per metric — short enough to fit under a 220px-wide grid.
+  const hints: Record<HeatMetric, string> = {
+    all: zones
+      ? `Concentration sur ${zones}. C'est là que ton placement est le plus instable — toutes familles confondues.`
+      : 'Pas encore assez de signal pour conclure.',
+    isolated: zones
+      ? `Pions isolés récurrents sur ${zones}. Vulnérables : un déplacement les laisse à découvert. Renforce avant d'engager.`
+      : '',
+    backward: zones
+      ? `Pions arriérés sur ${zones}. Tu tardes à activer ces pions ; ils bloquent ton développement et la mobilité de tes pièces avancées.`
+      : '',
+    holes: zones
+      ? `Trous récurrents en ${zones}. Cases vides cernées de tes pièces — futurs postes adverses si tu ne les combles pas.`
+      : '',
+    outposts: zones
+      ? `Tu installes régulièrement des postes en ${zones}. C'est une force : capitalise sur ce style de jeu.`
+      : '',
+  }
+  return { topLine, hint: hints[metric] }
 }
 
 function HeatmapBoard({
@@ -329,7 +393,18 @@ export default function WeaknessPanel({ onMotifClick, refreshKey = 0 }: Props) {
           {!loading && heatmap && heatmap.half_moves_analyzed > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-700 flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-300">Carte des faiblesses</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-gray-300">Carte des faiblesses</span>
+                  <a
+                    href="https://github.com/jfrancoiscollin/draught-master/blob/develop/docs/PEDAGOGY_PANELS.md#7-carte-des-faiblesses-panneau-profil"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Comment lire cette carte ?"
+                    className="text-xs text-indigo-400 hover:text-indigo-300 underline decoration-dotted"
+                  >
+                    guide
+                  </a>
+                </div>
                 <span className="text-xs text-gray-500">{heatmap.games_analyzed} partie{heatmap.games_analyzed > 1 ? 's' : ''}</span>
               </div>
               <div className="flex gap-1 flex-wrap">
@@ -349,6 +424,20 @@ export default function WeaknessPanel({ onMotifClick, refreshKey = 0 }: Props) {
                 ))}
               </div>
               <HeatmapBoard heatmap={heatmap} metric={heatMetric} />
+              {(() => {
+                const narrative = heatmapNarrative(heatmap, heatMetric)
+                return narrative && (
+                  <div className="flex flex-col gap-1 text-xs">
+                    <p className="text-gray-400">
+                      <span className="text-gray-600">Top cases : </span>
+                      <span className="font-mono text-gray-200">{narrative.topLine}</span>
+                    </p>
+                    {narrative.hint && (
+                      <p className="text-gray-400 leading-relaxed">{narrative.hint}</p>
+                    )}
+                  </div>
+                )
+              })()}
               <p className="text-xs text-gray-600">
                 {heatmap.half_moves_analyzed} demi-coups · {heatMetric === 'outposts' ? 'vert = postes (fort)' : 'rouge = récurrence (faible)'}
               </p>
