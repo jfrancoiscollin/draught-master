@@ -177,6 +177,90 @@ MOTIFS: dict[str, dict[str, str]] = {
             "creating an unstoppable threat."
         ),
     },
+    "coup_napoleon": {
+        "slug": "coup_napoleon",
+        "name_fr": "Coup Napoléon",
+        "name_en": "Napoleon shot",
+        "description_fr": (
+            "Le coup Napoléon enchaîne trois demi-coups : un sacrifice, une "
+            "prise adverse forcée qui éloigne une pièce-clé d'une diagonale "
+            "défensive, puis un envoi à dame. Ce qui distingue Napoléon d'un "
+            "envoi à dame ordinaire, c'est la déflexion explicite : la "
+            "réponse de l'adversaire doit être une capture qui dégage le "
+            "couloir de promotion."
+        ),
+        "description_en": (
+            "The Napoleon shot chains three half-moves: a sacrifice, a "
+            "forced opponent capture that deflects a key piece away from a "
+            "defensive diagonal, and a promotion landing. What sets it apart "
+            "from a plain king promotion is the explicit deflection — the "
+            "opponent's reply must be a capture that clears the promotion "
+            "corridor."
+        ),
+    },
+    "coup_manoury": {
+        "slug": "coup_manoury",
+        "name_fr": "Coup Manoury",
+        "name_en": "Manoury shot",
+        "description_fr": (
+            "Le coup Manoury est l'archétype de la combinaison « à profit » "
+            "enseignée dans les clubs français : un premier sacrifice (parfois "
+            "deux) force l'adversaire dans une configuration où les diagonales "
+            "s'alignent, et la riposte du joueur est une rafle qui capture au "
+            "moins quatre pions adverses d'un seul coup. La force du motif "
+            "tient à la profondeur du calcul nécessaire pour le voir venir."
+        ),
+        "description_en": (
+            "The Manoury shot is the archetypal long-gain combination taught "
+            "in French clubs: a first sacrifice (sometimes two) forces the "
+            "opponent into a configuration where the diagonals align, and "
+            "the player's follow-up rafle captures four or more opponent men "
+            "in a single move. The motif rewards deep calculation."
+        ),
+    },
+    "coup_enfilade": {
+        "slug": "coup_enfilade",
+        "name_fr": "Coup d'enfilade",
+        "name_en": "In-line rafle",
+        "description_fr": (
+            "L'enfilade est la rafle la plus simple : la pièce attaquante "
+            "traverse une diagonale unique sans jamais changer de direction, "
+            "et capture trois ou quatre pions adverses alignés sur cette "
+            "diagonale. Distincte du coup du talon (qui inverse le sens) et "
+            "du coup express (rafle de 5+ captures), elle reste le pain "
+            "quotidien des combinaisons de club."
+        ),
+        "description_en": (
+            "The in-line rafle is the simplest long capture: the attacking "
+            "piece travels along a single diagonal without ever changing "
+            "direction, taking three or four opponent men aligned on it. "
+            "Distinct from the heel shot (which reverses direction) and the "
+            "express shot (5+ captures), it's the everyday club-level "
+            "combination."
+        ),
+    },
+    "coup_du_bruleur": {
+        "slug": "coup_du_bruleur",
+        "name_fr": "Coup du brûleur",
+        "name_en": "Burner shot",
+        "description_fr": (
+            "Le coup du brûleur est un motif positionnel : un coup tranquille "
+            "(non-capture) qui « brûle » plusieurs pions adverses en leur "
+            "bloquant simultanément leurs deux diagonales avant. Les pions "
+            "ainsi gelés ne peuvent plus avancer ; ils attendent qu'une autre "
+            "pièce libère un passage. Souvent sous-estimé parce qu'il ne "
+            "capture rien immédiatement, c'est pourtant un outil stratégique "
+            "redoutable en milieu de partie."
+        ),
+        "description_en": (
+            "The burner shot is a positional motif: a quiet (non-capturing) "
+            "move that simultaneously blocks both forward diagonals of two or "
+            "more opponent men at once. The frozen men can no longer advance — "
+            "they wait for another piece to clear a path. Often underrated "
+            "because no immediate material change happens, it's a formidable "
+            "middlegame tool."
+        ),
+    },
     "combinaison_2_temps": {
         "slug": "combinaison_2_temps",
         "name_fr": "Combinaison en 2 temps",

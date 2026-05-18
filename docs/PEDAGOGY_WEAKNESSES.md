@@ -77,31 +77,30 @@ Le panneau d'analyse post-partie permet toutefois de cliquer sur un motif
 ### Motifs disponibles
 
 dilf émet 18 slugs au total (6 P1 + 4 P2 + 4 P3 + 4 famille générique
-combinaison). `motif_descriptions.MOTIFS` côté Draught Master en
-documente 14 ; les 4 P3 firent en interne mais leur badge dans
-PedagogyPanel ouvre une 404 sur `/api/pedagogy/motifs/{slug}` —
-tracking dans `ROADMAP.md` (Tier 1).
+combinaison). Depuis le commit du gap P3, `motif_descriptions.MOTIFS`
+documente l'intégralité (18/18), donc tous les badges du PedagogyPanel
+résolvent correctement sur `/api/pedagogy/motifs/{slug}`.
 
-| slug | Nom FR | Catégorie | Documenté côté DM |
-|---|---|---|---|
-| `coup_royal` | Coup royal | P1 | ✅ |
-| `coup_turc` | Coup turc | P1 | ✅ |
-| `coup_de_talon` | Coup du talon | P1 | ✅ |
-| `envoi_a_dame` | Envoi à dame | P1 | ✅ |
-| `sacrifice` | Sacrifice | P1 | ✅ |
-| `prise_max_ratee` | Prise maximale ratée | P1 | ✅ |
-| `coup_philippe` | Coup Philippe | P2 | ✅ |
-| `coup_raphael` | Coup Raphaël | P2 | ✅ |
-| `coup_express` | Coup express | P2 | ✅ |
-| `coup_bonnard` | Coup Bonnard | P2 | ✅ |
-| `coup_napoleon` | Coup Napoléon | P3 | ❌ |
-| `coup_manoury` | Coup Manoury | P3 | ❌ |
-| `coup_enfilade` | Coup d'enfilade | P3 | ❌ |
-| `coup_du_bruleur` | Coup du brûleur | P3 | ❌ |
-| `combinaison_2_temps` | Combinaison en 2 temps | générique | ✅ |
-| `combinaison_3_temps` | Combinaison en 3 temps | générique | ✅ |
-| `combinaison_4_temps` | Combinaison en 4 temps | générique | ✅ |
-| `combinaison_5_temps` | Combinaison en 5 temps ou plus | générique | ✅ |
+| slug | Nom FR | Catégorie |
+|---|---|---|
+| `coup_royal` | Coup royal | P1 |
+| `coup_turc` | Coup turc | P1 |
+| `coup_de_talon` | Coup du talon | P1 |
+| `envoi_a_dame` | Envoi à dame | P1 |
+| `sacrifice` | Sacrifice | P1 |
+| `prise_max_ratee` | Prise maximale ratée | P1 |
+| `coup_philippe` | Coup Philippe | P2 |
+| `coup_raphael` | Coup Raphaël | P2 |
+| `coup_express` | Coup express | P2 |
+| `coup_bonnard` | Coup Bonnard | P2 |
+| `coup_napoleon` | Coup Napoléon | P3 |
+| `coup_manoury` | Coup Manoury | P3 |
+| `coup_enfilade` | Coup d'enfilade | P3 |
+| `coup_du_bruleur` | Coup du brûleur | P3 |
+| `combinaison_2_temps` | Combinaison en 2 temps | générique |
+| `combinaison_3_temps` | Combinaison en 3 temps | générique |
+| `combinaison_4_temps` | Combinaison en 4 temps | générique |
+| `combinaison_5_temps` | Combinaison en 5 temps ou plus | générique |
 
 ---
 

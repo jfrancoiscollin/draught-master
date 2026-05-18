@@ -83,16 +83,17 @@ in the UI as clickable badges in `PedagogyPanel`; clicking opens a
 drill page that hits `/api/pedagogy/motifs/{slug}` and reads from
 `backend/pedagogy/motif_descriptions.py`.
 
-**`motif_descriptions.MOTIFS` covers 14 slugs**:
+**`motif_descriptions.MOTIFS` covers all 18 slugs dilf emits**:
 
 - All 6 P1 motifs.
 - All 4 P2 motifs.
+- All 4 P3 motifs (`coup_napoleon`, `coup_manoury`, `coup_enfilade`,
+  `coup_du_bruleur`).
 - The 4 generic combinaisons (`combinaison_2/3/4/5_temps`).
 
-**Gap**: the 4 P3 motifs (`coup_napoleon`, `coup_manoury`,
-`coup_enfilade`, `coup_du_bruleur`) are not in `MOTIFS` yet. They
-fire upstream and appear as badges, but clicking them 404's at
-`/api/pedagogy/motifs/{slug}`. Tracked in `ROADMAP.md`.
+Each entry has `name_fr`, `name_en`, `description_fr`,
+`description_en`. The `/api/pedagogy/motifs/{slug}` endpoint resolves
+for every slug, no more 404 from clicking a badge in PedagogyPanel.
 
 ## CI enforcement
 

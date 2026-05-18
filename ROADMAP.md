@@ -49,12 +49,10 @@ before we move on.
       ran. The path is untested and produces a generic browser-side
       error. Add a backend test + a Toast on the frontend with copy
       "Analyse la partie d'abord". (S)
-- [ ] **Surface the 4 P3 motifs in `motif_descriptions.py`**. dilf
-      emits `coup_napoleon`, `coup_manoury`, `coup_enfilade`,
-      `coup_du_bruleur`, but the MOTIFS dict only knows 14 slugs (6
-      P1 + 4 P2 + 4 generic combinaisons). Clicking a P3 badge in
-      PedagogyPanel hits `/api/pedagogy/motifs/{slug}` and 404s.
-      Same fix pattern as the combinaisons in commit `f3438dd`. (S)
+- [x] **Surface the 4 P3 motifs in `motif_descriptions.py`** —
+      `coup_napoleon`, `coup_manoury`, `coup_enfilade`, `coup_du_bruleur`
+      now have FR/EN descriptions in the dict. MOTIFS covers the full
+      18 slugs dilf emits, no more 404 on P3 badges.
 
 ## Tier 2 — Close the dilf contract gap
 
