@@ -57,23 +57,29 @@ Until step 2 lands, dilf's downstream-compat CI will go red on the
 dilf side — that's the loud signal that prevents an out-of-coordination
 merge on dilf.
 
-## Currently-missing helpers (graceful fallback)
+## Capture-aware tagging — historical gap, now closed
 
-`backend/pedagogy/scripts/tag_existing_exercises.py` calls
-`pedagogy.game.apply_move` and `pedagogy.game.parse_move_notation`
-inside a `try/except ImportError`. Neither exists on dilf today, so
-the fallback runs:
+For a window after the initial integration, `tag_existing_exercises.py`
+could only tag non-capture moves: dilf hadn't shipped a
+notation-aware parser yet, and the fallback (`_parse_move_fallback`)
+returned `Move(captures=())`. Capture-based detectors silently
+skipped every exercise.
 
-- `_parse_move_fallback` parses the move string but leaves
-  `captures=()` empty.
-- Capture-based detectors (`coup_royal`, `prise_max_ratee`,
-  `coup_express`, …) therefore **never fire** on existing exercises.
+This is fixed now:
 
-Tracking: this gap is non-breaking from a typing perspective (the
-imports are guarded). It is tracked as dilf ROADMAP.md Tier 2 and
-draught-master ROADMAP.md Tier 2. When dilf ships those helpers, bump
-the pin here and remove the fallback paths in
-`tag_existing_exercises.py`.
+- `pedagogy.notation.dubois.parse_move_notation` (dilf,
+  2026-05-15) reconstructs the full capture path from short or full
+  notation against the position. The script imports it directly
+  (`tag_existing_exercises.py:66`) and the `_parse_move_fallback`
+  branch is now dead-on-paper safety only.
+- `engine.apply_move(state, move)` resolves via
+  `GameEngineAdapter`, which validates the move against the engine's
+  legal-moves list before applying.
+
+End-to-end coverage lives in
+`backend/tests/test_tag_existing_exercises_real.py` — passing real
+Dubois fixtures through `_detect_tags` and asserting the expected
+capture-based motifs fire.
 
 ## Motif descriptions
 

@@ -54,23 +54,23 @@ before we move on.
       now have FR/EN descriptions in the dict. MOTIFS covers the full
       18 slugs dilf emits, no more 404 on P3 badges.
 
-## Tier 2 — Close the dilf contract gap
+## Tier 2 — closed, formerly the dilf contract gap
 
-The interop contract notes two helpers that dilf doesn't expose yet:
-`pedagogy.game.apply_move()` and `pedagogy.game.parse_move_notation()`.
-`tag_existing_exercises.py` falls back to a partial implementation,
-which means **capture-based detectors silently never fire on
-existing exercises** (coup_royal, prise_max_ratee, coup_express, …).
-This is the next high-ROI dilf-side change.
+Resolved as documentation drift: `pedagogy.notation.dubois.parse_move_notation`
+already ships in dilf (since 2026-05-15) and `engine.apply_move`
+resolves through `GameEngineAdapter`. The tagging script has been
+working end-to-end; the INTEROP / ROADMAP docs were describing a gap
+that no longer existed.
 
-- [ ] **Implement `apply_move` + `parse_move_notation` upstream in
-      dilf** (PR on dilf `develop`). Round-trip tests against the
-      existing notation module. Both are pure and deterministic. (M)
-- [ ] **Re-pin draught-master** to the new dilf SHA, mark the
-      fallback paths dead in `tag_existing_exercises.py`, re-run
-      tagging in staging, verify capture-based detector tags land.
-- [ ] **Update `backend/pedagogy/INTEROP.md`** — move these symbols
-      from "Currently-missing helpers" to the canonical list. (S)
+End-to-end coverage added in
+`backend/tests/test_tag_existing_exercises_real.py` — real Dubois
+fixtures with capture-based motifs assert the script's
+`_detect_tags` actually fires the right slugs.
+
+- [x] Pin verification — capture-based detectors fire on real
+      exercises (test passes).
+- [x] INTEROP.md "Currently-missing helpers" section rewritten as
+      historical context.
 
 ## Tier 3 — Next pedagogical manual
 
