@@ -70,18 +70,21 @@ type VerdictForDiag = {
   outposts_white: number[]; outposts_black: number[]
 }
 
+// Per-row colour matches the corner dot painted by Board.tsx — same
+// palette in both places. Keep it that way so the diagnostic grid acts
+// as the live legend.
 const DIAG_ROWS: ReadonlyArray<{
-  label: string; hint: string
+  label: string; hint: string; color: string
   keys: readonly [string, string]
   pick: (v: VerdictForDiag) => readonly [number[], number[]]
 }> = [
-  { label: 'Isolés',  hint: 'Pions sans soutien diagonal (côtés vulnérables)',
+  { label: 'Isolés',  color: '#06b6d4', hint: 'Pions sans soutien diagonal (côtés vulnérables)',
     keys: ['iso-w', 'iso-b'], pick: v => [v.isolated_pawns_white, v.isolated_pawns_black] },
-  { label: 'Retardés', hint: 'Pions de la rangée de base privés d\'avance soutenue',
+  { label: 'Retardés', color: '#f59e0b', hint: 'Pions de la rangée de base privés d\'avance soutenue',
     keys: ['ret-w', 'ret-b'], pick: v => [v.backward_pawns_white, v.backward_pawns_black] },
-  { label: 'Trous',   hint: 'Cases vides cernées de pièces amies — faiblesses géométriques',
+  { label: 'Trous',   color: '#a855f7', hint: 'Cases vides cernées de pièces amies — faiblesses géométriques',
     keys: ['tro-w', 'tro-b'], pick: v => [v.holes_white, v.holes_black] },
-  { label: 'Postes',  hint: 'Cases avancées, soutenues, à l\'abri d\'une simple prise',
+  { label: 'Postes',  color: '#22c55e', hint: 'Cases avancées, soutenues, à l\'abri d\'une simple prise',
     keys: ['pos-w', 'pos-b'], pick: v => [v.outposts_white, v.outposts_black] },
 ]
 
@@ -99,7 +102,17 @@ function PositionDiagnostic({
         const [kw, kb] = row.keys
         return (
           <React.Fragment key={row.label}>
-            <span className="text-gray-500" title={row.hint}>{row.label}</span>
+            <span className="text-gray-500 flex items-center gap-1" title={row.hint}>
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: row.color, flexShrink: 0,
+                  boxShadow: '0 0 1px rgba(0,0,0,0.5)',
+                }}
+              />
+              {row.label}
+            </span>
             {[
               { sqs: w, key: kw, side: '⬜' as const },
               { sqs: b, key: kb, side: '⬛' as const },
@@ -606,6 +619,18 @@ export default function ImportGamePanel({
   } : {}
   const diagSquares = diagKey && diagSquaresByKey[diagKey] ? diagSquaresByKey[diagKey] : []
 
+  // Persistent flag overlay — small coloured dots on every square that
+  // matches one of the 4 categories. Union of both sides; the dot
+  // colour tells you the category, the piece colour tells you whose.
+  // Empty when no verdict is active so the analysis-panel mode stays
+  // visually clean.
+  const flagSquares = activeVerdict ? {
+    isolated: [...activeVerdict.isolated_pawns_white, ...activeVerdict.isolated_pawns_black],
+    backward: [...activeVerdict.backward_pawns_white, ...activeVerdict.backward_pawns_black],
+    holes:    [...activeVerdict.holes_white,          ...activeVerdict.holes_black],
+    outposts: [...activeVerdict.outposts_white,       ...activeVerdict.outposts_black],
+  } : undefined
+
   // Threat arrows — captures the side-to-move could play in features_after.
   // The side-to-move in features_after is the *opposite* of activeVerdict.side
   // (whoever just moved is no longer to move). We split each capture path
@@ -670,6 +695,7 @@ export default function ImportGamePanel({
             disabled={false}
             highlightSquares={diagSquares.length > 0 ? diagSquares : highlighted}
             warningSquares={hangingSquares}
+            flagSquares={flagSquares}
             arrows={[...(arrow ? [arrow] : []), ...threatArrows]}
             flipped={flipped}
           />

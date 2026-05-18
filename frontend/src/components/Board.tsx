@@ -102,6 +102,18 @@ interface BoardProps {
    *  next turn). Rendered as a red ring so it's distinguishable from
    *  generic highlightSquares (which are used for hover/motif hints). */
   warningSquares?: number[]
+  /** Persistent overlay flagging geometric weaknesses (and outposts).
+   *  Each entry is rendered as a small colored dot in a fixed corner
+   *  of the square — different corner per category, so up to four dots
+   *  can stack without occluding. Distinct from highlightSquares (one
+   *  amber tint, used for focus/click) and warningSquares (red ring,
+   *  used for hanging-piece danger). */
+  flagSquares?: {
+    isolated?: number[]
+    backward?: number[]
+    holes?: number[]
+    outposts?: number[]
+  }
   spokenSquares?: number[]
   arrows?: Arrow[]
   // When provided, these squares can be selected even if not in legalMoves,
@@ -299,6 +311,7 @@ export default function Board({
   lastMove = null,
   highlightSquares = [],
   warningSquares = [],
+  flagSquares,
   spokenSquares = [],
   arrows = [],
   freeSelectSquares,
@@ -469,6 +482,14 @@ export default function Board({
     ? new Set([...lastMove.path, ...lastMove.captures])
     : new Set<number>()
 
+  // Pre-compute the four flag sets so the inner loop just does a
+  // Set.has() per category. Keep the FLAGS table in the same order as
+  // the legend rendered by callers so colours stay in sync.
+  const flagIso = new Set(flagSquares?.isolated ?? [])
+  const flagRet = new Set(flagSquares?.backward ?? [])
+  const flagTro = new Set(flagSquares?.holes    ?? [])
+  const flagPos = new Set(flagSquares?.outposts ?? [])
+
   const cells: React.ReactNode[] = []
 
   for (let r = 0; r < 10; r++) {
@@ -562,6 +583,41 @@ export default function Board({
               border: '3px solid rgba(186,220,255,0.55)',
               pointerEvents: 'none',
             }} />
+          )}
+
+          {/* Geometric-weakness flags — small corner dots, one corner
+              per category. Stackable: a square can show up to 4. */}
+          {isDark && sq !== null && flagIso.has(sq) && (
+            <div style={{
+              position: 'absolute', top: 2, left: 2,
+              width: 7, height: 7, borderRadius: '50%',
+              background: '#06b6d4', boxShadow: '0 0 2px rgba(0,0,0,0.5)',
+              pointerEvents: 'none',
+            }} title="Pion isolé" />
+          )}
+          {isDark && sq !== null && flagRet.has(sq) && (
+            <div style={{
+              position: 'absolute', top: 2, left: 13,
+              width: 7, height: 7, borderRadius: '50%',
+              background: '#f59e0b', boxShadow: '0 0 2px rgba(0,0,0,0.5)',
+              pointerEvents: 'none',
+            }} title="Pion retardé" />
+          )}
+          {isDark && sq !== null && flagTro.has(sq) && (
+            <div style={{
+              position: 'absolute', bottom: 2, left: 2,
+              width: 7, height: 7, borderRadius: '50%',
+              background: '#a855f7', boxShadow: '0 0 2px rgba(0,0,0,0.5)',
+              pointerEvents: 'none',
+            }} title="Trou" />
+          )}
+          {isDark && sq !== null && flagPos.has(sq) && (
+            <div style={{
+              position: 'absolute', bottom: 2, left: 13,
+              width: 7, height: 7, borderRadius: '50%',
+              background: '#22c55e', boxShadow: '0 0 2px rgba(0,0,0,0.5)',
+              pointerEvents: 'none',
+            }} title="Poste" />
           )}
 
           {/* Warning ring — piece is hanging / capturable next turn */}
