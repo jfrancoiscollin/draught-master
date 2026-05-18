@@ -684,12 +684,12 @@ export default function ImportGamePanel({
       </div>
 
       {/* Board (left) + navigation / scan / pedagogy summary (right).
-          Two-column layout on screens that can fit it; falls back to
-          stacked on narrow phones so the board doesn't get crushed
-          under 200 px. */}
-      <div className="flex-shrink-0 flex flex-col sm:flex-row sm:items-start gap-3 py-2 px-2 bg-gray-900 border-b border-gray-700">
+          Always 2-column — even on a 393 px iPhone — per user request.
+          Board shrinks to ~55% of viewport width so the right column
+          gets the remaining ~170-180 px for nav + ScanBar. */}
+      <div className="flex-shrink-0 flex flex-row items-start gap-2 py-2 px-2 bg-gray-900 border-b border-gray-700">
         {/* LEFT: board */}
-        <div className="flex-shrink-0" style={{ width: '100%', maxWidth: 280 }}>
+        <div className="flex-shrink-0" style={{ width: '55%', maxWidth: 280 }}>
           <Board
             board={board}
             legalMoves={legalMoves}

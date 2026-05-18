@@ -39,7 +39,7 @@ const VERDICT_LABEL: Record<VerdictOut['verdict'], string> = {
   book:       '≡',
 }
 
-const VERDICT_COLOR: Record<VerdictOut['verdict'], string> = {
+export const VERDICT_COLOR: Record<VerdictOut['verdict'], string> = {
   brilliant:  '#f59e0b',
   best:       '#22c55e',
   excellent:  '#34d399',
@@ -51,7 +51,7 @@ const VERDICT_COLOR: Record<VerdictOut['verdict'], string> = {
   book:       '#818cf8',
 }
 
-const VERDICT_FR: Record<VerdictOut['verdict'], string> = {
+export const VERDICT_FR: Record<VerdictOut['verdict'], string> = {
   brilliant:  'Brillant',
   best:       'Meilleur coup',
   excellent:  'Excellent',
@@ -92,7 +92,7 @@ function acpl(vs: VerdictOut[]): number {
 // rows). Score is clipped to ±5 pawns so a single mate-bound eval
 // doesn't squash the whole curve flat.
 
-function MaterialTimeline({
+export function MaterialTimeline({
   verdicts, currentHalfMove, onJumpTo,
 }: {
   verdicts: VerdictOut[]
@@ -204,7 +204,7 @@ function aggregateGameHeatmap(
   return by
 }
 
-function GameHeatmap({
+export function GameHeatmap({
   verdicts, userSide,
 }: {
   verdicts: VerdictOut[]
@@ -352,7 +352,7 @@ const GANTT_COLORS: Record<Exclude<HeatMetric, 'all'>, string> = {
   outposts: '#22c55e',
 }
 
-function WeaknessGantt({
+export function WeaknessGantt({
   verdicts, userSide,
 }: {
   verdicts: VerdictOut[]
@@ -500,7 +500,7 @@ const HEAT_FILTER_LABEL: Record<HeatMetric, string> = {
   all: 'Toutes', isolated: 'Isolés', backward: 'Retardés', holes: 'Trous', outposts: 'Postes',
 }
 
-function AccuracyBar({ accuracy }: { accuracy: number }) {
+export function AccuracyBar({ accuracy }: { accuracy: number }) {
   const pct = Math.round(accuracy * 100)
   const color = pct >= 90 ? '#22c55e' : pct >= 75 ? '#86efac' : pct >= 60 ? '#fbbf24' : '#ef4444'
   return (
@@ -525,7 +525,7 @@ function VerdictBadge({ verdict }: { verdict: VerdictOut['verdict'] }) {
   )
 }
 
-function MoveRow({
+export function MoveRow({
   verdict, gameId, lang, onMotifClick, isActive, onJump,
 }: {
   verdict: VerdictOut
