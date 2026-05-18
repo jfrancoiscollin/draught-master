@@ -6,21 +6,18 @@ they diverge, **dilf is the source of truth**.
 
 ## Pin
 
-`backend/requirements.txt` pins dilf via the main-branch tarball:
-
-```text
-https://github.com/jfrancoiscollin/dilf/archive/refs/heads/main.tar.gz
-```
-
-i.e. every dilf merge to `main` is picked up by the next
-draught-master deploy. There is no version locking.
-
-For a coordinated bump (during a breaking change), replace the URL
-with a specific commit SHA:
+`backend/requirements.txt` pins dilf via a specific commit SHA tarball:
 
 ```text
 https://github.com/jfrancoiscollin/dilf/archive/<sha>.tar.gz
 ```
+
+Current pin: `9fccc1f1a906c75876ce8c4099c053b38ef17d1b` (on dilf
+`develop`). Pinning to a SHA — rather than to a branch tarball
+(`refs/heads/main.tar.gz`) — is deliberate: it makes every dilf bump
+an explicit commit in this repo, and the bump only happens when we
+choose to consume new upstream work. dilf changes only reach
+production when `backend/requirements.txt` is updated and merged.
 
 The CI workflow `.github/workflows/dilf-compat.yml` installs whatever
 the pin resolves to and runs `backend/tests/test_dilf_imports.py` as
@@ -45,21 +42,20 @@ A quick map of where dilf is consumed here:
 
 ## Two-step dance for breaking changes
 
-Because the pin tracks dilf `main`, **a breaking change in dilf will
-break this repo's next deploy**. To coordinate cleanly:
+When dilf needs an API-breaking change:
 
-1. **First** — open a draft PR here that:
+1. **First** — open a PR on this repo that:
    - Updates the consumer code to the new dilf API.
-   - Replaces the `main` tarball in `backend/requirements.txt` with a
-     specific dilf commit SHA (the SHA the dilf PR sits on).
+   - Updates the SHA in `backend/requirements.txt` to the dilf PR's
+     head commit.
+   - Stays draft until the dilf PR is ready.
 2. **Second** — once the dilf PR merges, push a commit on this PR
-   that flips the pin back to the `main` tarball (or to the actual
-   merge SHA if you want to be extra paranoid). Mark
-   ready-for-review and merge.
+   updating the SHA to the actual merge commit. Mark ready-for-review
+   and merge here.
 
-Until step 2 lands here, dilf's downstream-compat CI will go red on
-the dilf side — that's the loud signal that prevents an
-out-of-coordination merge on dilf.
+Until step 2 lands, dilf's downstream-compat CI will go red on the
+dilf side — that's the loud signal that prevents an out-of-coordination
+merge on dilf.
 
 ## Currently-missing helpers (graceful fallback)
 
@@ -74,10 +70,29 @@ the fallback runs:
   `coup_express`, …) therefore **never fire** on existing exercises.
 
 Tracking: this gap is non-breaking from a typing perspective (the
-imports are guarded). It will close when dilf ships those two helpers
-(dilf ROADMAP.md Tier 4). When that happens, no draught-master change
-is required — the next deploy auto-picks up the helpers and the
-detectors start firing on the next `tag_existing_exercises` run.
+imports are guarded). It is tracked as dilf ROADMAP.md Tier 2 and
+draught-master ROADMAP.md Tier 2. When dilf ships those helpers, bump
+the pin here and remove the fallback paths in
+`tag_existing_exercises.py`.
+
+## Motif descriptions
+
+The 18 dilf detectors (6 P1 + 4 P2 + 4 P3 + 4 generic combinaisons)
+each emit a `MotifMatch` with a `motif` slug. The slugs are surfaced
+in the UI as clickable badges in `PedagogyPanel`; clicking opens a
+drill page that hits `/api/pedagogy/motifs/{slug}` and reads from
+`backend/pedagogy/motif_descriptions.py`.
+
+**`motif_descriptions.MOTIFS` covers 14 slugs**:
+
+- All 6 P1 motifs.
+- All 4 P2 motifs.
+- The 4 generic combinaisons (`combinaison_2/3/4/5_temps`).
+
+**Gap**: the 4 P3 motifs (`coup_napoleon`, `coup_manoury`,
+`coup_enfilade`, `coup_du_bruleur`) are not in `MOTIFS` yet. They
+fire upstream and appear as badges, but clicking them 404's at
+`/api/pedagogy/motifs/{slug}`. Tracked in `ROADMAP.md`.
 
 ## CI enforcement
 
