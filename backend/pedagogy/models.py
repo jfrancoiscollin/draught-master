@@ -135,6 +135,13 @@ class SquareWeaknessCounts(BaseModel):
     outposts: int = 0
 
 
+class HeatmapNarrativeOut(BaseModel):
+    """Top squares (verbatim) + one pedagogical sentence for one metric."""
+
+    top_line: str
+    hint: str
+
+
 class WeaknessHeatmapOut(BaseModel):
     # Square index (1..50, FMJD numbering) -> per-metric occurrence count
     # across the lookback window. Only the user's own side is counted, so
@@ -143,3 +150,7 @@ class WeaknessHeatmapOut(BaseModel):
     games_analyzed: int
     half_moves_analyzed: int
     lookback: int
+    # Pre-computed narratives, one per metric (incl. "all"). Null when
+    # the metric has no signal — frontend just hides the narrative box.
+    # Pre-computing all 5 avoids a round-trip per toggle.
+    narratives: dict[str, Optional[HeatmapNarrativeOut]] = {}

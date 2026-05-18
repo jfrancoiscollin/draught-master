@@ -25,6 +25,7 @@ from .models import (
     AnalyzeGameResponse,
     ExplainMoveRequest,
     ExplainMoveResponse,
+    HeatmapNarrativeOut,
     MotifExerciseOut,
     MotifInfoOut,
     MotifMatchOut,
@@ -674,6 +675,19 @@ async def get_my_weakness_heatmap(
                             "isolated": 0, "backward": 0, "holes": 0, "outposts": 0,
                         })
                         bucket[metric] += 1
+    # Pre-compute one narrative per metric so the frontend toggles
+    # without a round-trip. Lives in dilf so all UIs share the wording —
+    # see pedagogy/profile/heatmap_narrator.py for the enrichment backlog.
+    from pedagogy.profile import weakness_heatmap_narrative  # noqa: PLC0415
+
+    narratives: dict[str, Optional[HeatmapNarrativeOut]] = {}
+    for metric in ("all", "isolated", "backward", "holes", "outposts"):
+        n = weakness_heatmap_narrative(by_square, metric)  # type: ignore[arg-type]
+        narratives[metric] = (
+            HeatmapNarrativeOut(top_line=n["top_line"], hint=n["hint"])
+            if n is not None else None
+        )
+
     return WeaknessHeatmapOut(
         by_square={
             sq: SquareWeaknessCounts(**counts) for sq, counts in by_square.items()
@@ -681,6 +695,7 @@ async def get_my_weakness_heatmap(
         games_analyzed=games_analyzed,
         half_moves_analyzed=half_moves_analyzed,
         lookback=lookback,
+        narratives=narratives,
     )
 
 

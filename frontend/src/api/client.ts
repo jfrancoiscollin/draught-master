@@ -627,11 +627,19 @@ export interface SquareWeaknessCounts {
   outposts: number
 }
 
+export interface HeatmapNarrative {
+  top_line: string
+  hint: string
+}
+
 export interface WeaknessHeatmap {
   by_square: Record<string, SquareWeaknessCounts>
   games_analyzed: number
   half_moves_analyzed: number
   lookback: number
+  // Pre-computed by dilf's weakness_heatmap_narrative — one per metric
+  // (incl. "all"). Null when the metric has no signal.
+  narratives: Record<string, HeatmapNarrative | null>
 }
 
 export async function getWeaknessHeatmap(lookback = 30): Promise<WeaknessHeatmap> {
