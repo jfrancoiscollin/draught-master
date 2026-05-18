@@ -523,21 +523,35 @@ export async function resetMyAnalyses(): Promise<ResetAnalysesResult> {
   return res.data
 }
 
+/**
+ * Discriminated result from `/pedagogy/explain-move`. Callers need to
+ * distinguish "the game wasn't analyzed yet" (a recoverable user state)
+ * from a transport / server error so they can show the right message.
+ */
+export type ExplainResult =
+  | { kind: 'ok'; text: string }
+  | { kind: 'not-analyzed' }
+  | { kind: 'error' }
+
 export async function explainMovePedagogy(
   gameId: string,
   moveNumber: number,
   mode: 'template' | 'template+book' | 'claude' = 'template',
   lang: string = 'fr',
-): Promise<string | null> {
+): Promise<ExplainResult> {
   try {
     const res = await api.post<{ text: string; mode: string; lang: string; cached: boolean }>(
       '/pedagogy/explain-move',
       { game_id: gameId, move_number: moveNumber, mode, lang },
       { timeout: 15000 },
     )
-    return res.data.text
-  } catch {
-    return null
+    return { kind: 'ok', text: res.data.text }
+  } catch (err: unknown) {
+    const status = (err as { response?: { status?: number } })?.response?.status
+    if (status === 404) {
+      return { kind: 'not-analyzed' }
+    }
+    return { kind: 'error' }
   }
 }
 

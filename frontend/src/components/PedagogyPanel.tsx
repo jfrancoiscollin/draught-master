@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import type { PedagogyAnalysis, VerdictOut } from '../api/client'
+import type { ExplainResult, PedagogyAnalysis, VerdictOut } from '../api/client'
 import { explainMovePedagogy } from '../api/client'
 
 interface Props {
@@ -116,7 +116,7 @@ function MoveRow({
   onJump?: (halfMove: number) => void
 }) {
   const [expanded, setExpanded] = useState(false)
-  const [explanation, setExplanation] = useState<string | null>(null)
+  const [explanation, setExplanation] = useState<ExplainResult | null>(null)
   const [loadingExpl, setLoadingExpl] = useState(false)
   const rowRef = useRef<HTMLDivElement | null>(null)
 
@@ -132,8 +132,8 @@ function MoveRow({
   const fetchExplanation = useCallback(async () => {
     if (explanation === null) {
       setLoadingExpl(true)
-      const text = await explainMovePedagogy(gameId, verdict.move_number, 'template', lang)
-      setExplanation(text)
+      const result = await explainMovePedagogy(gameId, verdict.move_number, 'template', lang)
+      setExplanation(result)
       setLoadingExpl(false)
     }
   }, [explanation, gameId, verdict.move_number, lang])
@@ -231,8 +231,16 @@ function MoveRow({
           {/* Explanation */}
           {loadingExpl ? (
             <span className="text-gray-500 animate-pulse">Chargement…</span>
-          ) : explanation ? (
-            <p>{explanation}</p>
+          ) : explanation?.kind === 'ok' ? (
+            <p>{explanation.text}</p>
+          ) : explanation?.kind === 'not-analyzed' ? (
+            <p className="text-amber-400 italic">
+              Lance d'abord l'analyse pédagogique de la partie pour voir l'explication.
+            </p>
+          ) : explanation?.kind === 'error' ? (
+            <p className="text-red-400 italic">
+              Erreur de chargement de l'explication. Réessaie dans un instant.
+            </p>
           ) : (
             <p className="text-gray-500 italic">Pas d'explication disponible.</p>
           )}

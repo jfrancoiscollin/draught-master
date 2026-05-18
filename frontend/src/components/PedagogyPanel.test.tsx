@@ -9,11 +9,12 @@
  *       does NOT call `onJumpTo` (stopPropagation is wired correctly).
  */
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import PedagogyPanel from './PedagogyPanel'
 import type { PedagogyAnalysis, VerdictOut } from '../api/client'
+import * as client from '../api/client'
 
 // ---------------------------------------------------------------------------
 // Fixture — minimal valid PedagogyAnalysis with two verdicts on the same
@@ -107,6 +108,36 @@ describe('PedagogyPanel — verdict row ↔ board binding', () => {
 
     expect(activeRowWrapper).not.toBeNull()
     expect(inactiveRowWrapper).toBeNull()
+  })
+
+  it('expanded row surfaces "not-analyzed" message on 404', async () => {
+    // Simulate the backend's 404 ("Verdict not yet computed for this
+    // move") — e.g. user clicked Expliquer before bulk-analysing the game,
+    // or the analysis was reset.
+    vi.spyOn(client, 'explainMovePedagogy').mockResolvedValueOnce({
+      kind: 'not-analyzed',
+    })
+    const user = userEvent.setup()
+
+    render(
+      <PedagogyPanel
+        gameId="g1"
+        analysis={ANALYSIS}
+        loading={false}
+        userSide="white"
+        lang="fr"
+        onAnalyze={() => {}}
+      />
+    )
+
+    const chevrons = screen.getAllByTitle('Déplier')
+    await user.click(chevrons[0])
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Lance d'abord l'analyse pédagogique/i),
+      ).toBeInTheDocument()
+    })
   })
 
   it('chevron click only toggles expand — does not call onJumpTo', async () => {
