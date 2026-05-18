@@ -1,6 +1,11 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import type { ExplainResult, PedagogyAnalysis, VerdictOut } from '../api/client'
+import type { ExplainResult, PedagogyAnalysis, SquareWeaknessCounts, VerdictOut } from '../api/client'
 import { explainMovePedagogy } from '../api/client'
+import {
+  HeatmapBoard,
+  HeatMetricSelector,
+  type HeatMetric,
+} from './HeatmapBoard'
 
 interface Props {
   gameId: string
@@ -148,6 +153,76 @@ function MaterialTimeline({
           <line x1={cursorX} y1={PAD_Y} x2={cursorX} y2={H - PAD_Y} stroke="#f59e0b" strokeWidth={1} opacity={0.9} />
         )}
       </svg>
+    </div>
+  )
+}
+
+// ── Per-game heatmap ──────────────────────────────────────────────────────
+// Aggregates the same 4 geometric families as the cross-game heatmap, but
+// only over the verdicts of the currently-open game. Filtered to the
+// user's own side so the framing matches WeaknessPanel ("ton placement
+// dans cette partie", not "le placement des deux camps").
+
+function aggregateGameHeatmap(
+  verdicts: VerdictOut[],
+  userSide: 'white' | 'black',
+): Record<string, SquareWeaknessCounts> {
+  const by: Record<string, SquareWeaknessCounts> = {}
+  const suffix = userSide === 'white' ? 'white' : 'black'
+  const lists: Array<{ key: keyof SquareWeaknessCounts; pick: (v: VerdictOut) => number[] }> = [
+    { key: 'isolated', pick: v => (v as any)[`isolated_pawns_${suffix}`] ?? [] },
+    { key: 'backward', pick: v => (v as any)[`backward_pawns_${suffix}`] ?? [] },
+    { key: 'holes',    pick: v => (v as any)[`holes_${suffix}`] ?? [] },
+    { key: 'outposts', pick: v => (v as any)[`outposts_${suffix}`] ?? [] },
+  ]
+  for (const v of verdicts) {
+    for (const { key, pick } of lists) {
+      for (const sq of pick(v)) {
+        const bucket = by[String(sq)] ?? { isolated: 0, backward: 0, holes: 0, outposts: 0 }
+        bucket[key] += 1
+        by[String(sq)] = bucket
+      }
+    }
+  }
+  return by
+}
+
+function GameHeatmap({
+  verdicts, userSide,
+}: {
+  verdicts: VerdictOut[]
+  userSide: 'white' | 'black'
+}) {
+  const [metric, setMetric] = useState<HeatMetric>('all')
+  const [open, setOpen] = useState(false)
+  if (verdicts.length === 0) return null
+  // Cheap enough to recompute on every render (≤120 verdicts × 8 lists).
+  const bySquare = aggregateGameHeatmap(verdicts, userSide)
+  const total = Object.values(bySquare).reduce(
+    (s, b) => s + b.isolated + b.backward + b.holes + b.outposts, 0,
+  )
+  if (total === 0) return null
+  return (
+    <div className="flex flex-col gap-1.5">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center justify-between text-xs text-gray-400 hover:text-gray-200 cursor-pointer bg-transparent border-0 p-0 text-left"
+      >
+        <span>
+          {open ? '▾' : '▸'} Carte de la partie ({userSide === 'white' ? '⬜' : '⬛'})
+        </span>
+        <span className="text-gray-600">{total} occurrences</span>
+      </button>
+      {open && (
+        <>
+          <HeatMetricSelector value={metric} onChange={setMetric} />
+          <HeatmapBoard bySquare={bySquare} metric={metric} maxWidth={220} />
+          <p className="text-xs text-gray-600">
+            Agrégé sur les {verdicts.length} demi-coups de la partie ·{' '}
+            {metric === 'outposts' ? 'vert = postes (fort)' : 'rouge = récurrence (faible)'}
+          </p>
+        </>
+      )}
     </div>
   )
 }
@@ -405,6 +480,11 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
 
         {/* Material + score timeline — click to jump */}
         <MaterialTimeline verdicts={verdicts} currentHalfMove={currentHalfMove} onJumpTo={onJumpTo} />
+
+        {/* Per-game weakness heatmap — same visual language as the
+            cross-game variant in WeaknessPanel, aggregated only over
+            this game's verdicts. Collapsed by default. */}
+        <GameHeatmap verdicts={verdicts} userSide={userSide} />
 
         {/* Accuracy + ACPL bars — one per side */}
         {([

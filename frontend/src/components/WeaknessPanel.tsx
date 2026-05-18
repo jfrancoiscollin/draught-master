@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { getUserProfile, getMotifDebug, getWeaknessHeatmap } from '../api/client'
 import type { MotifWeakness, UserProfile, MotifDebug, WeaknessHeatmap } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
+import {
+  HeatmapBoard,
+  HeatMetricSelector,
+  type HeatMetric,
+} from './HeatmapBoard'
 
 const MOTIF_NAME_FR: Record<string, string> = {
   coup_royal: 'Coup royal',
@@ -31,87 +36,10 @@ function FreqBar({ score, max }: { score: number; max: number }) {
 }
 
 // ── Weakness heatmap ─────────────────────────────────────────────────────
-// Renders the 50 dark squares of the FMJD board, each tinted by how often
-// the selected weakness metric (or sum of all) appeared on that square
-// across the user's recent games. Empty squares stay neutral; high-count
-// squares glow amber (or green for outposts — those are strengths).
-
-type HeatMetric = 'all' | 'isolated' | 'backward' | 'holes' | 'outposts'
-
-const HEAT_METRIC_LABEL: Record<HeatMetric, string> = {
-  all: 'Toutes',
-  isolated: 'Isolés',
-  backward: 'Retardés',
-  holes: 'Trous',
-  outposts: 'Postes',
-}
-
-function HeatmapBoard({
-  heatmap, metric,
-}: {
-  heatmap: WeaknessHeatmap
-  metric: HeatMetric
-}) {
-  const counts: Record<number, number> = {}
-  for (const [sqStr, bucket] of Object.entries(heatmap.by_square)) {
-    const sq = Number(sqStr)
-    counts[sq] = metric === 'all'
-      ? bucket.isolated + bucket.backward + bucket.holes + bucket.outposts
-      : bucket[metric]
-  }
-  const maxCount = Math.max(1, ...Object.values(counts))
-  // Outposts are strengths, not weaknesses — flip the colour cue.
-  const isStrength = metric === 'outposts'
-  const cells: React.ReactNode[] = []
-  for (let r = 0; r < 10; r++) {
-    for (let c = 0; c < 10; c++) {
-      const isDark = (r + c) % 2 === 1
-      const sq = isDark ? r * 5 + Math.floor(c / 2) + 1 : null
-      const n = sq !== null ? (counts[sq] ?? 0) : 0
-      const intensity = n > 0 ? Math.min(1, n / maxCount) : 0
-      const bg = !isDark
-        ? '#4b3b22'
-        : intensity === 0
-        ? '#1f2937'
-        : isStrength
-        ? `rgba(34, 197, 94, ${0.15 + 0.65 * intensity})`
-        : `rgba(239, 68, 68, ${0.15 + 0.7 * intensity})`
-      cells.push(
-        <div
-          key={`${r}-${c}`}
-          title={sq !== null ? `Case ${sq} · ${n}×` : ''}
-          style={{
-            background: bg,
-            aspectRatio: '1',
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'rgba(255,255,255,0.7)',
-            fontSize: 9,
-            fontWeight: 600,
-            fontFamily: 'monospace',
-            lineHeight: 1,
-          }}
-        >
-          {isDark && n > 0 ? n : ''}
-        </div>
-      )
-    }
-  }
-  return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(10, 1fr)',
-      width: '100%',
-      maxWidth: 220,
-      border: '2px solid #4b3b22',
-      borderRadius: 3,
-    }}>
-      {cells}
-    </div>
-  )
-}
+// Cross-game variant: aggregated per-square counts come pre-computed
+// from the backend (/weakness-heatmap endpoint). For per-game variant
+// see PedagogyPanel. Both render through ./HeatmapBoard so the visual
+// language stays uniform.
 
 export default function WeaknessPanel({ onMotifClick, refreshKey = 0 }: Props) {
   const { user } = useAuth()
@@ -336,23 +264,8 @@ export default function WeaknessPanel({ onMotifClick, refreshKey = 0 }: Props) {
                 </div>
                 <span className="text-xs text-gray-500">{heatmap.games_analyzed} partie{heatmap.games_analyzed > 1 ? 's' : ''}</span>
               </div>
-              <div className="flex gap-1 flex-wrap">
-                {(['all', 'isolated', 'backward', 'holes', 'outposts'] as const).map(m => (
-                  <button
-                    key={m}
-                    onClick={() => setHeatMetric(m)}
-                    className={
-                      'px-1.5 py-0.5 rounded text-xs transition-colors ' +
-                      (heatMetric === m
-                        ? 'bg-amber-600 text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600 cursor-pointer')
-                    }
-                  >
-                    {HEAT_METRIC_LABEL[m]}
-                  </button>
-                ))}
-              </div>
-              <HeatmapBoard heatmap={heatmap} metric={heatMetric} />
+              <HeatMetricSelector value={heatMetric} onChange={setHeatMetric} />
+              <HeatmapBoard bySquare={heatmap.by_square} metric={heatMetric} />
               {(() => {
                 const narrative = heatmap.narratives?.[heatMetric]
                 return narrative && (
