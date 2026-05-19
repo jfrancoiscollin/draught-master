@@ -692,11 +692,118 @@ export function MoveRow({
   )
 }
 
+// ── Accuracy / ACPL summary (per-side) ────────────────────────────────────
+// Two rows — user side and opponent side — each with an AccuracyBar,
+// the ACPL value, and counts of mistakes / blunders. Extracted from
+// PedagogyPanel's monolithic render so the tab system in
+// ImportGamePanel can compose it directly.
+
+export function AccuracySummary({
+  verdicts, userSide,
+}: {
+  verdicts: VerdictOut[]
+  userSide: 'white' | 'black'
+}) {
+  const opponentSide: 'white' | 'black' = userSide === 'white' ? 'black' : 'white'
+  const rows = [
+    { side: userSide,     label: userSide === 'white' ? '⬜' : '⬛',
+      vs: verdicts.filter(v => v.side === userSide) },
+    { side: opponentSide, label: opponentSide === 'white' ? '⬜' : '⬛',
+      vs: verdicts.filter(v => v.side === opponentSide) },
+  ] as const
+  return (
+    <div className="flex flex-col gap-1.5">
+      {rows.map(({ side, label, vs }) => {
+        const bl  = vs.filter(v => v.verdict === 'blunder').length
+        const mk  = vs.filter(v => v.verdict === 'mistake').length
+        const acc = vs.length
+          ? 1 - vs.reduce((s, v) => s + Math.max(v.delta_winchance, 0), 0) / vs.length
+          : 1
+        const a = acpl(vs)
+        return (
+          <div key={side} className="flex items-center gap-1.5">
+            <span className="text-xs w-4 flex-shrink-0">{label}</span>
+            <AccuracyBar accuracy={acc} />
+            <span className="text-xs tabular-nums font-mono text-gray-400 w-12 text-right flex-shrink-0"
+              title="Perte moyenne en centipions (même calcul que l'annotation Scan)">
+              {a}cp
+            </span>
+            {bl > 0 && <span className="text-xs font-bold flex-shrink-0" style={{ color: '#ef4444' }}>{bl}??</span>}
+            {mk > 0 && <span className="text-xs font-bold flex-shrink-0" style={{ color: '#f97316' }}>{mk}?</span>}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Moves table ───────────────────────────────────────────────────────────
+// Filter toggle (all / errors only) + column headers + scrollable move
+// list. The container caps its height so it can sit inside a flex layout
+// without pushing siblings off-screen. Used by both PedagogyPanel
+// (legacy full panel) and ImportGamePanel's Tables tab.
+
+export function MovesTable({
+  verdicts, gameId, lang, currentHalfMove, onJumpTo, onMotifClick, maxHeight = 320,
+}: {
+  verdicts: VerdictOut[]
+  gameId: string
+  lang: string
+  currentHalfMove?: number
+  onJumpTo?: (hm: number) => void
+  onMotifClick?: (slug: string) => void
+  maxHeight?: number
+}) {
+  const [filter, setFilter] = useState<'all' | 'errors'>('all')
+  const shown = filter === 'errors'
+    ? verdicts.filter(v => ['inaccuracy', 'mistake', 'blunder'].includes(v.verdict))
+    : verdicts
+  return (
+    <div className="flex flex-col bg-gray-800/40 border border-gray-700 rounded-lg overflow-hidden">
+      <div className="flex border-b border-gray-700">
+        {(['all', 'errors'] as const).map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className={`flex-1 py-1 text-xs font-medium transition-colors ${
+              filter === f ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
+            }`}>
+            {f === 'all' ? 'Tous les coups' : 'Erreurs uniquement'}
+          </button>
+        ))}
+      </div>
+      <div className="flex items-center gap-1.5 text-xs text-gray-600 border-b border-gray-800 px-2 py-1">
+        <span className="w-4" />
+        <span className="w-4" />
+        <span className="flex-1">coup</span>
+        <span className="w-12 text-right">éval.</span>
+        <span className="w-6 text-center">verdict</span>
+        <span className="w-10 text-right">Δcp</span>
+        <span className="w-4" />
+        <span className="w-3" />
+      </div>
+      <div className="overflow-y-auto" style={{ maxHeight }}>
+        {shown.length === 0 ? (
+          <p className="text-xs text-center text-gray-500 py-4">Aucune erreur détectée 🎉</p>
+        ) : (
+          shown.map(v => (
+            <MoveRow
+              key={v.move_number}
+              verdict={v}
+              gameId={gameId}
+              lang={lang}
+              onMotifClick={onMotifClick}
+              isActive={currentHalfMove === v.move_number}
+              onJump={onJumpTo}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 
 export default function PedagogyPanel({ gameId, analysis, loading, userSide, lang, onAnalyze, error, onMotifClick, currentHalfMove, onJumpTo }: Props) {
-  const [filter, setFilter] = useState<'all' | 'errors'>('all')
-
   if (!analysis && !loading) {
     return (
       <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-3 flex flex-col gap-2">
@@ -733,13 +840,6 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
   }
 
   const { verdicts } = analysis!
-  const opponentSide = userSide === 'white' ? 'black' : 'white'
-  const userVerdicts = verdicts.filter(v => v.side === userSide)
-  const oppVerdicts  = verdicts.filter(v => v.side === opponentSide)
-
-  const shown = filter === 'errors'
-    ? verdicts.filter(v => ['inaccuracy', 'mistake', 'blunder'].includes(v.verdict))
-    : verdicts
 
   return (
     <div className="bg-gray-800/50 border border-gray-700 rounded-xl flex flex-col">
@@ -751,90 +851,22 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
           <span className="text-xs text-gray-500">{verdicts.length} demi-coups · Scan</span>
         </div>
 
-        {/* Material + score timeline — click to jump */}
         <MaterialTimeline verdicts={verdicts} currentHalfMove={currentHalfMove} onJumpTo={onJumpTo} />
-
-        {/* Per-game weakness heatmap — same visual language as the
-            cross-game variant in WeaknessPanel, aggregated only over
-            this game's verdicts. Counts distinct streaks, not raw
-            half-move occurrences (see aggregateGameHeatmap docstring). */}
         <GameHeatmap verdicts={verdicts} userSide={userSide} />
-
-        {/* Companion Gantt — shows *when* each weakness was active.
-            Heatmap answers "where", Gantt answers "for how long and
-            in what window". Collapsed by default to keep the timeline
-            + accuracy bars above the fold. */}
         <WeaknessGantt verdicts={verdicts} userSide={userSide} />
 
-        {/* Accuracy + ACPL bars — one per side */}
-        {([
-          { side: userSide,     label: userSide === 'white' ? '⬜' : '⬛', vs: userVerdicts },
-          { side: opponentSide, label: opponentSide === 'white' ? '⬜' : '⬛', vs: oppVerdicts },
-        ] as const).map(({ side, label, vs }) => {
-          const bl  = vs.filter(v => v.verdict === 'blunder').length
-          const mk  = vs.filter(v => v.verdict === 'mistake').length
-          const acc = vs.length
-            ? 1 - vs.reduce((s, v) => s + Math.max(v.delta_winchance, 0), 0) / vs.length
-            : 1
-          const a = acpl(vs)
-          return (
-            <div key={side} className="flex items-center gap-1.5">
-              <span className="text-xs w-4 flex-shrink-0">{label}</span>
-              <AccuracyBar accuracy={acc} />
-              {/* ACPL — same metric as the Scan annotation panel */}
-              <span className="text-xs tabular-nums font-mono text-gray-400 w-12 text-right flex-shrink-0"
-                title="Perte moyenne en centipions (même calcul que l'annotation Scan)">
-                {a}cp
-              </span>
-              {bl > 0 && <span className="text-xs font-bold flex-shrink-0" style={{ color: '#ef4444' }}>{bl}??</span>}
-              {mk > 0 && <span className="text-xs font-bold flex-shrink-0" style={{ color: '#f97316' }}>{mk}?</span>}
-            </div>
-          )
-        })}
-
-        {/* Column headers */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 border-t border-gray-800 pt-1">
-          <span className="w-4" />
-          <span className="w-4" />
-          <span className="flex-1">coup</span>
-          <span className="w-12 text-right">éval.</span>
-          <span className="w-6 text-center">verdict</span>
-          <span className="w-10 text-right">Δcp</span>
-          <span className="w-4" />
-          <span className="w-3" />
-        </div>
+        <AccuracySummary verdicts={verdicts} userSide={userSide} />
       </div>
 
-      {/* Filter toggle */}
-      <div className="flex border-b border-gray-700">
-        {(['all', 'errors'] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={`flex-1 py-1 text-xs font-medium transition-colors ${
-              filter === f ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
-            }`}>
-            {f === 'all' ? 'Tous les coups' : 'Erreurs uniquement'}
-          </button>
-        ))}
-      </div>
-
-      {/* Move list */}
-      <div className="overflow-y-auto max-h-72">
-        {shown.length === 0 ? (
-          <p className="text-xs text-center text-gray-500 py-4">Aucune erreur détectée 🎉</p>
-        ) : (
-          shown.map(v => (
-            <MoveRow
-              key={v.move_number}
-              verdict={v}
-              gameId={gameId}
-              lang={lang}
-              onMotifClick={onMotifClick}
-              isActive={currentHalfMove === v.move_number}
-              onJump={onJumpTo}
-            />
-          ))
-        )}
-      </div>
+      <MovesTable
+        verdicts={verdicts}
+        gameId={gameId}
+        lang={lang}
+        currentHalfMove={currentHalfMove}
+        onJumpTo={onJumpTo}
+        onMotifClick={onMotifClick}
+        maxHeight={288}
+      />
     </div>
   )
 }

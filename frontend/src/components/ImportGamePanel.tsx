@@ -12,7 +12,9 @@ import {
   getGameAnalysis, analyzeGamePedagogy,
 } from '../api/client'
 import type { PdnPosition, PdnImportResult, PedagogyAnalysis } from '../api/client'
-import PedagogyPanel from './PedagogyPanel'
+import PedagogyPanel, {
+  AccuracySummary, GameHeatmap, MaterialTimeline, MovesTable, MoveRow, WeaknessGantt,
+} from './PedagogyPanel'
 import { fenToBoard } from '../utils/fen'
 import { useLanguage } from '../i18n/LanguageContext'
 import type { MoveData, AnalysisResponse } from '../types'
@@ -141,6 +143,196 @@ function PositionDiagnostic({
           </React.Fragment>
         )
       })}
+    </div>
+  )
+}
+
+// ── Pedagogy tabs ─────────────────────────────────────────────────────────
+// Three-tab container surfaced once dilf analysis is ready: Position
+// (current half-move's pedagogy summary + diagnostic grid + matching
+// move row), Heatmap & Gantt (cumulative game-wide visualisations),
+// Tables des positions (per-side accuracy bars + filter + full move
+// list). Replaces the single PedagogyPanel that used to dump
+// everything in one scroll.
+
+type TabKey = 'position' | 'graphs' | 'tables'
+
+function PedagogyTabsPanel({
+  gameId, analysis, userSide, lang, activeVerdict, hangingSquares,
+  threatCount, showThreats, onToggleThreats, diagKey, onDiagKey,
+  currentHalfMove, onJumpTo,
+}: {
+  gameId: string
+  analysis: PedagogyAnalysis
+  userSide: 'white' | 'black'
+  lang: string
+  activeVerdict: VerdictForDiag & {
+    phase: 'opening' | 'middlegame' | 'endgame'
+    material_balance: number | null
+    formations: string[]
+    move_number: number
+  } | null
+  hangingSquares: number[]
+  threatCount: number
+  showThreats: boolean
+  onToggleThreats: () => void
+  diagKey: string | null
+  onDiagKey: (k: string) => void
+  currentHalfMove: number
+  onJumpTo: (hm: number) => void
+}) {
+  const [tab, setTab] = useState<TabKey>('position')
+  const { verdicts } = analysis
+  const activeRow = activeVerdict
+    ? verdicts.find(v => v.move_number === activeVerdict.move_number) ?? null
+    : null
+
+  const tabs: ReadonlyArray<{ key: TabKey; label: string }> = [
+    { key: 'position', label: 'Position' },
+    { key: 'graphs',   label: 'Heatmap & Gantt' },
+    { key: 'tables',   label: 'Table des positions' },
+  ]
+
+  return (
+    <div className="bg-gray-800/50 border border-gray-700 rounded-xl flex flex-col overflow-hidden">
+      <div className="flex border-b border-gray-700">
+        {tabs.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={
+              'flex-1 py-1.5 text-xs font-medium transition-colors ' +
+              (tab === t.key
+                ? 'bg-gray-700 text-amber-300'
+                : 'text-gray-400 hover:text-gray-200 cursor-pointer')
+            }
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="p-3 flex flex-col gap-2">
+        {tab === 'position' && (
+          activeVerdict ? (
+            <>
+              <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
+                <span title={`Phase : ${PHASE_FR[activeVerdict.phase]}`}>
+                  <span className="text-gray-600">Phase </span>
+                  <span className="font-semibold text-indigo-300">{PHASE_FR[activeVerdict.phase]}</span>
+                </span>
+                {activeVerdict.material_balance !== null && (
+                  <span title="Solde matériel (dames = 3 pions), point de vue blancs">
+                    <span className="text-gray-600">Matériel </span>
+                    <span
+                      className={
+                        activeVerdict.material_balance > 0
+                          ? 'font-mono font-bold text-green-400'
+                          : activeVerdict.material_balance < 0
+                          ? 'font-mono font-bold text-red-400'
+                          : 'font-mono font-bold text-gray-400'
+                      }
+                    >
+                      {activeVerdict.material_balance > 0 ? '+' : ''}{activeVerdict.material_balance}
+                    </span>
+                  </span>
+                )}
+                {hangingSquares.length > 0 && (
+                  <span className="font-bold text-red-400" title="Pièces capturables au coup suivant">
+                    ⚠ {hangingSquares.length} pièce{hangingSquares.length > 1 ? 's' : ''} en l'air
+                  </span>
+                )}
+                {threatCount > 0 && (
+                  <button
+                    onClick={onToggleThreats}
+                    className={
+                      'px-1.5 py-0.5 rounded text-xs transition-colors ' +
+                      (showThreats
+                        ? 'bg-red-600/40 text-red-200 cursor-pointer'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer')
+                    }
+                  >
+                    {showThreats ? '✓ ' : ''}Menaces {threatCount}
+                  </button>
+                )}
+              </div>
+              {activeVerdict.formations.length > 0 && (
+                <div className="flex items-center gap-1 flex-wrap text-xs">
+                  <span className="text-gray-600">Formations</span>
+                  {activeVerdict.formations.map(slug => {
+                    const { name, side } = prettyFormation(slug)
+                    const active = diagKey === slug
+                    const clickable = (FORMATION_SQUARES[slug] ?? []).length > 0
+                    return (
+                      <button
+                        key={slug}
+                        disabled={!clickable}
+                        onClick={() => onDiagKey(slug)}
+                        className={
+                          'px-1.5 py-0.5 rounded transition-colors ' +
+                          (active
+                            ? 'bg-amber-600/40 text-amber-200 cursor-pointer'
+                            : clickable
+                            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer'
+                            : 'bg-gray-800/40 text-gray-500 cursor-default')
+                        }
+                      >
+                        {side} {name}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              <PositionDiagnostic
+                verdict={activeVerdict}
+                activeKey={diagKey}
+                onToggle={onDiagKey}
+              />
+              {activeRow && (
+                <div className="border-t border-gray-700 pt-2 mt-1">
+                  <span className="text-xs text-gray-600 mb-1 block">Coup correspondant</span>
+                  <MoveRow
+                    verdict={activeRow}
+                    gameId={gameId}
+                    lang={lang}
+                    isActive={true}
+                    onJump={onJumpTo}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-xs text-gray-500 italic">
+              Aucun coup sélectionné — utilise les flèches pour avancer dans la partie.
+            </p>
+          )
+        )}
+
+        {tab === 'graphs' && (
+          <>
+            <MaterialTimeline
+              verdicts={verdicts}
+              currentHalfMove={currentHalfMove}
+              onJumpTo={onJumpTo}
+            />
+            <GameHeatmap verdicts={verdicts} userSide={userSide} />
+            <WeaknessGantt verdicts={verdicts} userSide={userSide} />
+          </>
+        )}
+
+        {tab === 'tables' && (
+          <>
+            <AccuracySummary verdicts={verdicts} userSide={userSide} />
+            <MovesTable
+              verdicts={verdicts}
+              gameId={gameId}
+              lang={lang}
+              currentHalfMove={currentHalfMove}
+              onJumpTo={onJumpTo}
+            />
+          </>
+        )}
+      </div>
     </div>
   )
 }
@@ -738,86 +930,9 @@ export default function ImportGamePanel({
               right column. Keeps engine info adjacent to nav, not far
               from the position it describes. */}
           <ScanBar info={scanInfo} loading={annotating} />
-
-          {/* Pedagogy overlay summary — only when an analysed half-move is displayed */}
-          {activeVerdict && (
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
-                <span title={`Phase : ${PHASE_FR[activeVerdict.phase]}`}>
-                  <span className="text-gray-600">Phase </span>
-                  <span className="font-semibold text-indigo-300">{PHASE_FR[activeVerdict.phase]}</span>
-                </span>
-                {activeVerdict.material_balance !== null && (
-                  <span title="Solde matériel (dames = 3 pions), point de vue blancs">
-                    <span className="text-gray-600">Matériel </span>
-                    <span
-                      className={
-                        activeVerdict.material_balance > 0
-                          ? 'font-mono font-bold text-green-400'
-                          : activeVerdict.material_balance < 0
-                          ? 'font-mono font-bold text-red-400'
-                          : 'font-mono font-bold text-gray-400'
-                      }
-                    >
-                      {activeVerdict.material_balance > 0 ? '+' : ''}{activeVerdict.material_balance}
-                    </span>
-                  </span>
-                )}
-                {hangingSquares.length > 0 && (
-                  <span className="font-bold text-red-400" title="Pièces capturables au coup suivant">
-                    ⚠ {hangingSquares.length} pièce{hangingSquares.length > 1 ? 's' : ''} en l'air
-                  </span>
-                )}
-                {threatCount > 0 && (
-                  <button
-                    onClick={() => setShowThreats(v => !v)}
-                    className={
-                      'px-1.5 py-0.5 rounded text-xs transition-colors ' +
-                      (showThreats
-                        ? 'bg-red-600/40 text-red-200 cursor-pointer'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer')
-                    }
-                    title={`${threatCount} capture${threatCount > 1 ? 's' : ''} possible${threatCount > 1 ? 's' : ''} pour l'adversaire`}
-                  >
-                    {showThreats ? '✓ ' : ''}Menaces {threatCount}
-                  </button>
-                )}
-              </div>
-              {activeVerdict.formations.length > 0 && (
-                <div className="flex items-center gap-1 flex-wrap text-xs">
-                  <span className="text-gray-600">Formations</span>
-                  {activeVerdict.formations.map(slug => {
-                    const { name, side } = prettyFormation(slug)
-                    const active = diagKey === slug
-                    const clickable = (FORMATION_SQUARES[slug] ?? []).length > 0
-                    return (
-                      <button
-                        key={slug}
-                        disabled={!clickable}
-                        onClick={() => setDiagKey(prev => prev === slug ? null : slug)}
-                        className={
-                          'px-1.5 py-0.5 rounded transition-colors ' +
-                          (active
-                            ? 'bg-amber-600/40 text-amber-200 cursor-pointer'
-                            : clickable
-                            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer'
-                            : 'bg-gray-800/40 text-gray-500 cursor-default')
-                        }
-                        title={clickable ? `Surligner les cases ${(FORMATION_SQUARES[slug] ?? []).join(', ')}` : slug}
-                      >
-                        {side} {name}
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-              <PositionDiagnostic
-                verdict={activeVerdict}
-                activeKey={diagKey}
-                onToggle={k => setDiagKey(prev => prev === k ? null : k)}
-              />
-            </div>
-          )}
+          {/* Pedagogy overlay (phase / matériel / formations / diagnostic
+              + active move row) moved into the Position tab below the
+              board — keeps the right column compact next to the board. */}
         </div>
       </div>
 
@@ -912,7 +1027,10 @@ export default function ImportGamePanel({
             />
           )}
 
-          {initialGameId && (
+          {/* Pedagogy mode — without analysis, show the "Analyser" /
+              loading state through PedagogyPanel. With analysis, the
+              tab system below this section takes over. */}
+          {initialGameId && !pedagogyAnalysis && (
             <PedagogyPanel
               gameId={initialGameId}
               analysis={pedagogyAnalysis}
@@ -921,6 +1039,24 @@ export default function ImportGamePanel({
               lang={language}
               onAnalyze={handleAnalyzePedagogy}
               error={pedagogyError}
+              currentHalfMove={currentIdx}
+              onJumpTo={(hm) => goTo(hm, positions)}
+            />
+          )}
+
+          {initialGameId && pedagogyAnalysis && (
+            <PedagogyTabsPanel
+              gameId={initialGameId}
+              analysis={pedagogyAnalysis}
+              userSide={initialUserSide ?? 'white'}
+              lang={language}
+              activeVerdict={activeVerdict}
+              hangingSquares={hangingSquares}
+              threatCount={threatCount}
+              showThreats={showThreats}
+              onToggleThreats={() => setShowThreats(v => !v)}
+              diagKey={diagKey}
+              onDiagKey={k => setDiagKey(prev => prev === k ? null : k)}
               currentHalfMove={currentIdx}
               onJumpTo={(hm) => goTo(hm, positions)}
             />
