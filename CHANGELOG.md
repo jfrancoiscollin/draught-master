@@ -13,6 +13,23 @@ upstream changelog see
 
 ### Added
 
+- **Live PvP — J4 (disconnect grace + reconnect path)**. When a
+  player drops their WebSocket mid-game, the partner now receives
+  `opponent_disconnected` (with `grace_seconds` for a local countdown)
+  and a server-side `asyncio.Task` schedules an auto-forfeit. A
+  reconnect within the window cancels the timer, ships a `game_state`
+  bootstrap frame to the returning player, and pushes
+  `opponent_reconnected` to the partner. Past the window, the timer
+  fires `_forfeit_after_grace` → marks `abandoned_<color>`,
+  broadcasts `game_ended` with `by_forfeit=true`. Per-user task
+  tracking lives in `LiveGameManager` (`schedule_forfeit` /
+  `cancel_forfeit` / `clear_forfeit`); only one timer per user can
+  be alive at a time. The FastAPI `startup` hook stamps every
+  still-`in_progress` live game as `abandoned_server` so a redeploy
+  doesn't leave zombie sessions in the lobby. 6 new tests (mostly
+  unit-level — the cross-session reconnect pattern hangs in
+  Starlette's TestClient, the E2E coverage is limited to the
+  `opponent_disconnected` push).
 - **Live PvP — J3 (game state machine + move broadcast)**. Challenge
   acceptance now also spawns a `kind='live'` row in `games`, assigns
   colors per the challenger's `preferred_color` (random falls back to

@@ -1,9 +1,10 @@
 # PvP entre amis — Cadrage & implémentation
 
-> **Statut** : J1+J2+J3 livrés sur `develop` (schema + REST défis +
+> **Statut** : J1+J2+J3+J4 livrés sur `develop` (schema + REST défis +
 > WebSocket avec auth, présence, push notifications, state machine de
-> partie live avec broadcast move/resign/game_ended). J4 → J6 à venir
-> (grace period déconnexion + UI lobby/jeu).
+> partie live avec broadcast move/resign/game_ended, grace period 2 min
+> sur déconnexion avec reconnexion clean + forfeit auto à expiration).
+> J5 → J6 à venir (UI lobby + écran de jeu).
 
 Permettre à deux utilisateurs Draught Master de jouer une partie en
 temps réel sans passer par lidraughts, dans une logique "défi entre
@@ -170,9 +171,10 @@ Cycle de vie :
 | `challenge_cancelled` | Le challenger a retiré son défi |
 | `game_started` | Une partie live vient d'être créée pour toi (acceptation d'un défi) |
 | `move_played` | L'un des deux joueurs vient de jouer un coup (côté + notation + nouvelle session) |
-| `game_ended` | Partie terminée (mat / blocage / abandon). Le client peut maintenant proposer "Analyser la partie" |
-
-**Messages serveur → client** (J4+) : `opponent_disconnected`
+| `game_ended` | Partie terminée (mat / blocage / abandon / forfait grace expirée — voir `by_forfeit:bool`). Le client peut maintenant proposer "Analyser la partie" |
+| `opponent_disconnected` | (J4) L'adversaire vient de couper sa WS. `grace_seconds` indique le temps restant avant forfait auto |
+| `opponent_reconnected` | (J4) L'adversaire est revenu avant la fin du grace, partie continue |
+| `game_state` | (J4) Bootstrap envoyé au joueur juste après `auth_ok` quand il a une partie active — laisse le frontend reprendre sans polling |
 
 Toutes les pushs (`challenge_received` / `_resolved` / `_cancelled`) sont **best-effort** : si l'utilisateur cible n'est pas connecté, le push est silencieusement abandonné. La récupération se fait par `GET /api/live/challenges/pending` à la reconnexion.
 
@@ -242,6 +244,7 @@ created  (challenge accepted, Game inséré avec status='pending')
 | **J1** | Schema migrations + endpoints REST de défis + tests | ✅ livré |
 | **J2** | WebSocket endpoint, présence (dict in-mem), auth via token, ping/pong + push REST→WS sur les 3 transitions de challenge | ✅ livré |
 | **J3** | State machine de partie (LiveGameManager singleton), move/resign WS frames, broadcast move_played + game_ended, persistance incrémentale dans games.pdn | ✅ livré |
+| **J4** | 2-min grace period sur déconnexion, reconnect-cancels-forfeit, push opponent_disconnected / opponent_reconnected, game_state bootstrap au auth_ok, startup-hook abandoned_server | ✅ livré |
 | **J4** | Détection fin de partie (mat/blocage), grace period déconnexion, abandon explicite | ⏳ à venir |
 | **J5** | UI : `<LivePlayPanel>` (lobby/défis) + `<LiveGameScreen>` (jeu live) | ⏳ à venir |
 | **J6** | `<ChallengeToast>` global, edge cases, intégration avec le flow pédagogique pour analyser une partie finie. Tests E2E | ⏳ à venir |

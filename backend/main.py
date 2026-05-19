@@ -152,6 +152,24 @@ game_store: Dict[str, Dict[str, Any]] = {}
 @app.on_event("startup")
 async def startup_event() -> None:
     await init_db()
+
+    # Live PvP — every in-memory game session was lost when the server
+    # restarted, so any games row still marked `in_progress` is now
+    # orphaned. Stamp them `abandoned_server` so the lobby UI doesn't
+    # show stale "partie en cours" entries and so post-restart analysis
+    # of those games doesn't hit assumptions of liveness.
+    try:
+        import aiosqlite
+        from db.config import DB_PATH
+        async with aiosqlite.connect(str(DB_PATH)) as _conn:
+            await _conn.execute(
+                "UPDATE games SET status = 'abandoned_server' "
+                "WHERE kind = 'live' AND status = 'in_progress'"
+            )
+            await _conn.commit()
+    except Exception:
+        logging.exception("startup: live-game cleanup failed (non-fatal)")
+
     global shared_book_rag
     try:
         from pathlib import Path

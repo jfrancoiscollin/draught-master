@@ -137,10 +137,24 @@ clone.
       `status` to the row so a finished live game flows through the
       existing `/analyze-game` pipeline without conversion. 9 new
       backend tests covering the J3 surface; 134 total.
-- [ ] **J4 — fin de partie & déconnexions**. Auto-detect mate /
-      blockage, wire the 2-min disconnect grace period, expose
-      `resign` over WS, mark `status='finished'` or
-      `status='abandoned_<color>'`.
+- [x] **J4 — déconnexions & forfait sur grace**. The natural-end and
+      `resign` paths shipped on J3; this adds the 2-min grace window
+      for involuntary drops. `LiveGameManager.schedule_forfeit` /
+      `cancel_forfeit` / `clear_forfeit` track a per-user
+      `asyncio.Task`; the WS endpoint schedules one on disconnect
+      and cancels it on the next auth_ok. Reconnect inside the
+      window pushes `opponent_reconnected` to the partner and ships
+      a `game_state` frame to the returning player; reconnect after
+      the window finds nothing to cancel and the timer's
+      `_forfeit_after_grace` has already marked the side
+      `abandoned_<color>` + broadcast `game_ended` with
+      `by_forfeit=true`. Startup hook stamps every still-`in_progress`
+      live game `abandoned_server` so a redeploy doesn't leave the
+      lobby UI showing zombie sessions. 6 new tests (the
+      reconnect-via-second-TestClient-session pattern hangs in
+      Starlette, so most of the J4 coverage is unit-level on the
+      manager and `_forfeit_after_grace` directly — the disconnect
+      push is still tested E2E).
 - [ ] **J5 — UI lobby + live game screen**. `<LivePlayPanel>` (lobby
       with challenge form + received/sent lists), `<LiveGameScreen>`
       (adapted from `ImportGamePanel`: active board, "À toi de jouer"

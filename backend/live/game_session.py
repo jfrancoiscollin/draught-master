@@ -122,6 +122,12 @@ class LiveGameManager:
         # right session without a linear scan. A user can be in at most
         # one live game at a time in v1.
         self._user_to_game: dict[int, str] = {}
+        # J4 — pending forfeit asyncio.Tasks keyed by user_id. Scheduled
+        # when a player drops their WebSocket in the middle of an
+        # in_progress game; cancelled if they reconnect inside the
+        # grace window. The task body itself is owned by api.py — the
+        # manager just holds the handle for cancellation.
+        self._forfeit_tasks: dict[int, "asyncio.Task[Any]"] = {}
         self._lock = asyncio.Lock()
 
     async def start_game(
@@ -265,12 +271,50 @@ class LiveGameManager:
                 if self._user_to_game.get(uid) == game_id:
                     del self._user_to_game[uid]
 
+    # ── Forfeit task tracking (J4) ──────────────────────────────────────
+
+    def schedule_forfeit(self, user_id: int, task: "asyncio.Task[Any]") -> None:
+        """Register a pending forfeit timer for ``user_id``.
+
+        If a previous timer was already in flight (e.g. the user
+        reconnected then re-disconnected before the first timer
+        expired), it's cancelled here so only one timer can race to
+        completion per user.
+        """
+        old = self._forfeit_tasks.get(user_id)
+        if old is not None and not old.done():
+            old.cancel()
+        self._forfeit_tasks[user_id] = task
+
+    def cancel_forfeit(self, user_id: int) -> bool:
+        """Cancel the pending forfeit for ``user_id`` if any.
+
+        Returns True iff a timer was actually cancelled — the caller
+        uses that to decide whether to push an ``opponent_reconnected``
+        notification or stay quiet (first connect of the session).
+        """
+        task = self._forfeit_tasks.pop(user_id, None)
+        if task is None or task.done():
+            return False
+        task.cancel()
+        return True
+
+    def clear_forfeit(self, user_id: int) -> None:
+        """Drop the timer handle without cancelling — used after the
+        timer body has run to completion and marked the user
+        abandoned, so the dict doesn't keep a stale reference."""
+        self._forfeit_tasks.pop(user_id, None)
+
     async def reset(self) -> None:
         """Test-only — wipes all sessions. Production should never call
         this; survives only because pytest fixtures need it."""
         async with self._lock:
             self._games.clear()
             self._user_to_game.clear()
+            for task in self._forfeit_tasks.values():
+                if not task.done():
+                    task.cancel()
+            self._forfeit_tasks.clear()
 
 
 def _find_move_by_pdn(pdn: str, legal_moves: list[Move]) -> Optional[Move]:

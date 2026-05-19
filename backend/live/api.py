@@ -40,6 +40,12 @@ router = APIRouter(prefix="/api/live", tags=["live"])
 # is a defence against half-open sockets, not a UX timer.
 _AUTH_TIMEOUT_S = 10.0
 
+# Grace window after a WS disconnect: the player who dropped has this
+# many seconds to reconnect before the in-flight game is forfeited to
+# the other side. 2 minutes per ``docs/PVP_LIVE.md``. Tests override
+# this with a fraction of a second.
+_DISCONNECT_GRACE_S = 120.0
+
 
 def _db_path() -> str:
     """Same lookup as pedagogy/api.py — keeps the live module
@@ -344,6 +350,27 @@ async def live_ws(ws: WebSocket) -> None:
 
     await _safe_send(ws, {"type": "auth_ok", "user_id": user_id})
 
+    # J4 — handle reconnect-into-grace and game-state bootstrap.
+    # If a forfeit timer was pending for this user, the reconnect
+    # cancels it and we notify the opponent that the partner is back.
+    # Independently, if the user has an active live session we ship
+    # the current snapshot so the frontend can resume rendering
+    # without polling.
+    reconnected = game_manager.cancel_forfeit(user_id)
+    active_session = game_manager.session_for(user_id)
+    if active_session is not None:
+        await _safe_send(ws, {"type": "game_state", "session": active_session.to_dict()})
+        if reconnected:
+            opp_id = (
+                active_session.black_user_id
+                if active_session.white_user_id == user_id
+                else active_session.white_user_id
+            )
+            await manager.send_to(opp_id, {
+                "type": "opponent_reconnected",
+                "user_id": user_id,
+            })
+
     try:
         while True:
             msg = await ws.receive_json()
@@ -368,6 +395,24 @@ async def live_ws(ws: WebSocket) -> None:
         _log.warning("WS handler crashed for user_id=%s: %s", user_id, exc)
     finally:
         await manager.disconnect(user_id, ws)
+        # J4 — if the user was mid-game, start the forfeit clock. The
+        # task runs detached: it survives the WS handler exiting and
+        # only ends by completing (forfeit) or being cancelled by a
+        # reconnect.
+        sess_on_drop = game_manager.session_for(user_id)
+        if sess_on_drop is not None and sess_on_drop.status == "in_progress":
+            opp_id = (
+                sess_on_drop.black_user_id
+                if sess_on_drop.white_user_id == user_id
+                else sess_on_drop.white_user_id
+            )
+            await manager.send_to(opp_id, {
+                "type": "opponent_disconnected",
+                "user_id": user_id,
+                "grace_seconds": int(_DISCONNECT_GRACE_S),
+            })
+            task = asyncio.create_task(_forfeit_after_grace(user_id))
+            game_manager.schedule_forfeit(user_id, task)
 
 
 # ---------------------------------------------------------------------------
@@ -447,3 +492,48 @@ async def _handle_resign_frame(ws: WebSocket, user_id: int) -> None:
     payload = {"type": "game_ended", "session": result["session"]}
     for uid in (sess_before.white_user_id, sess_before.black_user_id):
         await manager.send_to(uid, payload)
+
+
+# ---------------------------------------------------------------------------
+# J4 — disconnect grace period
+# ---------------------------------------------------------------------------
+
+
+async def _forfeit_after_grace(user_id: int) -> None:
+    """Wait :data:`_DISCONNECT_GRACE_S` seconds, then forfeit ``user_id``.
+
+    Cancellation is the normal flow — when the user reconnects,
+    :meth:`LiveGameManager.cancel_forfeit` cancels this task and the
+    function exits without touching state. If the sleep completes,
+    we mark the user's side abandoned (same as `resign`) and
+    broadcast ``game_ended`` to both players.
+
+    Defensive checks: by the time the sleep ends, the game might
+    have ended through some other path (resign by the disconnected
+    user before the WS dropped, or a manual eviction). The forfeit
+    is a no-op in that case — :meth:`LiveGameManager.resign` returns
+    ``ok=False`` and we just clear the timer handle.
+    """
+    try:
+        await asyncio.sleep(_DISCONNECT_GRACE_S)
+    except asyncio.CancelledError:
+        return
+
+    try:
+        async with aiosqlite.connect(_db_path()) as conn:
+            result = await game_manager.resign(conn, user_id=user_id)
+    except Exception as exc:  # noqa: BLE001 — last-resort guard, log and exit
+        _log.warning("forfeit DB write failed for user_id=%s: %s", user_id, exc)
+        game_manager.clear_forfeit(user_id)
+        return
+
+    if not result.get("ok"):
+        # Game already ended through another path — nothing to broadcast.
+        game_manager.clear_forfeit(user_id)
+        return
+
+    sess = result["session"]
+    end_payload = {"type": "game_ended", "session": sess, "by_forfeit": True}
+    for uid in (sess["white_user_id"], sess["black_user_id"]):
+        await manager.send_to(uid, end_payload)
+    game_manager.clear_forfeit(user_id)
