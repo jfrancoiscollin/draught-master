@@ -1099,6 +1099,24 @@ export default function App() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
             </button>
+            {/* Profil button — moved out of the home-screen tile per
+                UX refactor. Keeps the same iconProfileSrc so the user
+                recognises the affordance; lives between Logout and
+                Settings in the header so it's reachable from any tab. */}
+            {user && (
+              <button
+                onClick={() => setTab('game-history')}
+                className="text-gray-400 hover:text-white w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+                title={t('tabHistory')}
+                aria-label={t('tabHistory')}
+              >
+                <img
+                  src={iconProfileSrc}
+                  alt=""
+                  style={{ width: 22, height: 22, objectFit: 'contain' }}
+                />
+              </button>
+            )}
             <button
               onClick={() => setShowControls(true)}
               className="text-gray-400 hover:text-white text-xl w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-700"
@@ -1118,16 +1136,8 @@ export default function App() {
         {tab === 'home' && (
           <div className="h-full flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
             <div className="flex flex-col gap-3 w-full max-w-lg">
-              {/* My games (history) */}
-              {user && (
-                <button
-                  onClick={() => setTab('game-history')}
-                  className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
-                >
-                  <img src={iconProfileSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
-                  <span className="flex-1 text-lg font-bold text-white text-right">{t('tabHistory')}</span>
-                </button>
-              )}
+              {/* Profil tile removed — moved to the header next to
+                  the settings gear. Same icon, same target tab. */}
               {/* Play */}
               <button
                 onClick={() => handleGoToPlay(false)}
