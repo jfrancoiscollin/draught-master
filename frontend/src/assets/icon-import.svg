@@ -1,0 +1,14 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#1A1A1A"/>
+
+  <!-- Bac de réception en bas -->
+
+<path d="M 30 115 L 30 165 L 170 165 L 170 115 L 130 115 L 120 130 L 80 130 L 70 115 Z"
+fill="#EAE2D6"/>
+
+  <!-- Flèche descendante qui rentre dans le bac -->
+
+  <line x1="100" y1="30" x2="100" y2="100" stroke="#EAE2D6" stroke-width="10" stroke-linecap="round"/>
+  <polyline points="72,80 100,108 128,80"
+            fill="none" stroke="#EAE2D6" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
