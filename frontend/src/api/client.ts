@@ -767,3 +767,54 @@ export async function getMyActiveGame(): Promise<LiveGameSessionState | null> {
   const res = await api.get<LiveGameSessionState | null>('/live/my-active-game')
   return res.data
 }
+
+// ── Per-game narrative (J4: surfaced by <GameNarrativeSummary>) ────────
+
+export interface PhaseSummary {
+  phase: 'opening' | 'middlegame' | 'endgame'
+  n_half_moves: number
+  acpl_user: number
+  acpl_opponent: number
+  summary: string
+}
+
+export interface TurningPoint {
+  move_number: number
+  side: 'white' | 'black'
+  notation: string
+  delta_cp: number
+  score_before: number
+  score_after: number
+  verdict: string
+  reason: string
+}
+
+export interface PersistentWeakness {
+  family: 'isolated' | 'backward' | 'holes' | 'outposts'
+  square: number
+  side: 'white' | 'black'
+  duration_half_moves: number
+  first_seen: number
+  summary: string
+}
+
+export interface GameNarrative {
+  headline: string
+  phase_summary: PhaseSummary[]
+  turning_points: TurningPoint[]
+  persistent_weaknesses: PersistentWeakness[]
+  motifs_played: Record<string, number>
+  motifs_missed: Record<string, number>
+  strengths: string[]
+  recommended_drills: string[]
+}
+
+export async function getGameNarrative(
+  gameId: string, lang: string = 'fr',
+): Promise<GameNarrative> {
+  const res = await api.get<GameNarrative>(
+    `/pedagogy/game/${encodeURIComponent(gameId)}/narrative`,
+    { params: { lang } },
+  )
+  return res.data
+}

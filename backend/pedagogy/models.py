@@ -142,6 +142,53 @@ class HeatmapNarrativeOut(BaseModel):
     hint: str
 
 
+# ---------------------------------------------------------------------------
+# Per-game narrative (dilf.profile.narrate_game) — J4 wire shape
+# ---------------------------------------------------------------------------
+
+
+class PhaseSummaryOut(BaseModel):
+    phase: str                      # "opening" | "middlegame" | "endgame"
+    n_half_moves: int
+    acpl_user: int
+    acpl_opponent: int
+    summary: str
+
+
+class TurningPointOut(BaseModel):
+    move_number: int
+    side: str                       # "white" | "black"
+    notation: str
+    delta_cp: int
+    score_before: float
+    score_after: float
+    verdict: str
+    reason: str
+
+
+class PersistentWeaknessOut(BaseModel):
+    family: str                     # "isolated" | "backward" | "holes" | "outposts"
+    square: int
+    side: str
+    duration_half_moves: int
+    first_seen: int
+    summary: str
+
+
+class GameNarrativeOut(BaseModel):
+    """Wire shape of :func:`pedagogy.profile.narrate_game`'s output —
+    consumed by the frontend's <GameNarrativeSummary>."""
+
+    headline: str
+    phase_summary: list[PhaseSummaryOut]
+    turning_points: list[TurningPointOut]
+    persistent_weaknesses: list[PersistentWeaknessOut]
+    motifs_played: dict[str, int]
+    motifs_missed: dict[str, int]
+    strengths: list[str]
+    recommended_drills: list[str]
+
+
 class NarrateHeatmapRequest(BaseModel):
     # Same shape as WeaknessHeatmapOut.by_square. Keys are FMJD square
     # indices 1..50 sent as ints by the wire; Pydantic accepts the

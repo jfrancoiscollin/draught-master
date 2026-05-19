@@ -25,6 +25,7 @@ from .models import (
     AnalyzeGameResponse,
     ExplainMoveRequest,
     ExplainMoveResponse,
+    GameNarrativeOut,
     HeatmapNarrativeOut,
     MotifExerciseOut,
     MotifInfoOut,
@@ -514,6 +515,62 @@ async def get_game_analysis(
         verdicts=[_verdict_to_out(v) for v in verdicts],
         summary=summary,
     )
+
+
+# ---------------------------------------------------------------------------
+# GET /api/pedagogy/game/{game_id}/narrative
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/game/{game_id}/narrative",
+    response_model=GameNarrativeOut,
+)
+async def get_game_narrative(
+    game_id: str,
+    lang: str = "fr",
+    user: Any = Depends(current_user),
+) -> GameNarrativeOut:
+    """Structured game-summary cards (headline + phases + turning
+    points + persistent weaknesses + motif counts + drills) computed
+    by :func:`dilf.profile.narrate_game` on the already-persisted
+    verdicts.
+
+    Pure read + pure aggregation: no Scan call, no engine call, no
+    LLM. 404 if the game was never analysed. ``lang`` defaults to
+    ``fr``; ``en`` is honoured, anything else silently degrades to
+    ``fr`` server-side via dilf's ``_t()`` fallback so the contract
+    stays predictable.
+
+    The user_side honoured for the per-side ACPL + outcome inference
+    is read off the ``games`` row (legacy import flow already
+    persists it via ``games.user_side``).
+    """
+    from pedagogy.profile import narrate_game  # noqa: PLC0415
+    from pedagogy.types import GameAnalysis    # noqa: PLC0415
+
+    async with aiosqlite.connect(_db_path()) as conn:
+        verdicts = await storage._fetch_verdicts_for_game(conn, game_id)
+        # Pick up the user's side from games.user_side so the headline
+        # outcome can read "Victoire" / "Défaite" relative to the user.
+        cur = await conn.execute(
+            "SELECT user_side FROM games WHERE id = ?", (game_id,),
+        )
+        row = await cur.fetchone()
+    if not verdicts:
+        raise HTTPException(404, f"Aucune analyse pour la partie {game_id!r}")
+
+    user_side = (row[0] if row else None) or "white"
+    analysis = GameAnalysis(
+        game_id=game_id,                  # type: ignore[arg-type]
+        user_id=int(user["id"]),
+        user_side=user_side,
+        opening_name="",
+        verdicts=verdicts,
+        summary={},
+    )
+    narrative = narrate_game(analysis, lang=lang)  # type: ignore[arg-type]
+    return GameNarrativeOut(**narrative)
 
 
 # ---------------------------------------------------------------------------

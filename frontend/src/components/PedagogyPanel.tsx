@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import type { ExplainResult, HeatmapNarrative, PedagogyAnalysis, SquareWeaknessCounts, VerdictOut } from '../api/client'
 import { explainMovePedagogy, narrateHeatmap } from '../api/client'
+import GameNarrativeSummary from './GameNarrativeSummary'
 import {
   HeatmapBoard,
   HeatMetricSelector,
@@ -881,6 +882,18 @@ export default function PedagogyPanel({ gameId, analysis, loading, userSide, lan
           <span className="text-xs font-semibold text-gray-300">Analyse pédagogique</span>
           <span className="text-xs text-gray-500">{verdicts.length} demi-coups · Scan</span>
         </div>
+
+        {/* Per-game narrative cards (headline + phases + tournants +
+            persistent weaknesses + motifs/drills). Backed by
+            dilf.profile.narrate_game; surfaces the structured
+            "résumé de partie" at the top so the user reads the
+            global story before drilling into the timeline. */}
+        <GameNarrativeSummary
+          gameId={gameId}
+          lang={lang}
+          onJumpTo={onJumpTo}
+          onMotifClick={onMotifClick}
+        />
 
         <MaterialTimeline verdicts={verdicts} currentHalfMove={currentHalfMove} onJumpTo={onJumpTo} />
         <GameHeatmap verdicts={verdicts} userSide={userSide} />
