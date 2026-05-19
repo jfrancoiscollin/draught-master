@@ -10,7 +10,7 @@ import ExerciseLibraryPage from './components/ExerciseLibraryPage'
 import LessonPanel from './components/LessonPanel'
 import ImportGamePanel from './components/ImportGamePanel'
 import OpeningCacheBuilder from './components/OpeningCacheBuilder'
-import GameHistory from './components/GameHistory'
+import MyGamesPanel from './components/MyGamesPanel'
 import ExerciseVerificationPanel from './components/ExerciseVerificationPanel'
 import OpeningExplorer from './components/OpeningExplorer'
 import LearnFromMistakes from './components/LearnFromMistakes'
@@ -171,7 +171,7 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'live' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu'
+type Tab = 'home' | 'play' | 'live' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu' | 'my-games'
 
 export default function App() {
   const { t, language } = useLanguage()
@@ -1171,6 +1171,16 @@ export default function App() {
         {tab === 'analyze-menu' && (
           <div className="h-full flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
             <div className="flex flex-col gap-3 w-full max-w-lg">
+              {/* Analyse mes parties — list + Lidraughts import + weakness/motif panels */}
+              {user && (
+                <button
+                  onClick={() => setTab('my-games')}
+                  className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
+                >
+                  <img src={iconAnalyzeSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                  <span className="flex-1 text-lg font-bold text-white text-right">Analyser mes parties</span>
+                </button>
+              )}
               {/* Import a PDN */}
               <button
                 onClick={() => setTab('import-game')}
@@ -1189,6 +1199,24 @@ export default function App() {
               </button>
             </div>
           </div>
+        )}
+
+        {/* MY GAMES TAB — moved out of the profile per UX refactor.
+            Same content the profile screen used to host BELOW the
+            stats card: bulk import + history + weakness/motif panels. */}
+        {tab === 'my-games' && (
+          <MyGamesPanel
+            refreshKey={historyRefresh}
+            onChanged={() => setHistoryRefresh(v => v + 1)}
+            onMotifClick={setMotifDetailSlug}
+            onReplay={(detail) => {
+              setPreloadedPdn(detail.pdn || '')
+              setPreloadedGameId(detail.id)
+              const side = (detail as { user_side?: string }).user_side
+              setPreloadedUserSide(side === 'black' ? 'black' : 'white')
+              setTab('import-game')
+            }}
+          />
         )}
 
         {/* LIVE PvP TAB — lobby OR active game screen */}
@@ -1719,23 +1747,11 @@ export default function App() {
         {/* GAME HISTORY TAB */}
         {tab === 'game-history' && (
           <div className="h-full overflow-y-auto px-4 py-4 max-w-3xl mx-auto flex flex-col gap-3">
-            <UserStatsCard
-              defaultOpen
-              onMotifClick={setMotifDetailSlug}
-              onAnalysesReset={() => setHistoryRefresh(v => v + 1)}
-              refreshKey={historyRefresh}
-            />
-            <GameHistory
-              refreshKey={historyRefresh}
-              onBatchAnalyzed={() => setHistoryRefresh(v => v + 1)}
-              onReplay={(detail) => {
-                setPreloadedPdn(detail.pdn || '')
-                setPreloadedGameId(detail.id)
-                const side = (detail as { user_side?: string }).user_side
-                setPreloadedUserSide(side === 'black' ? 'black' : 'white')
-                setTab('import-game')
-              }}
-            />
+            {/* Profile screen, slim version: only identity (pseudo +
+                delete, in ProfileHeader inside the card) + stats
+                numbers. Everything else moved to the "Analyser mes
+                parties" view — see MyGamesPanel.tsx. */}
+            <UserStatsCard defaultOpen />
           </div>
         )}
 

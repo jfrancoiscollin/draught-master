@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { deleteMyAccount, getUserStats, importLidraughtsGames, resetMyAnalyses } from '../api/client'
+import { useState, useEffect, useCallback } from 'react'
+import { deleteMyAccount, getUserStats } from '../api/client'
 import type { UserStats } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
-import WeaknessPanel from './WeaknessPanel'
-import MotifsCatalogPanel from './MotifsCatalogPanel'
 
 /** Profile header — username display + danger zone (delete account).
  * Sits at the very top of the stats card so the user sees their
@@ -106,39 +104,16 @@ function AccuracyRing({ pct }: { pct: number }) {
 
 interface UserStatsCardProps {
   defaultOpen?: boolean
-  onMotifClick?: (slug: string) => void
-  /** Called after the user clicks "Réinitialiser les analyses" and
-   *  the server returns success. Lets the parent refresh sibling
-   *  components (e.g. <GameHistory>) whose state otherwise stays out
-   *  of sync with the wiped DB. */
-  onAnalysesReset?: () => void
-  /** Bumped externally to force WeaknessPanel and MotifsCatalogPanel
-   *  to drop their cached profile/debug data and refetch. Wire to the
-   *  same signal as <GameHistory refreshKey>. */
-  refreshKey?: number
 }
 
 export default function UserStatsCard({
   defaultOpen = false,
-  onMotifClick,
-  onAnalysesReset,
-  refreshKey = 0,
 }: UserStatsCardProps) {
-  const { user, setUser } = useAuth()
+  const { user } = useAuth()
   const { t } = useLanguage()
   const [stats, setStats] = useState<UserStats | null>(null)
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(defaultOpen)
-  const [lidraughtsUsername, setLidraughtsUsername] = useState<string>(user?.lidraughts_username ?? '')
-  const [lidraughtsCount, setLidraughtsCount] = useState<number>(50)
-  const [importing, setImporting] = useState(false)
-  const [importMsg, setImportMsg] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
-  const [resetting, setResetting] = useState(false)
-  const [resetMsg, setResetMsg] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
-
-  useEffect(() => {
-    setLidraughtsUsername(user?.lidraughts_username ?? '')
-  }, [user?.lidraughts_username])
 
   useEffect(() => {
     if (!user || !open) return
@@ -149,58 +124,11 @@ export default function UserStatsCard({
       .finally(() => setLoading(false))
   }, [user, open])
 
-  const handleImport = async () => {
-    const uname = lidraughtsUsername.trim()
-    if (!uname) return
-    setImporting(true)
-    setImportMsg(null)
-    try {
-      const count = Math.max(1, Math.min(100, Math.floor(lidraughtsCount || 50)))
-      const res = await importLidraughtsGames(uname, count)
-      setImportMsg({
-        kind: 'success',
-        text: `${res.imported} / ${res.fetched} parties importées (${res.total_lidraughts_games} au total).`,
-      })
-      if (user && user.lidraughts_username !== res.username) {
-        setUser({ ...user, lidraughts_username: res.username })
-      }
-      const fresh = await getUserStats().catch(() => null)
-      if (fresh) setStats(fresh)
-    } catch (err: any) {
-      const detail = err?.response?.data?.detail || t('lidraughtsImportError')
-      setImportMsg({ kind: 'error', text: detail })
-    } finally {
-      setImporting(false)
-    }
-  }
-
-  const handleReset = async () => {
-    if (resetting) return
-    const confirmed = window.confirm(
-      "Réinitialiser toutes les analyses de vos parties ?\n\n" +
-      "Les verdicts dilf et les notations Scan seront effacés. " +
-      "Les parties elles-mêmes sont conservées en base et pourront " +
-      "être ré-analysées. Action irréversible."
-    )
-    if (!confirmed) return
-    setResetting(true)
-    setResetMsg(null)
-    try {
-      const res = await resetMyAnalyses()
-      setResetMsg({
-        kind: 'success',
-        text: `${res.verdicts_deleted} verdicts supprimés · ${res.games_cleared} partie(s) remise(s) à zéro.`,
-      })
-      const fresh = await getUserStats().catch(() => null)
-      if (fresh) setStats(fresh)
-      onAnalysesReset?.()
-    } catch (err: any) {
-      const detail = err?.response?.data?.detail || 'Erreur lors du reset'
-      setResetMsg({ kind: 'error', text: detail })
-    } finally {
-      setResetting(false)
-    }
-  }
+  // Lidraughts import + analyses reset + cross-game weakness/motif
+  // panels were moved out of the profile card per UX refactor: the
+  // profile now keeps only identity (pseudo + delete) + raw numbers.
+  // Those workflows live in MyGamesPanel.tsx alongside the games
+  // list itself.
 
   if (!user) return null
 
@@ -248,62 +176,21 @@ export default function UserStatsCard({
             </>
           )}
 
+          {/* Lidraughts import + reset analyses removed: see
+              LidraughtsImporter.tsx, mounted in MyGamesPanel. */}
           {!loading && (
-            <div className="mt-4 border-t border-gray-700 pt-3">
-              <p className="text-xs text-gray-400 mb-2">{t('lidraughtsImportButton')}</p>
-              <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  value={lidraughtsUsername}
-                  onChange={e => setLidraughtsUsername(e.target.value)}
-                  placeholder={t('lidraughtsUsernamePlaceholder')}
-                  className="bg-gray-700 text-white text-sm rounded px-2 py-1.5 border border-gray-600 focus:border-amber-500 focus:outline-none"
-                  disabled={importing}
-                />
-                <div className="flex items-center gap-2">
-                  <label className="text-xs text-gray-400">{t('lidraughtsCountLabel')}</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={lidraughtsCount}
-                    onChange={e => setLidraughtsCount(Number(e.target.value))}
-                    className="w-20 bg-gray-700 text-white text-sm rounded px-2 py-1 border border-gray-600 focus:border-amber-500 focus:outline-none"
-                    disabled={importing}
-                  />
-                </div>
-                <button
-                  onClick={handleImport}
-                  disabled={importing || !lidraughtsUsername.trim()}
-                  className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm font-semibold rounded px-3 py-2 transition-colors"
-                >
-                  {importing ? t('lidraughtsImporting') : t('lidraughtsImportButton')}
-                </button>
-                {importMsg && (
-                  <p className={`text-xs mt-1 ${importMsg.kind === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                    {importMsg.text}
-                  </p>
-                )}
-                <button
-                  onClick={handleReset}
-                  disabled={resetting}
-                  className="w-full bg-gray-700 hover:bg-red-900 border border-gray-600 hover:border-red-700 disabled:bg-gray-800 disabled:cursor-not-allowed text-gray-300 hover:text-white text-xs font-semibold rounded px-3 py-2 transition-colors mt-2"
-                  title="Effacer les verdicts et annotations sur toutes les parties (les parties sont conservées)"
-                >
-                  {resetting ? 'Réinitialisation…' : '↺ Réinitialiser les analyses'}
-                </button>
-                {resetMsg && (
-                  <p className={`text-xs mt-1 ${resetMsg.kind === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                    {resetMsg.text}
-                  </p>
-                )}
-              </div>
+            <div className="mt-4 border-t border-gray-700 pt-3 text-xs text-gray-500">
+              <p>
+                Importer des parties Lidraughts ou analyser les parties
+                existantes :{' '}onglet <strong className="text-gray-300">Analyser</strong>{' '}
+                → <em>Analyser mes parties</em>.
+              </p>
             </div>
           )}
         </div>
       )}
-      {onMotifClick && <WeaknessPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />}
-      <MotifsCatalogPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />
+      {/* WeaknessPanel + MotifsCatalogPanel moved to MyGamesPanel
+          as part of the profile slim-down. */}
     </div>
   )
 }
