@@ -833,7 +833,10 @@ def _send_reset_email(to_email: str, reset_link: str) -> bool:
 
 
 @app.post("/api/auth/forgot-password")
-async def auth_forgot_password(req: ForgotPasswordRequest) -> Dict[str, Any]:
+async def auth_forgot_password(
+    req: ForgotPasswordRequest,
+    request: Request,
+) -> Dict[str, Any]:
     email = req.email.lower().strip()
     user = await get_user_by_email(email)
     if not user:
@@ -845,7 +848,14 @@ async def auth_forgot_password(req: ForgotPasswordRequest) -> Dict[str, Any]:
     token = secrets.token_urlsafe(32)
     expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
     await create_reset_token(email, token, expires_at)
-    app_url = os.getenv("APP_URL", "").rstrip("/")
+    # Derive the public URL from the incoming request rather than an
+    # APP_URL env var. Hardcoding APP_URL bit us when staging was
+    # deployed with the prod URL still in its env (reset link landed
+    # on the wrong deployment). Uvicorn behind Railway honours the
+    # X-Forwarded-* headers so request.base_url reflects the real
+    # public origin. APP_URL is still respected as an explicit
+    # override for non-proxy deploys (local tests, etc.).
+    app_url = os.getenv("APP_URL", "").rstrip("/") or str(request.base_url).rstrip("/")
     reset_link = f"{app_url}/?reset_token={token}"
     sent = _send_reset_email(email, reset_link)
 
