@@ -62,6 +62,26 @@ export default function ChallengeToast({ onGoToLive }: Props) {
           message: 'Connexion reprise sur un autre onglet ou appareil',
         })
       },
+      // A game starting means any pending challenge for this user has
+      // been resolved (you can only be in one live game at a time in
+      // v1). Drop the open toast — covers the case where the user
+      // accepted via the lobby row rather than the toast itself, so
+      // the toast handler never saw the click.
+      game_started: () => {
+        setToast(prev => prev?.kind === 'challenge' ? null : prev)
+      },
+      // Symmetric to game_started: a challenge_resolved frame
+      // arriving here means the challenge whose toast is on screen
+      // just transitioned out of `pending`. The challenger gets
+      // these for their *sent* challenges, so this branch matters
+      // mostly when there's a stale "your defi was accepted" toast
+      // pending — defensive but cheap.
+      challenge_resolved: (m) => {
+        const c = (m as unknown as { challenge: LiveChallenge }).challenge
+        setToast(prev =>
+          prev?.kind === 'challenge' && prev.challenge.id === c.id ? null : prev,
+        )
+      },
     },
   })
 
