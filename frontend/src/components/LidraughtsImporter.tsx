@@ -21,6 +21,7 @@ interface Props {
 export default function LidraughtsImporter({ onChanged }: Props) {
   const { user, setUser } = useAuth()
   const { t } = useLanguage()
+  const [open, setOpen] = useState(false)   // drop-down, closed by default
   const [lidraughtsUsername, setLidraughtsUsername] = useState<string>(user?.lidraughts_username ?? '')
   const [lidraughtsCount, setLidraughtsCount] = useState(50)
   const [importing, setImporting] = useState(false)
@@ -81,54 +82,62 @@ export default function LidraughtsImporter({ onChanged }: Props) {
 
   return (
     <div className="panel">
-      <h3 className="text-base font-bold text-amber-600 mb-2">{t('lidraughtsImportButton')}</h3>
-      <div className="flex flex-col gap-2">
-        <input
-          type="text"
-          value={lidraughtsUsername}
-          onChange={e => setLidraughtsUsername(e.target.value)}
-          placeholder={t('lidraughtsUsernamePlaceholder')}
-          className="bg-gray-700 text-white text-sm rounded px-2 py-1.5 border border-gray-600 focus:border-amber-500 focus:outline-none"
-          disabled={importing}
-        />
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-400">{t('lidraughtsCountLabel')}</label>
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between bg-transparent border-0 cursor-pointer p-0"
+      >
+        <h3 className="text-base font-bold text-amber-600">Importer mes parties</h3>
+        <span className="text-gray-400 text-sm">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div className="mt-3 flex flex-col gap-2">
           <input
-            type="number"
-            min={1}
-            max={100}
-            value={lidraughtsCount}
-            onChange={e => setLidraughtsCount(Number(e.target.value))}
-            className="w-20 bg-gray-700 text-white text-sm rounded px-2 py-1 border border-gray-600 focus:border-amber-500 focus:outline-none"
+            type="text"
+            value={lidraughtsUsername}
+            onChange={e => setLidraughtsUsername(e.target.value)}
+            placeholder={t('lidraughtsUsernamePlaceholder')}
+            className="bg-gray-700 text-white text-sm rounded px-2 py-1.5 border border-gray-600 focus:border-amber-500 focus:outline-none"
             disabled={importing}
           />
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-gray-400">{t('lidraughtsCountLabel')}</label>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={lidraughtsCount}
+              onChange={e => setLidraughtsCount(Number(e.target.value))}
+              className="w-20 bg-gray-700 text-white text-sm rounded px-2 py-1 border border-gray-600 focus:border-amber-500 focus:outline-none"
+              disabled={importing}
+            />
+          </div>
+          <button
+            onClick={handleImport}
+            disabled={importing || !lidraughtsUsername.trim()}
+            className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm font-semibold rounded px-3 py-2 transition-colors"
+          >
+            {importing ? t('lidraughtsImporting') : t('lidraughtsImportButton')}
+          </button>
+          {importMsg && (
+            <p className={`text-xs mt-1 ${importMsg.kind === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+              {importMsg.text}
+            </p>
+          )}
+          <button
+            onClick={handleReset}
+            disabled={resetting}
+            className="w-full bg-gray-700 hover:bg-red-900 border border-gray-600 hover:border-red-700 disabled:bg-gray-800 disabled:cursor-not-allowed text-gray-300 hover:text-white text-xs font-semibold rounded px-3 py-2 transition-colors mt-2"
+            title="Effacer les verdicts et annotations sur toutes les parties (les parties sont conservées)"
+          >
+            {resetting ? 'Réinitialisation…' : '↺ Réinitialiser les analyses'}
+          </button>
+          {resetMsg && (
+            <p className={`text-xs mt-1 ${resetMsg.kind === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+              {resetMsg.text}
+            </p>
+          )}
         </div>
-        <button
-          onClick={handleImport}
-          disabled={importing || !lidraughtsUsername.trim()}
-          className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm font-semibold rounded px-3 py-2 transition-colors"
-        >
-          {importing ? t('lidraughtsImporting') : t('lidraughtsImportButton')}
-        </button>
-        {importMsg && (
-          <p className={`text-xs mt-1 ${importMsg.kind === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-            {importMsg.text}
-          </p>
-        )}
-        <button
-          onClick={handleReset}
-          disabled={resetting}
-          className="w-full bg-gray-700 hover:bg-red-900 border border-gray-600 hover:border-red-700 disabled:bg-gray-800 disabled:cursor-not-allowed text-gray-300 hover:text-white text-xs font-semibold rounded px-3 py-2 transition-colors mt-2"
-          title="Effacer les verdicts et annotations sur toutes les parties (les parties sont conservées)"
-        >
-          {resetting ? 'Réinitialisation…' : '↺ Réinitialiser les analyses'}
-        </button>
-        {resetMsg && (
-          <p className={`text-xs mt-1 ${resetMsg.kind === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-            {resetMsg.text}
-          </p>
-        )}
-      </div>
+      )}
     </div>
   )
 }

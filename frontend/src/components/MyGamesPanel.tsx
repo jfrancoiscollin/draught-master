@@ -40,14 +40,21 @@ export default function MyGamesPanel({
   return (
     <div className="h-full overflow-y-auto px-4 py-4 max-w-3xl mx-auto flex flex-col gap-3">
       <h2 className="text-xl font-bold text-amber-500">Analyser mes parties</h2>
+      {/* Insight panels first — both default-collapsed drop-downs, so
+          the user sees their weakness/motif headlines BEFORE the
+          list of games they need to dig into. */}
+      <WeaknessPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />
+      <MotifsCatalogPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />
+      {/* Lidraughts import is also a drop-down — most of the time
+          the user just wants to see the list, not import. */}
       <LidraughtsImporter onChanged={onChanged} />
+      {/* The game list (with its own internal "Analyser mes parties"
+          drop-down for the bulk-analyse action). */}
       <GameHistory
         refreshKey={refreshKey}
         onBatchAnalyzed={onChanged}
         onReplay={onReplay}
       />
-      <WeaknessPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />
-      <MotifsCatalogPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />
     </div>
   )
 }

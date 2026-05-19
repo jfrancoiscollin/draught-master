@@ -47,6 +47,9 @@ export default function GameHistory({ onReplay, refreshKey = 0, onBatchAnalyzed 
   const [bulkMode, setBulkMode] = useState<BulkMode>('idle')
   const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0, current: '' })
   const [bulkError, setBulkError] = useState<string | null>(null)
+  // Drop-down for the "Analyser mes parties" bulk-analyse pane —
+  // collapsed by default so the actual game list dominates the view.
+  const [bulkOpen, setBulkOpen] = useState(false)
 
   const loadGames = useCallback(async () => {
     setLoading(true)
@@ -145,37 +148,47 @@ export default function GameHistory({ onReplay, refreshKey = 0, onBatchAnalyzed 
   return (
     <div className="flex flex-col gap-3">
 
-      {/* ─── Bulk-analyze section ────────────────────────────────── */}
+      {/* ─── Bulk-analyze section — drop-down ──────────────────── */}
       <div className="panel">
-        <h3 className="text-lg font-bold text-amber-600 mb-2">Analyser mes parties</h3>
-        <p className="text-xs text-gray-400 mb-3">
-          Analyse en lot avec dilf : détection des motifs tactiques et
-          notation de chaque coup (Parfait / Imprécision / Erreur / Gaffe).
-        </p>
         <button
-          onClick={runBulkDilf}
-          disabled={bulkRunning || dilfPending.length === 0}
-          className="w-full px-3 py-2 mb-3 rounded font-semibold text-sm transition-colors bg-purple-700 hover:bg-purple-600 text-white disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+          onClick={() => setBulkOpen(v => !v)}
+          className="w-full flex items-center justify-between bg-transparent border-0 cursor-pointer p-0"
         >
-          🎓 Analyser avec dilf
-          {dilfPending.length > 0 && ` (${dilfPending.length})`}
+          <h3 className="text-lg font-bold text-amber-600">Analyser mes parties</h3>
+          <span className="text-gray-400 text-sm">{bulkOpen ? '▲' : '▼'}</span>
         </button>
-        {bulkRunning && bulkProgress.total > 0 && (
-          <div>
-            <div className="flex justify-between text-xs text-gray-300 mb-1">
-              <span>🎓 dilf — {bulkProgress.done}/{bulkProgress.total}</span>
-              {bulkProgress.current && <span className="text-gray-500 truncate ml-2">{bulkProgress.current}</span>}
-            </div>
-            <div className="w-full h-2 bg-gray-700 rounded overflow-hidden">
-              <div
-                className="h-full transition-all duration-300 bg-purple-500"
-                style={{ width: `${Math.round((bulkProgress.done / bulkProgress.total) * 100)}%` }}
-              />
-            </div>
+        {bulkOpen && (
+          <div className="mt-3">
+            <p className="text-xs text-gray-400 mb-3">
+              Analyse en lot avec dilf : détection des motifs tactiques et
+              notation de chaque coup (Parfait / Imprécision / Erreur / Gaffe).
+            </p>
+            <button
+              onClick={runBulkDilf}
+              disabled={bulkRunning || dilfPending.length === 0}
+              className="w-full px-3 py-2 mb-3 rounded font-semibold text-sm transition-colors bg-purple-700 hover:bg-purple-600 text-white disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+            >
+              🎓 Analyser avec dilf
+              {dilfPending.length > 0 && ` (${dilfPending.length})`}
+            </button>
+            {bulkRunning && bulkProgress.total > 0 && (
+              <div>
+                <div className="flex justify-between text-xs text-gray-300 mb-1">
+                  <span>🎓 dilf — {bulkProgress.done}/{bulkProgress.total}</span>
+                  {bulkProgress.current && <span className="text-gray-500 truncate ml-2">{bulkProgress.current}</span>}
+                </div>
+                <div className="w-full h-2 bg-gray-700 rounded overflow-hidden">
+                  <div
+                    className="h-full transition-all duration-300 bg-purple-500"
+                    style={{ width: `${Math.round((bulkProgress.done / bulkProgress.total) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+            {bulkError && !bulkRunning && (
+              <p className="text-amber-400 text-xs mt-2">{bulkError}</p>
+            )}
           </div>
-        )}
-        {bulkError && !bulkRunning && (
-          <p className="text-amber-400 text-xs mt-2">{bulkError}</p>
         )}
       </div>
 
