@@ -161,7 +161,7 @@ type TabKey = 'position' | 'graphs' | 'tables'
 function PedagogyTabsPanel({
   gameId, analysis, userSide, lang, activeVerdict, hangingSquares,
   threatCount, showThreats, onToggleThreats, diagKey, onDiagKey,
-  currentHalfMove, onJumpTo, onWeaknessClick,
+  currentHalfMove, onJumpTo, onWeaknessClick, onMotifJump,
 }: {
   gameId: string
   analysis: PedagogyAnalysis
@@ -185,6 +185,10 @@ function PedagogyTabsPanel({
    *  narrative cards. Squares are highlighted on the board until the
    *  user navigates or clicks another diagnostic row. */
   onWeaknessClick?: (squares: number[]) => void
+  /** Called when the user clicks a played/missed motif chip in the
+   *  narrative cards. Jumps the board to the first verdict that fired
+   *  that motif. */
+  onMotifJump?: (slug: string) => void
 }) {
   const [tab, setTab] = useState<TabKey>('position')
   const { verdicts } = analysis
@@ -229,6 +233,7 @@ function PedagogyTabsPanel({
               gameId={gameId}
               lang={lang}
               onJumpTo={onJumpTo}
+              onMotifJump={onMotifJump}
               onWeaknessClick={onWeaknessClick}
             />
 
@@ -1107,6 +1112,12 @@ export default function ImportGamePanel({
                 setDiagKey(null)   // Clear diagnostic-row highlight so
                                    // the new selection isn't fighting
                                    // with the previous one.
+              }}
+              onMotifJump={(slug) => {
+                const v = pedagogyAnalysis.verdicts.find(
+                  vd => vd.motifs.some(m => m.motif === slug),
+                )
+                if (v) goTo(v.move_number, positions)
               }}
             />
           )}

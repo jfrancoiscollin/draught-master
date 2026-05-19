@@ -29,16 +29,22 @@ interface Props {
   /** Click on a tournant row → jump the board to that half-move.
    *  Wired to the same handler the verdict-list rows use. */
   onJumpTo?: (halfMove: number) => void
-  /** Click on a recommended drill / motif badge → open the motif drill
-   *  page. Same handler used by PedagogyPanel's motif chips. */
+  /** Click on a recommended drill chip → open the motif drill page.
+   *  Same handler used by PedagogyPanel's motif chips. */
   onMotifClick?: (slug: string) => void
+  /** Click on a "joué" / "raté" motif chip → jump the board to the
+   *  half-move where that motif fired. Distinct from
+   *  ``onMotifClick`` because those chips refer to events that
+   *  happened *in this game*, whereas drill chips are
+   *  recommendations independent of any particular position. */
+  onMotifJump?: (slug: string) => void
   /** Click on a persistent-weakness row → highlight those squares on
    *  the board. Optional — when absent the row stays informational. */
   onWeaknessClick?: (squares: number[]) => void
 }
 
 export default function GameNarrativeSummary({
-  gameId, lang = 'fr', onJumpTo, onMotifClick, onWeaknessClick,
+  gameId, lang = 'fr', onJumpTo, onMotifClick, onMotifJump, onWeaknessClick,
 }: Props) {
   const [narrative, setNarrative] = useState<GameNarrative | null>(null)
   const [loading, setLoading] = useState(false)
@@ -142,7 +148,7 @@ export default function GameNarrativeSummary({
               label="Motifs joués"
               counts={narrative.motifs_played}
               colour="green"
-              onClick={onMotifClick}
+              onClick={onMotifJump}
             />
           )}
           {Object.keys(narrative.motifs_missed).length > 0 && (
@@ -150,7 +156,7 @@ export default function GameNarrativeSummary({
               label="Motifs ratés"
               counts={narrative.motifs_missed}
               colour="red"
-              onClick={onMotifClick}
+              onClick={onMotifJump}
             />
           )}
           {narrative.recommended_drills.length > 0 && (
