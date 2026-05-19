@@ -26,6 +26,65 @@ async def create_user(
         return cursor.lastrowid
 
 
+async def delete_user(user_id: int) -> None:
+    """Wipe a user account and every row that points at it.
+
+    SQLite doesn't enforce ``ON DELETE CASCADE`` unless
+    ``PRAGMA foreign_keys = ON`` is set on every connection, and we
+    don't currently set it everywhere — so we do the cascade in
+    Python rather than rely on the declared FKs. Done in one
+    transaction so a partial failure doesn't leave orphans.
+
+    Tables touched, in order:
+      - move_verdicts via the games CASCADE (still relies on the
+        FK pragma, but live games + imports both go through games.id
+        so deleting the games rows is enough either way)
+      - pedagogy_explanations same story (CASCADE off move_verdicts)
+      - live_challenges where the user is either side
+      - games where the user is owner OR white OR black
+      - user_exercise_solved
+      - user_lesson_read
+      - password_reset_tokens (by email)
+      - users itself
+
+    Idempotent: deleting a non-existent user is a no-op (returns
+    without raising).
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("PRAGMA foreign_keys = ON")
+        # Look up email for the password-reset cleanup before nuking
+        # the row.
+        cur = await db.execute("SELECT email FROM users WHERE id = ?", (user_id,))
+        row = await cur.fetchone()
+        if row is None:
+            return
+        email = str(row[0])
+
+        # Live challenges where the user is either party.
+        await db.execute(
+            "DELETE FROM live_challenges WHERE challenger_id = ? OR opponent_id = ?",
+            (user_id, user_id),
+        )
+        # Games owned by or featuring this user — kind='imported' uses
+        # user_id; kind='live' uses white_user_id / black_user_id.
+        # CASCADE on games.id removes move_verdicts (and through it,
+        # pedagogy_explanations) when the FK pragma above is honoured.
+        await db.execute(
+            "DELETE FROM games "
+            " WHERE user_id = ? OR white_user_id = ? OR black_user_id = ?",
+            (user_id, user_id, user_id),
+        )
+        # User-level progress tables (no CASCADE declared).
+        await db.execute("DELETE FROM user_exercise_solved WHERE user_id = ?", (user_id,))
+        await db.execute("DELETE FROM user_lesson_read WHERE user_id = ?", (user_id,))
+        # Pending password-reset tokens. Keyed by email since the
+        # schema doesn't have a user_id column.
+        await db.execute("DELETE FROM password_reset_tokens WHERE email = ?", (email,))
+        # Finally the user.
+        await db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        await db.commit()
+
+
 async def username_is_taken(username: str) -> bool:
     """Case-insensitive lookup used by /register to pre-check before
     creating the user, so we can return a clean 409 instead of letting

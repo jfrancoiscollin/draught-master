@@ -27,6 +27,7 @@ from db import (  # noqa: F401
     set_username,
     username_is_taken,
     ensure_default_username,
+    delete_user,
     create_reset_token,
     get_reset_token,
     consume_reset_token,

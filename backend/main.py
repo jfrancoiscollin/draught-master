@@ -40,7 +40,7 @@ from database import (
     save_active_game, load_active_game, delete_active_game,
     get_exercises, get_exercise, record_progress,
     create_user, get_user_by_email, get_user_by_id, set_lidraughts_username,
-    set_username, ensure_default_username, username_is_taken,
+    set_username, ensure_default_username, username_is_taken, delete_user,
     create_reset_token, get_reset_token, consume_reset_token,
     mark_exercise_solved, get_user_solved_exercise_ids,
     mark_lesson_read, get_user_read_lesson_chapters,
@@ -936,6 +936,26 @@ async def auth_me(current_user: Dict[str, Any] = Depends(_require_auth)) -> User
         lidraughts_username=(user or {}).get("lidraughts_username"),
         username=username,
     )
+
+
+# ─────────────────────────────────────────────────────────────────────
+# DELETE /api/auth/me — hard-delete the current user's account
+# ─────────────────────────────────────────────────────────────────────
+
+
+@app.delete("/api/auth/me")
+async def auth_delete_me(
+    current_user: Dict[str, Any] = Depends(_require_auth),
+) -> Dict[str, bool]:
+    """Permanently erase the caller's account + all rows pointing at
+    it (games, live challenges, exercise progress, lesson reads,
+    pending password-reset tokens). No undo. The frontend prompts
+    with a confirm dialog before calling this. Returns ``{"ok": true}``
+    so the response body has shape — FastAPI's 204 path was rejecting
+    the response wrapper at module-load time.
+    """
+    await delete_user(int(current_user["id"]))
+    return {"ok": True}
 
 
 # ─────────────────────────────────────────────────────────────────────

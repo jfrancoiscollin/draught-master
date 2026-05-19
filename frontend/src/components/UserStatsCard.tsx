@@ -1,10 +1,59 @@
-import React, { useState, useEffect } from 'react'
-import { getUserStats, importLidraughtsGames, resetMyAnalyses } from '../api/client'
+import React, { useState, useEffect, useCallback } from 'react'
+import { deleteMyAccount, getUserStats, importLidraughtsGames, resetMyAnalyses } from '../api/client'
 import type { UserStats } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../i18n/LanguageContext'
 import WeaknessPanel from './WeaknessPanel'
 import MotifsCatalogPanel from './MotifsCatalogPanel'
+
+/** Profile header — username display + danger zone (delete account).
+ * Sits at the very top of the stats card so the user sees their
+ * identity before anything else. */
+function ProfileHeader() {
+  const { user, logout } = useAuth()
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = useCallback(async () => {
+    if (!user) return
+    const ok = window.confirm(
+      `Supprimer ton compte « ${user.username ?? user.email} » ? `
+      + 'Toutes tes parties, analyses et statistiques seront effacées. '
+      + 'Cette action est irréversible.',
+    )
+    if (!ok) return
+    setDeleting(true)
+    try {
+      await deleteMyAccount()
+      logout()
+      // Force a reload so any cached component state tied to the user
+      // (board state, lobby panels…) doesn't survive past the wipe.
+      window.location.reload()
+    } catch (e) {
+      alert('Suppression échouée : ' + String((e as Error).message ?? e))
+      setDeleting(false)
+    }
+  }, [user, logout])
+
+  if (!user) return null
+  return (
+    <div className="flex items-center gap-3 mb-3">
+      <div className="flex-1 min-w-0">
+        <h2 className="text-lg font-bold text-white truncate">
+          {user.username ?? '(pseudo non défini)'}
+        </h2>
+        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+      </div>
+      <button
+        onClick={handleDelete}
+        disabled={deleting}
+        className="flex-shrink-0 text-xs text-red-400 hover:text-red-300 hover:bg-red-900/30 border border-red-800/40 px-2 py-1 rounded transition-colors cursor-pointer disabled:opacity-40"
+        title="Supprime définitivement ton compte et toutes ses données"
+      >
+        {deleting ? 'Suppression…' : 'Supprimer le compte'}
+      </button>
+    </div>
+  )
+}
 
 function StatBox({
   label,
@@ -157,6 +206,7 @@ export default function UserStatsCard({
 
   return (
     <div className="panel">
+      <ProfileHeader />
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between bg-transparent border-0 cursor-pointer p-0"

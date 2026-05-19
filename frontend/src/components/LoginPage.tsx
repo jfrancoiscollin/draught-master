@@ -24,6 +24,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  // Pseudo, requis pour l'inscription. Validé côté serveur sur
+  // le regex [A-Za-z0-9_-]{2,30} + unicité case-insensitive.
+  const [username, setUsername] = useState('')
   const [resetToken, setResetToken] = useState(getTokenFromUrl)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -43,10 +46,14 @@ export default function LoginPage() {
       setError(t('passwordTooShort'))
       return
     }
+    if (view === 'register' && !/^[A-Za-z0-9_-]{2,30}$/.test(username.trim())) {
+      setError('Pseudo invalide : 2-30 caractères, lettres / chiffres / _ / - uniquement')
+      return
+    }
     setSubmitting(true)
     try {
       if (view === 'login') await login(email.trim(), password)
-      else await register(email.trim(), password)
+      else await register(email.trim(), password, username.trim())
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
       setError(detail ?? t('authError'))
@@ -124,6 +131,24 @@ export default function LoginPage() {
               </div>
 
               <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4">
+                {view === 'register' && (
+                  <div>
+                    <label className="block text-sm text-gray-300 mb-1">Pseudo</label>
+                    <input
+                      type="text"
+                      required
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                      placeholder="2-30 caractères · A-Z 0-9 _ -"
+                      maxLength={30}
+                      autoComplete="username"
+                      className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:border-amber-500 focus:outline-none"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Ton nom de joueur · visible sur l'écran de jeu en ligne
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm text-gray-300 mb-1">{t('email')}</label>
                   <input type="email" required value={email} onChange={e => setEmail(e.target.value)}

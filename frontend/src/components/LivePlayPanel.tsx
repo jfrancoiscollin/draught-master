@@ -201,7 +201,7 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
           <>
             <span className="text-gray-500">Tes amis te défient sous le nom</span>
             <span className="font-mono font-bold text-amber-300">
-              @{user?.username ?? '(non défini)'}
+              {user?.username ?? '(non défini)'}
             </span>
             <button
               onClick={() => {
@@ -376,7 +376,7 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
                     className={'w-1.5 h-1.5 rounded-full flex-shrink-0 ' + (u.in_game ? 'bg-amber-500' : 'bg-green-500')}
                     aria-hidden="true"
                   />
-                  <span className="flex-1 truncate font-mono text-gray-200">@{u.username}</span>
+                  <span className="flex-1 truncate font-mono text-gray-200">{u.username}</span>
                   {u.in_game && (
                     <span className="text-amber-400 italic mr-1">en partie</span>
                   )}

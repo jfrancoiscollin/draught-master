@@ -757,3 +757,7 @@ export async function getOnlineUsers(): Promise<OnlineUser[]> {
   const res = await api.get<{ users: OnlineUser[] }>('/live/online')
   return res.data.users
 }
+
+export async function deleteMyAccount(): Promise<void> {
+  await api.delete('/auth/me')
+}
