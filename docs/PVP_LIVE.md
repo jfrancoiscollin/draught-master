@@ -1,8 +1,9 @@
 # PvP entre amis — Cadrage & implémentation
 
-> **Statut** : J1+J2 livrés sur `develop` (schema + REST défis + WebSocket
-> avec auth, présence, push notifications). J3 → J6 à venir (state machine
-> de partie, UI lobby + écran de jeu).
+> **Statut** : J1+J2+J3 livrés sur `develop` (schema + REST défis +
+> WebSocket avec auth, présence, push notifications, state machine de
+> partie live avec broadcast move/resign/game_ended). J4 → J6 à venir
+> (grace period déconnexion + UI lobby/jeu).
 
 Permettre à deux utilisateurs Draught Master de jouer une partie en
 temps réel sans passer par lidraughts, dans une logique "défi entre
@@ -150,21 +151,28 @@ Cycle de vie :
 | `ping` | Serveur répond `pong` |
 | *(tout autre)* | Serveur répond `{type:'error', reason:'unknown type ...'}` — la connexion reste ouverte (forward-compat) |
 
-**Messages client → serveur** (J3+, à venir) : `move`, `resign`
+**Messages client → serveur** (J3, livré) :
+| Type | Body | Effet |
+|---|---|---|
+| `move` | `{move: "32-28"}` | Validation côté serveur via `game_engine.get_legal_moves`. Erreurs taxonomiques : `not_in_game`, `game_over`, `not_your_turn`, `unknown_move`. Sur succès, broadcast `move_played` aux deux joueurs + auto-détection mat/blocage qui chaîne un `game_ended` |
+| `resign` | `{}` | Marque le côté envoyeur `abandoned_<color>`, l'adversaire gagne. Broadcast `game_ended` aux deux |
 
-**Messages serveur → client** (J2) :
+**Messages serveur → client** :
 | Type | Émis quand |
 |---|---|
 | `auth_ok` | Auth réussie |
 | `auth_error` | Auth échouée (token invalide / expiré / absent / frame malformée). Socket fermé après |
 | `pong` | Réponse au `ping` |
 | `kicked_by_other_session` | Une autre socket vient de prendre la place |
-| `error` | Frame inconnu / non-objet — log only, connexion préservée |
+| `error` | Frame inconnu / non-objet / coup invalide — log only, connexion préservée. ``reason`` est un slug stable (`not_in_game` / `not_your_turn` / `game_over` / `unknown_move`) |
 | `challenge_received` | Quelqu'un t'a défié (push REST → WS) |
 | `challenge_resolved` | Ton défi vient d'être accepté ou refusé |
 | `challenge_cancelled` | Le challenger a retiré son défi |
+| `game_started` | Une partie live vient d'être créée pour toi (acceptation d'un défi) |
+| `move_played` | L'un des deux joueurs vient de jouer un coup (côté + notation + nouvelle session) |
+| `game_ended` | Partie terminée (mat / blocage / abandon). Le client peut maintenant proposer "Analyser la partie" |
 
-**Messages serveur → client** (J3+) : `game_started`, `move_played`, `game_ended`, `opponent_disconnected`
+**Messages serveur → client** (J4+) : `opponent_disconnected`
 
 Toutes les pushs (`challenge_received` / `_resolved` / `_cancelled`) sont **best-effort** : si l'utilisateur cible n'est pas connecté, le push est silencieusement abandonné. La récupération se fait par `GET /api/live/challenges/pending` à la reconnexion.
 
@@ -233,7 +241,7 @@ created  (challenge accepted, Game inséré avec status='pending')
 |---|---|---|
 | **J1** | Schema migrations + endpoints REST de défis + tests | ✅ livré |
 | **J2** | WebSocket endpoint, présence (dict in-mem), auth via token, ping/pong + push REST→WS sur les 3 transitions de challenge | ✅ livré |
-| **J3** | State machine de partie : création à l'acceptation d'un défi, application des coups via `game_engine`, broadcast aux 2 clients | ⏳ à venir |
+| **J3** | State machine de partie (LiveGameManager singleton), move/resign WS frames, broadcast move_played + game_ended, persistance incrémentale dans games.pdn | ✅ livré |
 | **J4** | Détection fin de partie (mat/blocage), grace period déconnexion, abandon explicite | ⏳ à venir |
 | **J5** | UI : `<LivePlayPanel>` (lobby/défis) + `<LiveGameScreen>` (jeu live) | ⏳ à venir |
 | **J6** | `<ChallengeToast>` global, edge cases, intégration avec le flow pédagogique pour analyser une partie finie. Tests E2E | ⏳ à venir |

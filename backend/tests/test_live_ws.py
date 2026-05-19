@@ -38,14 +38,14 @@ def _token(user_id: int, email: str) -> str:
 
 @pytest.fixture(autouse=True)
 def _reset_manager():
-    """Each test starts with an empty presence dict. Module-level
-    singletons leak between tests otherwise."""
+    """Each test starts with an empty presence dict + an empty game
+    session map. Both singletons leak between tests otherwise."""
     from live.presence import manager
-    # No live event loop in the main thread under TestClient — spin a
-    # fresh one for the cleanup, then dispose.
+    from live.game_session import manager as game_manager
     loop = asyncio.new_event_loop()
     try:
         loop.run_until_complete(manager.reset())
+        loop.run_until_complete(game_manager.reset())
     finally:
         loop.close()
     yield
@@ -75,6 +75,20 @@ def db_path(tmp_path, monkeypatch):
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 resolved_at TEXT,
                 game_id TEXT
+            )
+        """)
+        await conn.execute("""
+            CREATE TABLE games (
+                id TEXT PRIMARY KEY,
+                kind TEXT DEFAULT 'imported',
+                user_id INTEGER,
+                user_side TEXT,
+                white_user_id INTEGER,
+                black_user_id INTEGER,
+                turn TEXT DEFAULT 'white',
+                status TEXT DEFAULT 'finished',
+                pdn TEXT,
+                date TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
         await conn.executemany(

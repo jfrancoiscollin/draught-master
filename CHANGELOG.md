@@ -13,6 +13,22 @@ upstream changelog see
 
 ### Added
 
+- **Live PvP — J3 (game state machine + move broadcast)**. Challenge
+  acceptance now also spawns a `kind='live'` row in `games`, assigns
+  colors per the challenger's `preferred_color` (random falls back to
+  a CSPRNG draw), and broadcasts `game_started` to both players on the
+  WebSocket. `backend/live/game_session.py` exports a
+  `LiveGameManager` singleton holding the in-process engine state and
+  a reverse `user_id → game_id` index so incoming WS frames route in
+  O(1). Two new client→server WS message types: `move` (validates
+  against `game_engine.get_legal_moves`, broadcasts `move_played` to
+  both, auto-detects mate/blockage and chains `game_ended`) and
+  `resign` (marks `abandoned_<color>`, broadcasts `game_ended`).
+  Every move atomically persists `pdn` + `turn` + `status` to the
+  games row, so a finished live game flows through the existing
+  `/analyze-game` pipeline without conversion. Stable error taxonomy
+  on the WS `error` frame: `not_in_game` / `game_over` /
+  `not_your_turn` / `unknown_move`. 9 new tests; 134 backend total.
 - **Live PvP — J2 (WebSocket transport + push notifications)**.
   Single endpoint `WS /api/live/ws` with a first-frame
   `{type:'auth', token}` handshake (same JWT as the REST surface,

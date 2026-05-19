@@ -31,12 +31,24 @@ def _auth_headers(user_id: int, email: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
+@pytest.fixture(autouse=True)
+def _reset_game_manager():
+    """Each test starts with an empty in-process game session map. The
+    in-memory singleton in game_session leaks between tests otherwise,
+    so the user→game reverse index keeps stale ids around."""
+    from live.game_session import manager as game_manager
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(game_manager.reset())
+    finally:
+        loop.close()
+    yield
+
+
 @pytest.fixture
 def db_path(tmp_path, monkeypatch):
-    """Per-test SQLite file with just the users + live_challenges
-    tables; no need to spin the full schema for these routes. Pattern
-    mirrors test_pedagogy_api.py: monkeypatch the api module's
-    ``_db_path`` so we don't have to rebuild module-level constants."""
+    """Per-test SQLite file with users + live_challenges + the
+    minimal `games` columns the J3 ``start_game`` writes into."""
     p = tmp_path / "live.sqlite"
     monkeypatch.setattr("live.api._db_path", lambda: str(p))
 
@@ -49,8 +61,6 @@ def db_path(tmp_path, monkeypatch):
                 email TEXT UNIQUE
             )
         """)
-        # Mirror of db/schema.py:live_challenges (kept minimal — drop FK
-        # cascades to keep the in-memory init terse).
         await conn.execute("""
             CREATE TABLE live_challenges (
                 id TEXT PRIMARY KEY,
@@ -61,6 +71,23 @@ def db_path(tmp_path, monkeypatch):
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 resolved_at TEXT,
                 game_id TEXT
+            )
+        """)
+        # Minimal `games` table — only the columns the J3 ``start_game``
+        # INSERTs into + the pedagogy stack reads. Production schema is
+        # richer, but the rest is irrelevant to these tests.
+        await conn.execute("""
+            CREATE TABLE games (
+                id TEXT PRIMARY KEY,
+                kind TEXT DEFAULT 'imported',
+                user_id INTEGER,
+                user_side TEXT,
+                white_user_id INTEGER,
+                black_user_id INTEGER,
+                turn TEXT DEFAULT 'white',
+                status TEXT DEFAULT 'finished',
+                pdn TEXT,
+                date TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
         await conn.executemany(

@@ -124,10 +124,19 @@ clone.
       refetched on next connect if they were offline. 11 backend
       tests covering the handshake (4 paths), ping/pong, unknown
       frame tolerance, kick, and the three REST-driven push hooks.
-- [ ] **J3 — game state machine**. Spawn a `kind='live'` game on
-      challenge acceptance, validate moves through `game_engine`,
-      broadcast `move_played` to both clients, persist incrementally to
-      the `games.pdn` column.
+- [x] **J3 — game state machine**. Challenge acceptance now spawns
+      a `kind='live'` row in `games`, allocates colors per the
+      challenger's `preferred_color`, and broadcasts `game_started`
+      to both players' WebSockets. `LiveGameManager` (singleton in
+      `backend/live/game_session.py`) holds the in-memory engine
+      state per game with a reverse `user_id → game_id` index. WS
+      message types added: `move` (validates via `game_engine`,
+      broadcasts `move_played`, auto-detects mate/blockage and chains
+      `game_ended`), `resign` (marks `abandoned_<color>` and
+      broadcasts `game_ended`). Every move persists `pdn` + `turn` +
+      `status` to the row so a finished live game flows through the
+      existing `/analyze-game` pipeline without conversion. 9 new
+      backend tests covering the J3 surface; 134 total.
 - [ ] **J4 — fin de partie & déconnexions**. Auto-detect mate /
       blockage, wire the 2-min disconnect grace period, expose
       `resign` over WS, mark `status='finished'` or

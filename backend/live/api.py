@@ -22,6 +22,7 @@ except ImportError:
     from ..auth import _decode_token, current_user  # type: ignore[assignment]
 
 from . import storage
+from .game_session import manager as game_manager
 from .models import (
     ChallengeCreateRequest,
     ChallengeOut,
@@ -145,11 +146,13 @@ async def respond_challenge(
 ) -> ChallengeOut:
     """Accept or decline a pending challenge.
 
-    Only the opponent can respond. Acceptance transitions the challenge
-    to 'accepted' and (in a later day) spawns a live game; for now we
-    just stamp the status — the game-creation handshake comes with the
-    WebSocket layer on J3. The `game_id` field of the response stays
-    null until then.
+    Only the opponent can respond. On accept, also spawns the live
+    :class:`LiveGameSession` and links the challenge to the freshly
+    created Game row, then broadcasts ``game_started`` to both
+    players so their clients route to the live screen at the same
+    instant. On decline, the challenge moves to ``status='declined'``
+    and the challenger receives a ``challenge_resolved`` push; no game
+    is created.
     """
     user_id = int(user["id"])
 
@@ -165,18 +168,42 @@ async def respond_challenge(
         if row["status"] != "pending":
             raise HTTPException(409, f"Ce défi a déjà été {row['status']}")
 
-        new_status = "accepted" if req.accept else "declined"
-        await storage.update_status(conn, challenge_id, new_status)
+        # On accept, also spawn the live game and link the challenge to
+        # it so the frontend can route both clients into the game screen
+        # off a single REST response. The session lives in-memory in
+        # game_manager from this point; the games row is the persistent
+        # anchor for resume-on-redeploy + post-game pedagogy.
+        spawned_session = None
+        if req.accept:
+            spawned_session = await game_manager.start_game(
+                conn,
+                challenger_id=row["challenger_id"],
+                opponent_id=row["opponent_id"],
+                preferred_color=row["preferred_color"],
+            )
+            await storage.update_status(
+                conn, challenge_id, "accepted", game_id=spawned_session.game_id,
+            )
+        else:
+            await storage.update_status(conn, challenge_id, "declined")
         refreshed = await storage.fetch_challenge(conn, challenge_id)
         assert refreshed is not None
 
     # Notify the challenger of the outcome so they don't sit watching
-    # a stale "en attente" indicator. Opponent doesn't need a push —
-    # they triggered the action and already see the result.
+    # a stale "en attente" indicator. Opponent doesn't need a push for
+    # the resolved-status frame — they triggered the action — but if
+    # the game was spawned, both parties get a game_started frame so
+    # both clients route into the live screen at the same instant.
     await manager.send_to(refreshed["challenger_id"], {
         "type": "challenge_resolved",
         "challenge": _row_to_out(refreshed).model_dump(),
     })
+    if spawned_session is not None:
+        for uid in (spawned_session.white_user_id, spawned_session.black_user_id):
+            await manager.send_to(uid, {
+                "type": "game_started",
+                "session": spawned_session.to_dict(),
+            })
     return _row_to_out(refreshed)
 
 
@@ -326,10 +353,14 @@ async def live_ws(ws: WebSocket) -> None:
             t = msg.get("type")
             if t == "ping":
                 await _safe_send(ws, {"type": "pong"})
+            elif t == "move":
+                await _handle_move_frame(ws, user_id, msg)
+            elif t == "resign":
+                await _handle_resign_frame(ws, user_id)
             else:
-                # Unknown / not-yet-implemented (move, resign, etc. come
-                # with J3). Don't disconnect — forward-compat matters
-                # once the frontend ships ahead of the backend.
+                # Unknown / not-yet-implemented. Don't disconnect —
+                # forward-compat matters once the frontend ships
+                # ahead of the backend.
                 await _safe_send(ws, {"type": "error", "reason": f"unknown type {t!r}"})
     except WebSocketDisconnect:
         pass
@@ -337,3 +368,82 @@ async def live_ws(ws: WebSocket) -> None:
         _log.warning("WS handler crashed for user_id=%s: %s", user_id, exc)
     finally:
         await manager.disconnect(user_id, ws)
+
+
+# ---------------------------------------------------------------------------
+# WS message handlers (J3)
+# ---------------------------------------------------------------------------
+
+
+async def _handle_move_frame(
+    ws: WebSocket, user_id: int, msg: dict[str, Any],
+) -> None:
+    """Validate and broadcast a move sent over WS.
+
+    On success, both players in the session receive a ``move_played``
+    frame; if the move closed the game (mate / blockage) they also
+    receive a ``game_ended`` frame so the frontend can flip to the
+    "Analyser la partie" CTA. On failure, only the sender receives an
+    ``error`` frame — the opponent shouldn't see the other side's
+    fat-fingered notation.
+    """
+    move_pdn = msg.get("move")
+    if not isinstance(move_pdn, str):
+        await _safe_send(ws, {"type": "error", "reason": "missing 'move' field"})
+        return
+
+    sess_before = game_manager.session_for(user_id)
+    if sess_before is None:
+        await _safe_send(ws, {"type": "error", "reason": "not_in_game"})
+        return
+
+    async with aiosqlite.connect(_db_path()) as conn:
+        result = await game_manager.apply_move(
+            conn, user_id=user_id, move_pdn=move_pdn,
+        )
+
+    if not result["ok"]:
+        await _safe_send(ws, {"type": "error", "reason": result["reason"]})
+        return
+
+    # Broadcast move to both players. The session_for() result above is
+    # still the right pointer — apply_move mutates in place.
+    payload = {
+        "type": "move_played",
+        "move": result["move"],
+        "by":   result["by"],
+        "session": result["session"],
+    }
+    for uid in (sess_before.white_user_id, sess_before.black_user_id):
+        await manager.send_to(uid, payload)
+
+    # Mate / blockage detected? Wrap with game_ended so clients can
+    # collapse the live UI without polling.
+    if result["session"]["status"] == "finished":
+        end_payload = {"type": "game_ended", "session": result["session"]}
+        for uid in (sess_before.white_user_id, sess_before.black_user_id):
+            await manager.send_to(uid, end_payload)
+
+
+async def _handle_resign_frame(ws: WebSocket, user_id: int) -> None:
+    """Mark the sender's side as abandoned and broadcast game_ended.
+
+    Only the sender's side is marked abandoned — even if the resigning
+    player isn't currently to move, resignation is always valid in v1.
+    The other side wins by default (`session.result`).
+    """
+    sess_before = game_manager.session_for(user_id)
+    if sess_before is None:
+        await _safe_send(ws, {"type": "error", "reason": "not_in_game"})
+        return
+
+    async with aiosqlite.connect(_db_path()) as conn:
+        result = await game_manager.resign(conn, user_id=user_id)
+
+    if not result["ok"]:
+        await _safe_send(ws, {"type": "error", "reason": result["reason"]})
+        return
+
+    payload = {"type": "game_ended", "session": result["session"]}
+    for uid in (sess_before.white_user_id, sess_before.black_user_id):
+        await manager.send_to(uid, payload)
