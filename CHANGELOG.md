@@ -13,6 +13,17 @@ upstream changelog see
 
 ### Added
 
+- **Live PvP — J6 (global ChallengeToast + polish)**. v1 complete.
+  New `<ChallengeToast>` mounted at the App level so a
+  `challenge_received` push surfaces on any tab — single-slot
+  replace-on-new policy keeps layout simple, accept / decline inline,
+  the accept button also routes the user to the live tab. Same
+  surface handles `challenge_cancelled` (replaces a matching open
+  toast with "X a annulé son défi") and `kicked_by_other_session`
+  ("Connexion reprise sur un autre onglet ou appareil"). Info-style
+  toasts auto-dismiss after 4 s; action toasts stay until the user
+  responds. README updated to reflect feature is shipped (no longer
+  "en cours"). 6 new vitest tests; 16 frontend tests total.
 - **Live PvP — J5 (lobby UI + active-game screen + WS hook)**.
   Frontend now consumes the J1-J4 backend end-to-end. New
   `<LivePlayPanel>` lobby with a challenge form, live-updated

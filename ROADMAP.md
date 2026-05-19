@@ -164,9 +164,18 @@ clone.
       pedagogy flow), and `useLiveWS` (module-level singleton WS with
       backoff reconnect + 25s ping/pong + per-type subscription hook).
       New `'live'` tab on the home screen, behind auth.
-- [ ] **J6 — `<ChallengeToast>` global + polish**. Toast on
-      `challenge_received` from any screen of the app, integration
-      tests across the WS lifecycle, doc pass.
+- [x] **J6 — `<ChallengeToast>` global + polish**. Mounted once at
+      App level so a `challenge_received` push surfaces on any tab;
+      single-slot replace-on-new policy keeps the layout simple
+      (one notification at a time is plenty at this feature's
+      fire rate). Action buttons accept / decline, info variant
+      auto-dismisses after 4 s. Also surfaces
+      `challenge_cancelled` (replaces a matching open toast with
+      "X a annulé son défi") and `kicked_by_other_session`
+      ("Connexion reprise sur un autre onglet"). 6 vitest tests
+      mocking `useLiveWS` to synthesise pushes; resign-while-
+      offline now reports "Connexion perdue" instead of a silent
+      drop. v1 of Live PvP is complete.
 
 Hard risks documented in `docs/PVP_LIVE.md` §Risques: in-memory state
 loss on redeploy (mitigation = clear user message, future = Redis),

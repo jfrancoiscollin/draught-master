@@ -17,6 +17,7 @@ import LearnFromMistakes from './components/LearnFromMistakes'
 import PedagogyPanel from './components/PedagogyPanel'
 import LivePlayPanel from './components/LivePlayPanel'
 import LiveGameScreen from './components/LiveGameScreen'
+import ChallengeToast from './components/ChallengeToast'
 import type { LiveGameSessionState } from './api/client'
 import MotifDetailPage from './components/MotifDetailPage'
 import EvalBar from './components/EvalBar'
@@ -1038,6 +1039,15 @@ export default function App() {
   return (
     <div className="bg-gray-900 text-gray-100 flex flex-col h-full">
       {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
+
+      {/* Global live-PvP notifications. Mounted at App level so a
+          `challenge_received` push surfaces regardless of which tab the
+          user is on. The accept callback routes them to the live tab
+          where <LivePlayPanel>'s own WS subscription handles the
+          subsequent game_started broadcast. */}
+      {user && (
+        <ChallengeToast onGoToLive={() => setTab('live')} />
+      )}
 
       {/* Header — compact on mobile */}
       <header className="bg-gray-800 border-b border-gray-700 px-4 py-3 flex-shrink-0">

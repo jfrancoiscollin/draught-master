@@ -1,10 +1,10 @@
 # PvP entre amis — Cadrage & implémentation
 
-> **Statut** : J1+J2+J3+J4+J5 livrés sur `develop`. Backend complet
-> (schema + REST défis + WebSocket avec auth, présence, push, state
-> machine, grace period). Frontend live : lobby + écran de jeu actif +
-> hook WS singleton. J6 à venir (toast global cross-écran, polish edge
-> cases, tests E2E).
+> **Statut** : v1 livrée sur `develop` (J1→J6). Backend complet (schema
+> + REST défis + WebSocket avec auth, présence, push, state machine,
+> grace period). Frontend complet : lobby, écran de jeu actif, hook
+> WS singleton, et toast global cross-écran qui surface les défis et
+> les évènements de session depuis n'importe quel onglet.
 
 Permettre à deux utilisateurs Draught Master de jouer une partie en
 temps réel sans passer par lidraughts, dans une logique "défi entre
@@ -246,6 +246,7 @@ created  (challenge accepted, Game inséré avec status='pending')
 | **J3** | State machine de partie (LiveGameManager singleton), move/resign WS frames, broadcast move_played + game_ended, persistance incrémentale dans games.pdn | ✅ livré |
 | **J4** | 2-min grace period sur déconnexion, reconnect-cancels-forfeit, push opponent_disconnected / opponent_reconnected, game_state bootstrap au auth_ok, startup-hook abandoned_server | ✅ livré |
 | **J5** | UI lobby (`<LivePlayPanel>`) + écran de jeu actif (`<LiveGameScreen>`) + hook WS singleton (`useLiveWS`) + nouvel onglet 'live' dans App.tsx | ✅ livré |
+| **J6** | `<ChallengeToast>` global cross-écran (challenge_received + cancelled + kicked) avec Accepter / Refuser inline, polish edge cases (resign offline, etc.), tests vitest, doc pass | ✅ livré |
 | **J4** | Détection fin de partie (mat/blocage), grace period déconnexion, abandon explicite | ⏳ à venir |
 | **J5** | UI : `<LivePlayPanel>` (lobby/défis) + `<LiveGameScreen>` (jeu live) | ⏳ à venir |
 | **J6** | `<ChallengeToast>` global, edge cases, intégration avec le flow pédagogique pour analyser une partie finie. Tests E2E | ⏳ à venir |

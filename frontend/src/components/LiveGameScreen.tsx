@@ -118,7 +118,8 @@ export default function LiveGameScreen({ session, onLeave, onAnalyzeFinishedGame
   const handleResign = useCallback(() => {
     if (sess.status !== 'in_progress') return
     if (!window.confirm('Abandonner la partie ?')) return
-    sendLiveFrame({ type: 'resign' })
+    const ok = sendLiveFrame({ type: 'resign' })
+    if (!ok) setStatusMsg('Connexion perdue — réessaie dans un instant')
   }, [sess.status])
 
   // Countdown text for the disconnect grace banner.
