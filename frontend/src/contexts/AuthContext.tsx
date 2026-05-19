@@ -5,6 +5,9 @@ export interface AuthUser {
   id: number
   email: string
   lidraughts_username?: string | null
+  // Display username used by Live PvP. Auto-populated from email
+  // local-part on first /me call post-migration; user can edit.
+  username?: string | null
 }
 
 interface AuthContextType {

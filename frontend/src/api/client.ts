@@ -735,3 +735,12 @@ export interface LiveGameSessionState {
   pdn: string
   fen: string
 }
+
+// ── Profile / username (J6 follow-up) ─────────────────────────────────────
+
+export async function setMyUsername(username: string): Promise<{
+  id: number; email: string; lidraughts_username: string | null; username: string | null
+}> {
+  const res = await api.post('/auth/me/username', { username })
+  return res.data
+}

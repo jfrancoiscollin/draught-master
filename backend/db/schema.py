@@ -216,6 +216,13 @@ async def init_db() -> None:
             "ALTER TABLE games ADD COLUMN source TEXT",
             "ALTER TABLE games ADD COLUMN source_id TEXT",
             "ALTER TABLE users ADD COLUMN lidraughts_username TEXT",
+            # Display username used by the live PvP lobby + future
+            # leaderboards. NULL on legacy rows; auto-populated from
+            # the email local-part on first call to GET /api/auth/me
+            # (see backend/main.py). The unique-on-LOWER index below
+            # is what enforces case-insensitive uniqueness on the
+            # column itself.
+            "ALTER TABLE users ADD COLUMN username TEXT",
             "ALTER TABLE move_verdicts ADD COLUMN features_after_json TEXT",
             # Live PvP — extend games with the two-player + turn fields
             # so a live game can be persisted in the same table as imports.
@@ -237,6 +244,19 @@ async def init_db() -> None:
                 "CREATE UNIQUE INDEX IF NOT EXISTS idx_games_user_source "
                 "ON games(user_id, source, source_id) "
                 "WHERE source IS NOT NULL AND source_id IS NOT NULL"
+            )
+            await db.commit()
+        except Exception:
+            pass
+
+        # Case-insensitive uniqueness on users.username — SQLite doesn't
+        # support `UNIQUE COLLATE NOCASE` on an ALTER ADD COLUMN, so we
+        # express the same invariant through an expression index on
+        # LOWER(username), partial so NULL rows don't collide.
+        try:
+            await db.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_nocase "
+                "ON users(LOWER(username)) WHERE username IS NOT NULL"
             )
             await db.commit()
         except Exception:

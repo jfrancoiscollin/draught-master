@@ -17,9 +17,11 @@ import {
   createLiveChallenge,
   getPendingLiveChallenges,
   respondLiveChallenge,
+  setMyUsername,
 } from '../api/client'
 import type { LiveChallenge, LiveGameSessionState, PreferredColor } from '../api/client'
 import { useLiveWS } from '../hooks/useLiveWS'
+import { useAuth } from '../contexts/AuthContext'
 
 interface Props {
   onEnterGame: (session: LiveGameSessionState) => void
@@ -32,12 +34,19 @@ const COLOR_LABEL: Record<PreferredColor, string> = {
 }
 
 export default function LivePlayPanel({ onEnterGame }: Props) {
+  const { user, setUser } = useAuth()
   const [opponent, setOpponent] = useState('')
   const [preferred, setPreferred] = useState<PreferredColor>('random')
   const [received, setReceived] = useState<LiveChallenge[]>([])
   const [sent, setSent] = useState<LiveChallenge[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Username editor — collapsed by default; the current username is
+  // shown inline as a "Tu apparais comme @xxx" hint that toggles open
+  // an input on click.
+  const [editingUsername, setEditingUsername] = useState(false)
+  const [usernameDraft, setUsernameDraft] = useState('')
+  const [usernameError, setUsernameError] = useState<string | null>(null)
 
   // Bootstrap from REST so users who land here without an open WS still
   // see their pending challenges. Subsequent updates come over WS.
@@ -124,9 +133,82 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
     }
   }, [])
 
+  const handleSaveUsername = useCallback(async () => {
+    const v = usernameDraft.trim()
+    if (!v) return
+    setBusy(true)
+    setUsernameError(null)
+    try {
+      const me = await setMyUsername(v)
+      if (user) setUser({ ...user, username: me.username })
+      setEditingUsername(false)
+    } catch (e) {
+      const detail =
+        (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+        ?? 'Erreur réseau'
+      setUsernameError(String(detail))
+    } finally {
+      setBusy(false)
+    }
+  }, [usernameDraft, user, setUser])
+
   return (
     <div className="flex flex-col gap-4 p-4 max-w-2xl mx-auto">
       <h2 className="text-lg font-bold text-amber-500">Jouer en ligne</h2>
+
+      {/* Username — display + inline edit. The hint reminds the user
+          how their friends should spell their name in the "Défier"
+          input. */}
+      <div className="bg-gray-800/40 border border-gray-700 rounded-lg px-3 py-2 text-xs flex flex-wrap items-center gap-2">
+        {!editingUsername ? (
+          <>
+            <span className="text-gray-500">Tes amis te défient sous le nom</span>
+            <span className="font-mono font-bold text-amber-300">
+              @{user?.username ?? '(non défini)'}
+            </span>
+            <button
+              onClick={() => {
+                setUsernameDraft(user?.username ?? '')
+                setUsernameError(null)
+                setEditingUsername(true)
+              }}
+              className="ml-auto text-indigo-400 hover:text-indigo-300 underline decoration-dotted cursor-pointer"
+            >
+              changer
+            </button>
+          </>
+        ) : (
+          <>
+            <input
+              type="text"
+              value={usernameDraft}
+              onChange={e => setUsernameDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSaveUsername() }}
+              placeholder="2-30 caractères · A-Z 0-9 _ -"
+              disabled={busy}
+              className="flex-1 min-w-[8rem] bg-gray-900 border border-gray-700 rounded px-2 py-0.5 text-sm text-white"
+              autoFocus
+            />
+            <button
+              onClick={handleSaveUsername}
+              disabled={busy || !usernameDraft.trim()}
+              className="px-2 py-0.5 rounded bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white cursor-pointer"
+            >
+              Enregistrer
+            </button>
+            <button
+              onClick={() => { setEditingUsername(false); setUsernameError(null) }}
+              disabled={busy}
+              className="px-2 py-0.5 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-40 text-gray-200 cursor-pointer"
+            >
+              Annuler
+            </button>
+            {usernameError && (
+              <p className="w-full text-red-400 break-words">{usernameError}</p>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Challenge form */}
       <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-3 flex flex-col gap-2">

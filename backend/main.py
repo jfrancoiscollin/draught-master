@@ -40,6 +40,7 @@ from database import (
     save_active_game, load_active_game, delete_active_game,
     get_exercises, get_exercise, record_progress,
     create_user, get_user_by_email, get_user_by_id, set_lidraughts_username,
+    set_username, ensure_default_username,
     create_reset_token, get_reset_token, consume_reset_token,
     mark_exercise_solved, get_user_solved_exercise_ids,
     mark_lesson_read, get_user_read_lesson_chapters,
@@ -906,11 +907,54 @@ async def auth_login(req: LoginRequest) -> TokenResponse:
 
 @app.get("/api/auth/me", response_model=UserResponse)
 async def auth_me(current_user: Dict[str, Any] = Depends(_require_auth)) -> UserResponse:
+    # Auto-populate the display username on first call post-migration
+    # so the Live PvP lobby always has a value to show; rolling this
+    # into /me means no separate "bootstrap" endpoint to maintain on
+    # the frontend.
+    username = await ensure_default_username(current_user["id"])
     user = await get_user_by_id(current_user["id"])
     return UserResponse(
         id=current_user["id"],
         email=current_user["email"],
         lidraughts_username=(user or {}).get("lidraughts_username"),
+        username=username,
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────
+# POST /api/auth/me/username — change the display username
+# ─────────────────────────────────────────────────────────────────────
+
+
+@app.post("/api/auth/me/username", response_model=UserResponse)
+async def auth_set_username(
+    body: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(_require_auth),
+) -> UserResponse:
+    """Set or change the user's Live PvP display name.
+
+    Validation: ``[A-Za-z0-9_-]{2,30}``, case-insensitive uniqueness
+    via :data:`idx_users_username_nocase`. Errors come back as HTTP 422
+    (``invalid`` slug) or 409 (``taken``) so the frontend can pick the
+    right message.
+    """
+    raw = (body.get("username") or "").strip()
+    if not raw:
+        raise HTTPException(422, "Username vide")
+    err = await set_username(current_user["id"], raw)
+    if err == "invalid":
+        raise HTTPException(
+            422,
+            "2-30 caractères, lettres / chiffres / _ / - uniquement",
+        )
+    if err == "taken":
+        raise HTTPException(409, "Ce username est déjà utilisé")
+    user = await get_user_by_id(current_user["id"])
+    return UserResponse(
+        id=current_user["id"],
+        email=current_user["email"],
+        lidraughts_username=(user or {}).get("lidraughts_username"),
+        username=(user or {}).get("username"),
     )
 
 

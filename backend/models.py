@@ -161,6 +161,10 @@ class UserResponse(BaseModel):
     id: int
     email: str
     lidraughts_username: Optional[str] = None
+    # Display username used by Live PvP. Auto-populated from the email
+    # local part on first /me call after the column migration; user can
+    # change it later via POST /api/auth/me/username.
+    username: Optional[str] = None
 
 
 class TokenResponse(BaseModel):
