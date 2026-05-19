@@ -161,7 +161,7 @@ type TabKey = 'position' | 'graphs' | 'tables'
 function PedagogyTabsPanel({
   gameId, analysis, userSide, lang, activeVerdict, hangingSquares,
   threatCount, showThreats, onToggleThreats, diagKey, onDiagKey,
-  currentHalfMove, onJumpTo,
+  currentHalfMove, onJumpTo, onWeaknessClick,
 }: {
   gameId: string
   analysis: PedagogyAnalysis
@@ -181,6 +181,10 @@ function PedagogyTabsPanel({
   onDiagKey: (k: string) => void
   currentHalfMove: number
   onJumpTo: (hm: number) => void
+  /** Called when the user clicks a persistent-weakness row in the
+   *  narrative cards. Squares are highlighted on the board until the
+   *  user navigates or clicks another diagnostic row. */
+  onWeaknessClick?: (squares: number[]) => void
 }) {
   const [tab, setTab] = useState<TabKey>('position')
   const { verdicts } = analysis
@@ -215,23 +219,26 @@ function PedagogyTabsPanel({
 
       <div className="p-3 flex flex-col gap-2">
         {tab === 'position' && (
-          activeVerdict ? (
-            <>
-              {/* Global game narrative cards (dilf.profile.narrate_game).
-                  Surfaced ABOVE the per-position pedagogy overlay so the
-                  user reads the global story before drilling into the
-                  current half-move's details. */}
-              <GameNarrativeSummary
-                gameId={gameId}
-                lang={lang}
-                onJumpTo={onJumpTo}
-              />
+          <>
+            {/* Global game narrative cards (dilf.profile.narrate_game).
+                Surfaced ABOVE the per-position overlay AND outside the
+                activeVerdict gate — the résumé is global, so it makes
+                sense at currentIdx=0 (initial position, no move played
+                yet) too. */}
+            <GameNarrativeSummary
+              gameId={gameId}
+              lang={lang}
+              onJumpTo={onJumpTo}
+              onWeaknessClick={onWeaknessClick}
+            />
 
-              <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
-                <span title={`Phase : ${PHASE_FR[activeVerdict.phase]}`}>
-                  <span className="text-gray-600">Phase </span>
-                  <span className="font-semibold text-indigo-300">{PHASE_FR[activeVerdict.phase]}</span>
-                </span>
+            {activeVerdict ? (
+              <>
+                <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
+                  <span title={`Phase : ${PHASE_FR[activeVerdict.phase]}`}>
+                    <span className="text-gray-600">Phase </span>
+                    <span className="font-semibold text-indigo-300">{PHASE_FR[activeVerdict.phase]}</span>
+                  </span>
                 {activeVerdict.material_balance !== null && (
                   <span title="Solde matériel (dames = 3 pions), point de vue blancs">
                     <span className="text-gray-600">Matériel </span>
@@ -312,11 +319,12 @@ function PedagogyTabsPanel({
                 </div>
               )}
             </>
-          ) : (
-            <p className="text-xs text-gray-500 italic">
-              Aucun coup sélectionné — utilise les flèches pour avancer dans la partie.
-            </p>
-          )
+            ) : (
+              <p className="text-xs text-gray-500 italic">
+                Détails par coup : utilise les flèches pour avancer dans la partie.
+              </p>
+            )}
+          </>
         )}
 
         {tab === 'graphs' && (
@@ -441,6 +449,11 @@ export default function ImportGamePanel({
   // backward / holes / outposts). Kept separate from `highlighted` so
   // the AnalysisPanel's hover-highlight doesn't fight with it.
   const [diagKey, setDiagKey] = useState<string | null>(null)
+  // Squares highlighted from clicking a persistent-weakness row in
+  // the narrative cards. Cleared when the user navigates between
+  // half-moves (the highlight wouldn't make sense on a different
+  // position) and overridden when they click a diagnostic row.
+  const [narrativeHighlight, setNarrativeHighlight] = useState<number[]>([])
   // Show red arrows for the captures the opponent could play next turn.
   // Hidden by default — even one big capture sequence clutters the
   // board, and users who want it just toggle the pill.
@@ -506,6 +519,10 @@ export default function ImportGamePanel({
     setHighlighted([])
     setAnalysis(null)
     setArrow(null)
+    // Drop the narrative-row highlight so it doesn't survive a board
+    // navigation — the square is contextual to the weakness summary
+    // the user clicked, not the new position.
+    setNarrativeHighlight([])
     loadLegalMoves(pos.fen)
   }, [loadLegalMoves])
 
@@ -875,7 +892,14 @@ export default function ImportGamePanel({
         </button>
         <div className="flex-1 min-w-0">
           <p className="text-amber-500 font-bold text-sm truncate">
-            {(meta.white && meta.black) ? `${meta.white} — ${meta.black}` : 'Partie importée'}
+            {(meta.white && meta.black)
+              // Color badge after each name so the reader instantly
+              // knows who's playing whom on the board. ⬜ = blancs,
+              // ⬛ = noirs. The badge sits after the name (not before)
+              // so the truncate ellipsis falls on the badge rather
+              // than the player's identifier when space runs short.
+              ? <>{meta.white} ⬜ — {meta.black} ⬛</>
+              : 'Partie importée'}
           </p>
           {(meta.result || meta.event) && (
             <p className="text-gray-500 text-xs truncate">
@@ -900,7 +924,15 @@ export default function ImportGamePanel({
             selectedSquare={selectedSquare}
             onSelectSquare={setSelectedSquare}
             disabled={false}
-            highlightSquares={diagSquares.length > 0 ? diagSquares : highlighted}
+            highlightSquares={
+              // Priority: narrative-click > diagnostic-row click > hover.
+              // setNarrativeHighlight gives the persistent-weakness rows
+              // a board-side preview without colliding with the diagnostic
+              // grid's own row click handler.
+              narrativeHighlight.length > 0 ? narrativeHighlight
+              : diagSquares.length > 0     ? diagSquares
+              : highlighted
+            }
             warningSquares={hangingSquares}
             flagSquares={flagSquares}
             arrows={[...(arrow ? [arrow] : []), ...threatArrows]}
@@ -1070,6 +1102,12 @@ export default function ImportGamePanel({
               onDiagKey={k => setDiagKey(prev => prev === k ? null : k)}
               currentHalfMove={currentIdx}
               onJumpTo={(hm) => goTo(hm, positions)}
+              onWeaknessClick={(sqs) => {
+                setNarrativeHighlight(sqs)
+                setDiagKey(null)   // Clear diagnostic-row highlight so
+                                   // the new selection isn't fighting
+                                   // with the previous one.
+              }}
             />
           )}
 
