@@ -35,6 +35,7 @@ from game_engine import (
     GameState,
     Move,
     apply_move,
+    board_to_fen,
     game_result,
     get_legal_moves,
     initial_state,

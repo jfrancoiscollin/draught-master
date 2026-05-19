@@ -356,7 +356,11 @@ def test_get_recommendations_filters_solved(monkeypatch, tmp_path):
         await conn.execute("""
             CREATE TABLE games (
                 id TEXT PRIMARY KEY, user_id INTEGER,
-                user_side TEXT, opening_name TEXT, status TEXT
+                user_side TEXT, opening_name TEXT, status TEXT,
+                -- `date` is queried by storage.fetch_user_games_with_verdicts
+                -- (ORDER BY date DESC) — without it the test errored with
+                -- "no such column: date" on the recommender's lookback walk.
+                date TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
         await conn.execute("""
