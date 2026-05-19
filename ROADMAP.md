@@ -155,10 +155,15 @@ clone.
       Starlette, so most of the J4 coverage is unit-level on the
       manager and `_forfeit_after_grace` directly — the disconnect
       push is still tested E2E).
-- [ ] **J5 — UI lobby + live game screen**. `<LivePlayPanel>` (lobby
-      with challenge form + received/sent lists), `<LiveGameScreen>`
-      (adapted from `ImportGamePanel`: active board, "À toi de jouer"
-      banner, abandon button, post-game "Analyser cette partie" CTA).
+- [x] **J5 — UI lobby + live game screen**. `<LivePlayPanel>` (challenge
+      form with preferred-color select + received/sent challenge lists,
+      live-updated through `useLiveWS`), `<LiveGameScreen>` (wraps the
+      existing `<Board>` for the active game, surfaces "À toi de jouer"
+      banner + disconnect-grace countdown + Abandon button + post-game
+      "🎓 Analyser cette partie" CTA piping into the import-game
+      pedagogy flow), and `useLiveWS` (module-level singleton WS with
+      backoff reconnect + 25s ping/pong + per-type subscription hook).
+      New `'live'` tab on the home screen, behind auth.
 - [ ] **J6 — `<ChallengeToast>` global + polish**. Toast on
       `challenge_received` from any screen of the app, integration
       tests across the WS lifecycle, doc pass.

@@ -13,6 +13,22 @@ upstream changelog see
 
 ### Added
 
+- **Live PvP — J5 (lobby UI + active-game screen + WS hook)**.
+  Frontend now consumes the J1-J4 backend end-to-end. New
+  `<LivePlayPanel>` lobby with a challenge form, live-updated
+  received/sent challenge lists, and bootstrap fetch on mount. New
+  `<LiveGameScreen>` wrapping the existing `<Board>` for an active
+  live game — "À toi de jouer" banner, disconnect-grace countdown,
+  Abandon button, post-game "🎓 Analyser cette partie" CTA piping
+  into the existing import-game pedagogy flow. New `useLiveWS` hook
+  exposes a module-level singleton WebSocket: auto-reconnect with
+  exponential backoff, 25-second ping/pong heartbeat, drop on
+  auth_error (a bad token won't fix itself), per-message-type
+  subscriptions via refs so inline closures don't leak. New `'live'`
+  tab in App.tsx, gated behind auth. Backend tweak:
+  `LiveGameSession.to_dict` now also ships the FEN so the frontend
+  renders the board immediately without replaying the pdn through a
+  JS engine.
 - **Live PvP — J4 (disconnect grace + reconnect path)**. When a
   player drops their WebSocket mid-game, the partner now receives
   `opponent_disconnected` (with `grace_seconds` for a local countdown)
