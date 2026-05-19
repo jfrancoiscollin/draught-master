@@ -666,3 +666,72 @@ export async function getMotifInfo(slug: string): Promise<MotifInfo> {
   const res = await api.get<MotifInfo>(`/pedagogy/motifs/${slug}`)
   return res.data
 }
+
+// ── Live PvP (J5) ─────────────────────────────────────────────────────────
+// Thin REST surface for the challenge queue. The realtime channel (live
+// game state, move broadcasts, presence) lives over a WebSocket — see
+// `useLiveWS` in src/hooks. Wire shapes mirror backend/live/models.py.
+
+export type PreferredColor = 'white' | 'black' | 'random'
+export type LiveChallengeStatus =
+  | 'pending' | 'accepted' | 'declined' | 'expired' | 'cancelled'
+
+export interface LiveChallenge {
+  id: string
+  challenger_id: number
+  challenger_username: string
+  opponent_id: number
+  opponent_username: string
+  preferred_color: PreferredColor
+  status: LiveChallengeStatus
+  created_at: string
+  resolved_at: string | null
+  game_id: string | null
+}
+
+export interface PendingChallenges {
+  received: LiveChallenge[]
+  sent: LiveChallenge[]
+}
+
+export async function createLiveChallenge(
+  opponentUsername: string,
+  preferredColor: PreferredColor = 'random',
+): Promise<LiveChallenge> {
+  const res = await api.post<LiveChallenge>('/live/challenge', {
+    opponent_username: opponentUsername,
+    preferred_color: preferredColor,
+  })
+  return res.data
+}
+
+export async function getPendingLiveChallenges(): Promise<PendingChallenges> {
+  const res = await api.get<PendingChallenges>('/live/challenges/pending')
+  return res.data
+}
+
+export async function respondLiveChallenge(
+  id: string, accept: boolean,
+): Promise<LiveChallenge> {
+  const res = await api.post<LiveChallenge>(`/live/challenge/${id}/respond`, { accept })
+  return res.data
+}
+
+export async function cancelLiveChallenge(id: string): Promise<LiveChallenge> {
+  const res = await api.post<LiveChallenge>(`/live/challenge/${id}/cancel`)
+  return res.data
+}
+
+// Wire shape of the session dict shipped with game_started / move_played /
+// game_ended / game_state frames. Source of truth is
+// LiveGameSession.to_dict in backend/live/game_session.py.
+export interface LiveGameSessionState {
+  game_id: string
+  white_user_id: number
+  black_user_id: number
+  turn: 'white' | 'black'
+  status: 'in_progress' | 'finished' | 'abandoned_white' | 'abandoned_black' | 'abandoned_server'
+  result: 'white' | 'black' | 'draw' | null
+  pdn: string
+  fen: string
+}

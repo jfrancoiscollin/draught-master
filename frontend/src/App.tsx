@@ -15,6 +15,9 @@ import ExerciseVerificationPanel from './components/ExerciseVerificationPanel'
 import OpeningExplorer from './components/OpeningExplorer'
 import LearnFromMistakes from './components/LearnFromMistakes'
 import PedagogyPanel from './components/PedagogyPanel'
+import LivePlayPanel from './components/LivePlayPanel'
+import LiveGameScreen from './components/LiveGameScreen'
+import type { LiveGameSessionState } from './api/client'
 import MotifDetailPage from './components/MotifDetailPage'
 import EvalBar from './components/EvalBar'
 import UserStatsCard from './components/UserStatsCard'
@@ -165,7 +168,7 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu'
+type Tab = 'home' | 'play' | 'live' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu'
 
 export default function App() {
   const { t, language } = useLanguage()
@@ -174,6 +177,9 @@ export default function App() {
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
   const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
   const [preloadedUserSide, setPreloadedUserSide] = useState<'white' | 'black' | null>(null)
+  // Live PvP — populated when a game_started push arrives from the WS.
+  // Nulling it drops the user back to the lobby tab.
+  const [liveSession, setLiveSession] = useState<LiveGameSessionState | null>(null)
   // Bumped whenever the user resets their analyses — forces
   // <GameHistory> to refetch so the dilf badges flip back to – and
   // the bulk-analyze button becomes clickable again.
@@ -1102,6 +1108,17 @@ export default function App() {
                 <img src={iconPlayAiSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('tabPlay')}</span>
               </button>
+              {/* Live PvP — challenge a friend over WebSocket. Hidden for
+                  guests since live play requires a user_id binding. */}
+              {user && (
+                <button
+                  onClick={() => setTab('live')}
+                  className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
+                >
+                  <img src={iconPlayAiSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                  <span className="flex-1 text-lg font-bold text-white text-right">Jouer en ligne</span>
+                </button>
+              )}
               {/* Exercises */}
               <button
                 onClick={() => setTab('exercise-library')}
@@ -1144,6 +1161,25 @@ export default function App() {
               </button>
             </div>
           </div>
+        )}
+
+        {/* LIVE PvP TAB — lobby OR active game screen */}
+        {tab === 'live' && (
+          liveSession === null ? (
+            <LivePlayPanel onEnterGame={(s) => setLiveSession(s)} />
+          ) : (
+            <LiveGameScreen
+              session={liveSession}
+              onLeave={() => { setLiveSession(null); setTab('home') }}
+              onAnalyzeFinishedGame={(gid) => {
+                setLiveSession(null)
+                setPreloadedGameId(gid)
+                setPreloadedUserSide(null)
+                setPreloadedPdn(null)
+                setTab('import-game')
+              }}
+            />
+          )
         )}
 
         {/* PLAY TAB */}

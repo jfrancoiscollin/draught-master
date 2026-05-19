@@ -72,7 +72,10 @@ class LiveGameSession:
         return None
 
     def to_dict(self) -> dict[str, Any]:
-        """Wire-shape used in game_started / game_ended frames."""
+        """Wire-shape used in game_started / game_ended / move_played /
+        game_state frames. ``fen`` is included so the client can render
+        the board immediately without having to replay the pdn through
+        a JS engine — same FEN format the imported-game path consumes."""
         return {
             "game_id":        self.game_id,
             "white_user_id":  self.white_user_id,
@@ -81,6 +84,7 @@ class LiveGameSession:
             "status":         self.status,
             "result":         self.result,
             "pdn":            _state_to_pdn(self.state),
+            "fen":            board_to_fen(self.state),
         }
 
 
