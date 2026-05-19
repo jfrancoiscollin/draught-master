@@ -71,3 +71,26 @@ class OnlineUserOut(BaseModel):
 
 class OnlineUsersResponse(BaseModel):
     users: list[OnlineUserOut]
+
+
+# ---------------------------------------------------------------------------
+# Active live game lookup
+# ---------------------------------------------------------------------------
+
+
+class ActiveGameSessionOut(BaseModel):
+    """Same wire shape as the session dict shipped in game_started /
+    move_played / game_ended frames — kept identical so the frontend
+    can reuse one TS type. Used by GET /api/live/my-active-game as a
+    fallback for clients that missed the in-memory game_started push
+    (multi-replica deploys, transient WS drops, hard refresh between
+    turns)."""
+
+    game_id: str
+    white_user_id: int
+    black_user_id: int
+    turn: str
+    status: str
+    result: Optional[str] = None
+    pdn: str
+    fen: str

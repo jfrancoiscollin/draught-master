@@ -761,3 +761,9 @@ export async function getOnlineUsers(): Promise<OnlineUser[]> {
 export async function deleteMyAccount(): Promise<void> {
   await api.delete('/auth/me')
 }
+
+export async function getMyActiveGame(): Promise<LiveGameSessionState | null> {
+  // 200 with a session, OR 200 with `null` (Pydantic Optional model).
+  const res = await api.get<LiveGameSessionState | null>('/live/my-active-game')
+  return res.data
+}

@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   cancelLiveChallenge,
   createLiveChallenge,
+  getMyActiveGame,
   getOnlineUsers,
   getPendingLiveChallenges,
   respondLiveChallenge,
@@ -94,6 +95,25 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
     const id = setInterval(refreshOnline, 5_000)
     return () => clearInterval(id)
   }, [refreshOnline])
+
+  // Safety net: if the WS `game_started` push didn't land (multi-replica
+  // deploy, transient socket drop, redeploy mid-handshake), the user
+  // would otherwise be stuck in the lobby with an opponent already on
+  // the game screen. Poll the server every 5 s for an active live
+  // game; on first hit, route into the live screen via the same
+  // onEnterGame callback the WS push uses. Bootstraps the lookup
+  // immediately on mount too.
+  useEffect(() => {
+    let cancelled = false
+    const check = () => {
+      getMyActiveGame()
+        .then(sess => { if (!cancelled && sess !== null) onEnterGame(sess) })
+        .catch(() => { /* offline / 404 — keep polling */ })
+    }
+    check()
+    const id = setInterval(check, 5_000)
+    return () => { cancelled = true; clearInterval(id) }
+  }, [onEnterGame])
 
   // Live updates.
   useLiveWS({

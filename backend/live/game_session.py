@@ -333,5 +333,38 @@ def _find_move_by_pdn(pdn: str, legal_moves: list[Move]) -> Optional[Move]:
     return None
 
 
+def replay_pdn(pdn_str: str) -> GameState:
+    """Re-derive a :class:`GameState` from a stored PDN string.
+
+    Used by the GET /api/live/my-active-game fallback so a client that
+    missed the in-memory ``game_started`` push (multi-replica deploy,
+    transient WS drop, hard refresh between turns) can still re-enter
+    its live game by reading the canonical state straight off the
+    persisted ``games.pdn``.
+
+    PDN format produced by :func:`_state_to_pdn` is "N. white_move
+    black_move N+1. ..." — we split, ignore the numbered prefix
+    tokens, and feed each move-token through
+    :func:`_find_move_by_pdn` over the engine's current legal-moves
+    list. Malformed tokens stop the replay where they're encountered;
+    the engine state at that point is returned (the games row was
+    presumably written by the same code path, so a halt here means
+    an unrecoverable inconsistency rather than a malformed input).
+    """
+    state = initial_state()
+    for raw in pdn_str.split():
+        tok = raw.strip()
+        if not tok or tok.endswith("."):
+            continue  # skip move-number tokens ("1.", "2.", …)
+        if "-" not in tok and "x" not in tok:
+            continue
+        legal = get_legal_moves(state)
+        move = _find_move_by_pdn(tok, legal)
+        if move is None:
+            break
+        state = apply_move(state, move)
+    return state
+
+
 # Module-level singleton.
 manager = LiveGameManager()

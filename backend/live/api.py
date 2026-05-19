@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Optional
 
 import aiosqlite
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
@@ -24,6 +24,7 @@ except ImportError:
 from . import storage
 from .game_session import manager as game_manager
 from .models import (
+    ActiveGameSessionOut,
     ChallengeCreateRequest,
     ChallengeOut,
     ChallengeRespondRequest,
@@ -178,6 +179,63 @@ async def list_online_users(
     # Lexicographic sort for a deterministic UI order.
     users.sort(key=lambda u: u.username.lower())
     return OnlineUsersResponse(users=users)
+
+
+# ---------------------------------------------------------------------------
+# GET /api/live/my-active-game
+# ---------------------------------------------------------------------------
+
+
+@router.get("/my-active-game", response_model=Optional[ActiveGameSessionOut])
+async def my_active_game(
+    user: Any = Depends(current_user),
+) -> Optional[ActiveGameSessionOut]:
+    """Return the caller's in-progress live game, or ``null`` if none.
+
+    Safety net for clients that miss the in-memory ``game_started``
+    push. The fast path reads the in-process manager; the fallback
+    rebuilds a session view straight from the games row (kind='live'
+    + status='in_progress' + user is white/black) so multi-replica
+    deploys, transient WS drops, and post-restart resume all
+    converge on the same client behaviour: the lobby polls this,
+    spots an active game, and auto-enters the live screen.
+    """
+    from game_engine import board_to_fen  # noqa: PLC0415
+    from .game_session import manager as gm, replay_pdn  # noqa: PLC0415
+    user_id = int(user["id"])
+
+    sess = gm.session_for(user_id)
+    if sess is not None and sess.status == "in_progress":
+        d = sess.to_dict()
+        return ActiveGameSessionOut(**d)
+
+    # DB fallback — same shape, derived from the persisted games row.
+    async with aiosqlite.connect(_db_path()) as conn:
+        cur = await conn.execute(
+            """
+            SELECT id, white_user_id, black_user_id, turn, status, pdn
+              FROM games
+             WHERE kind = 'live' AND status = 'in_progress'
+               AND (white_user_id = ? OR black_user_id = ?)
+             ORDER BY date DESC LIMIT 1
+            """,
+            (user_id, user_id),
+        )
+        row = await cur.fetchone()
+    if row is None:
+        return None
+    pdn = str(row[5] or "")
+    state = replay_pdn(pdn)
+    return ActiveGameSessionOut(
+        game_id=str(row[0]),
+        white_user_id=int(row[1]),
+        black_user_id=int(row[2]),
+        turn=str(row[3]),
+        status=str(row[4]),
+        result=None,
+        pdn=pdn,
+        fen=board_to_fen(state),
+    )
 
 
 # ---------------------------------------------------------------------------

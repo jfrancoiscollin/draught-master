@@ -1,0 +1,26 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#1A1A1A"/>
+
+  <!-- Personnage gauche (un peu en retrait) -->
+
+  <!-- Tête -->
+
+  <circle cx="60" cy="60" r="18" fill="#EAE2D6"/>
+  <!-- Corps (silhouette buste + épaules arrondies, comme l'icône Profil mais entière) -->
+  <path d="M 30 165
+           L 30 115
+           Q 30 88 60 88
+           Q 90 88 90 115
+           L 90 165 Z"
+        fill="#EAE2D6"/>
+
+  <!-- Personnage droit -->
+
+  <circle cx="140" cy="60" r="18" fill="#EAE2D6"/>
+  <path d="M 110 165
+           L 110 115
+           Q 110 88 140 88
+           Q 170 88 170 115
+           L 170 165 Z"
+        fill="#EAE2D6"/>
+</svg>

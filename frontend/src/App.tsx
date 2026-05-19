@@ -28,6 +28,7 @@ import LanguageSelector from './components/LanguageSelector'
 import logoBothSrc from './assets/logo-both.svg'
 import logoWordmarkSrc from './assets/logo-wordmark.svg'
 import iconPlayAiSrc from './assets/icon-play-ai.svg'
+import iconLiveSrc from './assets/icon-live.svg'
 import iconLearnSrc from './assets/icon-learn.svg'
 import iconAnalyzeSrc from './assets/icon-analyze.svg'
 import iconProfileSrc from './assets/icon-profile.svg'
@@ -1142,7 +1143,7 @@ export default function App() {
                   onClick={() => setTab('live')}
                   className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
                 >
-                  <img src={iconPlayAiSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                  <img src={iconLiveSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
                   <span className="flex-1 text-lg font-bold text-white text-right">Jouer en ligne</span>
                 </button>
               )}
