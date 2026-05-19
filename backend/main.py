@@ -926,9 +926,21 @@ async def auth_login(req: LoginRequest) -> TokenResponse:
     user = await get_user_by_email(email)
     if not user or not _pwd_context.verify(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+    # IMPORTANT: ship username + lidraughts_username back. Without this
+    # the frontend's AuthContext receives `username: undefined` on
+    # every login and overwrites the (correctly-persisted) value in
+    # the user state — making the pseudo "disappear" until the next
+    # GET /me. get_user_by_email returns a dict from `SELECT *` so
+    # the fields are already on the row; we just need to pass them
+    # through to the response.
     return TokenResponse(
         token=_create_token(user["id"], user["email"]),
-        user=UserResponse(id=user["id"], email=user["email"]),
+        user=UserResponse(
+            id=user["id"],
+            email=user["email"],
+            lidraughts_username=user.get("lidraughts_username"),
+            username=user.get("username"),
+        ),
     )
 
 
