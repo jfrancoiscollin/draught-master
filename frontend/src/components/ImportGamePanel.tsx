@@ -15,6 +15,7 @@ import type { PdnPosition, PdnImportResult, PedagogyAnalysis } from '../api/clie
 import PedagogyPanel, {
   AccuracySummary, GameHeatmap, MaterialTimeline, MovesTable, MoveRow, WeaknessGantt,
 } from './PedagogyPanel'
+import GameNarrativeSummary from './GameNarrativeSummary'
 import { fenToBoard } from '../utils/fen'
 import { useLanguage } from '../i18n/LanguageContext'
 import type { MoveData, AnalysisResponse } from '../types'
@@ -216,6 +217,16 @@ function PedagogyTabsPanel({
         {tab === 'position' && (
           activeVerdict ? (
             <>
+              {/* Global game narrative cards (dilf.profile.narrate_game).
+                  Surfaced ABOVE the per-position pedagogy overlay so the
+                  user reads the global story before drilling into the
+                  current half-move's details. */}
+              <GameNarrativeSummary
+                gameId={gameId}
+                lang={lang}
+                onJumpTo={onJumpTo}
+              />
+
               <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
                 <span title={`Phase : ${PHASE_FR[activeVerdict.phase]}`}>
                   <span className="text-gray-600">Phase </span>
