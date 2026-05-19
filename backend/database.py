@@ -25,6 +25,7 @@ from db import (  # noqa: F401
     get_user_by_id,
     set_lidraughts_username,
     set_username,
+    username_is_taken,
     ensure_default_username,
     create_reset_token,
     get_reset_token,

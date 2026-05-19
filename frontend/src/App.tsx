@@ -19,6 +19,7 @@ import LivePlayPanel from './components/LivePlayPanel'
 import LiveGameScreen from './components/LiveGameScreen'
 import ChallengeToast from './components/ChallengeToast'
 import type { LiveGameSessionState } from './api/client'
+import { useLiveWS } from './hooks/useLiveWS'
 import MotifDetailPage from './components/MotifDetailPage'
 import EvalBar from './components/EvalBar'
 import UserStatsCard from './components/UserStatsCard'
@@ -181,6 +182,22 @@ export default function App() {
   // Live PvP — populated when a game_started push arrives from the WS.
   // Nulling it drops the user back to the lobby tab.
   const [liveSession, setLiveSession] = useState<LiveGameSessionState | null>(null)
+
+  // Global handler for game_started: when the opponent accepts our
+  // challenge, the WS push lands HERE rather than only in LivePlayPanel
+  // (which would have to be mounted to fire onEnterGame). Without this,
+  // the challenger — who probably bounced back to the lobby/home after
+  // sending the defi — never learns the game started. Mounting the
+  // listener at App level so it works from every tab.
+  useLiveWS({
+    on: {
+      game_started: (m) => {
+        const sess = (m as unknown as { session: LiveGameSessionState }).session
+        setLiveSession(sess)
+        setTab('live')
+      },
+    },
+  })
   // Bumped whenever the user resets their analyses — forces
   // <GameHistory> to refetch so the dilf badges flip back to – and
   // the bulk-analyze button becomes clickable again.

@@ -40,7 +40,7 @@ from database import (
     save_active_game, load_active_game, delete_active_game,
     get_exercises, get_exercise, record_progress,
     create_user, get_user_by_email, get_user_by_id, set_lidraughts_username,
-    set_username, ensure_default_username,
+    set_username, ensure_default_username, username_is_taken,
     create_reset_token, get_reset_token, consume_reset_token,
     mark_exercise_solved, get_user_solved_exercise_ids,
     mark_lesson_read, get_user_read_lesson_chapters,
@@ -878,6 +878,7 @@ async def auth_reset_password(req: ResetPasswordRequest) -> Dict[str, str]:
 
 @app.post("/api/auth/register", response_model=TokenResponse)
 async def auth_register(req: RegisterRequest) -> TokenResponse:
+    import re as _re
     email = req.email.lower().strip()
     if not email or "@" not in email:
         raise HTTPException(status_code=400, detail="Email invalide")
@@ -885,11 +886,27 @@ async def auth_register(req: RegisterRequest) -> TokenResponse:
         raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
     if await get_user_by_email(email):
         raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
+
+    # Username — validated when the new signup form ships it. If the
+    # request omits it (older frontend), fall back to ensure_default_username
+    # below so the account still has a usable display name.
+    username: Optional[str] = (req.username or "").strip() or None
+    if username is not None:
+        if not _re.match(r"^[A-Za-z0-9_-]{2,30}$", username):
+            raise HTTPException(
+                status_code=422,
+                detail="Pseudo invalide : 2-30 caractères, lettres / chiffres / _ / - uniquement",
+            )
+        if await username_is_taken(username):
+            raise HTTPException(status_code=409, detail="Ce pseudo est déjà utilisé")
+
     password_hash = _pwd_context.hash(req.password)
-    user_id = await create_user(email, password_hash)
+    user_id = await create_user(email, password_hash, username=username)
+    if username is None:
+        username = await ensure_default_username(user_id)
     return TokenResponse(
         token=_create_token(user_id, email),
-        user=UserResponse(id=user_id, email=email),
+        user=UserResponse(id=user_id, email=email, username=username),
     )
 
 

@@ -145,9 +145,19 @@ class GameDetailResponse(BaseModel):
 
 
 class RegisterRequest(BaseModel):
-    """POST /api/auth/register — create a new account."""
+    """POST /api/auth/register — create a new account.
+
+    ``username`` is the display name surfaced everywhere (Live PvP
+    lobby, profile, future leaderboards). Mandatory from the new
+    signup form's POV but kept optional on the wire so older client
+    builds don't 422 during the rollout — when missing, the server
+    falls back to ``ensure_default_username`` (email local-part +
+    suffix on collision). Format ``[A-Za-z0-9_-]{2,30}`` enforced
+    server-side when provided.
+    """
     email: str
     password: str
+    username: Optional[str] = None
 
 
 class LoginRequest(BaseModel):

@@ -7,14 +7,35 @@ import aiosqlite
 from .config import DB_PATH
 
 
-async def create_user(email: str, password_hash: str) -> int:
+async def create_user(
+    email: str, password_hash: str, username: Optional[str] = None,
+) -> int:
+    """Insert a new user row. ``username`` is optional here so the
+    legacy /register call sites (none after the signup-username
+    landed, but kept for safety) still compile; the new register
+    flow always passes it. Case-insensitive uniqueness is enforced
+    by ``idx_users_username_nocase`` — the IntegrityError surfaces
+    up if the caller didn't pre-check."""
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
-            "INSERT INTO users (email, password_hash, created_at) VALUES (?, ?, ?)",
-            (email, password_hash, datetime.utcnow().isoformat()),
+            "INSERT INTO users (email, password_hash, created_at, username) "
+            "VALUES (?, ?, ?, ?)",
+            (email, password_hash, datetime.utcnow().isoformat(), username),
         )
         await db.commit()
         return cursor.lastrowid
+
+
+async def username_is_taken(username: str) -> bool:
+    """Case-insensitive lookup used by /register to pre-check before
+    creating the user, so we can return a clean 409 instead of letting
+    the unique-index IntegrityError bubble up."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute(
+            "SELECT 1 FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1",
+            (username,),
+        )
+        return await cur.fetchone() is not None
 
 
 async def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:

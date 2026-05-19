@@ -179,9 +179,11 @@ export default function LiveGameScreen({ session, onLeave, onAnalyzeFinishedGame
         </div>
       )}
 
-      {/* Board + side panel */}
-      <div className="flex flex-row items-start gap-2 p-2">
-        <div className="flex-shrink-0" style={{ width: '60%', maxWidth: 280 }}>
+      {/* Board centered + actions stacked below — gives the board the
+          full screen width on mobile (where it matters most). The
+          board area gets a max-width to stay sensible on desktop. */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center p-2 gap-3">
+        <div style={{ width: '100%', maxWidth: 480 }}>
           <Board
             board={board}
             legalMoves={legalMoves}
@@ -192,24 +194,30 @@ export default function LiveGameScreen({ session, onLeave, onAnalyzeFinishedGame
             flipped={flipped}
           />
         </div>
-        <div className="flex-1 min-w-0 flex flex-col gap-2 text-xs">
+
+        {/* Status + action panel — under the board, full width up to
+            the board's own max. Keeps the action zone visually tied
+            to the board it acts on. */}
+        <div className="w-full" style={{ maxWidth: 480 }}>
           {!finished && (
             <div
               className={
-                'px-2 py-1 rounded font-semibold text-center ' +
+                'px-3 py-2 rounded font-semibold text-center text-sm ' +
                 (isMyTurn ? 'bg-amber-600/40 text-amber-100' : 'bg-gray-700 text-gray-300')
               }
             >
-              {isMyTurn ? 'À toi de jouer' : 'Tour de l\'adversaire'}
+              {isMyTurn
+                ? 'À toi de jouer — clique une pièce pour voir ses coups'
+                : 'Tour de l\'adversaire — patiente, le damier se débloquera après son coup'}
             </div>
           )}
           {finished && (
-            <div className="bg-gray-800 border border-gray-700 rounded px-2 py-2 flex flex-col gap-1.5">
+            <div className="bg-gray-800 border border-gray-700 rounded px-3 py-2 flex flex-col gap-1.5">
               <span className="font-bold text-base text-amber-300">{winnerLabel}</span>
-              <span className="text-gray-500">{endReason}</span>
+              <span className="text-gray-500 text-sm">{endReason}</span>
               <button
                 onClick={() => onAnalyzeFinishedGame(sess.game_id)}
-                className="mt-1 py-1.5 rounded bg-indigo-700 hover:bg-indigo-600 text-white font-medium cursor-pointer"
+                className="mt-1 py-2 rounded bg-indigo-700 hover:bg-indigo-600 text-white font-medium cursor-pointer"
               >
                 🎓 Analyser cette partie
               </button>
@@ -218,12 +226,12 @@ export default function LiveGameScreen({ session, onLeave, onAnalyzeFinishedGame
           {!finished && (
             <button
               onClick={handleResign}
-              className="py-1 rounded bg-gray-800 hover:bg-red-800 border border-gray-700 text-gray-300 hover:text-red-200 transition-colors cursor-pointer"
+              className="mt-2 w-full py-2 rounded bg-gray-800 hover:bg-red-800 border border-gray-700 text-gray-300 hover:text-red-200 text-sm transition-colors cursor-pointer"
             >
               Abandonner
             </button>
           )}
-          <div className="text-gray-600 text-xs mt-1 font-mono break-all">
+          <div className="text-gray-600 text-xs mt-3 font-mono break-all">
             {sess.pdn || '(début de partie)'}
           </div>
         </div>
