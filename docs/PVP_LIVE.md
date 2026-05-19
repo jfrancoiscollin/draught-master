@@ -1,7 +1,8 @@
 # PvP entre amis — Cadrage & implémentation
 
-> **Statut** : J1 livré sur `develop` (schema + endpoints REST des défis).
-> J2 → J6 à venir (WebSocket, state machine de partie, UI lobby + écran de jeu).
+> **Statut** : J1+J2 livrés sur `develop` (schema + REST défis + WebSocket
+> avec auth, présence, push notifications). J3 → J6 à venir (state machine
+> de partie, UI lobby + écran de jeu).
 
 Permettre à deux utilisateurs Draught Master de jouer une partie en
 temps réel sans passer par lidraughts, dans une logique "défi entre
@@ -130,14 +131,46 @@ pending ────────────┼→ declined   (opponent /respond
 | 409 | Défi déjà résolu ; ou doublon "pending" entre les deux mêmes joueurs |
 | 422 | Tentative de se défier soi-même |
 
-### WebSocket (J2+, à venir)
+### WebSocket (J2, livré ; J3+ enrichit)
 
 **Endpoint unique** : `WS /api/live/ws`
 
-- Le client envoie `{type: 'auth', token}` à la connexion
-- Le serveur maintient `Dict[user_id, WebSocket]` en mémoire (process unique sur Railway pour la v1)
-- Messages **client → serveur** : `move`, `resign`, `ping`
-- Messages **serveur → client** : `challenge_received`, `game_started`, `move_played`, `game_ended`, `opponent_disconnected`, `pong`
+Cycle de vie :
+
+1. Client se connecte → serveur accepte
+2. Client envoie `{type: 'auth', token}` dans les 10s (sinon socket fermé)
+3. Serveur valide via `_decode_token` (même JWT que le REST) → enregistre dans `presence.manager`
+4. **Single-connection-per-user** : si une autre socket existait pour ce `user_id`, elle reçoit `{type: 'kicked_by_other_session'}` puis est fermée
+5. Serveur envoie `{type: 'auth_ok', user_id}`
+6. Boucle de messages
+
+**Messages client → serveur** (J2) :
+| Type | Effet |
+|---|---|
+| `ping` | Serveur répond `pong` |
+| *(tout autre)* | Serveur répond `{type:'error', reason:'unknown type ...'}` — la connexion reste ouverte (forward-compat) |
+
+**Messages client → serveur** (J3+, à venir) : `move`, `resign`
+
+**Messages serveur → client** (J2) :
+| Type | Émis quand |
+|---|---|
+| `auth_ok` | Auth réussie |
+| `auth_error` | Auth échouée (token invalide / expiré / absent / frame malformée). Socket fermé après |
+| `pong` | Réponse au `ping` |
+| `kicked_by_other_session` | Une autre socket vient de prendre la place |
+| `error` | Frame inconnu / non-objet — log only, connexion préservée |
+| `challenge_received` | Quelqu'un t'a défié (push REST → WS) |
+| `challenge_resolved` | Ton défi vient d'être accepté ou refusé |
+| `challenge_cancelled` | Le challenger a retiré son défi |
+
+**Messages serveur → client** (J3+) : `game_started`, `move_played`, `game_ended`, `opponent_disconnected`
+
+Toutes les pushs (`challenge_received` / `_resolved` / `_cancelled`) sont **best-effort** : si l'utilisateur cible n'est pas connecté, le push est silencieusement abandonné. La récupération se fait par `GET /api/live/challenges/pending` à la reconnexion.
+
+#### Présence in-memory
+
+Le singleton `presence.manager` (à `backend/live/presence.py`) tient `Dict[user_id, WebSocket]` derrière un `asyncio.Lock`. Cohérent avec le scope v1 "process unique sur Railway" — un redéploiement vide la map et toutes les connexions sont coupées (les clients se reconnectent automatiquement). Pas de Redis en v1.
 
 ---
 
@@ -199,7 +232,7 @@ created  (challenge accepted, Game inséré avec status='pending')
 | Jour | Livrable | Statut |
 |---|---|---|
 | **J1** | Schema migrations + endpoints REST de défis + tests | ✅ livré |
-| **J2** | WebSocket endpoint, présence (dict in-mem), auth via token, ping/pong | ⏳ à venir |
+| **J2** | WebSocket endpoint, présence (dict in-mem), auth via token, ping/pong + push REST→WS sur les 3 transitions de challenge | ✅ livré |
 | **J3** | State machine de partie : création à l'acceptation d'un défi, application des coups via `game_engine`, broadcast aux 2 clients | ⏳ à venir |
 | **J4** | Détection fin de partie (mat/blocage), grace period déconnexion, abandon explicite | ⏳ à venir |
 | **J5** | UI : `<LivePlayPanel>` (lobby/défis) + `<LiveGameScreen>` (jeu live) | ⏳ à venir |

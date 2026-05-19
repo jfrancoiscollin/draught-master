@@ -111,9 +111,19 @@ clone.
       `POST /challenge/{id}/respond` + `POST /challenge/{id}/cancel`,
       with 12 backend tests covering happy paths + the 404/409/422
       error surfaces. Module at `backend/live/`.
-- [ ] **J2 — WebSocket transport**. Single endpoint `WS /api/live/ws`,
-      token auth on first frame, in-memory `Dict[user_id, WebSocket]`,
-      ping/pong every 30s, single-connection-per-user enforcement.
+- [x] **J2 — WebSocket transport**. Single endpoint `WS /api/live/ws`
+      with first-frame `{type:'auth', token}` handshake, in-memory
+      `Dict[user_id, WebSocket]` (the `manager` singleton at
+      `backend/live/presence.py`), `ping`/`pong` heartbeat,
+      single-connection-per-user enforcement (second tab connecting
+      receives `auth_ok`, the first receives `kicked_by_other_session`
+      and is closed). The REST challenge endpoints now push
+      `challenge_received` / `challenge_resolved` /
+      `challenge_cancelled` notifications to the relevant party when
+      they're online — best-effort, the pending list is still
+      refetched on next connect if they were offline. 11 backend
+      tests covering the handshake (4 paths), ping/pong, unknown
+      frame tolerance, kick, and the three REST-driven push hooks.
 - [ ] **J3 — game state machine**. Spawn a `kind='live'` game on
       challenge acceptance, validate moves through `game_engine`,
       broadcast `move_played` to both clients, persist incrementally to

@@ -13,6 +13,20 @@ upstream changelog see
 
 ### Added
 
+- **Live PvP — J2 (WebSocket transport + push notifications)**.
+  Single endpoint `WS /api/live/ws` with a first-frame
+  `{type:'auth', token}` handshake (same JWT as the REST surface,
+  10-second timeout, explicit `auth_error` frames on every failure
+  path). In-memory `Dict[user_id, WebSocket]` lives in
+  `backend/live/presence.py` as the `manager` singleton; second
+  connection from the same user kicks the first with
+  `kicked_by_other_session`. `ping`/`pong` for heartbeat; unknown
+  message types receive an `error` frame but keep the connection
+  open (forward-compat with future J3+ message types). The three
+  REST challenge endpoints now push `challenge_received` /
+  `challenge_resolved` / `challenge_cancelled` to the relevant
+  party when online — best-effort, the pending list still backfills
+  on next connect. 11 new backend tests; ROADMAP Tier 4 J2 ticked.
 - **Live PvP — J1 (challenge queue)**. New `backend/live/` module
   shipping the REST surface for the upcoming friend-vs-friend mode:
   `POST /api/live/challenge`, `GET /api/live/challenges/pending`,

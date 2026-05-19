@@ -1,21 +1,25 @@
 """FastAPI router for the live PvP module.
 
-J1 surface: challenges only (queue + accept/decline). The WebSocket
-endpoint and the in-flight game state machine land on later days and
-will live alongside this router.
+J1: REST queue for challenges (create / list / respond / cancel).
+J2: WebSocket transport + presence-driven challenge push notifications.
+
+The in-flight game state machine + move broadcasting land on J3 and
+will live alongside this router. See ``docs/PVP_LIVE.md``.
 """
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from typing import Any
 
 import aiosqlite
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 
 try:
-    from auth import current_user  # absolute when backend/ is on sys.path
+    from auth import _decode_token, current_user  # absolute when backend/ is on sys.path
 except ImportError:
-    from ..auth import current_user  # type: ignore[assignment]
+    from ..auth import _decode_token, current_user  # type: ignore[assignment]
 
 from . import storage
 from .models import (
@@ -24,8 +28,16 @@ from .models import (
     ChallengeRespondRequest,
     PendingChallengesResponse,
 )
+from .presence import manager
+
+_log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/live", tags=["live"])
+
+# How long the client has to send the auth frame after the WS upgrade
+# before we close the socket. Real clients send it immediately; this
+# is a defence against half-open sockets, not a UX timer.
+_AUTH_TIMEOUT_S = 10.0
 
 
 def _db_path() -> str:
@@ -90,6 +102,13 @@ async def create_challenge(
         )
         row = await storage.fetch_challenge(conn, cid)
         assert row is not None
+
+    # Push to the opponent's WebSocket if they're online. Best-effort:
+    # if not connected, they'll fetch the pending list on next login.
+    await manager.send_to(opp["id"], {
+        "type": "challenge_received",
+        "challenge": _row_to_out(row).model_dump(),
+    })
     return _row_to_out(row)
 
 
@@ -150,6 +169,14 @@ async def respond_challenge(
         await storage.update_status(conn, challenge_id, new_status)
         refreshed = await storage.fetch_challenge(conn, challenge_id)
         assert refreshed is not None
+
+    # Notify the challenger of the outcome so they don't sit watching
+    # a stale "en attente" indicator. Opponent doesn't need a push —
+    # they triggered the action and already see the result.
+    await manager.send_to(refreshed["challenger_id"], {
+        "type": "challenge_resolved",
+        "challenge": _row_to_out(refreshed).model_dump(),
+    })
     return _row_to_out(refreshed)
 
 
@@ -179,4 +206,134 @@ async def cancel_challenge(
         await storage.update_status(conn, challenge_id, "cancelled")
         refreshed = await storage.fetch_challenge(conn, challenge_id)
         assert refreshed is not None
+
+    # Notify the opponent so they can drop the "Alice te défie" toast
+    # without waiting for a refresh.
+    await manager.send_to(refreshed["opponent_id"], {
+        "type": "challenge_cancelled",
+        "challenge": _row_to_out(refreshed).model_dump(),
+    })
     return _row_to_out(refreshed)
+
+
+# ---------------------------------------------------------------------------
+# WS /api/live/ws
+# ---------------------------------------------------------------------------
+
+
+async def _authenticate_ws(ws: WebSocket) -> int | None:
+    """Run the first-frame auth handshake.
+
+    Returns the authenticated user_id on success, or ``None`` after
+    closing the socket on any failure. We expect a single JSON frame
+    of shape ``{"type": "auth", "token": "<jwt>"}`` within
+    :data:`_AUTH_TIMEOUT_S` seconds of accepting the connection.
+
+    Auth errors (missing frame, malformed shape, invalid/expired token)
+    all close the socket with an explanatory frame first, so a
+    misconfigured client sees a real error rather than a blank
+    disconnect.
+    """
+    try:
+        first = await asyncio.wait_for(ws.receive_json(), timeout=_AUTH_TIMEOUT_S)
+    except (asyncio.TimeoutError, WebSocketDisconnect):
+        await _safe_close(ws)
+        return None
+    except Exception as exc:  # noqa: BLE001 — payload could be anything
+        _log.info("WS auth handshake malformed: %s", exc)
+        await _safe_send(ws, {"type": "auth_error", "reason": "malformed auth frame"})
+        await _safe_close(ws)
+        return None
+
+    if not isinstance(first, dict) or first.get("type") != "auth":
+        await _safe_send(ws, {"type": "auth_error", "reason": "auth frame required"})
+        await _safe_close(ws)
+        return None
+    token = first.get("token")
+    if not isinstance(token, str) or not token:
+        await _safe_send(ws, {"type": "auth_error", "reason": "token missing"})
+        await _safe_close(ws)
+        return None
+
+    try:
+        data = _decode_token(token)
+        user_id = int(data["sub"])
+    except Exception:  # noqa: BLE001 — _decode_token raises HTTPException
+        await _safe_send(ws, {"type": "auth_error", "reason": "invalid or expired token"})
+        await _safe_close(ws)
+        return None
+    return user_id
+
+
+async def _safe_send(ws: WebSocket, msg: dict[str, Any]) -> None:
+    """Best-effort JSON send; swallow connection errors so the
+    handshake-error path never raises out of the WS handler."""
+    try:
+        await ws.send_json(msg)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+async def _safe_close(ws: WebSocket) -> None:
+    try:
+        await ws.close()
+    except Exception:  # noqa: BLE001
+        pass
+
+
+@router.websocket("/ws")
+async def live_ws(ws: WebSocket) -> None:
+    """Single endpoint serving the entire live PvP channel.
+
+    Lifecycle:
+      1. Accept the connection.
+      2. Wait for an ``{type: 'auth', token}`` frame within
+         :data:`_AUTH_TIMEOUT_S`.
+      3. On success: register in :data:`presence.manager`. If the user
+         already had an open socket (other tab / device), kick it with
+         a ``kicked_by_other_session`` frame — single connection per
+         user is enforced.
+      4. Send ``{type: 'auth_ok'}`` so the client knows it can start.
+      5. Loop reading frames. Currently supported types: ``ping``
+         (replies with ``pong``). Unknown types receive an ``error``
+         frame and the loop continues — strict-mode would risk
+         disconnecting clients that send forward-compatible message
+         types in a future release.
+      6. On disconnect / unhandled exception: deregister from the
+         manager (only if our socket is still the registered one).
+    """
+    await ws.accept()
+    user_id = await _authenticate_ws(ws)
+    if user_id is None:
+        return
+
+    # Single connection per user. The kick frame buys the previous
+    # client a chance to display a sensible message instead of a
+    # bare close code.
+    old = await manager.connect(user_id, ws)
+    if old is not None:
+        await _safe_send(old, {"type": "kicked_by_other_session"})
+        await _safe_close(old)
+
+    await _safe_send(ws, {"type": "auth_ok", "user_id": user_id})
+
+    try:
+        while True:
+            msg = await ws.receive_json()
+            if not isinstance(msg, dict):
+                await _safe_send(ws, {"type": "error", "reason": "non-object frame"})
+                continue
+            t = msg.get("type")
+            if t == "ping":
+                await _safe_send(ws, {"type": "pong"})
+            else:
+                # Unknown / not-yet-implemented (move, resign, etc. come
+                # with J3). Don't disconnect — forward-compat matters
+                # once the frontend ships ahead of the backend.
+                await _safe_send(ws, {"type": "error", "reason": f"unknown type {t!r}"})
+    except WebSocketDisconnect:
+        pass
+    except Exception as exc:  # noqa: BLE001 — last-resort guard
+        _log.warning("WS handler crashed for user_id=%s: %s", user_id, exc)
+    finally:
+        await manager.disconnect(user_id, ws)
