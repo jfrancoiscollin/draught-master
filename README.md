@@ -6,6 +6,13 @@ Application web complète d'entraînement au **jeu de dames international** (10�
 
 ## Fonctionnalités
 
+### Jouer en ligne contre un ami *(en cours)*
+- Défier un autre utilisateur Draught Master par username
+- Partie en temps réel via WebSocket (correspondance — pas d'horloge)
+- À la fin de la partie, analyse pédagogique automatique (verdict par coup, heatmap des faiblesses, Gantt de persistance)
+- v1 sans matchmaking ni classement Elo — voir [`docs/PVP_LIVE.md`](./docs/PVP_LIVE.md) pour le cadrage complet
+- **Statut** : J1 livré (queue de défis backend) — J2-J6 à venir (WebSocket, écran de jeu, lobby UI)
+
 ### Jouer contre l'IA
 - Plateau 10×10 interactif avec règles FMJD complètes
 - Prise obligatoire et prise maximale (règle du soufflage)

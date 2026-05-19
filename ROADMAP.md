@@ -92,7 +92,51 @@ work in **both** repos.
       `ExerciseLibraryPage.tsx:18-55`, add the migration in
       `db/schema.py` to upsert the new exercise set on startup.
 
-## Tier 4 — Deferred / opportunistic
+## Tier 4 — Live PvP entre amis
+
+Ship a real-time "challenge a named friend" mode so users can play a
+game inside Draught Master without bouncing through lidraughts —
+keeping the pedagogy stack (dilf + heatmap + Gantt) one click away
+once the game ends. Full cadrage in
+[`docs/PVP_LIVE.md`](./docs/PVP_LIVE.md).
+
+Hard scope cuts for v1: no matchmaking, no clock, no Elo, no
+spectators, no chat. The goal is the smallest surface that exercises
+the WebSocket + game-state plumbing end-to-end, not a lidraughts
+clone.
+
+- [x] **J1 — schema + REST challenge queue**. `live_challenges` table,
+      `games.kind`/`white_user_id`/`black_user_id`/`turn` columns,
+      `POST /challenge` + `GET /challenges/pending` +
+      `POST /challenge/{id}/respond` + `POST /challenge/{id}/cancel`,
+      with 12 backend tests covering happy paths + the 404/409/422
+      error surfaces. Module at `backend/live/`.
+- [ ] **J2 — WebSocket transport**. Single endpoint `WS /api/live/ws`,
+      token auth on first frame, in-memory `Dict[user_id, WebSocket]`,
+      ping/pong every 30s, single-connection-per-user enforcement.
+- [ ] **J3 — game state machine**. Spawn a `kind='live'` game on
+      challenge acceptance, validate moves through `game_engine`,
+      broadcast `move_played` to both clients, persist incrementally to
+      the `games.pdn` column.
+- [ ] **J4 — fin de partie & déconnexions**. Auto-detect mate /
+      blockage, wire the 2-min disconnect grace period, expose
+      `resign` over WS, mark `status='finished'` or
+      `status='abandoned_<color>'`.
+- [ ] **J5 — UI lobby + live game screen**. `<LivePlayPanel>` (lobby
+      with challenge form + received/sent lists), `<LiveGameScreen>`
+      (adapted from `ImportGamePanel`: active board, "À toi de jouer"
+      banner, abandon button, post-game "Analyser cette partie" CTA).
+- [ ] **J6 — `<ChallengeToast>` global + polish**. Toast on
+      `challenge_received` from any screen of the app, integration
+      tests across the WS lifecycle, doc pass.
+
+Hard risks documented in `docs/PVP_LIVE.md` §Risques: in-memory state
+loss on redeploy (mitigation = clear user message, future = Redis),
+no anti-cheat (mitigation = trust between friends, future = move
+timing analysis), WS battery drain on mobile (mitigation = 30s
+ping interval).
+
+## Tier 5 — Deferred / opportunistic
 
 Items we've identified but with no commitment on timing.
 

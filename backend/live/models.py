@@ -1,0 +1,54 @@
+"""Pydantic models for the /api/live/* routes."""
+
+from __future__ import annotations
+
+from typing import Literal, Optional
+
+from pydantic import BaseModel, Field
+
+# ---------------------------------------------------------------------------
+# Challenges
+# ---------------------------------------------------------------------------
+
+PreferredColor = Literal["white", "black", "random"]
+ChallengeStatus = Literal["pending", "accepted", "declined", "expired", "cancelled"]
+
+
+class ChallengeCreateRequest(BaseModel):
+    """Body of POST /api/live/challenge.
+
+    The opponent is identified by username (case-insensitive lookup
+    server-side) — the frontend doesn't get to know other users' ids.
+    """
+
+    opponent_username: str = Field(min_length=1, max_length=64)
+    preferred_color: PreferredColor = "random"
+
+
+class ChallengeRespondRequest(BaseModel):
+    """Body of POST /api/live/challenge/{id}/respond."""
+
+    accept: bool
+
+
+class ChallengeOut(BaseModel):
+    """One row of the challenge queue, viewable by either party."""
+
+    id: str
+    challenger_id: int
+    challenger_username: str
+    opponent_id: int
+    opponent_username: str
+    preferred_color: PreferredColor
+    status: ChallengeStatus
+    created_at: str
+    resolved_at: Optional[str] = None
+    # Set when accepted — the live game spawned from this challenge.
+    game_id: Optional[str] = None
+
+
+class PendingChallengesResponse(BaseModel):
+    """Bundles the two queues a logged-in user cares about."""
+
+    received: list[ChallengeOut]   # challenges where I am opponent + status='pending'
+    sent: list[ChallengeOut]       # challenges I issued + status='pending'

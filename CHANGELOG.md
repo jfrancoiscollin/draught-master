@@ -13,6 +13,16 @@ upstream changelog see
 
 ### Added
 
+- **Live PvP — J1 (challenge queue)**. New `backend/live/` module
+  shipping the REST surface for the upcoming friend-vs-friend mode:
+  `POST /api/live/challenge`, `GET /api/live/challenges/pending`,
+  `POST /api/live/challenge/{id}/respond`,
+  `POST /api/live/challenge/{id}/cancel`. New `live_challenges` table
+  + four columns on `games` (`kind`, `white_user_id`, `black_user_id`,
+  `turn`) wired through idempotent startup migrations. 12 backend
+  tests cover happy paths + the 404/409/422 surfaces. Full cadrage and
+  the J2-J6 plan in [`docs/PVP_LIVE.md`](./docs/PVP_LIVE.md); roadmap
+  entry under Tier 4.
 - **PedagogyPanel ↔ board two-way binding** (commit `6005ac5`).
   Verdict rows in the post-game analysis are now clickable to jump the
   board to that half-move. Conversely, navigating the board with the

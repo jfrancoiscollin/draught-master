@@ -139,6 +139,9 @@ app.add_middleware(
 from pedagogy.api import router as pedagogy_router  # noqa: E402
 app.include_router(pedagogy_router)
 
+from live import router as live_router  # noqa: E402
+app.include_router(live_router)
+
 # Shared BookRAG singleton — populated at startup if corpus is present.
 # `explain_verdict` degrades gracefully to template mode when None.
 shared_book_rag = None

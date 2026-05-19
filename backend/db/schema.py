@@ -177,6 +177,32 @@ async def init_db() -> None:
         await db.execute(
             "CREATE INDEX IF NOT EXISTS idx_exercise_tags_tag ON exercise_tags(tag)"
         )
+        # Live PvP — challenge queue. One row per challenge sent.
+        # status moves pending → accepted (game_id set) | declined | expired
+        # | cancelled (challenger reverted before the opponent answered).
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS live_challenges (
+                id TEXT PRIMARY KEY,
+                challenger_id INTEGER NOT NULL,
+                opponent_id INTEGER NOT NULL,
+                preferred_color TEXT NOT NULL DEFAULT 'random',
+                status TEXT NOT NULL DEFAULT 'pending',
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                resolved_at TEXT,
+                game_id TEXT,
+                FOREIGN KEY (challenger_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (opponent_id)   REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (game_id)       REFERENCES games(id) ON DELETE SET NULL
+            )
+        """)
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_live_challenges_opponent_status "
+            "ON live_challenges(opponent_id, status)"
+        )
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_live_challenges_challenger_status "
+            "ON live_challenges(challenger_id, status)"
+        )
         await db.commit()
 
         # Migrations: add columns to existing tables if they don't exist yet
@@ -191,6 +217,13 @@ async def init_db() -> None:
             "ALTER TABLE games ADD COLUMN source_id TEXT",
             "ALTER TABLE users ADD COLUMN lidraughts_username TEXT",
             "ALTER TABLE move_verdicts ADD COLUMN features_after_json TEXT",
+            # Live PvP — extend games with the two-player + turn fields
+            # so a live game can be persisted in the same table as imports.
+            # kind='live' separates them from imported PDNs.
+            "ALTER TABLE games ADD COLUMN kind TEXT DEFAULT 'imported'",
+            "ALTER TABLE games ADD COLUMN white_user_id INTEGER",
+            "ALTER TABLE games ADD COLUMN black_user_id INTEGER",
+            "ALTER TABLE games ADD COLUMN turn TEXT DEFAULT 'white'",
         ]:
             try:
                 await db.execute(col_ddl)

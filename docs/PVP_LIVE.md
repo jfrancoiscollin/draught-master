@@ -1,0 +1,214 @@
+# PvP entre amis — Cadrage & implémentation
+
+> **Statut** : J1 livré sur `develop` (schema + endpoints REST des défis).
+> J2 → J6 à venir (WebSocket, state machine de partie, UI lobby + écran de jeu).
+
+Permettre à deux utilisateurs Draught Master de jouer une partie en
+temps réel sans passer par lidraughts, dans une logique "défi entre
+amis" : pas de matchmaking public, pas de classement Elo, pas
+d'horloge. L'asset distinctif reste l'analyse pédagogique post-partie
+(dilf + heatmap + Gantt), qui s'enchaîne naturellement sur une partie
+live finie via le flow `/api/pedagogy/analyze-game` existant.
+
+---
+
+## Scope v1 (≈ 6 jours)
+
+✅ Défier un utilisateur par username
+✅ Accepter / refuser / annuler un défi
+✅ Jouer en temps réel via WebSocket (J2+)
+✅ Abandon manuel
+✅ Détection de fin de partie (mat / blocage) via le `game_engine` existant
+✅ Persistance de la partie dans la table `games` → analysable comme une PDN importée
+
+❌ **Pas d'horloge** — correspondance, pas de pression temporelle
+❌ **Pas de matchmaking** ("partie au hasard")
+❌ **Pas de spectateurs**, pas de chat
+❌ **Pas d'offres de nulle** (le joueur peut abandonner ou la partie finit naturellement)
+❌ **Pas de reconnexion sophistiquée** — coupure > 2 min = abandon
+❌ **Pas de classement Elo**
+
+Ces lignes ❌ sont des choix v1, pas des renoncements définitifs. Le
+backlog post-v1 vit dans [ROADMAP.md](../ROADMAP.md) Tier "Live PvP".
+
+---
+
+## User flows
+
+### 1. Défier un joueur
+
+1. Alice ouvre l'onglet "Jouer en ligne"
+2. Tape `bob` dans le champ "Défier un joueur"
+3. Frontend appelle `POST /api/live/challenge { opponent_username: "bob", preferred_color: "random" }`
+4. Backend valide (existence opposant, pas soi-même, pas de doublon en attente) et insère dans `live_challenges`
+5. Bob (s'il est connecté au WS) reçoit un push `challenge_received`. Sinon, il le verra à sa prochaine connexion via `GET /api/live/challenges/pending`
+
+### 2. Répondre à un défi
+
+1. Bob voit "Alice te défie ⚔️ Accepter / Refuser"
+2. `POST /api/live/challenge/{id}/respond { accept: true }`
+3. Si accepté : le défi passe à `status='accepted'`, **un Game est créé** (J3), les deux clients sont redirigés vers l'écran de jeu live
+4. Si refusé : `status='declined'`, fin
+
+### 3. Annuler son propre défi
+
+Alice peut retirer un défi tant qu'il est `pending` :
+`POST /api/live/challenge/{id}/cancel` → `status='cancelled'`.
+
+### 4. Jouer
+
+(J3+) Plateau standard en mode "live" :
+- Tour à tour, le client n'envoie un coup que si c'est son tour
+- Validation serveur via `game_engine.apply_move`
+- Broadcast WebSocket aux deux clients
+- Fin détectée (plus de coups légaux) → `status='finished'` → bouton "Analyser cette partie" apparaît
+
+---
+
+## Data model
+
+### Migrations sur `games` (J1)
+
+```sql
+ALTER TABLE games ADD COLUMN kind TEXT DEFAULT 'imported';   -- 'imported' | 'live'
+ALTER TABLE games ADD COLUMN white_user_id INTEGER;
+ALTER TABLE games ADD COLUMN black_user_id INTEGER;
+ALTER TABLE games ADD COLUMN turn TEXT DEFAULT 'white';      -- side to move
+```
+
+Une partie live s'enregistre dans la table `games` existante avec
+`kind='live'`. Le `pdn` s'incrémente coup après coup. `status` suit le
+state machine décrit plus bas.
+
+### Nouvelle table `live_challenges` (J1)
+
+```sql
+CREATE TABLE live_challenges (
+  id TEXT PRIMARY KEY,                              -- token URL-safe ~96 bits
+  challenger_id INTEGER NOT NULL,
+  opponent_id   INTEGER NOT NULL,
+  preferred_color TEXT NOT NULL DEFAULT 'random',   -- 'white' | 'black' | 'random'
+  status TEXT NOT NULL DEFAULT 'pending',           -- voir cycle de vie ci-dessous
+  created_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resolved_at TEXT,                                 -- stamp à toute transition non-pending
+  game_id TEXT,                                     -- set quand accepted, lie au Game
+  FOREIGN KEY (challenger_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (opponent_id)   REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (game_id)       REFERENCES games(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_live_challenges_opponent_status   ON live_challenges(opponent_id, status);
+CREATE INDEX idx_live_challenges_challenger_status ON live_challenges(challenger_id, status);
+```
+
+#### Cycle de vie d'un challenge
+
+```
+                    ┌→ accepted   (opponent /respond accept=true → game créé)
+pending ────────────┼→ declined   (opponent /respond accept=false)
+                    ├→ cancelled  (challenger /cancel)
+                    └→ expired    (TTL, job batch — pas en v1)
+```
+
+---
+
+## API surface
+
+### REST (J1, livré)
+
+| Méthode | Route | Auth | Body | Réponse |
+|---|---|---|---|---|
+| `POST` | `/api/live/challenge` | required | `{opponent_username, preferred_color?}` | `ChallengeOut` |
+| `GET`  | `/api/live/challenges/pending` | required | — | `{received: [...], sent: [...]}` |
+| `POST` | `/api/live/challenge/{id}/respond` | required (opponent only) | `{accept: bool}` | `ChallengeOut` |
+| `POST` | `/api/live/challenge/{id}/cancel`  | required (challenger only) | — | `ChallengeOut` |
+
+#### Codes d'erreur
+
+| Code | Cas |
+|---|---|
+| 404 | Opposant introuvable, ou défi inexistant, ou utilisateur non autorisé à voir ce défi (on renvoie 404 plutôt que 403 pour ne pas leak l'existence) |
+| 409 | Défi déjà résolu ; ou doublon "pending" entre les deux mêmes joueurs |
+| 422 | Tentative de se défier soi-même |
+
+### WebSocket (J2+, à venir)
+
+**Endpoint unique** : `WS /api/live/ws`
+
+- Le client envoie `{type: 'auth', token}` à la connexion
+- Le serveur maintient `Dict[user_id, WebSocket]` en mémoire (process unique sur Railway pour la v1)
+- Messages **client → serveur** : `move`, `resign`, `ping`
+- Messages **serveur → client** : `challenge_received`, `game_started`, `move_played`, `game_ended`, `opponent_disconnected`, `pong`
+
+---
+
+## State machine d'une partie live (J3+)
+
+```
+created  (challenge accepted, Game inséré avec status='pending')
+   └─→ in_progress           (premier coup joué OU les 2 clients connectés au WS de la partie)
+         ├─→ finished            (mat ou blocage détecté par game_engine)
+         ├─→ abandoned_white     (white resigned, OR white disconnected > 2 min)
+         ├─→ abandoned_black     (black resigned, OR black disconnected > 2 min)
+         └─→ abandoned_server    (serveur redémarré pendant la partie — voir Risques)
+```
+
+---
+
+## Edge cases v1
+
+| Scénario | Comportement |
+|---|---|
+| Opposant coupe sa connexion | 2 min grace period, puis `abandoned_<color>` (gain pour l'autre) |
+| Serveur redémarre | Toutes parties en cours → `abandoned_server`. Message clair côté client. |
+| Joueur tente de bouger hors-tour | Coup rejeté avec message "Pas ton tour" |
+| Coup illégal envoyé | Rejeté (le `game_engine` retourne déjà la raison) |
+| 2 clients du même user (mobile + desktop) | Le second remplace le premier — un seul WS par user_id à la fois |
+| Username inexistant à la création | 404 immédiat, pas de bruit DB |
+| Spam de défis | Bloqué côté API : 1 seul "pending" par paire (challenger, opponent). 409 sur doublon |
+
+---
+
+## UI à venir (J5)
+
+| Composant | Rôle |
+|---|---|
+| `<LivePlayPanel>` | Onglet principal — champ "Défier un joueur" (autocomplete sur username), liste "Défis reçus" (badge rouge si non-lu), liste "Parties en cours" |
+| `<LiveGameScreen>` | Adaptation de `ImportGamePanel` : plateau actif, bandeau "À toi de jouer" / "Tour de l'adversaire", bouton "Abandonner", une fois finie bouton "Analyser la partie" qui réutilise le flow pédagogique existant |
+| `<ChallengeToast>` | Toast/badge global "Alice te défie", écouté sur le WS depuis n'importe quel écran de l'app |
+
+---
+
+## Coût opérationnel
+
+- **RAM serveur** : ~1-2 KB par connexion WS active. Négligeable < 1000 simultanées
+- **Railway** : pas de coût additionnel (free tier tient)
+- **Maintenance** : surveiller les fuites de WS (déconnexions mal nettoyées), logs ciblés à prévoir
+
+---
+
+## Risques
+
+1. **State in-memory** — chaque redéploiement Railway tue les parties en cours. V1 : message clair à l'utilisateur. V2 : Redis pour la session live
+2. **Triche par moteur** — un joueur peut faire tourner Scan en parallèle dans un autre onglet. Pas adressé en v1 (entre amis, on suppose la confiance). Si problème : rate-limit coups + timing analysis
+3. **Charge réseau mobile** — WS persistante consomme la batterie. Ping/pong toutes les 30s, pas plus
+
+---
+
+## Plan d'implémentation
+
+| Jour | Livrable | Statut |
+|---|---|---|
+| **J1** | Schema migrations + endpoints REST de défis + tests | ✅ livré |
+| **J2** | WebSocket endpoint, présence (dict in-mem), auth via token, ping/pong | ⏳ à venir |
+| **J3** | State machine de partie : création à l'acceptation d'un défi, application des coups via `game_engine`, broadcast aux 2 clients | ⏳ à venir |
+| **J4** | Détection fin de partie (mat/blocage), grace period déconnexion, abandon explicite | ⏳ à venir |
+| **J5** | UI : `<LivePlayPanel>` (lobby/défis) + `<LiveGameScreen>` (jeu live) | ⏳ à venir |
+| **J6** | `<ChallengeToast>` global, edge cases, intégration avec le flow pédagogique pour analyser une partie finie. Tests E2E | ⏳ à venir |
+
+---
+
+## Liens
+
+- [ROADMAP.md](../ROADMAP.md) — vue d'ensemble des tiers
+- [CHANGELOG.md](../CHANGELOG.md) — entries datés J1+
+- [PEDAGOGY_WEAKNESSES.md](./PEDAGOGY_WEAKNESSES.md) — flow d'analyse post-partie qu'on enchaîne
