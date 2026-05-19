@@ -27,6 +27,8 @@ from .models import (
     ChallengeCreateRequest,
     ChallengeOut,
     ChallengeRespondRequest,
+    OnlineUserOut,
+    OnlineUsersResponse,
     PendingChallengesResponse,
 )
 from .presence import manager
@@ -117,6 +119,65 @@ async def create_challenge(
         "challenge": _row_to_out(row).model_dump(),
     })
     return _row_to_out(row)
+
+
+# ---------------------------------------------------------------------------
+# GET /api/live/online
+# ---------------------------------------------------------------------------
+
+
+@router.get("/online", response_model=OnlineUsersResponse)
+async def list_online_users(
+    user: Any = Depends(current_user),
+) -> OnlineUsersResponse:
+    """Project the in-process presence map into the lobby's "Joueurs
+    connectés" list.
+
+    The caller themself is filtered out — you don't need to see your
+    own row, and you can't challenge yourself anyway (the create
+    endpoint 422s on self-challenges). Users without a ``username`` set
+    are skipped too: showing an empty-name row would be confusing and
+    the auto-fill on ``GET /api/auth/me`` means a real online user
+    always has one. ``in_game`` lights up the row's Défier button as
+    disabled on the frontend.
+
+    Polling-friendly: pure read on the in-process map + one bulk SQL
+    fetch, no JOINs. The frontend re-fetches on a timer (~30 s) and on
+    relevant WS events; we don't push presence updates as their own
+    frames in v1 to keep the message surface compact.
+    """
+    online_ids = manager.online_user_ids()
+    me = int(user["id"])
+    online_ids = [uid for uid in online_ids if uid != me]
+    if not online_ids:
+        return OnlineUsersResponse(users=[])
+
+    in_game_ids: set[int] = set()
+    for uid in online_ids:
+        sess = game_manager.session_for(uid)
+        if sess is not None and sess.status == "in_progress":
+            in_game_ids.add(uid)
+
+    async with aiosqlite.connect(_db_path()) as conn:
+        placeholders = ",".join("?" * len(online_ids))
+        cur = await conn.execute(
+            f"SELECT id, username FROM users WHERE id IN ({placeholders})",
+            tuple(online_ids),
+        )
+        rows = await cur.fetchall()
+
+    users = [
+        OnlineUserOut(
+            user_id=int(r[0]),
+            username=str(r[1]),
+            in_game=(int(r[0]) in in_game_ids),
+        )
+        for r in rows
+        if r[1]  # skip rows that still have NULL username
+    ]
+    # Lexicographic sort for a deterministic UI order.
+    users.sort(key=lambda u: u.username.lower())
+    return OnlineUsersResponse(users=users)
 
 
 # ---------------------------------------------------------------------------

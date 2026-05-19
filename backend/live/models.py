@@ -52,3 +52,22 @@ class PendingChallengesResponse(BaseModel):
 
     received: list[ChallengeOut]   # challenges where I am opponent + status='pending'
     sent: list[ChallengeOut]       # challenges I issued + status='pending'
+
+
+# ---------------------------------------------------------------------------
+# Online users
+# ---------------------------------------------------------------------------
+
+
+class OnlineUserOut(BaseModel):
+    """One row of the live lobby's "Joueurs connectés" list."""
+
+    user_id: int
+    username: str
+    # True when this user is already in an in-progress live game.
+    # The frontend renders the Défier button disabled in that case.
+    in_game: bool
+
+
+class OnlineUsersResponse(BaseModel):
+    users: list[OnlineUserOut]

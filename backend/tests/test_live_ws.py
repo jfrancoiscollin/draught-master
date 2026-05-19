@@ -284,3 +284,86 @@ def test_push_to_offline_user_is_silently_dropped(db_path):
     # No assertion on the WS side — Bob is offline, no socket to inspect.
     # The point of this test is that the handler doesn't crash on missing
     # presence; the 200 response is the proof.
+
+
+# ---------------------------------------------------------------------------
+# GET /api/live/online — projection of presence + in_game
+# ---------------------------------------------------------------------------
+
+
+def test_online_endpoint_omits_caller_and_users_without_username(db_path):
+    """The caller is filtered out (can't challenge self); users with a
+    NULL username are skipped too (auto-fill makes that rare in
+    practice but the projection should still be safe)."""
+    client = TestClient(_make_app())
+    with client.websocket_connect("/api/live/ws") as ws_alice, \
+         client.websocket_connect("/api/live/ws") as ws_bob:
+        ws_alice.send_json({"type": "auth", "token": _token(1, "alice@example.com")})
+        assert ws_alice.receive_json()["type"] == "auth_ok"
+        ws_bob.send_json({"type": "auth", "token": _token(2, "bob@example.com")})
+        assert ws_bob.receive_json()["type"] == "auth_ok"
+
+        # Seed usernames so the rows survive the NULL filter.
+        async def _seed():
+            async with aiosqlite.connect(db_path) as conn:
+                await conn.execute("UPDATE users SET username = 'alice' WHERE id = 1")
+                await conn.execute("UPDATE users SET username = 'bob'   WHERE id = 2")
+                # Carol stays NULL on purpose to assert she's skipped.
+                await conn.commit()
+        asyncio.new_event_loop().run_until_complete(_seed())
+
+        r = client.get("/api/live/online", headers=_auth_header(1, "alice@example.com"))
+        assert r.status_code == 200, r.text
+        users = r.json()["users"]
+        # Alice (the caller) is filtered out; carol has no username so
+        # she doesn't appear either; only bob remains.
+        assert [u["username"] for u in users] == ["bob"]
+        assert users[0]["in_game"] is False
+
+
+def test_online_endpoint_flags_users_in_game(db_path):
+    """Bob is alice's opponent in an accepted challenge → the online
+    projection should mark his row as in_game=True so the lobby can
+    disable the Défier button."""
+    client = TestClient(_make_app())
+    with client.websocket_connect("/api/live/ws") as ws_a, \
+         client.websocket_connect("/api/live/ws") as ws_b:
+        ws_a.send_json({"type": "auth", "token": _token(1, "alice@example.com")})
+        ws_b.send_json({"type": "auth", "token": _token(2, "bob@example.com")})
+        ws_a.receive_json(); ws_b.receive_json()
+
+        async def _seed():
+            async with aiosqlite.connect(db_path) as conn:
+                await conn.execute("UPDATE users SET username = 'alice' WHERE id = 1")
+                await conn.execute("UPDATE users SET username = 'bob' WHERE id = 2")
+                await conn.execute("UPDATE users SET username = 'carol' WHERE id = 3")
+                await conn.commit()
+        asyncio.new_event_loop().run_until_complete(_seed())
+
+        # Alice + Bob start a game (challenge accepted path).
+        cid = client.post(
+            "/api/live/challenge",
+            headers=_auth_header(1, "alice@example.com"),
+            json={"opponent_username": "bob"},
+        ).json()["id"]
+        # Drain the challenge_received push on Bob.
+        ws_b.receive_json()
+        client.post(
+            f"/api/live/challenge/{cid}/respond",
+            headers=_auth_header(2, "bob@example.com"),
+            json={"accept": True},
+        )
+        # Drain the game_started broadcasts so the WS queues stay clean
+        # for any further tests that share the fixture state.
+        ws_a.receive_json(); ws_a.receive_json()
+        ws_b.receive_json()
+
+        # Carol (online, not in a game) views the lobby — she should
+        # see both alice and bob, both flagged in_game=True.
+        with client.websocket_connect("/api/live/ws") as ws_c:
+            ws_c.send_json({"type": "auth", "token": _token(3, "carol@example.com")})
+            ws_c.receive_json()
+            r = client.get("/api/live/online", headers=_auth_header(3, "carol@example.com"))
+            users = {u["username"]: u for u in r.json()["users"]}
+            assert users["alice"]["in_game"] is True
+            assert users["bob"]["in_game"] is True

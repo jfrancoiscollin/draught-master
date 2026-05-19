@@ -744,3 +744,16 @@ export async function setMyUsername(username: string): Promise<{
   const res = await api.post('/auth/me/username', { username })
   return res.data
 }
+
+// ── Online players (J6 follow-up) ─────────────────────────────────────────
+
+export interface OnlineUser {
+  user_id: number
+  username: string
+  in_game: boolean
+}
+
+export async function getOnlineUsers(): Promise<OnlineUser[]> {
+  const res = await api.get<{ users: OnlineUser[] }>('/live/online')
+  return res.data.users
+}

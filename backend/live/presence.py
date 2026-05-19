@@ -80,6 +80,12 @@ class ConnectionManager:
     def online_count(self) -> int:
         return len(self._connections)
 
+    def online_user_ids(self) -> list[int]:
+        """Snapshot of every currently-authenticated user_id. Used by
+        the ``GET /api/live/online`` endpoint to project usernames +
+        in-game state for the lobby browser."""
+        return list(self._connections.keys())
+
     async def reset(self) -> None:
         """Drop every registered socket without sending anything.
         Test-only helper — not exposed via the public surface."""

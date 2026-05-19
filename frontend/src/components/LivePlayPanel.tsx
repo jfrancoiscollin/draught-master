@@ -15,11 +15,12 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   cancelLiveChallenge,
   createLiveChallenge,
+  getOnlineUsers,
   getPendingLiveChallenges,
   respondLiveChallenge,
   setMyUsername,
 } from '../api/client'
-import type { LiveChallenge, LiveGameSessionState, PreferredColor } from '../api/client'
+import type { LiveChallenge, LiveGameSessionState, OnlineUser, PreferredColor } from '../api/client'
 import { useLiveWS } from '../hooks/useLiveWS'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -47,6 +48,12 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
   const [editingUsername, setEditingUsername] = useState(false)
   const [usernameDraft, setUsernameDraft] = useState('')
   const [usernameError, setUsernameError] = useState<string | null>(null)
+  // Live "Joueurs connectés" projection. Refreshed on a 30s timer
+  // and after every WS event that hints at a connection change
+  // (challenge_received / _resolved / _cancelled / game_started),
+  // so the list stays close-to-live without a dedicated presence
+  // push channel.
+  const [online, setOnline] = useState<OnlineUser[]>([])
 
   // Bootstrap from REST so users who land here without an open WS still
   // see their pending challenges. Subsequent updates come over WS.
@@ -61,6 +68,21 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
       .catch(() => { /* offline / 401 — leave lists empty */ })
     return () => { cancelled = true }
   }, [])
+
+  // Online users — fetch on mount + 30s polling. Polling is fine in
+  // v1 since the lobby is the only screen consuming this; an explicit
+  // presence-push channel would be heavier than it's worth at this
+  // scale.
+  const refreshOnline = useCallback(() => {
+    getOnlineUsers()
+      .then(setOnline)
+      .catch(() => { /* leave the list as-is on transient errors */ })
+  }, [])
+  useEffect(() => {
+    refreshOnline()
+    const id = setInterval(refreshOnline, 30_000)
+    return () => clearInterval(id)
+  }, [refreshOnline])
 
   // Live updates.
   useLiveWS({
@@ -84,17 +106,32 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
         onEnterGame(sess)
       },
     },
+    // Every event that touches presence or challenge state refreshes
+    // the online list. Cheap (one HTTP GET, no pagination yet).
+    onAny: (m) => {
+      const t = m.type
+      if (
+        t === 'challenge_received' || t === 'challenge_resolved'
+        || t === 'challenge_cancelled' || t === 'game_started'
+        || t === 'game_ended'
+      ) refreshOnline()
+    },
   })
 
-  const handleChallenge = useCallback(async () => {
-    const name = opponent.trim()
+  const handleChallenge = useCallback(async (
+    nameOverride?: string, colorOverride?: PreferredColor,
+  ) => {
+    const name = (nameOverride ?? opponent).trim()
     if (!name) return
+    const color = colorOverride ?? preferred
     setBusy(true)
     setError(null)
     try {
-      const c = await createLiveChallenge(name, preferred)
+      const c = await createLiveChallenge(name, color)
       setSent(prev => [c, ...prev])
-      setOpponent('')
+      // Only wipe the input on the form path — the lobby-list path
+      // passes nameOverride, no input to wipe.
+      if (!nameOverride) setOpponent('')
     } catch (e) {
       const detail =
         (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail
@@ -234,7 +271,7 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
             <option value="black">⬛ Noirs</option>
           </select>
           <button
-            onClick={handleChallenge}
+            onClick={() => handleChallenge()}
             disabled={busy || !opponent.trim()}
             className="px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white text-sm font-medium cursor-pointer"
           >
@@ -305,6 +342,56 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
               </button>
             </div>
           ))
+        )}
+      </section>
+
+      {/* Online players — scrollable so a long list doesn't push the
+          form off-screen. Pending challenges already targeting a row
+          disable that row's button so the user can't double-spam the
+          same opponent. */}
+      <section className="bg-gray-800/50 border border-gray-700 rounded-xl p-3 flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-gray-300">Joueurs connectés</span>
+          <span className="text-xs text-gray-500">{online.length}</span>
+        </div>
+        {online.length === 0 ? (
+          <p className="text-xs text-gray-500 italic">
+            Personne d'autre n'est connecté pour le moment.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-1 overflow-y-auto max-h-64 pr-1">
+            {online.map(u => {
+              const alreadyChallenged = sent.some(c => c.opponent_id === u.user_id)
+              const disabled = busy || u.in_game || alreadyChallenged
+              const hint =
+                u.in_game ? 'déjà en partie'
+                : alreadyChallenged ? 'défi déjà envoyé'
+                : `Défier ${u.username} (${COLOR_LABEL[preferred]})`
+              return (
+                <div
+                  key={u.user_id}
+                  className="flex items-center gap-2 text-xs px-1 py-0.5 rounded hover:bg-gray-800/60"
+                >
+                  <span
+                    className={'w-1.5 h-1.5 rounded-full flex-shrink-0 ' + (u.in_game ? 'bg-amber-500' : 'bg-green-500')}
+                    aria-hidden="true"
+                  />
+                  <span className="flex-1 truncate font-mono text-gray-200">@{u.username}</span>
+                  {u.in_game && (
+                    <span className="text-amber-400 italic mr-1">en partie</span>
+                  )}
+                  <button
+                    onClick={() => handleChallenge(u.username)}
+                    disabled={disabled}
+                    title={hint}
+                    className="px-2 py-0.5 rounded bg-amber-600 hover:bg-amber-500 disabled:opacity-30 disabled:cursor-not-allowed text-white cursor-pointer"
+                  >
+                    Défier
+                  </button>
+                </div>
+              )
+            })}
+          </div>
         )}
       </section>
     </div>
