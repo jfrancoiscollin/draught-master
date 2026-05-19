@@ -55,19 +55,26 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
   // push channel.
   const [online, setOnline] = useState<OnlineUser[]>([])
 
-  // Bootstrap from REST so users who land here without an open WS still
-  // see their pending challenges. Subsequent updates come over WS.
-  useEffect(() => {
-    let cancelled = false
+  // Bootstrap + 5 s polling for pending challenges. The WS pushes
+  // (challenge_received / _resolved / _cancelled) are the snappy
+  // path, but they can be missed when the panel mounts before the
+  // socket is authenticated, or in the (currently theoretical)
+  // multi-replica deploy where the push targets a different
+  // instance than the one the user is on. Polling closes the gap
+  // — same cadence as the online list, cheap query.
+  const refreshPending = useCallback(() => {
     getPendingLiveChallenges()
       .then(data => {
-        if (cancelled) return
         setReceived(data.received)
         setSent(data.sent)
       })
-      .catch(() => { /* offline / 401 — leave lists empty */ })
-    return () => { cancelled = true }
+      .catch(() => { /* offline / 401 — leave lists as-is */ })
   }, [])
+  useEffect(() => {
+    refreshPending()
+    const id = setInterval(refreshPending, 5_000)
+    return () => clearInterval(id)
+  }, [refreshPending])
 
   // Online users — fetch on mount + 30s polling. Polling is fine in
   // v1 since the lobby is the only screen consuming this; an explicit
@@ -80,7 +87,11 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
   }, [])
   useEffect(() => {
     refreshOnline()
-    const id = setInterval(refreshOnline, 30_000)
+    // 5 s instead of 30 s: a user joining the lobby should appear on
+    // their friends' screens fast enough to feel "live". Cheap call
+    // (one SQL fetch + in-memory map projection); we can dial it up
+    // if it starts showing in the logs.
+    const id = setInterval(refreshOnline, 5_000)
     return () => clearInterval(id)
   }, [refreshOnline])
 
@@ -105,6 +116,15 @@ export default function LivePlayPanel({ onEnterGame }: Props) {
         const sess = (m as unknown as { session: LiveGameSessionState }).session
         onEnterGame(sess)
       },
+      // auth_ok lands ~500 ms after the panel mounts: that's the
+      // moment OUR WS becomes visible in the server's presence map,
+      // so a fresh fetch will now include us — and reciprocally,
+      // anyone else who's been waiting on their own refresh tick can
+      // catch us via the next interval. Triggering both refreshes
+      // here shortcuts the cold-open delay the user reported (where
+      // a challenge sent before our WS auth'd was invisible until
+      // the next 5 s polling tick).
+      auth_ok: () => { refreshOnline(); refreshPending() },
     },
     // Every event that touches presence or challenge state refreshes
     // the online list. Cheap (one HTTP GET, no pagination yet).
