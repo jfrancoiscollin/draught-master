@@ -535,7 +535,12 @@ export function MoveRow({
   isActive: boolean
   onJump?: (halfMove: number) => void
 }) {
-  const [expanded, setExpanded] = useState(false)
+  // Expanded by default — the user asked for the explanation block
+  // to be visible without clicking. The fetch fires lazily through an
+  // IntersectionObserver below so a 100-move game doesn't burst-call
+  // the /explain-move endpoint past its 60/min rate limit; rows that
+  // never scroll into view never trigger a request.
+  const [expanded, setExpanded] = useState(true)
   const [explanation, setExplanation] = useState<ExplainResult | null>(null)
   const [loadingExpl, setLoadingExpl] = useState(false)
   const rowRef = useRef<HTMLDivElement | null>(null)
@@ -557,6 +562,32 @@ export function MoveRow({
       setLoadingExpl(false)
     }
   }, [explanation, gameId, verdict.move_number, lang])
+
+  // Lazy-fetch the explanation the first time the row scrolls into view
+  // (and is expanded). Avoids the burst that would happen if every row
+  // fetched on mount. Once fetched, the result is cached locally and
+  // the observer can disconnect.
+  useEffect(() => {
+    if (!expanded || explanation !== null || loadingExpl) return
+    const el = rowRef.current
+    if (!el) return
+    if (typeof IntersectionObserver === 'undefined') {
+      // Fallback: fetch immediately (e.g. jsdom in vitest).
+      void fetchExplanation()
+      return
+    }
+    const obs = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          void fetchExplanation()
+          obs.disconnect()
+          break
+        }
+      }
+    }, { rootMargin: '40px' })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [expanded, explanation, loadingExpl, fetchExplanation])
 
   const handleRowClick = useCallback(() => {
     onJump?.(verdict.move_number)

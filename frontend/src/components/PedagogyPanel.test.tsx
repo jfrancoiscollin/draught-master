@@ -127,11 +127,12 @@ describe('PedagogyPanel — verdict row ↔ board binding', () => {
   it('expanded row surfaces "not-analyzed" message on 404', async () => {
     // Simulate the backend's 404 ("Verdict not yet computed for this
     // move") — e.g. user clicked Expliquer before bulk-analysing the game,
-    // or the analysis was reset.
+    // or the analysis was reset. Rows now start expanded by default, so
+    // the explanation fetch fires on mount (via the jsdom IntersectionObserver
+    // fallback in MoveRow) without needing a chevron click.
     vi.spyOn(client, 'explainMovePedagogy').mockResolvedValueOnce({
       kind: 'not-analyzed',
     })
-    const user = userEvent.setup()
 
     render(
       <PedagogyPanel
@@ -143,9 +144,6 @@ describe('PedagogyPanel — verdict row ↔ board binding', () => {
         onAnalyze={() => {}}
       />
     )
-
-    const chevrons = screen.getAllByTitle('Déplier')
-    await user.click(chevrons[0])
 
     await waitFor(() => {
       expect(
@@ -170,16 +168,15 @@ describe('PedagogyPanel — verdict row ↔ board binding', () => {
       />
     )
 
-    // The chevron is the small button with title "Déplier" (collapsed).
-    const chevrons = screen.getAllByTitle('Déplier')
+    // Rows start expanded by default. The chevron title therefore begins
+    // as "Replier"; click it to collapse, expect "Déplier" to appear.
+    // The fact that onJumpTo doesn't fire on either click indirectly
+    // confirms the chevron's stopPropagation is still wired correctly.
+    const chevrons = screen.getAllByTitle('Replier')
     expect(chevrons.length).toBeGreaterThan(0)
     await user.click(chevrons[0])
 
     expect(onJumpTo).not.toHaveBeenCalled()
-
-    // After clicking the chevron, the row should now show "Replier" — and
-    // a second click closes it again. (This indirectly verifies the
-    // stopPropagation: if the click bubbled, onJumpTo would have fired.)
-    expect(screen.getAllByTitle('Replier').length).toBeGreaterThan(0)
+    expect(screen.getAllByTitle('Déplier').length).toBeGreaterThan(0)
   })
 })
