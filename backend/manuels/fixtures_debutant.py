@@ -130,8 +130,9 @@ BEG_CH02_001 = BeginnerPosition(
     ),
     concept=(
         "Un pion se déplace d'une case en diagonale, vers l'avant uniquement. "
-        "Le pion blanc 35 a deux mouvements possibles : 35-30 (diagonale "
-        "haut-gauche) ou 35-31 (diagonale haut-droite)."
+        "Le pion blanc 35 est sur le bord droit du damier : son seul "
+        "déplacement légal est 35-30 (diagonale haut-gauche). La diagonale "
+        "haut-droite est bloquée par le bord du plateau."
     ),
     explanation=(
         "Les blancs avancent vers les petites cases (1-5), les noirs vers les "
@@ -303,8 +304,8 @@ BEG_CH02_008 = BeginnerPosition(
     concept=(
         "Quand un pion blanc atteint la première rangée (cases 1-5), il "
         "est immédiatement promu en dame. Idem pour les noirs vers la "
-        "dernière rangée (46-50). Le pion blanc 6 a deux coups possibles : "
-        "6-1 ou 6-2, et dans les deux cas il devient dame."
+        "dernière rangée (46-50). Le pion blanc 6 (sur le bord gauche) "
+        "n'a qu'un seul coup légal : 6-1, qui le promeut en dame."
     ),
     explanation=(
         "La promotion se produit dès qu'un pion atteint sa rangée "
@@ -1754,7 +1755,7 @@ BEG_CH07_001 = BeginnerPosition(
         black_men=frozenset({3, 8, 13, 15, 16, 17, 18, 19, 24, 25}),
         turn="white",
     ),
-    concept="Les noirs viennent d'attaquer le pion 25. Les blancs disposent d'un temps de repos : ils peuvent jouer 2 coups d'affilée car le noir doit obligatoirement reprendre. Cette obligation se chaîne trois fois dans la combinaison.",
+    concept="Le pion noir 25 menace le pion blanc 30 (attaque noire). Les blancs disposent d'un temps de repos : ils peuvent jouer un coup utile car le noir devra obligatoirement capturer ensuite. Cette obligation se chaîne trois fois dans la combinaison.",
     published_notation='42-37 (25x34) 40x20 (15x24) 28-22 (17x28) 32x14',
     final_move=Move(
         path=(32, 23, 14),
@@ -2966,7 +2967,7 @@ BEG_CH11_005 = BeginnerPosition(
         black_men=frozenset({9, 11, 12, 13, 14, 16, 18, 24, 25, 26, 30}),
         turn="white",
     ),
-    concept="Rafle se terminant en 10. Le coup de Rappel permet d'amener un pion noir en 22.",
+    concept="Rafle se terminant en 10. Le coup de Rappel force un pion noir à revenir capturer sur la case 22 (le sacrifice 32-27 puis la reprise 31x22), ce qui le ramène sur la trajectoire de la rafle blanche finale 28x10.",
     published_notation='22-17 (11x31) 32-27 (31x22) 28x10',
     final_move=Move(
         path=(28, 17, 8, 19, 10),

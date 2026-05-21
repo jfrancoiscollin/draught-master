@@ -154,6 +154,16 @@ game_store: Dict[str, Dict[str, Any]] = {}
 async def startup_event() -> None:
     await init_db()
 
+    # Log the dilf corpus version we're shipping. Single grep-friendly
+    # line so a deploy preview can confirm at a glance which revision
+    # of the manuel + fixtures is live. The manifest is updated by
+    # `scripts/sync_dilf_corpus.py`.
+    try:
+        from manuels import corpus_version_string
+        logging.info("startup: %s", corpus_version_string())
+    except Exception:
+        logging.exception("startup: corpus manifest read failed (non-fatal)")
+
     # Live PvP — every in-memory game session was lost when the server
     # restarted, so any games row still marked `in_progress` is now
     # orphaned. Stamp them `abandoned_server` so the lobby UI doesn't

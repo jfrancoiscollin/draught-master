@@ -420,10 +420,10 @@ comment exploiter ces temps de repos.
 ### 7.1. Cascade de temps de repos
 
 L'exemple narratif `BEG_CH07_001` montre comment une seule attaque
-noire (sur le pion blanc 25) ouvre une chaîne de **trois** temps de
-repos consécutifs : `42-37 (25×34) 40×20 (15×24) 28-22 (17×28) 32×14`.
-Chaque coup blanc bénéficie d'un temps de repos parce que le noir est
-forcé de capturer après lui.
+noire (le pion noir 25 menace le pion blanc 30) ouvre une chaîne de
+**trois** temps de repos consécutifs : `42-37 (25×34) 40×20 (15×24)
+28-22 (17×28) 32×14`. Chaque coup blanc bénéficie d'un temps de repos
+parce que le noir est forcé de capturer après lui.
 
 ### 7.2. Combinaison en phases
 
