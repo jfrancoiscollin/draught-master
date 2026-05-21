@@ -14,17 +14,13 @@
  */
 
 import { useEffect, useState } from 'react'
-import {
-  getGameNarrative,
-  getLessonsByMotif,
-  getLessonsByWeakness,
-  getLessonTitles,
-} from '../api/client'
+import { getGameNarrative } from '../api/client'
 import type {
   GameNarrative,
   PersistentWeakness,
   TurningPoint,
 } from '../api/client'
+import { useLessonCoverage } from '../hooks/useLessonCoverage'
 
 interface Props {
   gameId: string
@@ -51,24 +47,13 @@ interface Props {
   onOpenLesson?: (chapter: number) => void
 }
 
-/** Inverted coverage built once from `/api/lessons` so we know which
- *  motif slugs / weakness families have a lesson before rendering the
- *  📖 badge. Avoids dead buttons that would 404 on click. */
-interface LessonCoverage {
-  motifs: Set<string>
-  weaknesses: Set<string>
-}
-
 export default function GameNarrativeSummary({
   gameId, lang = 'fr', onJumpTo, onMotifClick, onMotifJump, onWeaknessClick, onOpenLesson,
 }: Props) {
   const [narrative, setNarrative] = useState<GameNarrative | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [coverage, setCoverage] = useState<LessonCoverage>({
-    motifs: new Set(),
-    weaknesses: new Set(),
-  })
+  const { coverage, openLessonForMotif, openLessonForWeakness } = useLessonCoverage(onOpenLesson)
 
   useEffect(() => {
     let cancelled = false
@@ -90,42 +75,6 @@ export default function GameNarrativeSummary({
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [gameId, lang])
-
-  // Prefetch lesson coverage once — independent of game. The list
-  // endpoint is light (16 chapters × {title, motifs, weaknesses}) and
-  // unauthenticated; failures degrade silently to "no 📖 badges".
-  useEffect(() => {
-    let cancelled = false
-    getLessonTitles().then(table => {
-      if (cancelled) return
-      const motifs = new Set<string>()
-      const weaknesses = new Set<string>()
-      for (const ch of Object.values(table)) {
-        const m = (ch as { motifs?: string[] }).motifs ?? []
-        const w = (ch as { weaknesses?: string[] }).weaknesses ?? []
-        m.forEach(s => motifs.add(s))
-        w.forEach(s => weaknesses.add(s))
-      }
-      setCoverage({ motifs, weaknesses })
-    }).catch(() => { /* no badges — acceptable degradation */ })
-    return () => { cancelled = true }
-  }, [])
-
-  // Resolve slug → first matching chapter on click. We don't cache
-  // the per-slug result because the coverage gate already ensures the
-  // call returns at least one match.
-  const openLessonForMotif = (slug: string) => {
-    if (!onOpenLesson) return
-    getLessonsByMotif(slug).then(matches => {
-      if (matches[0]) onOpenLesson(matches[0].chapter)
-    })
-  }
-  const openLessonForWeakness = (family: string) => {
-    if (!onOpenLesson) return
-    getLessonsByWeakness(family).then(matches => {
-      if (matches[0]) onOpenLesson(matches[0].chapter)
-    })
-  }
 
   if (loading) {
     return (

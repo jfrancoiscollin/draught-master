@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { getMotifDebug } from '../api/client'
 import type { MotifDebug } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
+import { useLessonCoverage } from '../hooks/useLessonCoverage'
 
 const MOTIF_NAME_FR: Record<string, string> = {
   coup_royal: 'Coup royal',
@@ -26,18 +27,23 @@ const MOTIF_NAME_FR: Record<string, string> = {
 
 interface Props {
   onMotifClick?: (slug: string) => void
+  /** Opens the matching manuel chapter as a global overlay. When
+   *  provided, a 📖 button appears next to the "↗" badge for slugs
+   *  covered by at least one chapter. */
+  onOpenLesson?: (chapter: number) => void
   refreshKey?: number
 }
 
 /** Always-visible roll-up of every motif detected across the user's
  *  analysed games. Complements <WeaknessPanel> which only surfaces
  *  motifs that crossed the missed+suffered threshold. */
-export default function MotifsCatalogPanel({ onMotifClick, refreshKey = 0 }: Props) {
+export default function MotifsCatalogPanel({ onMotifClick, onOpenLesson, refreshKey = 0 }: Props) {
   const { user } = useAuth()
   const [debug, setDebug] = useState<MotifDebug | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
+  const { coverage, openLessonForMotif } = useLessonCoverage(onOpenLesson)
 
   // Invalidate cache when refreshKey bumps (e.g. after "Réinitialiser les analyses").
   useEffect(() => {
@@ -109,6 +115,15 @@ export default function MotifsCatalogPanel({ onMotifClick, refreshKey = 0 }: Pro
                         title={`Voir le motif ${name}`}
                       >
                         ↗
+                      </button>
+                    )}
+                    {coverage.motifs.has(motif) && onOpenLesson && (
+                      <button
+                        onClick={() => openLessonForMotif(motif)}
+                        className="flex-shrink-0 text-xs bg-amber-700/60 hover:bg-amber-700/90 text-amber-100 px-1.5 py-0.5 rounded transition-colors"
+                        title="Ouvrir la leçon correspondante"
+                      >
+                        📖
                       </button>
                     )}
                   </li>

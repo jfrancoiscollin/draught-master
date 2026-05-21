@@ -29,13 +29,18 @@ interface Props {
   onChanged: () => void
   /** Hand-off to App.tsx's motif drill page. */
   onMotifClick: (slug: string) => void
+  /** Hand-off to App.tsx's lesson overlay. Mirrors `onMotifClick` so
+   *  WeaknessPanel and MotifsCatalogPanel can paint a 📖 badge next
+   *  to the "Travailler →" / "↗" buttons when a chapter covers the
+   *  slug. */
+  onOpenLesson?: (chapter: number) => void
   /** Hand-off to App.tsx's import-game flow (used by GameHistory
    *  rows on click). */
   onReplay: (detail: { id: string; pdn?: string | null; user_side?: string }) => void
 }
 
 export default function MyGamesPanel({
-  refreshKey, onChanged, onMotifClick, onReplay,
+  refreshKey, onChanged, onMotifClick, onOpenLesson, onReplay,
 }: Props) {
   return (
     <div className="h-full overflow-y-auto px-4 py-4 max-w-3xl mx-auto flex flex-col gap-3">
@@ -43,8 +48,8 @@ export default function MyGamesPanel({
       {/* Insight panels first — both default-collapsed drop-downs, so
           the user sees their weakness/motif headlines BEFORE the
           list of games they need to dig into. */}
-      <WeaknessPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />
-      <MotifsCatalogPanel onMotifClick={onMotifClick} refreshKey={refreshKey} />
+      <WeaknessPanel onMotifClick={onMotifClick} onOpenLesson={onOpenLesson} refreshKey={refreshKey} />
+      <MotifsCatalogPanel onMotifClick={onMotifClick} onOpenLesson={onOpenLesson} refreshKey={refreshKey} />
       {/* Lidraughts import is also a drop-down — most of the time
           the user just wants to see the list, not import. */}
       <LidraughtsImporter onChanged={onChanged} />

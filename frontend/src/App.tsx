@@ -1240,6 +1240,7 @@ export default function App() {
             refreshKey={historyRefresh}
             onChanged={() => setHistoryRefresh(v => v + 1)}
             onMotifClick={setMotifDetailSlug}
+            onOpenLesson={(chapter) => setNarrativeLessonChapter(chapter)}
             onReplay={(detail) => {
               setPreloadedPdn(detail.pdn || '')
               setPreloadedGameId(detail.id)
