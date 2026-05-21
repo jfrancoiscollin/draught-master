@@ -1759,14 +1759,16 @@ export default function App() {
           <div className="h-full">
             <ImportGamePanel
               onClose={() => {
-                // If the panel was opened from the Profil > game list
-                // (preloadedGameId set), return there ; otherwise back to
-                // home.
-                const cameFromHistory = preloadedGameId !== null
+                // If the panel was opened from "Analyser mes parties"
+                // (preloadedGameId set), return there; otherwise back to
+                // home. Pre-refactor the destination was 'game-history'
+                // (the slim stats screen) — that route still exists but
+                // is no longer where the user came from.
+                const cameFromMyGames = preloadedGameId !== null
                 setPreloadedPdn(null)
                 setPreloadedGameId(null)
                 setPreloadedUserSide(null)
-                setTab(cameFromHistory ? 'game-history' : 'home')
+                setTab(cameFromMyGames ? 'my-games' : 'home')
               }}
               initialPdn={preloadedPdn}
               initialGameId={preloadedGameId}
