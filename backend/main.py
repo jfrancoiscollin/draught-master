@@ -1279,7 +1279,43 @@ async def list_lessons(book: Optional[str] = Query(None)) -> Dict[str, Any]:
     if book not in (None, "manuel_debutant"):
         return {}
     chapters = load_debutant_chapters()
-    return {ch: {"title": v["title"], "category": v["category"]} for ch, v in chapters.items()}
+    return {
+        ch: {
+            "title": v["title"],
+            "category": v["category"],
+            "motifs": v.get("motifs", []),
+            "weaknesses": v.get("weaknesses", []),
+        }
+        for ch, v in chapters.items()
+    }
+
+
+@app.get("/api/lessons/by-motif/{slug}")
+async def lessons_for_motif(slug: str) -> Dict[str, Any]:
+    """Chapters whose `<!-- pedagogy-motifs: ... -->` block lists `slug`."""
+    from manuels.prose_loader import lessons_by_motif, load_debutant_chapters
+    chapters = load_debutant_chapters()
+    nums = lessons_by_motif().get(slug, [])
+    return {
+        "matches": [
+            {"chapter": int(n), "title": chapters[n]["title"]}
+            for n in nums
+        ],
+    }
+
+
+@app.get("/api/lessons/by-weakness/{family}")
+async def lessons_for_weakness(family: str) -> Dict[str, Any]:
+    """Chapters whose `<!-- pedagogy-weaknesses: ... -->` block lists `family`."""
+    from manuels.prose_loader import lessons_by_weakness, load_debutant_chapters
+    chapters = load_debutant_chapters()
+    nums = lessons_by_weakness().get(family, [])
+    return {
+        "matches": [
+            {"chapter": int(n), "title": chapters[n]["title"]}
+            for n in nums
+        ],
+    }
 
 
 @app.get("/api/lessons/{chapter}")

@@ -143,7 +143,9 @@ export async function getUserProgress(): Promise<number[]> {
   return res.data.solved_exercise_ids
 }
 
-export async function getLessonTitles(book?: string): Promise<Record<string, { title: string; category: string }>> {
+export async function getLessonTitles(book?: string): Promise<Record<string, {
+  title: string; category: string; motifs?: string[]; weaknesses?: string[]
+}>> {
   // The legacy /api/lessons endpoint returns HTTP 410 Gone since the Dubois
   // material was retired; the manuel pipeline does not yet expose prose
   // chapters. Treat 410 (and any other non-2xx) as "no lessons" so the
@@ -159,6 +161,21 @@ export async function getLessonTitles(book?: string): Promise<Record<string, { t
 export async function getLesson(chapter: number): Promise<{ title: string; text: string; category: string }> {
   const res = await api.get(`/lessons/${chapter}`)
   return res.data
+}
+
+export interface LessonMatch {
+  chapter: number
+  title: string
+}
+
+export async function getLessonsByMotif(slug: string): Promise<LessonMatch[]> {
+  const res = await api.get<{ matches: LessonMatch[] }>(`/lessons/by-motif/${slug}`)
+  return res.data.matches
+}
+
+export async function getLessonsByWeakness(family: string): Promise<LessonMatch[]> {
+  const res = await api.get<{ matches: LessonMatch[] }>(`/lessons/by-weakness/${family}`)
+  return res.data.matches
 }
 
 export async function getReadLessons(): Promise<number[]> {

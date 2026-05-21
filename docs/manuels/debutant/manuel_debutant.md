@@ -96,6 +96,7 @@ en 40 ; pion noir en 7, dame noire en 12, pion noir en 18 ».
 ---
 
 ## Chapitre 2 — Les règles du jeu
+<!-- pedagogy-motifs: prise_max_ratee -->
 
 ### 2.1. Déplacement des pions
 
@@ -269,6 +270,7 @@ traverse jusqu'à la promotion en capturant 3 pions noirs.
 ---
 
 ## Chapitre 4 — Le collage et l'envoi à dame combinés
+<!-- pedagogy-motifs: envoi_a_dame, coup_turc -->
 
 Le **collage** introduit au chapitre 3 (§3.2) prend toute sa puissance
 quand il est combiné à un **envoi à dame** : on sacrifie un pion qui
@@ -313,6 +315,7 @@ dame.
 ---
 
 ## Chapitre 5 — L'envoi à dame
+<!-- pedagogy-motifs: envoi_a_dame -->
 
 L'**envoi à dame** est la promotion *volontaire* d'un pion par
 sacrifice. On accepte de donner un pion (qui se promeut), pour
@@ -352,6 +355,7 @@ sur une case où elle est ensuite capturable. Voir `BEG_CH05_007`.
 ---
 
 ## Chapitre 6 — La méthode des points de contact
+<!-- pedagogy-weaknesses: isolated, backward -->
 
 Jusqu'à présent, nous avons cherché les combinaisons en partant de la
 **rafle finale** : « où peut atterrir une rafle ? quelles cases-clés
@@ -400,6 +404,8 @@ révèle que `(26-31)` fait disparaître le pion 36 et ouvre la voie.
 ---
 
 ## Chapitre 7 — Les temps de repos créés par une attaque
+<!-- pedagogy-motifs: sacrifice -->
+<!-- pedagogy-weaknesses: holes -->
 
 Un **temps de repos** est l'opportunité de jouer **un coup
 supplémentaire** sans que l'adversaire puisse répliquer librement —
@@ -439,6 +445,8 @@ L'exemple `BEG_CH07_002` montre une combinaison à **3 phases distinctes**
 ---
 
 ## Chapitre 8 — La création des temps de repos
+<!-- pedagogy-motifs: sacrifice -->
+<!-- pedagogy-weaknesses: holes, outposts -->
 
 Quand l'adversaire n'attaque rien, on peut **créer artificiellement**
 un temps de repos en **sacrifiant un pion** qui force une prise. Cette
@@ -478,6 +486,7 @@ créateur, `34-29` est le coup gagné par le temps de repos, et la rafle
 
 
 ## Chapitre 9 — Le coup de l'Express
+<!-- pedagogy-motifs: coup_express -->
 
 Le **coup de l'Express** est le premier des **coups nommés** —
 des mécanismes combinatoires fréquents auxquels la tradition damiste
@@ -617,6 +626,7 @@ la notation `(ad lib)`.
 ---
 
 ## Chapitre 13 — Le coup Napoléon
+<!-- pedagogy-motifs: coup_napoleon -->
 
 Le **coup Napoléon** est un coup en **4 sacrifices** débouchant sur une
 rafle longue typique `31×4`, `39×8`, `40×16` (selon la diagonale
@@ -678,6 +688,7 @@ Plusieurs exercices de ce chapitre dépassent les 5 demi-coups habituels :
 ---
 
 ## Chapitre 15 — Le coup de Talon
+<!-- pedagogy-motifs: coup_de_talon -->
 
 Le **coup de Talon** est un mécanisme surprenant qui **ne dévoile le
 point d'appui de la rafle qu'au dernier moment**. Une formation
@@ -716,6 +727,7 @@ néanmoins réussi en interprétant la suite logique de la position.
 ---
 
 ## Chapitre 16 — Le coup Philippe
+<!-- pedagogy-motifs: coup_philippe -->
 
 Le **coup Philippe** est l'un des mécanismes les plus **simples et les
 mieux connus** du répertoire. Il a déjà été abordé au chapitre 6

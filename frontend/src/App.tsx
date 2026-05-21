@@ -292,6 +292,10 @@ export default function App() {
   const [pedagogyError, setPedagogyError] = useState<string | null>(null)
   // Motif drill — slug of the motif currently displayed, null = closed
   const [motifDetailSlug, setMotifDetailSlug] = useState<string | null>(null)
+  // Lesson opened from the narrative cards (GameNarrativeSummary).
+  // Renders as a full-area overlay over whichever tab is active so the
+  // user doesn't lose ImportGamePanel state when consulting a chapter.
+  const [narrativeLessonChapter, setNarrativeLessonChapter] = useState<number | null>(null)
 
   // Pre-load WASM engine on startup so it's ready before the user requests analysis
   useEffect(() => { getScanEngine() }, [])
@@ -1133,6 +1137,22 @@ export default function App() {
       {/* Main content — mobile: no page scroll (each section scrolls itself); desktop: page scrolls */}
       <main className="flex-1 overflow-hidden lg:overflow-y-auto relative">
 
+        {/* Narrative-driven lesson overlay — opened from
+            <GameNarrativeSummary> chips (motifs / weaknesses / drills).
+            Floats over the active tab so closing returns the user
+            exactly where they were in their analysis. */}
+        {narrativeLessonChapter !== null && (
+          <div className="absolute inset-0 z-40 bg-gray-900">
+            <LessonPanel
+              chapter={narrativeLessonChapter}
+              exampleFen=""
+              onClose={() => setNarrativeLessonChapter(null)}
+              onLessonRead={handleLessonRead}
+              isRead={readChapters.has(narrativeLessonChapter)}
+            />
+          </div>
+        )}
+
         {/* HOME SCREEN */}
         {tab === 'home' && (
           <div className="h-full flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
@@ -1751,6 +1771,8 @@ export default function App() {
               initialPdn={preloadedPdn}
               initialGameId={preloadedGameId}
               initialUserSide={preloadedUserSide}
+              onMotifClick={setMotifDetailSlug}
+              onOpenLesson={(chapter) => setNarrativeLessonChapter(chapter)}
             />
           </div>
         )}
