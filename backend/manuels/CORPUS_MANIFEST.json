@@ -1,8 +1,8 @@
 {
   "$comment": "Tracks which dilf revision the local corpus copy was synced from. Updated by scripts/sync_dilf_corpus.py. Read at backend startup to log the active corpus version. See backend/manuels/__init__.py.",
   "source": "https://github.com/jfrancoiscollin/dilf",
-  "dilf_commit_sha": "cc99f7b2dd654dded160557ed263403326f96c71",
-  "synced_at": "2026-05-21",
+  "dilf_commit_sha": "71b09864f26522b95678fd1b7c1398703e15ccdd",
+  "synced_at": "2026-05-22",
   "files": [
     {
       "local": "docs/manuels/debutant/manuel_debutant.md",

@@ -1778,15 +1778,15 @@ BEG_CH07_002 = BeginnerPosition(
         black_men=frozenset({19, 6, 8, 25, 26, 12, 14}),
         turn="white",
     ),
-    concept='Combinaison en 3 phases utilisant les temps de repos pour (1) placer un pion en 19, (2) acheminer une pièce noire en 30 par envoi à dame, (3) exécuter la rafle finale 35x2.',
+    concept='Combinaison longue exploitant les temps de repos (envoi à dame). ⚠️ La published_notation présente des incohérences de déroulé (cf claude_notes) — solution à vérifier au moteur. La position de départ est correcte : le pion noir 19 menace le pion blanc 23.',
     published_notation='42-37 (19x28) 29-23 (28x19) 37-31 (26x37) 48-42 (37x48) 39-34 (48x30) 35x2',
     final_move=None,
-    explanation='Phase 1 (placer un pion en 19) : 42-37 (19x28) 29-23 (28x19). Phase 2 (envoi à dame puis collage de la dame) : 37-31 (26x37) 48-42 (37x48) 39-34 (48x30). Phase 3 (rafle) : 35x2.',
+    explanation='⚠️ Solution publiée incohérente, en attente de vérification moteur (A_VERIFIER_MOTEUR.md §1). Problèmes relevés : (a) on ne peut pas "placer un pion en 19" car un pion noir y est déjà au départ ; (b) le sacrifice 39-34 censé réaliser l\'envoi à dame en 30 est impossible si le pion blanc 39 a déjà été capturé en amont ; (c) la rafle finale 35x2 suppose des pièces qui ont déjà quitté le plateau. La position de départ (W{23,27,29,35,39,42,48} B{6,8,12,14,19,25,26}, trait blancs) reste valide.',
     source=SourceType.CORPUS,
     source_ref='dubois_apprent_combin_p26_intro2',
     crop_id='crops/page_026_d04.png',
-    confidence="high",
-    claude_notes='⚠️ Contient un envoi à dame du noir avec rafle subséquente. final_move=None. Cf RESOLUTIONS §R007.',
+    confidence="low",
+    claude_notes='⚠️ SOLUTION SUSPECTE — published_notation probablement corrompue (transcription PDF ou coquille Dubois). Le déroulé ne tient pas : envoi à dame impossible (pion 39 capturé avant son sacrifice 39-34), rafle finale 35x2 incohérente (pièces absentes au moment voulu). NON corrigé par Claude (§4.7 : ne pas inventer de variante). À élucider au moteur Scan — cf A_VERIFIER_MOTEUR.md §1. final_move=None.',
 )
 
 BEG_CH07_003 = BeginnerPosition(

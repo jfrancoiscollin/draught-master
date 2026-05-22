@@ -427,16 +427,23 @@ parce que le noir est forcé de capturer après lui.
 
 ### 7.2. Combinaison en phases
 
-L'exemple `BEG_CH07_002` montre une combinaison à **3 phases distinctes**
-(6 demi-coups au total) :
-- **Phase 1** — placer un pion en 19 par sacrifice
-- **Phase 2** — acheminer une pièce noire en 30 par envoi à dame
-- **Phase 3** — exécuter la rafle finale `35×2`
+L'exemple `BEG_CH07_002` illustre une combinaison longue exploitant les
+temps de repos. Position de départ (trait aux blancs) : le pion noir 19
+menace le pion blanc 23.
+
+> ⚠️ **Solution en cours de vérification moteur.** La `published_notation`
+> de cette fixture présente des incohérences dans le déroulé (un pion
+> blanc nécessaire à l'« envoi à dame » est capturé avant de pouvoir
+> jouer son sacrifice, et la pièce de la rafle finale a déjà quitté le
+> plateau au moment annoncé). Le narratif détaillé est donc suspendu
+> jusqu'à élucidation au moteur Scan — voir `A_VERIFIER_MOTEUR.md`.
+> En attendant, cette position est conservée pour sa **position de
+> départ** correcte, pas pour sa séquence publiée.
 
 ### 7.3. Particularités
 
-- `BEG_CH07_002` et `BEG_CH07_009` contiennent un **envoi à dame** —
-  `final_move=None` par limitation actuelle du module.
+- `BEG_CH07_002` (solution à vérifier, cf §7.2) et `BEG_CH07_009`
+  contiennent un **envoi à dame** — `final_move=None`.
 - `BEG_CH07_012` (Dubois ch8 D10) introduit la notation `(ad lib)` :
   l'adversaire a plusieurs captures forcées équivalentes, toutes
   conduisent à la rafle gagnante `38×29`. Voir résolution R008 dans
