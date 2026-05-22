@@ -107,9 +107,32 @@ def analysis_stub(fx: Any) -> Dict[str, Any]:
     }
 
 
+def _hub_pos_from_pedagogy_state(state: Any) -> str:
+    """Build a Hub v2 position string from a ``pedagogy.game.GameState``.
+
+    The backend's own ``scan_engine._build_pos`` expects a
+    ``game_engine.GameState`` (51-cell board array), which is a
+    different type from the frozenset-based one in dilf. Adapt here
+    rather than round-trip through FEN.
+    """
+    chars: List[str] = []
+    for sq in range(1, 51):
+        if sq in state.white_men:
+            chars.append("w")
+        elif sq in state.white_kings:
+            chars.append("W")
+        elif sq in state.black_men:
+            chars.append("b")
+        elif sq in state.black_kings:
+            chars.append("B")
+        else:
+            chars.append("e")
+    turn = "W" if state.turn == "white" else "B"
+    return turn + "".join(chars)
+
+
 def analyse_one(fx: Any, engine: Any, movetime_s: float) -> Dict[str, Any]:
-    from scan_engine import _build_pos
-    hub_pos = _build_pos(fx.state)
+    hub_pos = _hub_pos_from_pedagogy_state(fx.state)
     t0 = time.monotonic()
     result = engine.evaluate_pos(hub_pos, movetime_s)
     elapsed = time.monotonic() - t0
@@ -128,17 +151,27 @@ def analyse_one(fx: Any, engine: Any, movetime_s: float) -> Dict[str, Any]:
 
     # Auto-compare PV[0] vs published_notation[0]. The cadrage treats
     # the published notation as suspect when it diverges from Scan.
-    published_first = first_token(fx.published_notation)
+    # Only relevant when published_notation describes a tactical solution
+    # (≥ 2 tokens, or contains a capture/parens). Chapters 1-2 use a
+    # single move as illustrative historic notation, not as a solution
+    # — no comparison there.
+    published_tokens = (fx.published_notation or "").split()
+    looks_like_solution = (
+        len(published_tokens) >= 2
+        or any(c in fx.published_notation for c in ("x", "×", "("))
+    )
     notes_parts: List[str] = []
     if forced:
         notes_parts.append("Forced move (no search).")
-    if published_first and best and published_first.replace("×", "x") != best.replace("×", "x"):
-        notes_parts.append(
-            f"DIVERGENCE: published_notation starts with {published_first!r}, "
-            f"Scan PV starts with {best!r}. Flag in A_VERIFIER_MOTEUR.md."
-        )
-    elif published_first and best:
-        notes_parts.append("PV first move matches published_notation.")
+    if looks_like_solution and published_tokens and best:
+        published_first = published_tokens[0]
+        if published_first.replace("×", "x") != best.replace("×", "x"):
+            notes_parts.append(
+                f"DIVERGENCE: published_notation starts with {published_first!r}, "
+                f"Scan PV starts with {best!r}. Flag in A_VERIFIER_MOTEUR.md."
+            )
+        else:
+            notes_parts.append("PV first move matches published_notation.")
     if not pv:
         notes_parts.append("Scan returned empty PV.")
     notes_parts.append(
@@ -199,9 +232,9 @@ def main() -> int:
 
     engine = None
     if not args.stub:
-        from scan_engine import ScanEngine  # noqa: WPS433 — late import (no Scan in stub mode)
-        engine = ScanEngine(use_book=False)
-        log.info("Scan engine ready.")
+        from scan_engine import ScanEngine, SCAN_PATH  # noqa: WPS433 — late import (no Scan in stub mode)
+        engine = ScanEngine(SCAN_PATH, use_book=False)
+        log.info("Scan engine ready (path=%s).", SCAN_PATH)
 
     n_done = 0
     n_skipped = 0
