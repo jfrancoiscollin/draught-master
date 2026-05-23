@@ -185,7 +185,7 @@ def analyse_one(fx: Any, engine: Any, movetime_s: float) -> Dict[str, Any]:
         "pv": pv,
         "eval_after_pv": score,
         "winning_for": winning_for(score),
-        "scan_depth": 0,  # Hub v2 doesn't expose final depth directly; future work.
+        "scan_depth": int(result.get("depth", 0)),
         "notes": " ".join(notes_parts),
     }
 
