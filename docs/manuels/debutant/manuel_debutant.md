@@ -414,40 +414,112 @@ repos sont créés quand l'adversaire **attaque** un de mes pions :
 je suis obligé de défendre ou de laisser prendre, mais entre temps
 **j'ai un coup gratuit**.
 
-Les 12 exercices (2 narratifs + 10 du chapitre 8 Dubois) montrent
-comment exploiter ces temps de repos.
+Les 12 exercices (`BEG_CH07_001` à `BEG_CH07_012`) montrent comment
+exploiter ces temps de repos. Chaque exercice ci-dessous est annoté
+à partir de la **variante principale (PV) calculée par le moteur
+Scan** (`scan/scan_analysis_debutant.json`) — c'est la source de
+vérité tactique. Quand la `published_notation` du livre diverge du
+PV Scan, c'est le PV qui fait foi, le livre est traité comme
+suspect.
 
-### 7.1. Cascade de temps de repos
+### 7.1. Cascade de temps de repos (`BEG_CH07_001`)
 
-L'exemple narratif `BEG_CH07_001` montre comment une seule attaque
-noire (le pion noir 25 menace le pion blanc 30) ouvre une chaîne de
-**trois** temps de repos consécutifs : `42-37 (25×34) 40×20 (15×24)
-28-22 (17×28) 32×14`. Chaque coup blanc bénéficie d'un temps de repos
-parce que le noir est forcé de capturer après lui.
+> **Position de départ** (trait aux blancs)
+> Pions blancs : 27, 28, 30, 32, 35, 38, 40, 42, 43, 45.
+> Pions noirs : 3, 8, 13, 15, 16, 17, 18, 19, 24, 25.
+> Menace immédiate : le pion noir 25 attaque le pion blanc 30
+> (atterrissage en 34).
 
-### 7.2. Combinaison en phases
+L'attaque noire `(25×34)` est inévitable. Plutôt que défendre, les
+blancs encaissent la prise — chaque demi-coup adverse devient une
+prise forcée qui leur offre un coup libre.
 
-L'exemple `BEG_CH07_002` illustre une combinaison longue exploitant les
-temps de repos. Position de départ (trait aux blancs) : le pion noir 19
-menace le pion blanc 23.
+**PV Scan** (profondeur 30, éval +6.34, blancs gagnants) :
 
-> ⚠️ **Solution en cours de vérification moteur.** La `published_notation`
-> de cette fixture présente des incohérences dans le déroulé (un pion
-> blanc nécessaire à l'« envoi à dame » est capturé avant de pouvoir
-> jouer son sacrifice, et la pièce de la rafle finale a déjà quitté le
-> plateau au moment annoncé). Le narratif détaillé est donc suspendu
-> jusqu'à élucidation au moteur Scan — voir `A_VERIFIER_MOTEUR.md`.
-> En attendant, cette position est conservée pour sa **position de
-> départ** correcte, pas pour sa séquence publiée.
+> `42-37 (25×34×30) 40×20 (15×24) 28-22 (17×28) 32×14 …`
 
-### 7.3. Particularités
+Lecture : `42-37` lance le mécanisme. Les noirs *doivent* capturer
+(25×34×30 — rafle qui prend les pions 30 puis 34). Les blancs
+reprennent en rafle (40×20×24×34), puis enchaînent jusqu'à `32×14`.
+La position résultante est nettement gagnante pour les blancs.
 
-- `BEG_CH07_002` (solution à vérifier, cf §7.2) et `BEG_CH07_009`
-  contiennent un **envoi à dame** — `final_move=None`.
-- `BEG_CH07_012` (Dubois ch8 D10) introduit la notation `(ad lib)` :
-  l'adversaire a plusieurs captures forcées équivalentes, toutes
-  conduisent à la rafle gagnante `38×29`. Voir résolution R008 dans
-  `RESOLUTIONS_debutant.md`.
+🔴 **À vérifier (rédacteur humain)** — l'ancienne formulation
+disait que la chaîne contenait **« trois temps de repos
+consécutifs »**. Le PV Scan en montre effectivement plusieurs ;
+compter rigoureusement ces temps de repos à la main pour valider le
+nombre cité.
+
+### 7.2. Combinaison forcée (`BEG_CH07_002`)
+
+> **Position de départ** (trait aux blancs)
+> Pions blancs : 23, 27, 29, 35, 39, 42, 48.
+> Pions noirs : 6, 8, 12, 14, 19, 25, 26.
+> Menace immédiate : le pion noir 19 attaque le pion blanc 23
+> (atterrissage en 28).
+
+**PV Scan** (profondeur 37, éval +89.65 → gain quasi-forcé pour les
+blancs) :
+
+> `42-37 (19×28×23) 29-23 (28×19×23) 37-31 …`
+
+Lecture : `42-37` provoque la rafle obligatoire `19×28×23` (les
+noirs prennent simultanément 28 et 23). Les blancs réinjectent
+immédiatement `29-23`, ce qui force la deuxième rafle obligatoire
+`28×19×23`. Le coup `37-31` qui suit verrouille un avantage
+matériel décisif.
+
+> 🔴 **À VÉRIFIER (cadrage §zéro-invention)** — La
+> `published_notation` historique de cette fixture
+> (`42-37 (19x28) 29-23 (28x19) 37-31 (26x37) 48-42 (37x48) 39-34
+> (48x30) 35x2`) est **incohérente** : elle prétend qu'un envoi à
+> dame `39-34` puis `(48x30)` puis `35x2` est jouable, mais le
+> pion blanc 35 a déjà quitté le plateau à ce moment. Le PV Scan
+> ci-dessus est plus court (5 plies) et solide ; il **remplace**
+> la solution publiée. Cette entrée peut sortir de
+> `A_VERIFIER_MOTEUR.md §1` une fois validée par relecture
+> humaine.
+
+### 7.3. Catalogue Dubois ch. 8 (`BEG_CH07_003` à `BEG_CH07_012`)
+
+Dix combinaisons illustrant la création et l'exploitation de temps
+de repos par une attaque. Le tableau ci-dessous donne l'éval Scan
+finale (positive = avantage blanc), la profondeur d'analyse atteinte,
+et le premier coup du PV. La **variante principale complète** est
+disponible dans `scan/scan_analysis_debutant.json`.
+
+| Fixture | Titre Dubois | Premier coup PV | Éval | Profondeur |
+|---------|--------------|-----------------|------|-----------|
+| `BEG_CH07_003` | D1 | `14-20` | +8.56 | 30 |
+| `BEG_CH07_004` | D2 | `27-21` | +1.73 | 27 |
+| `BEG_CH07_005` | D3 | `27-22` | +90.67 | 28 |
+| `BEG_CH07_006` | D4 | `28-22` | +7.63 | 26 |
+| `BEG_CH07_007` | D5 — Attaque et point d'appui mobile | `26-21` | +99.73 | 34 |
+| `BEG_CH07_008` | D6 | `17-22` | +2.05 | 22 |
+| `BEG_CH07_009` | D7 (envoi à dame) | `28-23` | +1.10 | 27 |
+| `BEG_CH07_010` | D8 | `39-34` | +1.52 | 25 |
+| `BEG_CH07_011` | D9 | `13-18` | +3.74 | 23 |
+| `BEG_CH07_012` | D10 (`ad lib`) | `32-27` | +99.73 | 28 |
+
+🔴 **À vérifier (rédacteur humain)** — la colonne « Titre Dubois »
+ci-dessus est reprise du champ `title` des fixtures (saisie pré-cadrage
+zéro-invention). Vérifier la correspondance avec l'édition Dubois
+papier ; corriger les titres si nécessaire.
+
+🔴 **Divergences flaggées par Scan (cf `notes` du JSON)** —
+`BEG_CH07_003`, `BEG_CH07_008`, `BEG_CH07_011` : la
+`published_notation` commence par un coup entre parenthèses
+(`(14-20)`, `(17-22)`, `(13-18)`) alors que le PV Scan le donne en
+clair. C'est probablement un artefact de transcription (parens =
+coup adverse dans la convention Dubois) — pas une vraie divergence
+tactique, mais à confirmer.
+
+### 7.4. Particularités
+
+- `BEG_CH07_002` et `BEG_CH07_009` contiennent un **envoi à dame** —
+  `final_move=None`.
+- `BEG_CH07_012` (Dubois ch. 8 D10) introduit la notation `(ad lib)` :
+  l'adversaire a plusieurs captures forcées équivalentes. Voir
+  résolution R008 dans `RESOLUTIONS_debutant.md`.
 
 ---
 
