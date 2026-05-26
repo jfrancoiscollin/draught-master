@@ -13,7 +13,7 @@ interface Props {
 
 // Sources for which we ship rendered PDF page JPGs.  When a passage from
 // one of these sources is shown, we offer a "Voir le diagramme" button.
-const PAGE_IMAGE_AVAILABLE = new Set(['SIJBRANDS'])
+const PAGE_IMAGE_AVAILABLE = new Set(['SIJBRANDS', 'SPRINGER', 'ROOZENBURG'])
 
 // Captures any explicit mention of "Diagramme N" / "DIAGRAMME N" in
 // the passage text. We pick the first match — that's typically the
