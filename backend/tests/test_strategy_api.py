@@ -125,6 +125,32 @@ def test_centroid_is_unit_norm() -> None:
         assert abs(norm - 1.0) < 1e-5, f"{topic.key}: centroid norm = {norm}"
 
 
+def test_page_image_sijbrands(client: TestClient) -> None:
+    """Pre-rendered Sijbrands page JPGs ship with the backend.
+    `/page-image?source=SIJBRANDS&page=N` returns the JPEG when present."""
+    r = client.get("/api/strategy/page-image", params={"source": "SIJBRANDS", "page": 48})
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "image/jpeg"
+    assert len(r.content) > 1000
+
+
+def test_page_image_unknown_page_404s(client: TestClient) -> None:
+    r = client.get(
+        "/api/strategy/page-image", params={"source": "SIJBRANDS", "page": 9999}
+    )
+    assert r.status_code == 404
+    assert "9999" in r.json()["detail"]
+
+
+def test_page_image_unbundled_source_404s(client: TestClient) -> None:
+    """Sources without rendered pages (KELLER, ROOZENBURG, SPRINGER currently)
+    return 404, not 500."""
+    r = client.get(
+        "/api/strategy/page-image", params={"source": "KELLER", "page": 10}
+    )
+    assert r.status_code == 404
+
+
 def test_dormant_topic_returns_503(monkeypatch) -> None:
     """A topic whose filter matches no passage must yield 503, not 500.
     Simulated by injecting a topic with an impossible source filter."""
