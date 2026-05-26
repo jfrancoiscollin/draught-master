@@ -41,7 +41,11 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   const [topicsLoading, setTopicsLoading] = useState(true)
   const [searchLoading, setSearchLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [modalImage, setModalImage] = useState<{ src: string; caption: string } | null>(null)
+  const [modalImage, setModalImage] = useState<{
+    src: string
+    fallback?: string
+    caption: string
+  } | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -185,14 +189,22 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                 )}
                 {showImageBtn && (
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      const pageUrl = `/api/strategy/page-image?source=${encodeURIComponent(p.source)}&page=${p.page}`
+                      // Try isolated diagram crop first; fall back to full page
+                      // via the <img onError> handler if no crop is extracted
+                      // for this (page, number) pair (see api.py::diagram).
+                      const cropUrl = diagramNumber
+                        ? `/api/strategy/diagram?source=${encodeURIComponent(p.source)}&page=${p.page}&number=${diagramNumber}`
+                        : null
                       setModalImage({
-                        src: `/api/strategy/page-image?source=${encodeURIComponent(p.source)}&page=${p.page}`,
+                        src: cropUrl || pageUrl,
+                        fallback: cropUrl ? pageUrl : undefined,
                         caption: diagramNumber
                           ? `${p.source} — ${lang === 'fr' ? 'Diagramme' : 'Diagram'} ${diagramNumber} (page ${p.page})`
                           : `${p.source} — page ${p.page}`,
                       })
-                    }
+                    }}
                     className="ml-auto px-2 py-1 bg-amber-700 hover:bg-amber-600 text-white text-xs rounded-md font-medium"
                   >
                     {lang === 'fr'
@@ -231,6 +243,15 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
               src={modalImage.src}
               alt={modalImage.caption}
               className="max-w-full h-auto"
+              onError={e => {
+                // Crop endpoint 404s for ~30% of (page, number) pairs that
+                // weren't extracted — swap to full-page image once.
+                const img = e.currentTarget
+                if (modalImage.fallback && img.dataset.fallbackUsed !== 'true') {
+                  img.dataset.fallbackUsed = 'true'
+                  img.src = modalImage.fallback
+                }
+              }}
             />
           </div>
         </div>
