@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import FileResponse
 
 from .models import (
     StrategyPassageOut,
@@ -15,6 +17,8 @@ from .models import (
 from .topics import TOPICS, get_topic, topic_centroid
 
 log = logging.getLogger(__name__)
+
+_PAGES_DIR = Path(__file__).resolve().parent / "pages"
 
 router = APIRouter(prefix="/api/strategy", tags=["strategy"])
 
@@ -84,3 +88,31 @@ def search(
             for score, p in results
         ],
     )
+
+
+@router.get("/page-image")
+def page_image(
+    source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
+    page: int = Query(..., ge=1, description="1-based PDF page number"),
+) -> FileResponse:
+    """Return the rendered page from a corpus PDF as a JPEG.
+
+    Lets the frontend show the diagram referenced by a passage when the
+    prose says e.g. « Mettez la position du DIAGRAMME 6 sur le damier ».
+    Only Sijbrands is shipped for now — the other corpora aren't
+    rendered yet (see CADRAGE_STRATEGIE.md follow-up item).
+    """
+    source_dir = _PAGES_DIR / source.lower()
+    if not source_dir.is_dir():
+        raise HTTPException(
+            status_code=404,
+            detail=f"no page images bundled for source {source!r}",
+        )
+    img_path = source_dir / f"page_{page:04d}.jpg"
+    if not img_path.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail=f"page {page} not bundled for {source!r}",
+        )
+    return FileResponse(img_path, media_type="image/jpeg")
+

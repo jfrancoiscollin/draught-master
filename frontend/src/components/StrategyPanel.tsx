@@ -11,6 +11,15 @@ interface Props {
   lang?: 'fr' | 'en'
 }
 
+// Sources for which we ship rendered PDF page JPGs.  When a passage from
+// one of these sources is shown, we offer a "Voir le diagramme" button.
+const PAGE_IMAGE_AVAILABLE = new Set(['SIJBRANDS'])
+
+// Captures any explicit mention of "Diagramme N" / "DIAGRAMME N" in
+// the passage text. We pick the first match — that's typically the
+// diagram the passage is teaching from.
+const DIAGRAM_REF_RE = /\b[Dd]iagramme\s+(\d+)/
+
 /**
  * Strategy panel — curated topic buttons + sourced passages list.
  *
@@ -27,6 +36,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   const [topicsLoading, setTopicsLoading] = useState(true)
   const [searchLoading, setSearchLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [modalImage, setModalImage] = useState<{ src: string; caption: string } | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -135,25 +145,28 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
             {lang === 'fr' ? 'Aucun passage trouvé.' : 'No passages found.'}
           </p>
         )}
-        {passages.map(p => (
-          <article
-            key={p.passage_id}
-            className="rounded-md border border-gray-700 bg-gray-850 px-3 py-2"
-            style={{ backgroundColor: 'rgb(28, 32, 40)' }}
-          >
-            <header className="flex items-baseline justify-between gap-2 mb-1">
-              <span className="text-xs uppercase tracking-wide text-amber-400 font-semibold">
-                {p.source}
-              </span>
-              <span className="text-xs text-gray-500">
-                {lang === 'fr' ? 'page' : 'p.'} {p.page} · score {p.score.toFixed(3)}
-              </span>
-            </header>
-            <p className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">
-              {p.text}
-            </p>
-            {(p.phase || p.nature || p.systems.length > 0) && (
-              <footer className="mt-2 flex flex-wrap gap-1.5 text-[10px] text-gray-500">
+        {passages.map(p => {
+          const diagramMatch = p.text.match(DIAGRAM_REF_RE)
+          const showImageBtn = PAGE_IMAGE_AVAILABLE.has(p.source)
+          const diagramNumber = diagramMatch ? diagramMatch[1] : null
+          return (
+            <article
+              key={p.passage_id}
+              className="rounded-md border border-gray-700 px-3 py-2"
+              style={{ backgroundColor: 'rgb(28, 32, 40)' }}
+            >
+              <header className="flex items-baseline justify-between gap-2 mb-1">
+                <span className="text-xs uppercase tracking-wide text-amber-400 font-semibold">
+                  {p.source}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {lang === 'fr' ? 'page' : 'p.'} {p.page} · score {p.score.toFixed(3)}
+                </span>
+              </header>
+              <p className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">
+                {p.text}
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-gray-500">
                 {p.systems.map(s => (
                   <span key={s} className="px-1.5 py-0.5 bg-gray-800 rounded">
                     {s}
@@ -165,11 +178,58 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                 {p.nature && (
                   <span className="px-1.5 py-0.5 bg-gray-800 rounded">{p.nature}</span>
                 )}
-              </footer>
-            )}
-          </article>
-        ))}
+                {showImageBtn && (
+                  <button
+                    onClick={() =>
+                      setModalImage({
+                        src: `/api/strategy/page-image?source=${encodeURIComponent(p.source)}&page=${p.page}`,
+                        caption: diagramNumber
+                          ? `${p.source} — ${lang === 'fr' ? 'Diagramme' : 'Diagram'} ${diagramNumber} (page ${p.page})`
+                          : `${p.source} — page ${p.page}`,
+                      })
+                    }
+                    className="ml-auto px-2 py-1 bg-amber-700 hover:bg-amber-600 text-white text-xs rounded-md font-medium"
+                  >
+                    {lang === 'fr'
+                      ? (diagramNumber ? `Voir Diagramme ${diagramNumber}` : 'Voir la page')
+                      : (diagramNumber ? `View Diagram ${diagramNumber}` : 'View page')}
+                  </button>
+                )}
+              </div>
+            </article>
+          )
+        })}
       </div>
+
+      {modalImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+          onClick={() => setModalImage(null)}
+        >
+          <div
+            className="bg-gray-900 rounded-lg p-4 max-w-3xl max-h-[90vh] overflow-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-amber-400 font-semibold text-sm">
+                {modalImage.caption}
+              </span>
+              <button
+                onClick={() => setModalImage(null)}
+                className="text-gray-400 hover:text-white"
+                aria-label={lang === 'fr' ? 'Fermer' : 'Close'}
+              >
+                ✕
+              </button>
+            </div>
+            <img
+              src={modalImage.src}
+              alt={modalImage.caption}
+              className="max-w-full h-auto"
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
