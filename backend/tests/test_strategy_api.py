@@ -131,6 +131,7 @@ def test_centroid_is_unit_norm() -> None:
         ("SIJBRANDS", 48),
         ("SPRINGER", 10),
         ("ROOZENBURG", 10),
+        ("KELLER", 10),
     ],
 )
 def test_page_image_bundled_source(client: TestClient, source: str, page: int) -> None:
@@ -151,10 +152,11 @@ def test_page_image_unknown_page_404s(client: TestClient) -> None:
 
 
 def test_page_image_unbundled_source_404s(client: TestClient) -> None:
-    """KELLER doesn't yet ship rendered pages (Sprint 2 in
-    docs/STRATEGIE_DIAGRAMS_PLAN.md) — returns 404, not 500."""
+    """A source we don't ship pages for must 404, not 500. All 4 corpora
+    are now bundled (Sprints 1-2 in docs/STRATEGIE_DIAGRAMS_PLAN.md), so
+    we probe with a synthetic source name to exercise the not-found path."""
     r = client.get(
-        "/api/strategy/page-image", params={"source": "KELLER", "page": 10}
+        "/api/strategy/page-image", params={"source": "NOT_A_REAL_SOURCE", "page": 10}
     )
     assert r.status_code == 404
 
