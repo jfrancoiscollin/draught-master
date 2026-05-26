@@ -104,22 +104,29 @@ def git_head(repo: Path) -> str:
 def sync(dilf_root: Path, dm_root: Path, dry_run: bool) -> Tuple[bool, str]:
     md_src = dilf_root / "docs" / "pre_process_corpus" / "manuel_debutant.md"
     fx_src = dilf_root / "docs" / "pre_process_corpus" / "fixtures_debutant.py"
+    src_doc_src = dilf_root / "docs" / "pre_process_corpus" / "sources_debutant.md"
     md_dst = dm_root / "docs" / "manuels" / "debutant" / "manuel_debutant.md"
     fx_dst = dm_root / "backend" / "manuels" / "fixtures_debutant.py"
+    src_doc_dst = dm_root / "docs" / "manuels" / "debutant" / "sources_debutant.md"
     manifest = dm_root / "backend" / "manuels" / "CORPUS_MANIFEST.json"
 
-    for p in (md_src, fx_src):
+    for p in (md_src, fx_src, src_doc_src):
         if not p.exists():
             return False, f"dilf source missing: {p}"
 
     md_new = reapply_metadata(md_src.read_text(encoding="utf-8"))
     fx_new = fx_src.read_text(encoding="utf-8")
+    src_doc_new = src_doc_src.read_text(encoding="utf-8")
 
     md_old = md_dst.read_text(encoding="utf-8") if md_dst.exists() else ""
     fx_old = fx_dst.read_text(encoding="utf-8") if fx_dst.exists() else ""
+    src_doc_old = (
+        src_doc_dst.read_text(encoding="utf-8") if src_doc_dst.exists() else ""
+    )
 
     md_changed = md_new != md_old
     fx_changed = fx_new != fx_old
+    src_doc_changed = src_doc_new != src_doc_old
 
     sha = git_head(dilf_root)
     today = date.today().isoformat()
@@ -127,6 +134,7 @@ def sync(dilf_root: Path, dm_root: Path, dry_run: bool) -> Tuple[bool, str]:
     summary = (
         f"manuel: {'updated' if md_changed else 'unchanged'} | "
         f"fixtures: {'updated' if fx_changed else 'unchanged'} | "
+        f"sources_doc: {'updated' if src_doc_changed else 'unchanged'} | "
         f"dilf={sha[:7]} synced={today}"
     )
 
@@ -137,6 +145,8 @@ def sync(dilf_root: Path, dm_root: Path, dry_run: bool) -> Tuple[bool, str]:
         md_dst.write_text(md_new, encoding="utf-8")
     if fx_changed:
         fx_dst.write_text(fx_new, encoding="utf-8")
+    if src_doc_changed:
+        src_doc_dst.write_text(src_doc_new, encoding="utf-8")
 
     manifest_data = json.loads(manifest.read_text(encoding="utf-8")) if manifest.exists() else {}
     manifest_data.update({
@@ -153,6 +163,11 @@ def sync(dilf_root: Path, dm_root: Path, dry_run: bool) -> Tuple[bool, str]:
             {
                 "local": "backend/manuels/fixtures_debutant.py",
                 "dilf": "docs/pre_process_corpus/fixtures_debutant.py",
+                "local_modifications": None,
+            },
+            {
+                "local": "docs/manuels/debutant/sources_debutant.md",
+                "dilf": "docs/pre_process_corpus/sources_debutant.md",
                 "local_modifications": None,
             },
         ],
