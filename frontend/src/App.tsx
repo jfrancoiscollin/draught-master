@@ -18,6 +18,7 @@ import PedagogyPanel from './components/PedagogyPanel'
 import LivePlayPanel from './components/LivePlayPanel'
 import LiveGameScreen from './components/LiveGameScreen'
 import ChallengeToast from './components/ChallengeToast'
+import StrategyPanel from './components/StrategyPanel'
 import type { LiveGameSessionState } from './api/client'
 import { useLiveWS } from './hooks/useLiveWS'
 import MotifDetailPage from './components/MotifDetailPage'
@@ -172,7 +173,7 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'live' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu' | 'my-games'
+type Tab = 'home' | 'play' | 'live' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu' | 'my-games' | 'strategy'
 
 export default function App() {
   const { t, language } = useLanguage()
@@ -1228,6 +1229,15 @@ export default function App() {
                 <img src={logoBothSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{t('playBothSides')}</span>
               </button>
+              {/* Strategy panel — curated topic buttons over the prose
+                  corpus (Sijbrands / Roozenburg / Keller / Springer). */}
+              <button
+                onClick={() => setTab('strategy')}
+                className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
+              >
+                <div className="flex-shrink-0 flex items-center justify-center text-4xl" style={{ width: 64, height: 64 }}>📚</div>
+                <span className="flex-1 text-lg font-bold text-white text-right">{t('tabStrategy')}</span>
+              </button>
             </div>
           </div>
         )}
@@ -1248,6 +1258,16 @@ export default function App() {
               setPreloadedUserSide(side === 'black' ? 'black' : 'white')
               setTab('import-game')
             }}
+          />
+        )}
+
+        {/* STRATEGY TAB — curated topic buttons + sourced passages from
+            dilf's prose corpus (Sijbrands / Roozenburg / Keller /
+            Springer). Backed by /api/strategy/*. */}
+        {tab === 'strategy' && (
+          <StrategyPanel
+            onClose={() => setTab('home')}
+            lang={language}
           />
         )}
 
