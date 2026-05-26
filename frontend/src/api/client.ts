@@ -835,3 +835,48 @@ export async function getGameNarrative(
   )
   return res.data
 }
+
+// Strategy RAG (/api/strategy/*) — curated topic buttons that surface
+// the most representative passages of each system in dilf's prose
+// corpus. See backend/strategy/topics.py and CADRAGE_STRATEGIE.md §8.
+
+export interface StrategyTopic {
+  key: string
+  label_fr: string
+  label_en: string
+  description_fr: string
+  available: boolean
+}
+
+export interface StrategyPassage {
+  passage_id: string
+  score: number
+  text: string
+  source: string
+  book: string
+  page: number
+  systems: string[]
+  phase: string | null
+  nature: string | null
+}
+
+export interface StrategySearchResult {
+  topic_key: string
+  top_k: number
+  passages: StrategyPassage[]
+}
+
+export async function listStrategyTopics(): Promise<StrategyTopic[]> {
+  const res = await api.get<StrategyTopic[]>('/strategy/topics')
+  return res.data
+}
+
+export async function searchStrategyTopic(
+  topic: string,
+  topK: number = 10,
+): Promise<StrategySearchResult> {
+  const res = await api.get<StrategySearchResult>('/strategy/search', {
+    params: { topic, top_k: topK },
+  })
+  return res.data
+}
