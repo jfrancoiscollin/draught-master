@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
@@ -21,6 +23,19 @@ log = logging.getLogger(__name__)
 _PAGES_DIR = Path(__file__).resolve().parent / "pages"
 
 router = APIRouter(prefix="/api/strategy", tags=["strategy"])
+
+
+@lru_cache(maxsize=8)
+def _load_diagram_manifest(source: str) -> dict[tuple[int, int], str]:
+    """Return ``{(page, number): crop_filename}`` for a source, or {} if no
+    manifest is bundled. Cached — manifests are small (<50 KB) and immutable
+    at runtime."""
+    manifest_path = _PAGES_DIR / source.lower() / "diagrams_manifest.json"
+    if not manifest_path.is_file():
+        return {}
+    with manifest_path.open() as f:
+        data = json.load(f)
+    return {(e["page"], e["number"]): e["crop"] for e in data.get("entries", [])}
 
 
 @router.get("/topics", response_model=list[TopicOut])
@@ -99,8 +114,6 @@ def page_image(
 
     Lets the frontend show the diagram referenced by a passage when the
     prose says e.g. « Mettez la position du DIAGRAMME 6 sur le damier ».
-    Only Sijbrands is shipped for now — the other corpora aren't
-    rendered yet (see CADRAGE_STRATEGIE.md follow-up item).
     """
     source_dir = _PAGES_DIR / source.lower()
     if not source_dir.is_dir():
@@ -115,4 +128,39 @@ def page_image(
             detail=f"page {page} not bundled for {source!r}",
         )
     return FileResponse(img_path, media_type="image/jpeg")
+
+
+@router.get("/diagram")
+def diagram(
+    source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
+    page: int = Query(..., ge=1, description="Page where the diagram is referenced"),
+    number: int = Query(..., ge=1, description="Diagram number as printed in the book"),
+) -> FileResponse:
+    """Return an isolated diagram crop (JPEG), or 404 if not extracted.
+
+    Sijbrands numbering restarts at 1 per chapter, so a global
+    ``(source, number)`` key wouldn't be unique — we key by
+    ``(page, number)`` and the frontend passes the passage's page.
+    The texture-variance detector + caption proximity matching covers
+    ~70% of Sijbrands pages; the rest fall back to the full-page modal
+    via ``/page-image``.  See ``docs/STRATEGIE_DIAGRAMS_PLAN.md`` §4.
+    """
+    manifest = _load_diagram_manifest(source)
+    if not manifest:
+        raise HTTPException(
+            status_code=404,
+            detail=f"no diagram crops bundled for source {source!r}",
+        )
+    crop_name = manifest.get((page, number))
+    if crop_name is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"diagram {number} on page {page} not extracted for {source!r}",
+        )
+    crop_path = _PAGES_DIR / source.lower() / "diagrams" / crop_name
+    if not crop_path.is_file():
+        # Manifest entry without backing file — corruption / partial bundle.
+        log.warning("manifest entry %s missing on disk", crop_path)
+        raise HTTPException(status_code=404, detail="crop file missing")
+    return FileResponse(crop_path, media_type="image/jpeg")
 

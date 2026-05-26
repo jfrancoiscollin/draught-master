@@ -2,27 +2,28 @@
 
 > Plan vivant pour amener les passages du panel **Stratégie** au format
 > « leçon » (diagramme rendu à côté du texte, idéalement interactif).
-> État au 2026-05-26 après merge de la PR
-> [draught-master#75](https://github.com/jfrancoiscollin/draught-master/pull/75).
+> Mis à jour après merge des PRs #75, #76, #77 + Sprint 3.
 
 ---
 
 ## 1. État actuel (livré)
 
-| Source            | Format diagramme actuel | Bundle           |
-|-------------------|-------------------------|------------------|
-| **SIJBRANDS**     | Image de la page complète (JPEG 600 px) dans une modal au clic | `backend/strategy/pages/sijbrands/` (187 JPGs, ~14 MB) |
-| KELLER            | Aucun (bouton "Voir page" caché)              | —                |
-| ROOZENBURG        | Aucun                                          | —                |
-| SPRINGER          | Aucun                                          | —                |
+| Source            | Page-image       | Crop diagramme isolé        |
+|-------------------|------------------|------------------------------|
+| **SIJBRANDS**     | ✅ 187 JPGs ~14 MB | ✅ 513 crops, manifest 22 numéros · couverture ~70 % pages (Sprint 3, ce PR) |
+| **SPRINGER**      | ✅ 391 JPGs ~32 MB | ❌ pas encore                |
+| **ROOZENBURG**    | ✅ 68 JPGs ~5 MB  | ❌ pas encore                |
+| **KELLER**        | ✅ 93 JPGs ~7 MB  | ❌ pas encore                |
 
 **UI** : `StrategyPanel.tsx` détecte « Diagramme N » / « DIAGRAMME N » dans le
-texte du passage. Si la source est dans `PAGE_IMAGE_AVAILABLE = {"SIJBRANDS"}`,
-un bouton _Voir Diagramme N_ ouvre une modal centrée avec le `<img>` servi par
-`GET /api/strategy/page-image?source=SIJBRANDS&page=<n>`.
+texte du passage. Pour les 4 sources de `PAGE_IMAGE_AVAILABLE`, un bouton
+_Voir Diagramme N_ ouvre une modal centrée. Le `<img>` essaie d'abord
+`GET /api/strategy/diagram?source=…&page=…&number=N` (crop isolé) et
+**tombe automatiquement sur** `GET /api/strategy/page-image?…&page=…`
+via `onError` quand le crop n'a pas pu être extrait.
 
-**Limite admise** : le lecteur voit le diagramme **dans son contexte de page**,
-pas isolé, et il n'est **pas interactif** (pas de plateau, pas de coups).
+**Limite admise** : la classification des pièces n'est pas encore faite,
+donc pas de FEN, pas de plateau interactif (Lane C, à venir).
 
 ---
 

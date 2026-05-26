@@ -161,6 +161,41 @@ def test_page_image_unbundled_source_404s(client: TestClient) -> None:
     assert r.status_code == 404
 
 
+def test_diagram_crop_sijbrands(client: TestClient) -> None:
+    """Sijbrands ships extracted diagram crops via texture-variance detection
+    + caption proximity matching (Sprint 3, lane B). ~70% of pages produce
+    at least one match — p.48 #6 is one of the canonical Chapter 4 examples."""
+    r = client.get(
+        "/api/strategy/diagram",
+        params={"source": "SIJBRANDS", "page": 48, "number": 6},
+    )
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "image/jpeg"
+    assert len(r.content) > 1000
+
+
+def test_diagram_crop_unextracted_pair_404s(client: TestClient) -> None:
+    """A (page, number) pair not in the manifest must 404 — the frontend
+    catches this via <img onError> and falls back to /page-image."""
+    r = client.get(
+        "/api/strategy/diagram",
+        params={"source": "SIJBRANDS", "page": 48, "number": 99},
+    )
+    assert r.status_code == 404
+    assert "not extracted" in r.json()["detail"]
+
+
+def test_diagram_crop_unbundled_source_404s(client: TestClient) -> None:
+    """Sources without an extraction manifest (KELLER/SPRINGER/ROOZENBURG
+    for now — Sprint 3 covered Sijbrands only) must 404 with a clear hint."""
+    r = client.get(
+        "/api/strategy/diagram",
+        params={"source": "KELLER", "page": 10, "number": 1},
+    )
+    assert r.status_code == 404
+    assert "no diagram crops" in r.json()["detail"]
+
+
 def test_dormant_topic_returns_503(monkeypatch) -> None:
     """A topic whose filter matches no passage must yield 503, not 500.
     Simulated by injecting a topic with an impossible source filter."""
