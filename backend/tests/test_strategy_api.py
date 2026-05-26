@@ -125,10 +125,18 @@ def test_centroid_is_unit_norm() -> None:
         assert abs(norm - 1.0) < 1e-5, f"{topic.key}: centroid norm = {norm}"
 
 
-def test_page_image_sijbrands(client: TestClient) -> None:
-    """Pre-rendered Sijbrands page JPGs ship with the backend.
-    `/page-image?source=SIJBRANDS&page=N` returns the JPEG when present."""
-    r = client.get("/api/strategy/page-image", params={"source": "SIJBRANDS", "page": 48})
+@pytest.mark.parametrize(
+    "source,page",
+    [
+        ("SIJBRANDS", 48),
+        ("SPRINGER", 10),
+        ("ROOZENBURG", 10),
+    ],
+)
+def test_page_image_bundled_source(client: TestClient, source: str, page: int) -> None:
+    """Pre-rendered page JPGs ship with the backend for these sources.
+    `/page-image?source=<S>&page=<N>` returns the JPEG when present."""
+    r = client.get("/api/strategy/page-image", params={"source": source, "page": page})
     assert r.status_code == 200
     assert r.headers["content-type"] == "image/jpeg"
     assert len(r.content) > 1000
@@ -143,8 +151,8 @@ def test_page_image_unknown_page_404s(client: TestClient) -> None:
 
 
 def test_page_image_unbundled_source_404s(client: TestClient) -> None:
-    """Sources without rendered pages (KELLER, ROOZENBURG, SPRINGER currently)
-    return 404, not 500."""
+    """KELLER doesn't yet ship rendered pages (Sprint 2 in
+    docs/STRATEGIE_DIAGRAMS_PLAN.md) — returns 404, not 500."""
     r = client.get(
         "/api/strategy/page-image", params={"source": "KELLER", "page": 10}
     )
