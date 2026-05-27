@@ -60,6 +60,14 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   // — used when adding a new FEN to diagrams_fens.json without leaving the
   // panel.  Cleared whenever the modal navigates or closes.
   const [annotating, setAnnotating] = useState(false)
+  // Jump-to-diagram: lets the operator open the modal on any (source, page,
+  // number) without going through topic search.  Synthetic passage stored
+  // here; when set, the modal renders it instead of passages[modalIndex].
+  // No prev/next navigation in jump mode (no passage list).
+  const [jumpPassage, setJumpPassage] = useState<StrategyPassage | null>(null)
+  const [jumpSource, setJumpSource] = useState('SIJBRANDS')
+  const [jumpPage, setJumpPage] = useState('')
+  const [jumpNumber, setJumpNumber] = useState('')
 
   const buildModalContent = useCallback(
     (p: StrategyPassage) => {
@@ -86,16 +94,37 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   useEffect(() => {
     setZoomed(false)
     setAnnotating(false)
-  }, [modalIndex])
+  }, [modalIndex, jumpPassage])
+
+  const submitJump = useCallback(() => {
+    const page = parseInt(jumpPage, 10)
+    const number = parseInt(jumpNumber, 10)
+    if (!jumpSource || isNaN(page) || isNaN(number)) return
+    // Synthetic passage carries "Diagramme N" in its text so the existing
+    // regex match keeps working — that's how the modal derives the crop
+    // URL, the FEN fetch key, and the annotator's target number.
+    setJumpPassage({
+      passage_id: `jump:${jumpSource}:${page}:${number}`,
+      score: 0,
+      text: `Diagramme ${number}`,
+      source: jumpSource,
+      book: jumpSource,
+      page,
+      systems: [],
+      phase: null,
+      nature: null,
+    })
+    setModalIndex(null)
+  }, [jumpSource, jumpPage, jumpNumber])
 
   // Try to load a manually annotated FEN for the focused passage. Most
   // diagrams aren't annotated yet (Lane C is a long manual effort) so 404s
   // are expected and silent.  We abort on unmount/navigation to prevent
-  // a late response from overwriting a newer one.
+  // a late response from overwriting a newer one.  Triggered both by topic
+  // search results (modalIndex) and direct jumps (jumpPassage).
   useEffect(() => {
     setModalFen(null)
-    if (modalIndex === null) return
-    const p = passages[modalIndex]
+    const p = jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
     if (!p) return
     const diagramMatch = p.text.match(DIAGRAM_REF_RE)
     if (!diagramMatch) return
@@ -112,25 +141,29 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
         /* aborted or network error — keep modalFen null, the crop alone is fine */
       })
     return () => ctrl.abort()
-  }, [modalIndex, passages])
+  }, [modalIndex, jumpPassage, passages])
 
   // Keyboard shortcuts inside the modal: Esc closes, ←/→ navigate to the
-  // previous/next passage with a diagram button (all sources have one now,
-  // so any adjacent passage works).
+  // previous/next passage when in topic-search mode.  Jump mode has no
+  // list so arrow keys are no-ops; Esc still closes.
   useEffect(() => {
-    if (modalIndex === null) return
+    const open = modalIndex !== null || jumpPassage !== null
+    if (!open) return
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setModalIndex(null)
-      } else if (e.key === 'ArrowLeft' && modalIndex > 0) {
-        setModalIndex(modalIndex - 1)
-      } else if (e.key === 'ArrowRight' && modalIndex < passages.length - 1) {
-        setModalIndex(modalIndex + 1)
+        setJumpPassage(null)
+      } else if (modalIndex !== null) {
+        if (e.key === 'ArrowLeft' && modalIndex > 0) {
+          setModalIndex(modalIndex - 1)
+        } else if (e.key === 'ArrowRight' && modalIndex < passages.length - 1) {
+          setModalIndex(modalIndex + 1)
+        }
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [modalIndex, passages.length])
+  }, [modalIndex, jumpPassage, passages.length])
 
   useEffect(() => {
     let cancelled = false
@@ -214,6 +247,54 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
             ))}
           </div>
         )}
+        {/* Jump-to-diagram: opens the modal directly on any (source, page,
+            number) without going through topic search.  Useful for the
+            FEN annotation workflow where the operator wants to cover
+            specific diagrams that no curated topic surfaces. */}
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            submitJump()
+          }}
+          className="flex flex-wrap items-center gap-2 text-xs text-gray-400 pt-1"
+        >
+          <span className="text-[10px] uppercase tracking-wide">
+            {lang === 'fr' ? 'Aller à un diagramme :' : 'Jump to diagram:'}
+          </span>
+          <select
+            value={jumpSource}
+            onChange={e => setJumpSource(e.target.value)}
+            className="bg-gray-800 text-gray-100 rounded px-2 py-1 border border-gray-700"
+          >
+            <option value="SIJBRANDS">SIJBRANDS</option>
+            <option value="SPRINGER">SPRINGER</option>
+            <option value="ROOZENBURG">ROOZENBURG</option>
+            <option value="KELLER">KELLER</option>
+          </select>
+          <input
+            type="number"
+            min={1}
+            value={jumpPage}
+            onChange={e => setJumpPage(e.target.value)}
+            placeholder={lang === 'fr' ? 'page' : 'page'}
+            className="bg-gray-800 text-gray-100 rounded px-2 py-1 border border-gray-700 w-20"
+          />
+          <input
+            type="number"
+            min={1}
+            value={jumpNumber}
+            onChange={e => setJumpNumber(e.target.value)}
+            placeholder="#"
+            className="bg-gray-800 text-gray-100 rounded px-2 py-1 border border-gray-700 w-16"
+          />
+          <button
+            type="submit"
+            disabled={!jumpPage || !jumpNumber}
+            className="px-2 py-1 bg-amber-700 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs rounded font-medium"
+          >
+            {lang === 'fr' ? 'Voir' : 'Open'}
+          </button>
+        </form>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -288,18 +369,26 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
         })}
       </div>
 
-      {modalIndex !== null && passages[modalIndex] && (() => {
-        const focusedPassage = passages[modalIndex]
+      {(() => {
+        const focusedPassage =
+          jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
+        if (!focusedPassage) return null
         const modal = buildModalContent(focusedPassage)
-        const hasPrev = modalIndex > 0
-        const hasNext = modalIndex < passages.length - 1
+        // Prev/next only meaningful for topic-search results, not jumps.
+        const navEnabled = jumpPassage === null && modalIndex !== null
+        const hasPrev = navEnabled && modalIndex! > 0
+        const hasNext = navEnabled && modalIndex! < passages.length - 1
         const diagramMatch = focusedPassage.text.match(DIAGRAM_REF_RE)
         const diagramNumber = diagramMatch ? parseInt(diagramMatch[1], 10) : null
         const canAnnotate = diagramNumber !== null
+        const closeModal = () => {
+          setModalIndex(null)
+          setJumpPassage(null)
+        }
         return (
           <div
             className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
-            onClick={() => setModalIndex(null)}
+            onClick={closeModal}
           >
             <div
               className={`bg-gray-900 rounded-lg p-4 ${zoomed ? 'max-w-[95vw] max-h-[95vh]' : 'max-w-3xl max-h-[90vh]'} overflow-auto`}
@@ -310,27 +399,31 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   {modal.caption}
                 </span>
                 <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <span>
-                    {modalIndex + 1} / {passages.length}
-                  </span>
-                  <button
-                    onClick={() => setModalIndex(modalIndex - 1)}
-                    disabled={!hasPrev}
-                    className="px-2 py-1 rounded hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent"
-                    aria-label={lang === 'fr' ? 'Précédent' : 'Previous'}
-                    title="←"
-                  >
-                    ←
-                  </button>
-                  <button
-                    onClick={() => setModalIndex(modalIndex + 1)}
-                    disabled={!hasNext}
-                    className="px-2 py-1 rounded hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent"
-                    aria-label={lang === 'fr' ? 'Suivant' : 'Next'}
-                    title="→"
-                  >
-                    →
-                  </button>
+                  {navEnabled && (
+                    <>
+                      <span>
+                        {modalIndex! + 1} / {passages.length}
+                      </span>
+                      <button
+                        onClick={() => setModalIndex(modalIndex! - 1)}
+                        disabled={!hasPrev}
+                        className="px-2 py-1 rounded hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent"
+                        aria-label={lang === 'fr' ? 'Précédent' : 'Previous'}
+                        title="←"
+                      >
+                        ←
+                      </button>
+                      <button
+                        onClick={() => setModalIndex(modalIndex! + 1)}
+                        disabled={!hasNext}
+                        className="px-2 py-1 rounded hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent"
+                        aria-label={lang === 'fr' ? 'Suivant' : 'Next'}
+                        title="→"
+                      >
+                        →
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => setZoomed(z => !z)}
                     className="px-2 py-1 rounded hover:bg-gray-800"
@@ -355,7 +448,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                     </button>
                   )}
                   <button
-                    onClick={() => setModalIndex(null)}
+                    onClick={closeModal}
                     className="px-2 py-1 rounded hover:bg-gray-800"
                     aria-label={lang === 'fr' ? 'Fermer (Esc)' : 'Close (Esc)'}
                     title="Esc"
@@ -420,9 +513,13 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   </div>
                 )}
               </div>
-              <p className="mt-3 text-xs text-gray-200 leading-relaxed max-h-32 overflow-auto border-t border-gray-700 pt-2">
-                {focusedPassage.text}
-              </p>
+              {/* Hide the prose footer in jump mode — the synthetic
+                  passage's text is just "Diagramme N", no value to show. */}
+              {jumpPassage === null && (
+                <p className="mt-3 text-xs text-gray-200 leading-relaxed max-h-32 overflow-auto border-t border-gray-700 pt-2">
+                  {focusedPassage.text}
+                </p>
+              )}
             </div>
           </div>
         )
