@@ -1,4 +1,12 @@
 {
   "source": "SIJBRANDS",
-  "entries": []
+  "entries": [
+    {
+      "page": 48,
+      "number": 6,
+      "fen": "W:W34,35,37,38,39,43,44,45,48:B2,4,7,8,13,14,17,18,19,23,27,28",
+      "_ai_draft": true,
+      "_notes": "Proof-of-concept FEN transcribed from crop by Claude. Prose-confirmed pieces: B28 (captures to 39), B27 (attacked after 28x39), B2 (plays 2-7), W37 (plays 37-32), W39 (plays 39-33), W43 (plays 43x34). Other pieces inferred from visual reading — verify before trusting."
+    }
+  ]
 }

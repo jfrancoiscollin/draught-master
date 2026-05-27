@@ -222,11 +222,13 @@ def test_diagram_fen_no_file_404(client: TestClient) -> None:
 
 
 def test_diagram_fen_not_annotated_404(client: TestClient) -> None:
-    """Sijbrands and Springer ship diagrams_fens.json with `entries: []`
-    — every diagram returns 404 'not yet annotated' until JF fills it in."""
+    """Sijbrands and Springer ship diagrams_fens.json — most entries are
+    empty so the endpoint 404s with 'not yet annotated'. We probe a
+    deliberately distant (page, number) to stay future-proof as more
+    annotations get filled in."""
     r = client.get(
         "/api/strategy/diagram-fen",
-        params={"source": "SIJBRANDS", "page": 48, "number": 6},
+        params={"source": "SIJBRANDS", "page": 200, "number": 99},
     )
     assert r.status_code == 404
     assert "not yet annotated" in r.json()["detail"]
