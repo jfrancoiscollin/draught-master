@@ -10,10 +10,10 @@
 
 | Source            | Page-image       | Crop diagramme isolé        |
 |-------------------|------------------|------------------------------|
-| **SIJBRANDS**     | ✅ 187 JPGs ~14 MB | ✅ 513 crops, manifest 22 numéros · couverture ~70 % pages (Sprint 3, ce PR) |
-| **SPRINGER**      | ✅ 391 JPGs ~32 MB | ❌ pas encore                |
-| **ROOZENBURG**    | ✅ 68 JPGs ~5 MB  | ❌ pas encore                |
-| **KELLER**        | ✅ 93 JPGs ~7 MB  | ❌ pas encore                |
+| **SIJBRANDS**     | ✅ 187 JPGs ~14 MB | ✅ 513 crops, ~70 % couverture |
+| **SPRINGER**      | ✅ 391 JPGs ~32 MB | ✅ 668 crops, ~65 % couverture (Sprint 4) |
+| **ROOZENBURG**    | ✅ 68 JPGs ~5 MB  | ❌ pas de captions « DIAGRAMME N » dans le PDF (texte d'ouvertures principalement) |
+| **KELLER**        | ✅ 93 JPGs ~7 MB  | ❌ diagrammes inline sans numérotation explicite (sections A/B/C…) — anchor différent à concevoir |
 
 **UI** : `StrategyPanel.tsx` détecte « Diagramme N » / « DIAGRAMME N » dans le
 texte du passage. Pour les 4 sources de `PAGE_IMAGE_AVAILABLE`, un bouton

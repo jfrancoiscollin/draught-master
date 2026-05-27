@@ -8,4 +8,4 @@ node_modules/
 dist/
 .vite/
 backend/data/
-backend/strategy/pages/sijbrands/.render_cache/
+backend/strategy/pages/*/.render_cache/
