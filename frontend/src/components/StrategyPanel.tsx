@@ -5,6 +5,8 @@ import {
   type StrategyTopic,
   type StrategyPassage,
 } from '../api/client'
+import Board from './Board'
+import { fenToBoard } from '../utils/fen'
 
 interface Props {
   onClose: () => void
@@ -47,6 +49,10 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   // so the data-fallback-used dataset resets between passages.
   const [modalIndex, setModalIndex] = useState<number | null>(null)
   const [zoomed, setZoomed] = useState(false)
+  // FEN of the currently focused diagram, when manually annotated in the
+  // diagrams_fens.json file of its source.  Null while loading or when the
+  // endpoint 404s (no annotation yet) — frontend shows the crop alone.
+  const [modalFen, setModalFen] = useState<string | null>(null)
 
   const buildModalContent = useCallback(
     (p: StrategyPassage) => {
@@ -72,6 +78,32 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   useEffect(() => {
     setZoomed(false)
   }, [modalIndex])
+
+  // Try to load a manually annotated FEN for the focused passage. Most
+  // diagrams aren't annotated yet (Lane C is a long manual effort) so 404s
+  // are expected and silent.  We abort on unmount/navigation to prevent
+  // a late response from overwriting a newer one.
+  useEffect(() => {
+    setModalFen(null)
+    if (modalIndex === null) return
+    const p = passages[modalIndex]
+    if (!p) return
+    const diagramMatch = p.text.match(DIAGRAM_REF_RE)
+    if (!diagramMatch) return
+    const ctrl = new AbortController()
+    fetch(
+      `/api/strategy/diagram-fen?source=${encodeURIComponent(p.source)}&page=${p.page}&number=${diagramMatch[1]}`,
+      { signal: ctrl.signal },
+    )
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        if (j?.fen) setModalFen(j.fen)
+      })
+      .catch(() => {
+        /* aborted or network error — keep modalFen null, the crop alone is fine */
+      })
+    return () => ctrl.abort()
+  }, [modalIndex, passages])
 
   // Keyboard shortcuts inside the modal: Esc closes, ←/→ navigate to the
   // previous/next passage with a diagram button (all sources have one now,
@@ -305,24 +337,45 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   </button>
                 </div>
               </div>
-              <img
-                key={modalIndex}
-                src={modal.src}
-                alt={modal.caption}
-                className={zoomed ? 'cursor-zoom-out' : 'max-w-full h-auto cursor-zoom-in'}
-                onClick={() => setZoomed(z => !z)}
-                onError={e => {
-                  // Crop endpoint 404s for ~30% of (page, number) pairs that
-                  // weren't extracted — swap to full-page image once.  The
-                  // key={modalIndex} above resets data-fallback-used between
-                  // passages so each one gets its own chance.
-                  const img = e.currentTarget
-                  if (modal.fallback && img.dataset.fallbackUsed !== 'true') {
-                    img.dataset.fallbackUsed = 'true'
-                    img.src = modal.fallback
+              <div className={modalFen ? 'flex flex-wrap items-start gap-4' : ''}>
+                <img
+                  key={modalIndex}
+                  src={modal.src}
+                  alt={modal.caption}
+                  className={
+                    zoomed
+                      ? 'cursor-zoom-out'
+                      : `${modalFen ? 'max-w-xs' : 'max-w-full'} h-auto cursor-zoom-in`
                   }
-                }}
-              />
+                  onClick={() => setZoomed(z => !z)}
+                  onError={e => {
+                    // Crop endpoint 404s for ~30% of (page, number) pairs that
+                    // weren't extracted — swap to full-page image once.  The
+                    // key={modalIndex} above resets data-fallback-used between
+                    // passages so each one gets its own chance.
+                    const img = e.currentTarget
+                    if (modal.fallback && img.dataset.fallbackUsed !== 'true') {
+                      img.dataset.fallbackUsed = 'true'
+                      img.src = modal.fallback
+                    }
+                  }}
+                />
+                {modalFen && (
+                  <div className="flex-1 min-w-[280px]">
+                    <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">
+                      {lang === 'fr' ? 'Plateau interactif' : 'Interactive board'}
+                    </div>
+                    <Board
+                      board={fenToBoard(modalFen)}
+                      legalMoves={[]}
+                      onMove={() => {}}
+                      selectedSquare={null}
+                      onSelectSquare={() => {}}
+                      disabled
+                    />
+                  </div>
+                )}
+              </div>
               <p className="mt-3 text-xs text-gray-200 leading-relaxed max-h-32 overflow-auto border-t border-gray-700 pt-2">
                 {focusedPassage.text}
               </p>

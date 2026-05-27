@@ -126,6 +126,83 @@ caption-vs-boards en CI pour suivre la dérive.
 
 ---
 
+## 4bis. Lane C — Annotation FEN (infrastructure prête)
+
+Sprint follow-up : l'infrastructure pour annoter des FENs et afficher
+un plateau interactif est en place. Reste à **remplir** les annotations
+à la main (ou via un futur classificateur de pièces).
+
+### Format JSON par source
+
+`backend/strategy/pages/<source>/diagrams_fens.json` :
+
+```json
+{
+  "source": "SIJBRANDS",
+  "entries": [
+    {
+      "page": 48,
+      "number": 6,
+      "fen": "W:W31,32,33,34,38,39,40,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,12,13,17,22,27"
+    }
+  ]
+}
+```
+
+Conventions :
+
+- **Format FEN** : FMJD draughts — `W:W<case>,…:B<case>,…` (cases 1-50).
+  Préfixer `K` pour une dame : `K42` = dame blanche en 42.
+- **Numérotation** : `page` + `number` matche le crop manifest. Pour
+  Sijbrands/Springer la numérotation redémarre par chapitre, donc la
+  même paire est unique par source.
+- Une entrée par diagramme effectivement annoté. Les autres restent
+  hors fichier — l'endpoint renverra 404 et le frontend affichera le
+  crop seul (pas de Board).
+
+### Endpoint backend
+
+`GET /api/strategy/diagram-fen?source=…&page=…&number=…` :
+
+- 200 `{fen, source, page, number}` si l'entrée existe
+- 404 `"no FEN file bundled"` si le fichier `diagrams_fens.json` manque
+  (sources non bundlées : KELLER, ROOZENBURG aujourd'hui)
+- 404 `"not yet annotated"` si le fichier existe mais l'entrée manque
+
+Manifest chargé via `@lru_cache` (immutable au runtime).
+
+### Frontend
+
+Le panel `StrategyPanel.tsx` fetch le FEN au mount de la modal. Si
+200 → un `<Board disabled>` se rend à côté du crop image (responsive
+flex layout, le crop devient `max-w-xs` pour faire de la place au
+Board). Sinon → seulement le crop, comportement inchangé.
+
+### Workflow d'annotation manuel
+
+1. Ouvrir la modal sur un diagramme depuis le panel Stratégie
+   (sur staging ou prod). Noter source, page, numéro affichés en
+   header (ex : `SIJBRANDS — Diagramme 6 (page 48)`).
+2. Lire la position sur le crop.
+3. Éditer `backend/strategy/pages/<source>/diagrams_fens.json` et
+   ajouter une entrée `{"page": 48, "number": 6, "fen": "..."}` à
+   la liste `entries`.
+4. PR sur la branche dev, merge → l'annotation devient interactive en
+   prod au prochain déploiement.
+
+Pas d'UI d'annotation in-app pour l'instant (Sprint dédié si le rythme
+de saisie le justifie).
+
+### Limites
+
+- Le Board est statique : pas de coups, pas de moves légaux. Suffit
+  pour "voir la position FEN-exacte", pas pour exercer.
+- Pas de validation FEN côté backend — si tu écris un FEN invalide,
+  `fenToBoard` côté frontend tombera silencieusement sur un plateau
+  vide. Ajouter un check à la publication serait un suivi facile.
+
+---
+
 ## 5. Lane C — Format leçon complet (FEN + plateau interactif)
 
 **Effort estimé :** 2-4 jours par PDF, dont l'essentiel sur la classification
