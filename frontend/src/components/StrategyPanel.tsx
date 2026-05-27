@@ -6,6 +6,7 @@ import {
   type StrategyPassage,
 } from '../api/client'
 import Board from './Board'
+import FenAnnotator from './FenAnnotator'
 import { fenToBoard } from '../utils/fen'
 
 interface Props {
@@ -55,6 +56,10 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   // diagrams_fens.json file of its source.  Null while loading or when the
   // endpoint 404s (no annotation yet) — frontend shows the crop alone.
   const [modalFen, setModalFen] = useState<string | null>(null)
+  // Annotation mode replaces the static <Board> by an editable <FenAnnotator>
+  // — used when adding a new FEN to diagrams_fens.json without leaving the
+  // panel.  Cleared whenever the modal navigates or closes.
+  const [annotating, setAnnotating] = useState(false)
 
   const buildModalContent = useCallback(
     (p: StrategyPassage) => {
@@ -75,10 +80,12 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
     [lang],
   )
 
-  // Reset zoom when navigating between passages — keeping it stretched on a
-  // smaller crop than the previous one would dump the user off-screen.
+  // Reset zoom + annotation when navigating between passages — keeping
+  // either active would carry context from the previous diagram into a
+  // fresh one.
   useEffect(() => {
     setZoomed(false)
+    setAnnotating(false)
   }, [modalIndex])
 
   // Try to load a manually annotated FEN for the focused passage. Most
@@ -286,6 +293,9 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
         const modal = buildModalContent(focusedPassage)
         const hasPrev = modalIndex > 0
         const hasNext = modalIndex < passages.length - 1
+        const diagramMatch = focusedPassage.text.match(DIAGRAM_REF_RE)
+        const diagramNumber = diagramMatch ? parseInt(diagramMatch[1], 10) : null
+        const canAnnotate = diagramNumber !== null
         return (
           <div
             className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
@@ -329,6 +339,21 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   >
                     {zoomed ? '−' : '+'}
                   </button>
+                  {canAnnotate && (
+                    <button
+                      onClick={() => setAnnotating(a => !a)}
+                      className={`px-2 py-1 rounded text-[11px] font-medium ${
+                        annotating
+                          ? 'bg-amber-600 text-white hover:bg-amber-500'
+                          : 'text-amber-400 hover:bg-gray-800'
+                      }`}
+                      title={lang === 'fr' ? 'Mode annotation FEN' : 'FEN annotation mode'}
+                    >
+                      {annotating
+                        ? lang === 'fr' ? '✎ stop' : '✎ stop'
+                        : lang === 'fr' ? '✎ annoter' : '✎ annotate'}
+                    </button>
+                  )}
                   <button
                     onClick={() => setModalIndex(null)}
                     className="px-2 py-1 rounded hover:bg-gray-800"
@@ -339,7 +364,11 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   </button>
                 </div>
               </div>
-              <div className={modalFen ? 'flex flex-wrap items-start gap-4' : ''}>
+              <div
+                className={
+                  modalFen || annotating ? 'flex flex-wrap items-start gap-4' : ''
+                }
+              >
                 <img
                   key={modalIndex}
                   src={modal.src}
@@ -347,7 +376,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   className={
                     zoomed
                       ? 'cursor-zoom-out'
-                      : `${modalFen ? 'max-w-xs' : 'max-w-full'} h-auto cursor-zoom-in`
+                      : `${modalFen || annotating ? 'max-w-xs' : 'max-w-full'} h-auto cursor-zoom-in`
                   }
                   onClick={() => setZoomed(z => !z)}
                   onError={e => {
@@ -362,19 +391,32 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                     }
                   }}
                 />
-                {modalFen && (
+                {(modalFen || annotating) && diagramNumber !== null && (
                   <div className="flex-1 min-w-[280px]">
-                    <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">
-                      {lang === 'fr' ? 'Plateau interactif' : 'Interactive board'}
-                    </div>
-                    <Board
-                      board={fenToBoard(modalFen)}
-                      legalMoves={[]}
-                      onMove={() => {}}
-                      selectedSquare={null}
-                      onSelectSquare={() => {}}
-                      disabled
-                    />
+                    {annotating ? (
+                      <FenAnnotator
+                        source={focusedPassage.source}
+                        page={focusedPassage.page}
+                        number={diagramNumber}
+                        initialFen={modalFen ?? undefined}
+                        onClose={() => setAnnotating(false)}
+                        lang={lang}
+                      />
+                    ) : (
+                      <>
+                        <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">
+                          {lang === 'fr' ? 'Plateau interactif' : 'Interactive board'}
+                        </div>
+                        <Board
+                          board={fenToBoard(modalFen!)}
+                          legalMoves={[]}
+                          onMove={() => {}}
+                          selectedSquare={null}
+                          onSelectSquare={() => {}}
+                          disabled
+                        />
+                      </>
+                    )}
                   </div>
                 )}
               </div>
