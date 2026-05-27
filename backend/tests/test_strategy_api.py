@@ -174,6 +174,19 @@ def test_diagram_crop_sijbrands(client: TestClient) -> None:
     assert len(r.content) > 1000
 
 
+def test_diagram_crop_springer(client: TestClient) -> None:
+    """Springer ships extracted crops too (Sprint 4). Same DIAGRAMME N
+    caption pattern as Sijbrands, just re-run through the generic
+    extract_diagrams script with the springer source slug."""
+    r = client.get(
+        "/api/strategy/diagram",
+        params={"source": "SPRINGER", "page": 9, "number": 1},
+    )
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "image/jpeg"
+    assert len(r.content) > 1000
+
+
 def test_diagram_crop_unextracted_pair_404s(client: TestClient) -> None:
     """A (page, number) pair not in the manifest must 404 — the frontend
     catches this via <img onError> and falls back to /page-image."""
@@ -186,8 +199,9 @@ def test_diagram_crop_unextracted_pair_404s(client: TestClient) -> None:
 
 
 def test_diagram_crop_unbundled_source_404s(client: TestClient) -> None:
-    """Sources without an extraction manifest (KELLER/SPRINGER/ROOZENBURG
-    for now — Sprint 3 covered Sijbrands only) must 404 with a clear hint."""
+    """Sources without an extraction manifest (KELLER and ROOZENBURG —
+    see docs/STRATEGIE_DIAGRAMS_PLAN.md for why we skipped them) must
+    404 with a clear hint."""
     r = client.get(
         "/api/strategy/diagram",
         params={"source": "KELLER", "page": 10, "number": 1},
