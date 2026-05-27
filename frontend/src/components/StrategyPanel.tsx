@@ -22,10 +22,12 @@ const PAGE_IMAGE_AVAILABLE = new Set([
   'KELLER',
 ])
 
-// Captures any explicit mention of "Diagramme N" / "DIAGRAMME N" in
-// the passage text. We pick the first match — that's typically the
-// diagram the passage is teaching from.
-const DIAGRAM_REF_RE = /\b[Dd]iagramme\s+(\d+)/
+// Captures any explicit mention of "Diagramme N" / "DIAGRAMME N" /
+// "diagramme N" in the passage text. We pick the first match — that's
+// typically the diagram the passage is teaching from.  The /i flag is
+// load-bearing: Sijbrands renders the caption in ALL CAPS ("DIAGRAMME 6"),
+// without it the modal would fall back to "Voir la page" + page-image.
+const DIAGRAM_REF_RE = /\bdiagramme\s+(\d+)/i
 
 /**
  * Strategy panel — curated topic buttons + sourced passages list.
