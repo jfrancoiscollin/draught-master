@@ -41,11 +41,55 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   const [topicsLoading, setTopicsLoading] = useState(true)
   const [searchLoading, setSearchLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [modalImage, setModalImage] = useState<{
-    src: string
-    fallback?: string
-    caption: string
-  } | null>(null)
+  // Modal state. We store the index of the focused passage rather than its
+  // image URL: that lets ←/→ keys jump between passages without losing the
+  // crop/fallback logic, and React remounts the <img> via key={modalIndex}
+  // so the data-fallback-used dataset resets between passages.
+  const [modalIndex, setModalIndex] = useState<number | null>(null)
+  const [zoomed, setZoomed] = useState(false)
+
+  const buildModalContent = useCallback(
+    (p: StrategyPassage) => {
+      const diagramMatch = p.text.match(DIAGRAM_REF_RE)
+      const diagramNumber = diagramMatch ? diagramMatch[1] : null
+      const pageUrl = `/api/strategy/page-image?source=${encodeURIComponent(p.source)}&page=${p.page}`
+      const cropUrl = diagramNumber
+        ? `/api/strategy/diagram?source=${encodeURIComponent(p.source)}&page=${p.page}&number=${diagramNumber}`
+        : null
+      return {
+        src: cropUrl || pageUrl,
+        fallback: cropUrl ? pageUrl : undefined,
+        caption: diagramNumber
+          ? `${p.source} — ${lang === 'fr' ? 'Diagramme' : 'Diagram'} ${diagramNumber} (page ${p.page})`
+          : `${p.source} — page ${p.page}`,
+      }
+    },
+    [lang],
+  )
+
+  // Reset zoom when navigating between passages — keeping it stretched on a
+  // smaller crop than the previous one would dump the user off-screen.
+  useEffect(() => {
+    setZoomed(false)
+  }, [modalIndex])
+
+  // Keyboard shortcuts inside the modal: Esc closes, ←/→ navigate to the
+  // previous/next passage with a diagram button (all sources have one now,
+  // so any adjacent passage works).
+  useEffect(() => {
+    if (modalIndex === null) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setModalIndex(null)
+      } else if (e.key === 'ArrowLeft' && modalIndex > 0) {
+        setModalIndex(modalIndex - 1)
+      } else if (e.key === 'ArrowRight' && modalIndex < passages.length - 1) {
+        setModalIndex(modalIndex + 1)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [modalIndex, passages.length])
 
   useEffect(() => {
     let cancelled = false
@@ -154,7 +198,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
             {lang === 'fr' ? 'Aucun passage trouvé.' : 'No passages found.'}
           </p>
         )}
-        {passages.map(p => {
+        {passages.map((p, idx) => {
           const diagramMatch = p.text.match(DIAGRAM_REF_RE)
           const showImageBtn = PAGE_IMAGE_AVAILABLE.has(p.source)
           const diagramNumber = diagramMatch ? diagramMatch[1] : null
@@ -189,22 +233,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                 )}
                 {showImageBtn && (
                   <button
-                    onClick={() => {
-                      const pageUrl = `/api/strategy/page-image?source=${encodeURIComponent(p.source)}&page=${p.page}`
-                      // Try isolated diagram crop first; fall back to full page
-                      // via the <img onError> handler if no crop is extracted
-                      // for this (page, number) pair (see api.py::diagram).
-                      const cropUrl = diagramNumber
-                        ? `/api/strategy/diagram?source=${encodeURIComponent(p.source)}&page=${p.page}&number=${diagramNumber}`
-                        : null
-                      setModalImage({
-                        src: cropUrl || pageUrl,
-                        fallback: cropUrl ? pageUrl : undefined,
-                        caption: diagramNumber
-                          ? `${p.source} — ${lang === 'fr' ? 'Diagramme' : 'Diagram'} ${diagramNumber} (page ${p.page})`
-                          : `${p.source} — page ${p.page}`,
-                      })
-                    }}
+                    onClick={() => setModalIndex(idx)}
                     className="ml-auto px-2 py-1 bg-amber-700 hover:bg-amber-600 text-white text-xs rounded-md font-medium"
                   >
                     {lang === 'fr'
@@ -218,44 +247,89 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
         })}
       </div>
 
-      {modalImage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
-          onClick={() => setModalImage(null)}
-        >
+      {modalIndex !== null && passages[modalIndex] && (() => {
+        const focusedPassage = passages[modalIndex]
+        const modal = buildModalContent(focusedPassage)
+        const hasPrev = modalIndex > 0
+        const hasNext = modalIndex < passages.length - 1
+        return (
           <div
-            className="bg-gray-900 rounded-lg p-4 max-w-3xl max-h-[90vh] overflow-auto"
-            onClick={e => e.stopPropagation()}
+            className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+            onClick={() => setModalIndex(null)}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-amber-400 font-semibold text-sm">
-                {modalImage.caption}
-              </span>
-              <button
-                onClick={() => setModalImage(null)}
-                className="text-gray-400 hover:text-white"
-                aria-label={lang === 'fr' ? 'Fermer' : 'Close'}
-              >
-                ✕
-              </button>
+            <div
+              className={`bg-gray-900 rounded-lg p-4 ${zoomed ? 'max-w-[95vw] max-h-[95vh]' : 'max-w-3xl max-h-[90vh]'} overflow-auto`}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-3 gap-2">
+                <span className="text-amber-400 font-semibold text-sm">
+                  {modal.caption}
+                </span>
+                <div className="flex items-center gap-1 text-xs text-gray-400">
+                  <span>
+                    {modalIndex + 1} / {passages.length}
+                  </span>
+                  <button
+                    onClick={() => setModalIndex(modalIndex - 1)}
+                    disabled={!hasPrev}
+                    className="px-2 py-1 rounded hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent"
+                    aria-label={lang === 'fr' ? 'Précédent' : 'Previous'}
+                    title="←"
+                  >
+                    ←
+                  </button>
+                  <button
+                    onClick={() => setModalIndex(modalIndex + 1)}
+                    disabled={!hasNext}
+                    className="px-2 py-1 rounded hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent"
+                    aria-label={lang === 'fr' ? 'Suivant' : 'Next'}
+                    title="→"
+                  >
+                    →
+                  </button>
+                  <button
+                    onClick={() => setZoomed(z => !z)}
+                    className="px-2 py-1 rounded hover:bg-gray-800"
+                    aria-label={lang === 'fr' ? 'Zoom' : 'Zoom'}
+                    title={zoomed ? '−' : '+'}
+                  >
+                    {zoomed ? '−' : '+'}
+                  </button>
+                  <button
+                    onClick={() => setModalIndex(null)}
+                    className="px-2 py-1 rounded hover:bg-gray-800"
+                    aria-label={lang === 'fr' ? 'Fermer (Esc)' : 'Close (Esc)'}
+                    title="Esc"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              <img
+                key={modalIndex}
+                src={modal.src}
+                alt={modal.caption}
+                className={zoomed ? 'cursor-zoom-out' : 'max-w-full h-auto cursor-zoom-in'}
+                onClick={() => setZoomed(z => !z)}
+                onError={e => {
+                  // Crop endpoint 404s for ~30% of (page, number) pairs that
+                  // weren't extracted — swap to full-page image once.  The
+                  // key={modalIndex} above resets data-fallback-used between
+                  // passages so each one gets its own chance.
+                  const img = e.currentTarget
+                  if (modal.fallback && img.dataset.fallbackUsed !== 'true') {
+                    img.dataset.fallbackUsed = 'true'
+                    img.src = modal.fallback
+                  }
+                }}
+              />
+              <p className="mt-3 text-xs text-gray-200 leading-relaxed max-h-32 overflow-auto border-t border-gray-700 pt-2">
+                {focusedPassage.text}
+              </p>
             </div>
-            <img
-              src={modalImage.src}
-              alt={modalImage.caption}
-              className="max-w-full h-auto"
-              onError={e => {
-                // Crop endpoint 404s for ~30% of (page, number) pairs that
-                // weren't extracted — swap to full-page image once.
-                const img = e.currentTarget
-                if (modalImage.fallback && img.dataset.fallbackUsed !== 'true') {
-                  img.dataset.fallbackUsed = 'true'
-                  img.src = modalImage.fallback
-                }
-              }}
-            />
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
