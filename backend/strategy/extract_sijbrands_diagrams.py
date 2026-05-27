@@ -87,8 +87,15 @@ def detect_boards(image_path: Path) -> list[tuple[int, int, int, int]]:
             continue
         if not (0.75 <= w / h <= 1.30):
             continue
-        raw.append((left, top, right, bottom, w * h))
-    raw.sort(key=lambda r: -r[-1])
+        # Each real board often produces TWO connected components: a clean
+        # 1:1 blob and a slightly bigger one extended upward to include the
+        # "DIAGRAMME N" caption row. We dedupe by IoU and keep the blob
+        # whose aspect is closest to 1.0 — that's the actual board without
+        # the caption above (and crucially without the missing 26 px on the
+        # left+bottom edges that the elongated blob suffers from).
+        aspect_score = abs(w / h - 1.0)
+        raw.append((left, top, right, bottom, aspect_score))
+    raw.sort(key=lambda r: r[-1])
     kept = []
     for b in raw:
         if not any(_iou(b[:4], k[:4]) > 0.3 for k in kept):
@@ -168,10 +175,10 @@ def main() -> int:
             if dist >= MAX_DIST_PX:
                 continue
             crop_box = (
-                max(best[0] - 5, 0),
-                max(best[1] - 5, 0),
-                min(best[2] + 5, page_img.width),
-                min(best[3] + 5, page_img.height),
+                max(best[0] - 12, 0),
+                max(best[1] - 12, 0),
+                min(best[2] + 12, page_img.width),
+                min(best[3] + 12, page_img.height),
             )
             crop = page_img.crop(crop_box).convert("RGB")
             if crop.width > 500:
