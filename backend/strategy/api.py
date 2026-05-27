@@ -38,6 +38,32 @@ def _load_diagram_manifest(source: str) -> dict[tuple[int, int], str]:
     return {(e["page"], e["number"]): e["crop"] for e in data.get("entries", [])}
 
 
+@lru_cache(maxsize=8)
+def _load_diagram_fens(source: str) -> dict[tuple[int, int], str]:
+    """Return ``{(page, number): fen}`` for a source's manually annotated
+    positions, or {} if the file is missing/empty. The FEN file is the
+    foundation of Lane C (interactive board) — see
+    ``docs/STRATEGIE_DIAGRAMS_PLAN.md`` §5. Format::
+
+        {
+          "source": "SIJBRANDS",
+          "entries": [
+            {"page": 48, "number": 6, "fen": "W:W31,32,...:B1,2,..."}
+          ]
+        }
+
+    Annotation is manual right now (one entry per diagram added by hand
+    after reading the crop). Future tooling could pre-fill via piece
+    classification + human review.
+    """
+    fens_path = _PAGES_DIR / source.lower() / "diagrams_fens.json"
+    if not fens_path.is_file():
+        return {}
+    with fens_path.open() as f:
+        data = json.load(f)
+    return {(e["page"], e["number"]): e["fen"] for e in data.get("entries", [])}
+
+
 @router.get("/topics", response_model=list[TopicOut])
 def list_topics() -> list[TopicOut]:
     """Enumerate the curated topic buttons + whether each has a
@@ -163,4 +189,35 @@ def diagram(
         log.warning("manifest entry %s missing on disk", crop_path)
         raise HTTPException(status_code=404, detail="crop file missing")
     return FileResponse(crop_path, media_type="image/jpeg")
+
+
+@router.get("/diagram-fen")
+def diagram_fen(
+    source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
+    page: int = Query(..., ge=1, description="Page where the diagram is referenced"),
+    number: int = Query(..., ge=1, description="Diagram number as printed in the book"),
+) -> dict:
+    """Return ``{"fen": "..."}`` for a manually annotated diagram, or 404.
+
+    Lane C foundation — the FEN file is filled by hand
+    (``backend/strategy/pages/<source>/diagrams_fens.json``). When an
+    entry exists, the frontend renders an interactive ``<Board>`` next
+    to the crop image; otherwise it just shows the crop with no Board.
+    """
+    # Distinguish "source has no FEN file at all" from "source has the file
+    # but this (page, number) isn't annotated yet" — different action for
+    # the user (bundle the file vs annotate that specific entry).
+    fens_path = _PAGES_DIR / source.lower() / "diagrams_fens.json"
+    if not fens_path.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail=f"no FEN file bundled for source {source!r}",
+        )
+    fen = _load_diagram_fens(source).get((page, number))
+    if fen is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"diagram {number} on page {page} not yet annotated for {source!r}",
+        )
+    return {"fen": fen, "source": source, "page": page, "number": number}
 

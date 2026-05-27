@@ -210,6 +210,51 @@ def test_diagram_crop_unbundled_source_404s(client: TestClient) -> None:
     assert "no diagram crops" in r.json()["detail"]
 
 
+def test_diagram_fen_no_file_404(client: TestClient) -> None:
+    """KELLER doesn't ship a diagrams_fens.json — different 404 message
+    than 'not yet annotated' so the operator can tell the difference."""
+    r = client.get(
+        "/api/strategy/diagram-fen",
+        params={"source": "KELLER", "page": 10, "number": 1},
+    )
+    assert r.status_code == 404
+    assert "no FEN file" in r.json()["detail"]
+
+
+def test_diagram_fen_not_annotated_404(client: TestClient) -> None:
+    """Sijbrands and Springer ship diagrams_fens.json with `entries: []`
+    — every diagram returns 404 'not yet annotated' until JF fills it in."""
+    r = client.get(
+        "/api/strategy/diagram-fen",
+        params={"source": "SIJBRANDS", "page": 48, "number": 6},
+    )
+    assert r.status_code == 404
+    assert "not yet annotated" in r.json()["detail"]
+
+
+def test_diagram_fen_returns_annotation(client: TestClient, monkeypatch) -> None:
+    """Once a (page, number) pair is added to diagrams_fens.json, the
+    endpoint returns the FEN. Simulated by monkey-patching the loader
+    so the test doesn't depend on the (currently empty) bundled file."""
+    from strategy import api as api_mod
+
+    sample_fen = "W:W31,32,33,34,35,36,37,38,39,40:B6,7,8,9,10,11,12,13,14,15"
+    monkeypatch.setattr(
+        api_mod,
+        "_load_diagram_fens",
+        lambda source: {(48, 6): sample_fen} if source == "SIJBRANDS" else {},
+    )
+    r = client.get(
+        "/api/strategy/diagram-fen",
+        params={"source": "SIJBRANDS", "page": 48, "number": 6},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["fen"] == sample_fen
+    assert body["page"] == 48
+    assert body["number"] == 6
+
+
 def test_dormant_topic_returns_503(monkeypatch) -> None:
     """A topic whose filter matches no passage must yield 503, not 500.
     Simulated by injecting a topic with an impossible source filter."""
