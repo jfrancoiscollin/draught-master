@@ -40,8 +40,8 @@ const FenAnnotator: React.FC<Props> = ({
   const [turn, setTurn] = useState<'W' | 'B'>('W')
   const [copied, setCopied] = useState<'fen' | 'json' | null>(null)
 
-  const cyclePiece = useCallback((sq: number | null) => {
-    if (sq === null || sq < 1 || sq > 50) return
+  const cyclePiece = useCallback((sq: number) => {
+    if (sq < 1 || sq > 50) return
     setBoard(prev => {
       const next = [...prev]
       const cur = prev[sq]
@@ -94,7 +94,8 @@ const FenAnnotator: React.FC<Props> = ({
         legalMoves={[]}
         onMove={() => {}}
         selectedSquare={null}
-        onSelectSquare={cyclePiece}
+        onSelectSquare={() => {}}
+        onSquareClick={cyclePiece}
         disabled={false}
       />
       <p className="text-[10px] text-gray-500">
