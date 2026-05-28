@@ -62,6 +62,12 @@
       "_human_verified": true
     },
     {
+      "page": 19,
+      "number": 6,
+      "fen": "W:W30,35,38,42,43,44,45:B12,13,16,18,19,20,24",
+      "_human_verified": true
+    },
+    {
       "page": 20,
       "number": 9,
       "fen": "W:W19,28,29,36,42,45:B3,4,9,17,18,27",
