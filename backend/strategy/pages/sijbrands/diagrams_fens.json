@@ -2,6 +2,12 @@
   "source": "SIJBRANDS",
   "entries": [
     {
+      "page": 6,
+      "number": 1,
+      "fen": "W:W33,34,42,47:B14,24,31,35",
+      "_human_verified": true
+    },
+    {
       "page": 34,
       "number": 8,
       "fen": "W:W27,28,32,33,35,37,38,39,44,45:B6,11,12,13,14,16,18,19,23,24",
