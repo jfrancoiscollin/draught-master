@@ -56,6 +56,12 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   // diagrams_fens.json file of its source.  Null while loading or when the
   // endpoint 404s (no annotation yet) — frontend shows the crop alone.
   const [modalFen, setModalFen] = useState<string | null>(null)
+  // Auto-detected FEN suggestion (rules-based CV — see
+  // ``backend/strategy/fen_detector.py``).  Used to pre-fill the editor
+  // when no human-verified FEN exists yet, so annotation is a few-click
+  // validation instead of placing every piece.  Null while loading or
+  // when the detector has nothing to work with (no crop bundled).
+  const [suggestedFen, setSuggestedFen] = useState<string | null>(null)
   // Annotation mode replaces the static <Board> by an editable <FenAnnotator>
   // — used when adding a new FEN to diagrams_fens.json without leaving the
   // panel.  Cleared whenever the modal navigates or closes.
@@ -162,29 +168,34 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
     setModalIndex(null)
   }, [jumpSource, jumpPage, jumpNumber])
 
-  // Try to load a manually annotated FEN for the focused passage. Most
-  // diagrams aren't annotated yet (Lane C is a long manual effort) so 404s
-  // are expected and silent.  We abort on unmount/navigation to prevent
-  // a late response from overwriting a newer one.  Triggered both by topic
-  // search results (modalIndex) and direct jumps (jumpPassage).
+  // Load both the human-verified FEN (if any) and the detector's
+  // suggested FEN in parallel.  Verified wins when both exist — it's
+  // the source of truth.  Suggestion only kicks in for un-annotated
+  // diagrams, seeding the editor with a few-click-to-validate guess
+  // (see ``backend/strategy/fen_detector.py``, 99.86% per-square on
+  // Sijbrands).  Both 404 silently for unsupported sources.
   useEffect(() => {
     setModalFen(null)
+    setSuggestedFen(null)
     const p = jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
     if (!p) return
     const diagramMatch = p.text.match(DIAGRAM_REF_RE)
     if (!diagramMatch) return
+    const number = diagramMatch[1]
+    const qs = `source=${encodeURIComponent(p.source)}&page=${p.page}&number=${number}`
     const ctrl = new AbortController()
-    fetch(
-      `/api/strategy/diagram-fen?source=${encodeURIComponent(p.source)}&page=${p.page}&number=${diagramMatch[1]}`,
-      { signal: ctrl.signal },
-    )
+    fetch(`/api/strategy/diagram-fen?${qs}`, { signal: ctrl.signal })
       .then(r => (r.ok ? r.json() : null))
       .then(j => {
         if (j?.fen) setModalFen(j.fen)
       })
-      .catch(() => {
-        /* aborted or network error — keep modalFen null, the crop alone is fine */
+      .catch(() => {})
+    fetch(`/api/strategy/diagram-suggest-fen?${qs}`, { signal: ctrl.signal })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        if (j?.fen) setSuggestedFen(j.fen)
       })
+      .catch(() => {})
     return () => ctrl.abort()
   }, [modalIndex, jumpPassage, passages])
 
@@ -551,14 +562,27 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                 {(modalFen || annotating) && diagramNumber !== null && (
                   <div className="flex-1 min-w-[280px]">
                     {annotating ? (
-                      <FenAnnotator
-                        source={focusedPassage.source}
-                        page={focusedPassage.page}
-                        number={diagramNumber}
-                        initialFen={modalFen ?? undefined}
-                        onClose={() => setAnnotating(false)}
-                        lang={lang}
-                      />
+                      <>
+                        {!modalFen && suggestedFen && (
+                          // Visual marker that the editor is seeded by the
+                          // auto-detector — not yet human-verified.  The
+                          // operator should sanity-check every square
+                          // before copying the JSON.
+                          <div className="mb-2 text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700/50 rounded px-2 py-1">
+                            {lang === 'fr'
+                              ? '⚠ Pré-rempli par détection auto — vérifier chaque case avant copie.'
+                              : '⚠ Pre-filled by auto-detector — verify each square before copying.'}
+                          </div>
+                        )}
+                        <FenAnnotator
+                          source={focusedPassage.source}
+                          page={focusedPassage.page}
+                          number={diagramNumber}
+                          initialFen={modalFen ?? suggestedFen ?? undefined}
+                          onClose={() => setAnnotating(false)}
+                          lang={lang}
+                        />
+                      </>
                     ) : (
                       <>
                         <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">

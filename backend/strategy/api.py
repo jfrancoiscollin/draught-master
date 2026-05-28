@@ -211,6 +211,40 @@ def diagram_index(
     return index
 
 
+@router.get("/diagram-suggest-fen")
+def diagram_suggest_fen(
+    source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
+    page: int = Query(..., ge=1, description="Page where the diagram is referenced"),
+    number: int = Query(..., ge=1, description="Diagram number as printed in the book"),
+) -> dict:
+    """Return ``{"fen": "..."}`` predicted by the rules-based detector.
+
+    Pre-fills the in-app annotation editor with a guess based on the
+    printed crop, so the operator validates with a few clicks instead
+    of placing every piece from scratch.  On Sijbrands the detector
+    hits 99.86% per-square accuracy — most boards come out exact, the
+    rare misses are 1–2 squares the operator fixes manually.
+
+    404 if the crop isn't bundled (same condition as ``/diagram``) —
+    nothing to detect from.  The caller distinguishes "no suggestion"
+    (404, show a blank board) from "suggestion ready" (200, seed the
+    editor).
+    """
+    manifest = _load_diagram_manifest(source)
+    crop_name = manifest.get((page, number))
+    if crop_name is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"no crop for ({source!r}, p.{page}, #{number}) — nothing to detect",
+        )
+    crop_path = _PAGES_DIR / source.lower() / "diagrams" / crop_name
+    if not crop_path.is_file():
+        raise HTTPException(status_code=404, detail="crop file missing")
+    from .fen_detector import detect_fen
+
+    return {"fen": detect_fen(crop_path)}
+
+
 @router.get("/diagram-fen")
 def diagram_fen(
     source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
