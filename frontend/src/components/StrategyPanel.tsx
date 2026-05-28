@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import {
   listStrategyTopics,
   searchStrategyTopic,
@@ -68,6 +68,12 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   const [jumpSource, setJumpSource] = useState('SIJBRANDS')
   const [jumpPage, setJumpPage] = useState('')
   const [jumpNumber, setJumpNumber] = useState('')
+  // {page: [number, ...]} index for the *currently selected* source — drives
+  // the diagram-number dropdown so operators can only pick (page, number)
+  // tuples that have a backing crop.  Fetched on source change and cached
+  // per-source in the ref to avoid refetching when toggling back.
+  const [jumpIndex, setJumpIndex] = useState<Record<number, number[]>>({})
+  const jumpIndexCache = useRef<Record<string, Record<number, number[]>>>({})
 
   const buildModalContent = useCallback(
     (p: StrategyPassage) => {
@@ -95,6 +101,45 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
     setZoomed(false)
     setAnnotating(false)
   }, [modalIndex, jumpPassage])
+
+  // Fetch the (page → [numbers]) index for the selected source.  Cached so
+  // toggling between sources within the session is free.  On cache miss,
+  // the dropdown briefly shows "(chargement…)" until the index arrives —
+  // tiny payload, runs in parallel with whatever else the user is doing.
+  useEffect(() => {
+    if (!jumpSource) return
+    const cached = jumpIndexCache.current[jumpSource]
+    if (cached) {
+      setJumpIndex(cached)
+      return
+    }
+    let cancelled = false
+    fetch(`/api/strategy/diagram-index?source=${encodeURIComponent(jumpSource)}`)
+      .then(r => (r.ok ? r.json() : {}))
+      .then((index: Record<string, number[]>) => {
+        if (cancelled) return
+        // JSON object keys are strings — coerce back to numbers so lookups
+        // by `parseInt(jumpPage)` match.
+        const coerced: Record<number, number[]> = {}
+        for (const [k, v] of Object.entries(index)) coerced[parseInt(k, 10)] = v
+        jumpIndexCache.current[jumpSource] = coerced
+        setJumpIndex(coerced)
+      })
+      .catch(() => {
+        if (!cancelled) setJumpIndex({})
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [jumpSource])
+
+  // Clear the diagram number whenever the source or page changes — the
+  // previously selected number almost certainly isn't valid for the new
+  // (source, page) pair, so leaving it stale would let the user submit a
+  // tuple that 404s.
+  useEffect(() => {
+    setJumpNumber('')
+  }, [jumpSource, jumpPage])
 
   const submitJump = useCallback(() => {
     const page = parseInt(jumpPage, 10)
@@ -279,14 +324,33 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
             placeholder={lang === 'fr' ? 'page' : 'page'}
             className="bg-gray-800 text-gray-100 rounded px-2 py-1 border border-gray-700 w-20"
           />
-          <input
-            type="number"
-            min={1}
-            value={jumpNumber}
-            onChange={e => setJumpNumber(e.target.value)}
-            placeholder="#"
-            className="bg-gray-800 text-gray-100 rounded px-2 py-1 border border-gray-700 w-16"
-          />
+          {(() => {
+            const pageNum = parseInt(jumpPage, 10)
+            const numbers = !isNaN(pageNum) ? jumpIndex[pageNum] : undefined
+            // Empty placeholder distinguishes "no page typed yet" from
+            // "page typed but no crops on it" — different prompts help
+            // the operator understand why no numbers are listed.
+            const placeholder = !jumpPage
+              ? lang === 'fr' ? 'page ?' : 'page?'
+              : numbers && numbers.length > 0
+              ? '#'
+              : lang === 'fr' ? '(aucun)' : '(none)'
+            return (
+              <select
+                value={jumpNumber}
+                onChange={e => setJumpNumber(e.target.value)}
+                disabled={!numbers || numbers.length === 0}
+                className="bg-gray-800 text-gray-100 rounded px-2 py-1 border border-gray-700 w-20 disabled:opacity-50"
+              >
+                <option value="">{placeholder}</option>
+                {numbers?.map(n => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            )
+          })()}
           <button
             type="submit"
             disabled={!jumpPage || !jumpNumber}

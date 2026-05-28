@@ -191,6 +191,26 @@ def diagram(
     return FileResponse(crop_path, media_type="image/jpeg")
 
 
+@router.get("/diagram-index")
+def diagram_index(
+    source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
+) -> dict[int, list[int]]:
+    """Return ``{page: [number, ...]}`` for every crop in the manifest.
+
+    Powers the jump-to-diagram dropdown in the strategy panel: once the
+    operator picks a (source, page), the frontend can show the exact list
+    of diagram numbers that have a backing crop, instead of letting them
+    type a number that 404s and falls back to the full-page image.
+    """
+    manifest = _load_diagram_manifest(source)
+    index: dict[int, list[int]] = {}
+    for page, number in manifest.keys():
+        index.setdefault(page, []).append(number)
+    for nums in index.values():
+        nums.sort()
+    return index
+
+
 @router.get("/diagram-fen")
 def diagram_fen(
     source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
