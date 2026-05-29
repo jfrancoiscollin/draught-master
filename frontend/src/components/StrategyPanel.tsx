@@ -83,19 +83,25 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   // per-source in the ref to avoid refetching when toggling back.
   const [jumpIndex, setJumpIndex] = useState<Record<number, number[]>>({})
   const jumpIndexCache = useRef<Record<string, Record<number, number[]>>>({})
+  // Diagram number the modal is currently focused on, derived from the
+  // passage text *or* (when the passage has no ``Diagramme N`` mention,
+  // e.g. on Roozenburg) from the first manifest entry for the passage's
+  // page.  Driving the crop URL, FEN fetch, and arrow navigation off
+  // this single state lets the same modal logic serve both styles of
+  // source — explicit-reference (Sijbrands/Springer) and implicit
+  // (Roozenburg, where prose cites move sequences not diagram numbers).
+  const [effectiveDiagramNumber, setEffectiveDiagramNumber] = useState<number | null>(null)
 
   const buildModalContent = useCallback(
-    (p: StrategyPassage) => {
-      const diagramMatch = p.text.match(DIAGRAM_REF_RE)
-      const diagramNumber = diagramMatch ? diagramMatch[1] : null
+    (p: StrategyPassage, diagramNumber: number | null) => {
       const pageUrl = `/api/strategy/page-image?source=${encodeURIComponent(p.source)}&page=${p.page}`
-      const cropUrl = diagramNumber
+      const cropUrl = diagramNumber !== null
         ? `/api/strategy/diagram?source=${encodeURIComponent(p.source)}&page=${p.page}&number=${diagramNumber}`
         : null
       return {
         src: cropUrl || pageUrl,
         fallback: cropUrl ? pageUrl : undefined,
-        caption: diagramNumber
+        caption: diagramNumber !== null
           ? `${p.source} — ${lang === 'fr' ? 'Diagramme' : 'Diagram'} ${diagramNumber} (page ${p.page})`
           : `${p.source} — page ${p.page}`,
       }
@@ -179,11 +185,8 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   useEffect(() => {
     setModalFen(null)
     const p = jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
-    if (!p) return
-    const diagramMatch = p.text.match(DIAGRAM_REF_RE)
-    if (!diagramMatch) return
-    const number = diagramMatch[1]
-    const qs = `source=${encodeURIComponent(p.source)}&page=${p.page}&number=${number}`
+    if (!p || effectiveDiagramNumber === null) return
+    const qs = `source=${encodeURIComponent(p.source)}&page=${p.page}&number=${effectiveDiagramNumber}`
     const ctrl = new AbortController()
     fetch(`/api/strategy/diagram-fen?${qs}`, { signal: ctrl.signal })
       .then(r => (r.ok ? r.json() : null))
@@ -192,17 +195,41 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
       })
       .catch(() => {})
     return () => ctrl.abort()
-  }, [modalIndex, jumpPassage, passages])
+  }, [modalIndex, jumpPassage, passages, effectiveDiagramNumber])
 
-  // Once a diagram is showing in the modal (whether reached via topic
-  // search or jump), ←/→ should navigate diagram-by-diagram in the
-  // source's manifest.  This requires the cached index for the focused
-  // passage's source — fetch it on demand if not already loaded
-  // (idempotent: the source-dropdown fetch hits the same cache).
+  // Compute the effective diagram number for the focused passage AND
+  // ensure the source's diagram-index is cached (so arrow navigation
+  // works the moment the modal opens).  Three cases:
+  //   1. Passage text matches ``DIAGRAMME N`` — use that.
+  //   2. No match, but the source has a manifest entry on the passage's
+  //      page — use the first one (Roozenburg case: passages cite move
+  //      sequences, the actual diagram is anchored by page alone).
+  //   3. No match and no manifest coverage for the page — null.  The
+  //      modal then falls back to the full page image.
   useEffect(() => {
     const p = jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
-    if (!p || !PAGE_IMAGE_AVAILABLE.has(p.source)) return
-    if (jumpIndexCache.current[p.source]) return
+    if (!p) {
+      setEffectiveDiagramNumber(null)
+      return
+    }
+    const m = p.text.match(DIAGRAM_REF_RE)
+    if (m) {
+      setEffectiveDiagramNumber(parseInt(m[1], 10))
+      return
+    }
+    const applyFromIndex = (index: Record<number, number[]>) => {
+      const nums = index[p.page]
+      setEffectiveDiagramNumber(nums && nums.length > 0 ? nums[0] : null)
+    }
+    const cached = jumpIndexCache.current[p.source]
+    if (cached) {
+      applyFromIndex(cached)
+      return
+    }
+    if (!PAGE_IMAGE_AVAILABLE.has(p.source)) {
+      setEffectiveDiagramNumber(null)
+      return
+    }
     let cancelled = false
     fetch(`/api/strategy/diagram-index?source=${encodeURIComponent(p.source)}`)
       .then(r => (r.ok ? r.json() : {}))
@@ -212,8 +239,11 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
         for (const [k, v] of Object.entries(index)) coerced[parseInt(k, 10)] = v
         jumpIndexCache.current[p.source] = coerced
         if (p.source === jumpSource) setJumpIndex(coerced)
+        applyFromIndex(coerced)
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setEffectiveDiagramNumber(null)
+      })
     return () => {
       cancelled = true
     }
@@ -227,22 +257,21 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   const diagramNeighbour = useCallback(
     (direction: -1 | 1): { page: number; number: number } | null => {
       const p = jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
-      if (!p) return null
-      const m = p.text.match(DIAGRAM_REF_RE)
-      if (!m) return null
-      const curNumber = parseInt(m[1], 10)
+      if (!p || effectiveDiagramNumber === null) return null
       const index = jumpIndexCache.current[p.source]
       if (!index) return null
       const flat: { page: number; number: number }[] = []
       for (const page of Object.keys(index).map(Number).sort((a, b) => a - b)) {
         for (const number of index[page]) flat.push({ page, number })
       }
-      const i = flat.findIndex(t => t.page === p.page && t.number === curNumber)
+      const i = flat.findIndex(
+        t => t.page === p.page && t.number === effectiveDiagramNumber,
+      )
       if (i < 0) return null
       const j = i + direction
       return j >= 0 && j < flat.length ? flat[j] : null
     },
-    [modalIndex, jumpPassage, passages],
+    [modalIndex, jumpPassage, passages, effectiveDiagramNumber],
   )
 
   const navigateDiagram = useCallback(
@@ -539,7 +568,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
         const focusedPassage =
           jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
         if (!focusedPassage) return null
-        const modal = buildModalContent(focusedPassage)
+        const modal = buildModalContent(focusedPassage, effectiveDiagramNumber)
         // Prev/next ALWAYS walk the source manifest when the focused
         // passage references a diagram — regardless of whether the user
         // reached the modal via topic search or via jump.  This is the
@@ -563,8 +592,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
           if (hasDiagramNav) navigateDiagram(1)
           else if (inTopic) setModalIndex(modalIndex! + 1)
         }
-        const diagramMatch = focusedPassage.text.match(DIAGRAM_REF_RE)
-        const diagramNumber = diagramMatch ? parseInt(diagramMatch[1], 10) : null
+        const diagramNumber = effectiveDiagramNumber
         const canAnnotate = diagramNumber !== null
         const closeModal = () => {
           setModalIndex(null)
