@@ -4,6 +4,16 @@
 > « leçon » (diagramme rendu à côté du texte, idéalement interactif).
 > Mis à jour après merge des PRs #75, #76, #77 + Sprint 3.
 
+> **⚠️ Mise à jour (PR #118, #119)** : les Lanes B (crop isolé) et C
+> (FEN + plateau interactif) sont désormais **livrées** pour les quatre
+> sources. La classification des pièces (verrou de la Lane C) est résolue
+> par le détecteur de `fen_detector.py` (99,86 %/case sur Sijbrands), et
+> les positions FEN consolidées servent maintenant une bibliothèque, une
+> base de connaissances thématique et des exercices vérifiés. Le présent
+> document garde sa valeur **historique** (décisions et diagnostics de la
+> phase d'extraction). Pour l'état actuel du pipeline aval, voir
+> [`STRATEGIE_KNOWLEDGE_BASE.md`](./STRATEGIE_KNOWLEDGE_BASE.md).
+
 ---
 
 ## 1. État actuel (livré)
