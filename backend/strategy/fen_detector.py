@@ -250,6 +250,7 @@ def _inner_and_ring(
     return inner, ring
 
 
+
 def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = None) -> str:
     """Return ``W:W...:B...`` FEN string predicted from the crop.
 
