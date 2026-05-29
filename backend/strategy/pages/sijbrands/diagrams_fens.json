@@ -93,6 +93,12 @@
       "_notes": "Diagramme 6 p.48 Thème 4 « Libérer le chemin ». Position validated case-by-case by JF on staging 2026-05-27. White to move (1.39-33!)."
     },
     {
+      "page": 49,
+      "number": 2,
+      "fen": "W:W26,27,28,32,44:B3,16,17,19,21",
+      "_human_verified": true
+    },
+    {
       "page": 50,
       "number": 6,
       "fen": "W:W27,28,30,32,38,39,40:B12,13,15,16,19,20,23",
