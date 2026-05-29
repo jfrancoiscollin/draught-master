@@ -295,15 +295,6 @@ def diagram_suggest_fen(
 
 
 # Sources where the auto-detector has been validated end-to-end and the
-# operator has chosen to trust its output without per-diagram review.
-# Adding a source here causes ``/diagram-fen`` to return ``kind: "human"``
-# even for ``diagrams_fens_auto.json`` entries — the frontend then drops
-# the "auto · non validé" badge and the printed-crop side panel.
-# Per-entry overrides remain possible: writing to ``diagrams_fens.json``
-# always wins over the auto file.
-_TRUSTED_AUTO_SOURCES = {"SPRINGER"}
-
-
 # Sources where the auto-detector has been validated end-to-end and the
 # operator has chosen to trust its output without per-diagram review.
 # Adding a source here causes ``/diagram-fen`` to return ``kind: "human"``
@@ -311,7 +302,7 @@ _TRUSTED_AUTO_SOURCES = {"SPRINGER"}
 # the "auto · non validé" badge and the printed-crop side panel.
 # Per-entry overrides remain possible: writing to ``diagrams_fens.json``
 # always wins over the auto file.
-_TRUSTED_AUTO_SOURCES = {"SPRINGER"}
+_TRUSTED_AUTO_SOURCES = {"SPRINGER", "ROOZENBURG"}
 
 
 @router.get("/diagram-fen")
