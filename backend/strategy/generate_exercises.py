@@ -51,6 +51,11 @@ _MIN_END_EVAL = 100
 # Hard cap on reconstructed line length (plies) — guards against any
 # pathological non-terminating search.
 _MAX_PLIES = 12
+# Endgame studies (<= 18 pieces) win by technique, not a capture burst,
+# so they need a deeper search and a longer line than combinations.
+_ENDGAME_PIECES = 18
+_ENDGAME_DEPTH = 12
+_ENDGAME_MAX_PLIES = 16
 
 
 def _net_material(state: ge.GameState, mover: str) -> int:
@@ -121,6 +126,37 @@ def _winning_line(state: ge.GameState) -> tuple[list[str], str, int] | None:
     return None
 
 
+def _total_pieces(state: ge.GameState) -> int:
+    return sum(1 for p in state.board if p)
+
+
+def _endgame_win_line(state: ge.GameState) -> tuple[list[str], str, int] | None:
+    """Forced win by endgame technique, or None.
+
+    Unlike ``_winning_line`` this is not restricted to a capture burst:
+    it plays the engine's best move for both sides (deeper search, longer
+    horizon) and accepts the line only if it ends in a win for the side
+    that started — i.e. a position the player can actually convert.
+    """
+    mover = state.turn
+    ranked = ai.rank_moves(state, n=1, depth=_ENDGAME_DEPTH)
+    if not ranked or ranked[0][1] < _WIN:
+        return None
+    moves: list[str] = []
+    cur = state
+    for _ in range(_ENDGAME_MAX_PLIES):
+        if ge.game_result(cur) is not None:
+            break
+        best = ai.get_best_move(cur, depth=_ENDGAME_DEPTH)
+        if best is None:
+            return None
+        moves.append(ge.move_to_pdn(best))
+        cur = ge.apply_move(cur, best)
+    if ge.game_result(cur) == mover:
+        return moves, "endgame", 100000
+    return None
+
+
 def _difficulty(n_solution_plies: int) -> int:
     # Mover's own moves ≈ ceil(plies / 2). Short = easy.
     own = (n_solution_plies + 1) // 2
@@ -144,15 +180,19 @@ def generate(sources: tuple[str, ...]) -> list[dict]:
             print(f"  ... screened {i}/{total} ({len(exercises)} found)")
         state = ge.fen_to_board(p["fen"])
         result = _winning_line(state)
+        if not result and _total_pieces(state) <= _ENDGAME_PIECES:
+            result = _endgame_win_line(state)
         if not result:
             continue
         line, outcome, gain = result
         side = "blancs" if state.turn == "white" else "noirs"
         theme = p.get("theme")
-        if outcome == "win":
-            objective = "jouent et gagnent"
-        else:
+        if outcome == "material":
             objective = f"jouent et gagnent du matériel (+{gain // 100} pions)"
+        elif outcome == "endgame":
+            objective = "jouent et gagnent (finale)"
+        else:
+            objective = "jouent et gagnent"
         exercises.append(
             {
                 "name": f"{p['source']} — combinaison (p.{p['page']} #{p['number']})",
