@@ -198,11 +198,20 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
       .catch(() => {})
   }, [passage.passage_id, explicitNumber, passage.source, passage.page])
 
-  // Tokenize prose into text + clickable PDN move tokens (independent
-  // of whether the Board is available — even without an FEN, the
-  // user can still read the prose).
   const { tokens, moves } = useMemo(() => {
-    const text = passage.text
+    const cleaned = passage.text
+      // "Mettez la position [du DIAGRAMME N | du diagramme N.M | initiale]
+      // sur le damier [si ...]." — printed-book instruction now made
+      // redundant by the live Board above each card.
+      .replace(
+        /\s*Mettez la position(?:\s+(?:du DIAGRAMME\s+\d+|du diagramme\s+[\d.]+|initiale))?\s+sur le damier(?:\s+si[^.]*)?\.?\s*/gi,
+        ' ',
+      )
+      // Column-header lines that are only "DIAGRAMME N" tokens
+      // separated by spacing (PDF layout artefact).
+      .replace(/^[ \t]*(?:DIAGRAMME\s+\d+[ \t]*)+$/gm, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
     type Tok =
       | { kind: 'text'; text: string }
       | { kind: 'move'; text: string; index: number }
@@ -211,16 +220,16 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
     PDN_MOVE_RE.lastIndex = 0
     let cursor = 0
     let match: RegExpExecArray | null
-    while ((match = PDN_MOVE_RE.exec(text)) !== null) {
+    while ((match = PDN_MOVE_RE.exec(cleaned)) !== null) {
       if (match.index > cursor) {
-        t.push({ kind: 'text', text: text.slice(cursor, match.index) })
+        t.push({ kind: 'text', text: cleaned.slice(cursor, match.index) })
       }
       t.push({ kind: 'move', text: match[0], index: m.length })
       m.push(match[0])
       cursor = match.index + match[0].length
     }
-    if (cursor < text.length) {
-      t.push({ kind: 'text', text: text.slice(cursor) })
+    if (cursor < cleaned.length) {
+      t.push({ kind: 'text', text: cleaned.slice(cursor) })
     }
     return { tokens: t, moves: m }
   }, [passage.text])
@@ -288,6 +297,33 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
             onSelectSquare={() => {}}
             disabled
           />
+          {moves.length > 0 && (
+            <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
+              <button
+                onClick={() => setReplayMoveIndex(idx => idx === null || idx <= 0 ? null : idx - 1)}
+                disabled={replayMoveIndex === null}
+                className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:hover:bg-gray-700"
+                aria-label={lang === 'fr' ? 'Coup précédent' : 'Previous move'}
+                title="←"
+              >
+                ←
+              </button>
+              <span className="text-[10px] tabular-nums">
+                {replayMoveIndex === null
+                  ? `0 / ${moves.length}`
+                  : `${replayMoveIndex + 1} / ${moves.length}`}
+              </span>
+              <button
+                onClick={() => setReplayMoveIndex(idx => idx === null ? 0 : Math.min(idx + 1, moves.length - 1))}
+                disabled={replayMoveIndex !== null && replayMoveIndex >= moves.length - 1}
+                className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:hover:bg-gray-700"
+                aria-label={lang === 'fr' ? 'Coup suivant' : 'Next move'}
+                title="→"
+              >
+                →
+              </button>
+            </div>
+          )}
         </div>
       )}
       {!displayedBoard && (
