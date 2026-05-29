@@ -219,6 +219,12 @@
       "_human_verified": true
     },
     {
+      "page": 85,
+      "number": 4,
+      "fen": "W:WK5,31,33,34,36,38,39,40,41,43:B2,3,4,6,7,8,9,11,12,13,15,16",
+      "_human_verified": true
+    },
+    {
       "page": 90,
       "number": 10,
       "fen": "W:W48:B3",
