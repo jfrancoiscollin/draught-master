@@ -249,29 +249,56 @@ def _detect_bw_board_bounds(arr: np.ndarray) -> tuple[int, int, int, int] | None
                 out[i] = int((ends - starts).max())
         return out
 
-    row_runs = longest_run_per_row(very_dark)
-    col_runs = longest_run_per_row(very_dark.T)
+    # Per-row, also track the x range of the longest run so we can fall
+    # back on it when the vertical borders are too thin to detect (some
+    # Roozenburg crops have the left/right border interrupted by piece
+    # outlines and anti-aliasing, but the top horizontal border survives).
+    def runs_with_extents(mask: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        n = mask.shape[0]
+        runs_out = np.zeros(n, dtype=np.int32)
+        starts_out = np.full(n, -1, dtype=np.int32)
+        ends_out = np.full(n, -1, dtype=np.int32)
+        for i in range(n):
+            row = mask[i]
+            diffs = np.diff(np.concatenate(([0], row.view(np.int8), [0])))
+            ss = np.where(diffs == 1)[0]
+            es = np.where(diffs == -1)[0]
+            if len(ss):
+                r = es - ss
+                b = int(np.argmax(r))
+                runs_out[i] = int(r[b])
+                starts_out[i] = int(ss[b])
+                ends_out[i] = int(es[b])
+        return runs_out, starts_out, ends_out
+
+    row_runs, row_starts, row_ends = runs_with_extents(very_dark)
+    col_runs, col_starts, col_ends = runs_with_extents(very_dark.T)
     min_border_len = min(h, w) // 2
     valid_rows = np.where(row_runs >= min_border_len)[0]
     valid_cols = np.where(col_runs >= min_border_len)[0]
-    if len(valid_rows) < 1 or len(valid_cols) < 1:
+    if len(valid_rows) < 1:
         return None
     y_top = int(valid_rows[0])
     y_bot = int(valid_rows[-1])
-    x_left = int(valid_cols[0])
-    x_right = int(valid_cols[-1])
-    # Single-border case: the operator's bbox sometimes cuts the board
-    # tight against the bottom or right edge, or includes a
-    # short-dark-column intrusion (anti-aliasing on a piece edge that
-    # happens to be long enough to pass the threshold).  Estimate the
-    # missing bound from the LONGEST run on this axis — that's the
-    # real border — and treat the board as square.
-    longest_row_side = int(row_runs.max())
-    longest_col_side = int(col_runs.max())
+    # X bounds: prefer the *pair* of long vertical borders when both
+    # left and right side survive the threshold.  Otherwise the top
+    # horizontal border's x range is the most reliable measure of the
+    # board's width (since the top line spans the entire board).  This
+    # split handles two failure modes:
+    #   - left/right borders fragmented by piece outlines (use top span)
+    #   - top border interrupted by anti-aliasing, vertical borders
+    #     intact (use vertical pair)
+    if len(valid_cols) >= 2 and (int(valid_cols[-1]) - int(valid_cols[0])) >= min_border_len:
+        x_left = int(valid_cols[0])
+        x_right = int(valid_cols[-1])
+    else:
+        x_left = int(row_starts[y_top])
+        x_right = int(row_ends[y_top])
+    # Y bounds: when only the top border is detected (bottom occluded
+    # by piece edges), extend y_bot from the top using the row span —
+    # the board is square.
     if y_bot - y_top < min_border_len:
-        y_bot = min(y_top + longest_row_side, h)
-    if x_right - x_left < min_border_len:
-        x_right = min(x_left + longest_col_side, w)
+        y_bot = min(y_top + (x_right - x_left), h)
     return y_top, y_bot, x_left, x_right
 
 
