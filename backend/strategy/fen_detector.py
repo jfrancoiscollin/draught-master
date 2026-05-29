@@ -176,7 +176,7 @@ def config_for_source(source: str) -> DetectorConfig:
     brightness signal, so the classifier looks at inner-vs-ring
     contrast instead.
     """
-    if source.upper() == "ROOZENBURG":
+    if source.upper() in ("ROOZENBURG", "KELLER"):
         return DetectorConfig(style="bw")
     return DetectorConfig()
 
