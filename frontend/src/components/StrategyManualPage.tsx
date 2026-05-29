@@ -4,12 +4,21 @@ import { fenToBoard } from '../utils/fen'
 import { PDN_MOVE_RE, replayPdnSequence } from '../utils/pdn'
 import { type StrategyPassage } from '../api/client'
 
+// Backend ``/manual`` enriches each passage with the section heading
+// pulled from the source PDF (``Thème 4 — Libérer le chemin``).  Keep
+// the wire type loose: ``section`` is ``null`` when no metadata is
+// bundled for the source or no heading was in scope for the passage's
+// page.
+interface ManualPassage extends StrategyPassage {
+  section?: { heading: string; title: string } | null
+}
+
 interface Chapter {
   topic_key: string
   title_fr: string
   title_en: string
   description_fr: string
-  passages: StrategyPassage[]
+  passages: ManualPassage[]
 }
 
 interface ManualResponse {
@@ -145,7 +154,7 @@ const ChapterSection: React.FC<{ chapter: Chapter; index: number; lang: 'fr' | '
 // case-insensitive.  Used to fetch the position FEN for the Board.
 const DIAGRAM_REF_RE = /\bdiagramme\s+(\d+)/i
 
-const PassageCard: React.FC<{ passage: StrategyPassage; index: number; lang: 'fr' | 'en' }> = ({
+const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' | 'en' }> = ({
   passage,
   index,
   lang,
@@ -223,15 +232,37 @@ const PassageCard: React.FC<{ passage: StrategyPassage; index: number; lang: 'fr
     return replayPdnSequence(baseBoard, moves.slice(0, replayMoveIndex + 1)).board
   }, [baseBoard, moves, replayMoveIndex])
 
-  const sectionTitle = explicitNumber !== null
+  // Title preference:
+  //   1. PDF-extracted section ("Thème 4 — Libérer le chemin")
+  //      with the source's page reference as subtitle.
+  //   2. Fallback to "Diagramme N · page X" when no section metadata
+  //      was bundled for this page.
+  const sectionMeta = passage.section
+  const fallbackTitle = explicitNumber !== null
     ? `${lang === 'fr' ? 'Diagramme' : 'Diagram'} ${explicitNumber} · ${lang === 'fr' ? 'page' : 'page'} ${passage.page}`
     : `${lang === 'fr' ? 'Section' : 'Section'} ${index} · ${lang === 'fr' ? 'page' : 'page'} ${passage.page}`
 
   return (
     <article className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-4">
-      <h3 className="text-sm font-semibold text-amber-400 mb-3">
-        {sectionTitle}
-      </h3>
+      {sectionMeta ? (
+        <header className="mb-3">
+          <h3 className="text-sm font-bold text-amber-400 leading-tight">
+            {sectionMeta.heading}
+            {sectionMeta.title && (
+              <> · <span className="font-semibold text-amber-300">{sectionMeta.title}</span></>
+            )}
+          </h3>
+          <p className="text-[10px] uppercase tracking-wide text-gray-500 mt-0.5">
+            {explicitNumber !== null
+              ? `${lang === 'fr' ? 'Diagramme' : 'Diagram'} ${explicitNumber} · page ${passage.page}`
+              : `${lang === 'fr' ? 'page' : 'page'} ${passage.page}`}
+          </p>
+        </header>
+      ) : (
+        <h3 className="text-sm font-semibold text-amber-400 mb-3">
+          {fallbackTitle}
+        </h3>
+      )}
       {displayedBoard && (
         <div className="mb-3">
           <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wide text-gray-500 mb-1">

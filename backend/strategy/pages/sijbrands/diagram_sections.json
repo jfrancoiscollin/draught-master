@@ -1,0 +1,802 @@
+{
+  "3": {
+    "heading": "Leçon 24",
+    "title": "Le débordement"
+  },
+  "4": {
+    "heading": "Leçon 40",
+    "title": "Bloquer des pions"
+  },
+  "5": {
+    "heading": "Leçon 4",
+    "title": "Le coup de talon et le coup de ricochet"
+  },
+  "6": {
+    "heading": "Leçon 1",
+    "title": "Rien que des petits coups"
+  },
+  "7": {
+    "heading": "Leçon 1",
+    "title": "Rien que des petits coups"
+  },
+  "8": {
+    "heading": "Thème 1",
+    "title": "Une rafle avec un retard"
+  },
+  "9": {
+    "heading": "Leçon 2",
+    "title": "Le coup de mazette"
+  },
+  "10": {
+    "heading": "Thème 1",
+    "title": "Exercice 2"
+  },
+  "11": {
+    "heading": "Thème 1",
+    "title": "Exercice 2"
+  },
+  "12": {
+    "heading": "Leçon 3",
+    "title": "De la magie"
+  },
+  "13": {
+    "heading": "Leçon 3",
+    "title": "De la magie"
+  },
+  "14": {
+    "heading": "Leçon 4",
+    "title": "DIAGRAMME 1"
+  },
+  "15": {
+    "heading": "Leçon 4",
+    "title": "DIAGRAMME 1"
+  },
+  "16": {
+    "heading": "Thème 1",
+    "title": "Tu viens pour faire quoi?"
+  },
+  "17": {
+    "heading": "Leçon 8",
+    "title": "Le temps de repos"
+  },
+  "18": {
+    "heading": "Leçon 5",
+    "title": "Le contre-temps"
+  },
+  "19": {
+    "heading": "Leçon 5",
+    "title": "Le contre-temps"
+  },
+  "20": {
+    "heading": "Thème 2",
+    "title": "Exercice 2"
+  },
+  "21": {
+    "heading": "Leçon 6",
+    "title": "DIAGRAMME 1"
+  },
+  "22": {
+    "heading": "Thème 2",
+    "title": "DIAGRAMME 6"
+  },
+  "23": {
+    "heading": "Thème 2",
+    "title": "DIAGRAMME 6"
+  },
+  "24": {
+    "heading": "Leçon 7",
+    "title": "DIAGRAMME 1"
+  },
+  "25": {
+    "heading": "Leçon 7",
+    "title": "DIAGRAMME 1"
+  },
+  "26": {
+    "heading": "Leçon 8",
+    "title": "DIAGRAMME 1"
+  },
+  "27": {
+    "heading": "Leçon 8",
+    "title": "DIAGRAMME 1"
+  },
+  "28": {
+    "heading": "Thème 2",
+    "title": "Ça sera un coup gigantesque."
+  },
+  "29": {
+    "heading": "Leçon 12",
+    "title": "Le piège"
+  },
+  "30": {
+    "heading": "Leçon 9",
+    "title": "Le Coup Philippe"
+  },
+  "31": {
+    "heading": "Leçon 9",
+    "title": "Le Coup Philippe"
+  },
+  "32": {
+    "heading": "Thème 3",
+    "title": "DIAGRAMME 9"
+  },
+  "33": {
+    "heading": "Leçon 10",
+    "title": "Le coup royal"
+  },
+  "34": {
+    "heading": "Thème 3",
+    "title": "Mettre l’autre en prise"
+  },
+  "35": {
+    "heading": "Leçon 11",
+    "title": "Le Coup Weiss"
+  },
+  "36": {
+    "heading": "Thème 3",
+    "title": "DIAGRAMME 2"
+  },
+  "37": {
+    "heading": "Thème 3",
+    "title": "DIAGRAMME 2"
+  },
+  "38": {
+    "heading": "Thème 3",
+    "title": "Cette combinaison était aussi un exemple du Coup Weiss. La différence"
+  },
+  "39": {
+    "heading": "Leçon 12",
+    "title": "Le piège"
+  },
+  "40": {
+    "heading": "Thème 3",
+    "title": "Exercice 1 Quel tenté de faute pouvez-vous jouer?"
+  },
+  "41": {
+    "heading": "Leçon 16",
+    "title": "Attaquer à un endroit sensible"
+  },
+  "42": {
+    "heading": "Leçon 13",
+    "title": "L’attaque"
+  },
+  "43": {
+    "heading": "Leçon 13",
+    "title": "L’attaque"
+  },
+  "44": {
+    "heading": "Leçon 14",
+    "title": "Le gambit"
+  },
+  "45": {
+    "heading": "Leçon 14",
+    "title": "Le gambit"
+  },
+  "46": {
+    "heading": "Thème 4",
+    "title": "DIAGRAMME 13"
+  },
+  "47": {
+    "heading": "Leçon 15",
+    "title": "Le coup de l’entrave"
+  },
+  "48": {
+    "heading": "Thème 4",
+    "title": "Libérer le chemin"
+  },
+  "49": {
+    "heading": "Leçon 16",
+    "title": "Une attaque à un endroit sensible"
+  },
+  "50": {
+    "heading": "Thème 4",
+    "title": "Auriez-vous vu cette victoire aussi dans une partie officielle? Qu’en"
+  },
+  "51": {
+    "heading": "Thème 4",
+    "title": "Auriez-vous vu cette victoire aussi dans une partie officielle? Qu’en"
+  },
+  "52": {
+    "heading": "Thème 4",
+    "title": "Débordement!"
+  },
+  "53": {
+    "heading": "Leçon 20",
+    "title": "Apprendre de vos erreurs"
+  },
+  "54": {
+    "heading": "Leçon 17",
+    "title": "La défense"
+  },
+  "55": {
+    "heading": "Leçon 17",
+    "title": "La défense"
+  },
+  "56": {
+    "heading": "Thème 5",
+    "title": "Une autre défense amusante"
+  },
+  "57": {
+    "heading": "Leçon 18",
+    "title": "Le piège"
+  },
+  "58": {
+    "heading": "Thème 5",
+    "title": "DIAGRAMME 6"
+  },
+  "59": {
+    "heading": "Thème 5",
+    "title": "DIAGRAMME 6"
+  },
+  "60": {
+    "heading": "Leçon 19",
+    "title": "L’assaut"
+  },
+  "61": {
+    "heading": "Leçon 19",
+    "title": "L’assaut"
+  },
+  "62": {
+    "heading": "Leçon 20",
+    "title": "Apprendre de vos erreurs"
+  },
+  "63": {
+    "heading": "Leçon 20",
+    "title": "Apprendre de vos erreurs"
+  },
+  "64": {
+    "heading": "Thème 5",
+    "title": "d. Est-ce que le coup 2....20-24 est une grosse erreur de la part"
+  },
+  "65": {
+    "heading": "Leçon 24",
+    "title": "Toutes sortes d’actions de débordement"
+  },
+  "66": {
+    "heading": "DAME. Au lieu de dire aller à dame, on dit aussi promouvoir, c’est un",
+    "title": "mot difficile. Promouvoir veut dire: passer à un rang supérieur."
+  },
+  "67": {
+    "heading": "DAME. Au lieu de dire aller à dame, on dit aussi promouvoir, c’est un",
+    "title": "mot difficile. Promouvoir veut dire: passer à un rang supérieur."
+  },
+  "68": {
+    "heading": "Thème 6",
+    "title": "DIAGRAMME 6"
+  },
+  "69": {
+    "heading": "Leçon 22",
+    "title": "Deux astuces pratiques"
+  },
+  "70": {
+    "heading": "Thème 6",
+    "title": "DIAGRAMME 7"
+  },
+  "71": {
+    "heading": "Leçon 23",
+    "title": "Des combinaisons de débordement"
+  },
+  "72": {
+    "heading": "Thème 6",
+    "title": "DIAGRAMME 4"
+  },
+  "73": {
+    "heading": "Leçon 24",
+    "title": "Toutes sortes d’actions de débordement"
+  },
+  "74": {
+    "heading": "Thème 6",
+    "title": "DIAGRAMME 4"
+  },
+  "75": {
+    "heading": "Thème 6",
+    "title": "DIAGRAMME 4"
+  },
+  "76": {
+    "heading": "Thème 6",
+    "title": "Paroi de dames"
+  },
+  "77": {
+    "heading": "Leçon 28",
+    "title": "Quel peut être “le prix” d’une dame?"
+  },
+  "78": {
+    "heading": "Leçon 25",
+    "title": "L’attaque d’un avant-poste"
+  },
+  "79": {
+    "heading": "Leçon 25",
+    "title": "L’attaque d’un avant-poste"
+  },
+  "80": {
+    "heading": "Leçon 26",
+    "title": "Empêcher un débordement"
+  },
+  "81": {
+    "heading": "Leçon 26",
+    "title": "Empêcher un débordement"
+  },
+  "82": {
+    "heading": "Leçon 27",
+    "title": "Des coups de dame"
+  },
+  "83": {
+    "heading": "Leçon 27",
+    "title": "Des coups de dame"
+  },
+  "84": {
+    "heading": "Leçon 28",
+    "title": "Quel peut être “le prix” d’une dame?"
+  },
+  "85": {
+    "heading": "Leçon 28",
+    "title": "Quel peut être “le prix” d’une dame?"
+  },
+  "86": {
+    "heading": "Thème 7",
+    "title": "Exercice 4 Est-ce que le débordement est toujours correct?"
+  },
+  "87": {
+    "heading": "Leçon 32",
+    "title": "La lutte pour la grande diagonale"
+  },
+  "88": {
+    "heading": "Leçon 29",
+    "title": "L’opposition"
+  },
+  "89": {
+    "heading": "Leçon 29",
+    "title": "L’opposition"
+  },
+  "90": {
+    "heading": "Thème 8",
+    "title": "DIAGRAMME 10"
+  },
+  "91": {
+    "heading": "Thème 8",
+    "title": "DIAGRAMME 10"
+  },
+  "92": {
+    "heading": "Leçon 30",
+    "title": "Un pionnage peut inverser les rôles!"
+  },
+  "93": {
+    "heading": "Leçon 30",
+    "title": "Un pionnage peut inverser les rôles!"
+  },
+  "94": {
+    "heading": "Thème 8",
+    "title": "Exercice 3"
+  },
+  "95": {
+    "heading": "Leçon 31",
+    "title": "Une dame contre des pions"
+  },
+  "96": {
+    "heading": "Thème 8",
+    "title": "Un pion à la bande et un pion dans le centre"
+  },
+  "97": {
+    "heading": "Thème 8",
+    "title": "Un pion à la bande et un pion dans le centre"
+  },
+  "98": {
+    "heading": "Thème 8",
+    "title": "Exercice 4"
+  },
+  "99": {
+    "heading": "Leçon 32",
+    "title": "La lutte pour la grande diagonale"
+  },
+  "100": {
+    "heading": "Thème 8",
+    "title": "DIAGRAMME 6"
+  },
+  "101": {
+    "heading": "Thème 8",
+    "title": "DIAGRAMME 6"
+  },
+  "102": {
+    "heading": "Thème 8",
+    "title": "Exercice 5"
+  },
+  "103": {
+    "heading": "Leçon 36",
+    "title": "Obtenir un point de justesse"
+  },
+  "104": {
+    "heading": "Leçon 33",
+    "title": "Les noirs vont à dame"
+  },
+  "105": {
+    "heading": "Leçon 33",
+    "title": "Les noirs vont à dame"
+  },
+  "106": {
+    "heading": "Thème 9",
+    "title": "Capturer la dame sur la grande diagonale."
+  },
+  "107": {
+    "heading": "Leçon 34",
+    "title": "Fins de partie dans le tric-trac"
+  },
+  "108": {
+    "heading": "Thème 9",
+    "title": "Exercice 1"
+  },
+  "109": {
+    "heading": "Thème 9",
+    "title": "Exercice 1"
+  },
+  "110": {
+    "heading": "Thème 9",
+    "title": "Exercice 3"
+  },
+  "111": {
+    "heading": "Leçon 35",
+    "title": "Vous gagnez ou c’est l’égalité"
+  },
+  "112": {
+    "heading": "Thème 9",
+    "title": "DIAGRAMME 4"
+  },
+  "113": {
+    "heading": "Thème 9",
+    "title": "DIAGRAMME 4"
+  },
+  "114": {
+    "heading": "Thème 9",
+    "title": "Exercice 4"
+  },
+  "115": {
+    "heading": "Leçon 36",
+    "title": "Obtenir un point de justesse"
+  },
+  "116": {
+    "heading": "Thème 9",
+    "title": "DIAGRAMME 3"
+  },
+  "117": {
+    "heading": "Thème 9",
+    "title": "DIAGRAMME 3"
+  },
+  "118": {
+    "heading": "Thème 9",
+    "title": "Discussion de règlement"
+  },
+  "119": {
+    "heading": "Leçon 40",
+    "title": "Le championnat des Pays-Bas 1995"
+  },
+  "120": {
+    "heading": "Leçon 37",
+    "title": "Bloquer des pions"
+  },
+  "121": {
+    "heading": "Leçon 37",
+    "title": "Bloquer des pions"
+  },
+  "122": {
+    "heading": "Thème 10",
+    "title": "DIAGRAMME 13"
+  },
+  "123": {
+    "heading": "Leçon 38",
+    "title": "Des endroits intéressants"
+  },
+  "124": {
+    "heading": "Thème 10",
+    "title": "DIAGRAMME 8"
+  },
+  "125": {
+    "heading": "Thème 10",
+    "title": "DIAGRAMME 8"
+  },
+  "126": {
+    "heading": "Leçon 39",
+    "title": "Les combinaisons comptent aussi"
+  },
+  "127": {
+    "heading": "Leçon 39",
+    "title": "Les combinaisons comptent aussi"
+  },
+  "128": {
+    "heading": "Thème 10",
+    "title": "Une position pour jouer ...et pour comprendre!"
+  },
+  "129": {
+    "heading": "Leçon 40",
+    "title": "Le championnat des Pays-Bas 1995"
+  },
+  "130": {
+    "heading": "Thème 10",
+    "title": "DIAGRAMME 1"
+  },
+  "131": {
+    "heading": "Thème 10",
+    "title": "DIAGRAMME 1"
+  },
+  "132": {
+    "heading": "Thème 10",
+    "title": "La fin de partie"
+  },
+  "133": {
+    "heading": "Thème 10",
+    "title": "La fin de partie"
+  },
+  "134": {
+    "heading": "Thème 10",
+    "title": "Mais c’est vous qui avez dit: « appuie sur la pendule »"
+  },
+  "135": {
+    "heading": "Leçon 1",
+    "title": "Exercice 1"
+  },
+  "136": {
+    "heading": "Leçon 2",
+    "title": "Exercice 1"
+  },
+  "137": {
+    "heading": "Leçon 3",
+    "title": "DIAGRAMME 12"
+  },
+  "138": {
+    "heading": "Leçon 4",
+    "title": "Exercice 1"
+  },
+  "139": {
+    "heading": "Leçon 5",
+    "title": "Exercice 1"
+  },
+  "140": {
+    "heading": "Thème 2",
+    "title": "Exercice 2"
+  },
+  "141": {
+    "heading": "Leçon 6",
+    "title": "Exercice 1"
+  },
+  "142": {
+    "heading": "Leçon 7",
+    "title": "Exercice 1"
+  },
+  "143": {
+    "heading": "Leçon 7",
+    "title": "Exercice 1"
+  },
+  "144": {
+    "heading": "Leçon 8",
+    "title": "Exercice 1"
+  },
+  "145": {
+    "heading": "Leçon 9",
+    "title": "Exercice 1"
+  },
+  "146": {
+    "heading": "Leçon 10",
+    "title": "Exercice 1"
+  },
+  "147": {
+    "heading": "Leçon 11",
+    "title": "Exercice 1"
+  },
+  "148": {
+    "heading": "Thème 3",
+    "title": "Diagramme 12"
+  },
+  "149": {
+    "heading": "Leçon 12",
+    "title": "Exercice 2"
+  },
+  "150": {
+    "heading": "Thème 3",
+    "title": "Certains joueurs savent jouer une partie entière sans regarder le damier. Ils ne peuvent consulter que"
+  },
+  "151": {
+    "heading": "Leçon 13",
+    "title": "Exercice 1"
+  },
+  "152": {
+    "heading": "Leçon 14",
+    "title": "Exercice 1"
+  },
+  "153": {
+    "heading": "Leçon 15",
+    "title": "Exercice 1"
+  },
+  "154": {
+    "heading": "Thème 4",
+    "title": "Diagramme 3"
+  },
+  "155": {
+    "heading": "Leçon 16",
+    "title": "Exercice 1"
+  },
+  "156": {
+    "heading": "Thème 4",
+    "title": "Diagramme 15"
+  },
+  "157": {
+    "heading": "Leçon 17",
+    "title": "Exercice 1"
+  },
+  "158": {
+    "heading": "Thème 5",
+    "title": "Diagramme 10"
+  },
+  "159": {
+    "heading": "Leçon 18",
+    "title": "Exercice 1"
+  },
+  "160": {
+    "heading": "Leçon 19",
+    "title": "Exercice 1"
+  },
+  "161": {
+    "heading": "Leçon 20",
+    "title": "DIAGRAMME 2"
+  },
+  "162": {
+    "heading": "Thème 5",
+    "title": "Cependant, les blancs ont encore un coup très particulier dans la"
+  },
+  "163": {
+    "heading": "Leçon 21",
+    "title": "Exercice 2"
+  },
+  "164": {
+    "heading": "Leçon 22",
+    "title": "Exercice 1"
+  },
+  "165": {
+    "heading": "Leçon 22",
+    "title": "Exercice 1"
+  },
+  "166": {
+    "heading": "Thème 6",
+    "title": "Exercice supplémentaire"
+  },
+  "167": {
+    "heading": "Leçon 22",
+    "title": "Exercice 1"
+  },
+  "168": {
+    "heading": "Leçon 24",
+    "title": "Exercice 1"
+  },
+  "169": {
+    "heading": "Leçon 26",
+    "title": "Exercice 1"
+  },
+  "170": {
+    "heading": "Thème 7",
+    "title": "Exercice 2"
+  },
+  "171": {
+    "heading": "Leçon 27",
+    "title": "Exercice 1"
+  },
+  "172": {
+    "heading": "Thème 7",
+    "title": "Exercice 4"
+  },
+  "173": {
+    "heading": "Leçon 28",
+    "title": "Exercice 1"
+  },
+  "174": {
+    "heading": "Thème 7",
+    "title": "Exercice 2"
+  },
+  "175": {
+    "heading": "Thème 7",
+    "title": "Exercice 2"
+  },
+  "176": {
+    "heading": "Thème 7",
+    "title": "Sur la porte: Club de jeu de dames « Soyez sportifs « Demi-finale espoirs"
+  },
+  "177": {
+    "heading": "Leçon 29",
+    "title": "Diagramme 1"
+  },
+  "178": {
+    "heading": "Leçon 30",
+    "title": "Exercice 1"
+  },
+  "179": {
+    "heading": "Leçon 31",
+    "title": "Exercice 1"
+  },
+  "180": {
+    "heading": "Thème 8",
+    "title": "Exercice 2"
+  },
+  "181": {
+    "heading": "Leçon 32",
+    "title": "Exercice 1"
+  },
+  "182": {
+    "heading": "Thème 8",
+    "title": "Exercice 3"
+  },
+  "183": {
+    "heading": "Leçon 33",
+    "title": "Exercice 1"
+  },
+  "184": {
+    "heading": "Thème 8",
+    "title": "Diagramme 14"
+  },
+  "185": {
+    "heading": "Leçon 34",
+    "title": "Exercice 1"
+  },
+  "186": {
+    "heading": "Leçon 35",
+    "title": "Exercice 1"
+  },
+  "187": {
+    "heading": "Leçon 35",
+    "title": "Exercice 1"
+  },
+  "188": {
+    "heading": "Leçon 36",
+    "title": "Exercice 1"
+  },
+  "189": {
+    "heading": "Leçon 36",
+    "title": "Exercice 1"
+  },
+  "190": {
+    "heading": "Thème 9",
+    "title": "L’homme :Je vous offre la nulle"
+  },
+  "191": {
+    "heading": "Leçon 37",
+    "title": "Exercice 1"
+  },
+  "192": {
+    "heading": "Thème 10",
+    "title": "Exercice 3"
+  },
+  "193": {
+    "heading": "Leçon 38",
+    "title": "Exercice 1"
+  },
+  "194": {
+    "heading": "Leçon 39",
+    "title": "Exercice 1"
+  },
+  "195": {
+    "heading": "Leçon 39",
+    "title": "Exercice 1"
+  },
+  "196": {
+    "heading": "Thème 10",
+    "title": "Exercice 4"
+  },
+  "197": {
+    "heading": "Leçon 40",
+    "title": "Exercice 1"
+  },
+  "198": {
+    "heading": "Thème 10",
+    "title": "Exercice 2"
+  },
+  "199": {
+    "heading": "Thème 10",
+    "title": "Exercice 2"
+  },
+  "200": {
+    "heading": "Thème 10",
+    "title": "DIAGRAMME 13"
+  },
+  "201": {
+    "heading": "Thème 10",
+    "title": "DIAGRAMME 13"
+  },
+  "202": {
+    "heading": "Thème 10",
+    "title": "Diagramme 17"
+  }
+}

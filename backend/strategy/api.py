@@ -305,6 +305,24 @@ def diagram_suggest_fen(
 _TRUSTED_AUTO_SOURCES = {"SPRINGER", "ROOZENBURG", "KELLER"}
 
 
+@lru_cache(maxsize=8)
+def _load_diagram_sections(source: str) -> dict[int, dict[str, str]]:
+    """Return ``{page: {"heading": ..., "title": ...}}`` for a source.
+
+    Pedagogical section metadata extracted from the source PDF by
+    ``extract_strategy_sections.py``.  Used by the manual endpoint to
+    title each passage card with its parent chapter ("Thème 4 — Libérer
+    le chemin") instead of the generic "Diagramme N · page X".  Returns
+    {} if the source has no metadata bundled.
+    """
+    p = _PAGES_DIR / source.lower() / "diagram_sections.json"
+    if not p.is_file():
+        return {}
+    with p.open() as f:
+        data = json.load(f)
+    return {int(k): v for k, v in data.items()}
+
+
 @router.get("/manual")
 def manual(
     source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
@@ -336,6 +354,7 @@ def manual(
         # cross-source "finales" topic, we want only the slice that
         # belongs to this manual.
         results = search_with_vector(centroid, k=per_chapter, sources=(src_upper,))
+        sections = _load_diagram_sections(source)
         passages = [
             {
                 "passage_id": p.passage_id,
@@ -347,6 +366,10 @@ def manual(
                 "systems": list(p.systems),
                 "phase": p.phase,
                 "nature": p.nature,
+                # Section heading + title from the source PDF, when
+                # available.  Keyed by page; frontend uses it to title
+                # each passage card pedagogically.
+                "section": sections.get(p.page),
             }
             for score, p in results
         ]
