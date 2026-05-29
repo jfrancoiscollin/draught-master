@@ -47,8 +47,23 @@ class DetectorConfig:
     # All thresholds are on 0–255 grayscale means.  Defaults are tuned
     # for Sijbrands' light-blue diagrams; other sources can pass a
     # different config without code changes.
+    # ``style`` switches the per-cell classifier between two regimes:
+    # ``"blue"`` (Sijbrands/Springer) compares the central patch's mean
+    # brightness to absolute thresholds, while ``"bw"`` (Roozenburg)
+    # uses an inner-vs-ring contrast delta — B&W boards have white
+    # pieces that match the empty-square colour in mean, so absolute
+    # brightness alone can't separate them.
+    style: str = "blue"
     white_piece_min: float = 190.0  # patch brighter than this → white piece
     black_piece_max: float = 80.0   # patch darker than this → black piece
+    # B&W style only: inner < ring - bw_dark_delta and inner < bw_dark_max
+    # → black piece (e.g. inner 110, ring 150 → diff -40 → black).
+    # inner > ring + bw_light_delta and inner > bw_light_min → white
+    # piece (e.g. inner 240, ring 190 → diff +50 → white).
+    bw_dark_max: float = 150.0
+    bw_dark_delta: float = 20.0
+    bw_light_min: float = 215.0
+    bw_light_delta: float = 25.0
     # King = significant inner/outer contrast inside the piece.  Tuned
     # conservatively — false positives (calling a piece a king) are
     # worse than false negatives (the operator just clicks "promote").
@@ -147,6 +162,20 @@ def _detect_board_bounds(
     return y0, y1, x0, x1
 
 
+def config_for_source(source: str) -> DetectorConfig:
+    """Return the ``DetectorConfig`` tuned for a given source.
+
+    Sijbrands and Springer share the blue-style classifier (matches
+    99.87% per-square on Sijbrands' 65 annotated diagrams).  Roozenburg
+    uses the B&W style — white pieces on white squares carry no mean-
+    brightness signal, so the classifier looks at inner-vs-ring
+    contrast instead.
+    """
+    if source.upper() == "ROOZENBURG":
+        return DetectorConfig(style="bw")
+    return DetectorConfig()
+
+
 def _square_to_rc(square: int) -> tuple[int, int]:
     """International numbering 1–50 → (row, col) on the 10×10 grid."""
     row = (square - 1) // 5
@@ -162,9 +191,63 @@ def _rc_to_square(row: int, col: int) -> int:
     return row * 5 + col // 2 + 1
 
 
+def _trim_outer_padding(arr: np.ndarray, max_intensity: float = 245.0) -> np.ndarray:
+    """Trim pure-white outer rows/columns from a board crop.
+
+    For the B&W detector path, where the operator's bbox already
+    centres the board: only thin all-bright margins (border whitespace)
+    get cut, the actual playing field stays intact even when half its
+    rows are mostly white squares.
+    """
+    rows_bright = (arr >= max_intensity).all(axis=1)
+    cols_bright = (arr >= max_intensity).all(axis=0)
+    y0 = int(np.argmax(~rows_bright))
+    y1 = arr.shape[0] - int(np.argmax(~rows_bright[::-1]))
+    x0 = int(np.argmax(~cols_bright))
+    x1 = arr.shape[1] - int(np.argmax(~cols_bright[::-1]))
+    if y1 <= y0 or x1 <= x0:
+        return arr
+    return arr[y0:y1, x0:x1]
+
+
 def _patch_mean(arr: np.ndarray, y0: int, y1: int, x0: int, x1: int) -> float:
     """Mean grayscale intensity in a region.  ``arr`` is HxW grayscale."""
     return float(arr[y0:y1, x0:x1].mean())
+
+
+def _inner_and_ring(
+    arr: np.ndarray, y_mid: float, x_mid: float, cell_h: float, cell_w: float
+) -> tuple[float, float]:
+    """Return ``(inner_mean, ring_mean)`` for a cell — the B&W detector's
+    main classification feature.
+
+    Inner: tight central patch (~30% of the cell side).
+    Ring: 4 small patches at ~64% of the cell radius, in the cardinal
+    directions — places where the piece's outline would sit if a piece
+    is present, and where the background sits if the cell is empty.
+    """
+    i_h = cell_h * 0.15
+    i_w = cell_w * 0.15
+    inner = _patch_mean(
+        arr,
+        int(y_mid - i_h),
+        int(y_mid + i_h),
+        int(x_mid - i_w),
+        int(x_mid + i_w),
+    )
+    samples: list[float] = []
+    for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+        ry = y_mid + dy * cell_h * 0.32
+        rx = x_mid + dx * cell_w * 0.32
+        y0 = int(ry - i_h)
+        y1 = int(ry + i_h)
+        x0 = int(rx - i_w)
+        x1 = int(rx + i_w)
+        if y0 < 0 or y1 > arr.shape[0] or x0 < 0 or x1 > arr.shape[1]:
+            continue
+        samples.append(_patch_mean(arr, y0, y1, x0, x1))
+    ring = float(np.mean(samples)) if samples else inner
+    return inner, ring
 
 
 def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = None) -> str:
@@ -181,10 +264,20 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
     cfg = config or DetectorConfig()
     img = (image if isinstance(image, Image.Image) else Image.open(image)).convert("L")
     full = np.asarray(img, dtype=np.float32)
-    y0, y1, x0, x1 = _detect_board_bounds(
-        full, cfg.board_pixel_max, cfg.board_coverage_min
-    )
-    arr = full[y0:y1, x0:x1]
+    if cfg.style == "bw":
+        # B&W crops come from the manual crop tool — the operator
+        # already isolated the board, so we just trim pure-white outer
+        # padding (rows/columns where every pixel is bright background)
+        # instead of running the coverage-based bounds detector.  The
+        # latter struggles when half the board is white squares: the
+        # coverage dips below 0.35 in white-piece-heavy regions and
+        # splits the longest run.
+        arr = _trim_outer_padding(full)
+    else:
+        y0, y1, x0, x1 = _detect_board_bounds(
+            full, cfg.board_pixel_max, cfg.board_coverage_min
+        )
+        arr = full[y0:y1, x0:x1]
     h, w = arr.shape
     cell_h = h / 10.0
     cell_w = w / 10.0
@@ -206,8 +299,28 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
             x0 = int(x_mid - cell_w * (0.5 - inset))
             x1 = int(x_mid + cell_w * (0.5 - inset))
             piece_mean = _patch_mean(arr, y0, y1, x0, x1)
-
             square = _rc_to_square(row, col)
+
+            if cfg.style == "bw":
+                # B&W boards (Roozenburg): empty white squares are as
+                # bright as white pieces, so absolute brightness alone
+                # mis-classifies. Compare the cell's central inner patch
+                # to a ring just outside it — a piece creates a strong
+                # delta (its colour vs. the surrounding ring crossing
+                # the outline), an empty cell stays flat.
+                inner_mean, ring_mean = _inner_and_ring(
+                    arr, y_mid, x_mid, cell_h, cell_w
+                )
+                delta = inner_mean - ring_mean
+                if inner_mean <= cfg.bw_dark_max and delta <= -cfg.bw_dark_delta:
+                    blacks.append(str(square))
+                elif inner_mean >= cfg.bw_light_min and delta >= cfg.bw_light_delta:
+                    whites.append(str(square))
+                # else: empty — skip
+                # NOTE: king detection deferred for B&W — needs more
+                # samples to calibrate; today every B&W piece is a man.
+                continue
+
             white_min = cfg.top_row_white_min if row == 0 else cfg.white_piece_min
             black_max = cfg.top_row_black_max if row == 0 else cfg.black_piece_max
 

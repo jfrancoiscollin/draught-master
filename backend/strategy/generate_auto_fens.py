@@ -21,7 +21,7 @@ import json
 import sys
 from pathlib import Path
 
-from .fen_detector import detect_fen
+from .fen_detector import config_for_source, detect_fen
 
 _PAGES_DIR = Path(__file__).parent / "pages"
 
@@ -46,6 +46,7 @@ def generate(source: str) -> tuple[int, int]:
     # page isn't reloaded for each crop on it.
     from PIL import Image
     page_cache: dict[int, Image.Image] = {}
+    cfg = config_for_source(source)
     for i, entry in enumerate(manifest, start=1):
         if "bbox" in entry:
             page = entry["page"]
@@ -56,13 +57,13 @@ def generate(source: str) -> tuple[int, int]:
                     continue
                 page_cache[page] = Image.open(img_path).copy()
             x0, y0, x1, y1 = entry["bbox"]
-            fen = detect_fen(page_cache[page].crop((x0, y0, x1, y1)))
+            fen = detect_fen(page_cache[page].crop((x0, y0, x1, y1)), config=cfg)
         else:
             crop_path = crops_dir / entry["crop"]
             if not crop_path.is_file():
                 skipped += 1
                 continue
-            fen = detect_fen(crop_path)
+            fen = detect_fen(crop_path, config=cfg)
         out_entries.append({
             "page": entry["page"],
             "number": entry["number"],
