@@ -69,14 +69,21 @@ class DetectorConfig:
     # Tuned against 15 ground-truth Roozenburg crops → 98.3% per-square.
     bw_dark_delta_below: float = 25.0
     bw_light_delta_above: float = 2.0
-    # ``bw_hatched`` (Keller) classifier — calibrated against 5 GT.
+    # ``bw_hatched`` (Keller) classifier — re-calibrated on 10 GT.
     # Black: high std (dark + speckled noise) AND low mean (dark fill).
     # White: still relatively high std (dark outline around bright centre)
     # AND mean below empty-bg level so empty hatched cells don't pass.
-    kh_black_std_min: float = 65.0
-    kh_black_mean_max: float = 190.0
-    kh_white_std_min: float = 40.0
-    kh_white_mean_max: float = 220.0
+    # ``kh_shrink``: the texture-variance extractor leaves a few pixels
+    # of slack around the actual board.  Rows 0 and 9 of the 10×10 grid
+    # then sample partly outside the board, producing false-positive
+    # whites on the adjacent text.  3% shrink trims that bleed; tighter
+    # cuts into real cells, looser leaves the false positives.  Brought
+    # the per-square score from 85% to 95% on the 10-GT calibration set.
+    kh_black_std_min: float = 60.0
+    kh_black_mean_max: float = 180.0
+    kh_white_std_min: float = 38.0
+    kh_white_mean_max: float = 210.0
+    kh_shrink: float = 0.03
     # King = significant inner/outer contrast inside the piece.  Tuned
     # conservatively — false positives (calling a piece a king) are
     # worse than false negatives (the operator just clicks "promote").
@@ -184,7 +191,7 @@ def config_for_source(source: str) -> DetectorConfig:
     brightness signal, so the classifier looks at inner-vs-ring
     contrast instead.
     """
-    if source.upper() in ("ROOZENBURG", "KELLER"):
+    if source.upper() == "ROOZENBURG":
         return DetectorConfig(style="bw")
     if source.upper() == "KELLER":
         # Keller's diagrams have *hatched* dark squares (not solid grey
@@ -383,10 +390,17 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
         else:
             arr = _trim_outer_padding(full)
     elif cfg.style == "bw_hatched":
-        # Keller crops come from the texture-variance extractor which
-        # already produces a tight bbox around the board (no solid
-        # border to detect anyway).  Skip the bounds step entirely.
-        arr = full
+        # Keller crops come from the texture-variance extractor.  The
+        # bbox tends to overshoot the board by a few pixels on each
+        # side — rows 0/9 of the grid then sample partly into text,
+        # which has (mean, std) statistics close to white pieces and
+        # produces a lot of false positives.  Shrink by ``kh_shrink``
+        # before grid placement to keep the sample area inside the
+        # actual playing field.
+        h_full, w_full = full.shape
+        dy = int(h_full * cfg.kh_shrink)
+        dx = int(w_full * cfg.kh_shrink)
+        arr = full[dy:h_full - dy, dx:w_full - dx]
     else:
         y0, y1, x0, x1 = _detect_board_bounds(
             full, cfg.board_pixel_max, cfg.board_coverage_min
