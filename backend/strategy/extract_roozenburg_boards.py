@@ -79,14 +79,16 @@ def detect_boards_on_page(arr: np.ndarray) -> list[tuple[int, int, int, int]]:
     for i, (y, r, s, e) in enumerate(candidates):
         if i in used:
             continue
-        # Look for a bottom border within the expected board height.
+        matched = False
+        # Look for a bottom border within the expected board height.  Track
+        # ``matched`` explicitly rather than relying on a ``for/else`` —
+        # the "we've gone past the max" early-break would otherwise skip
+        # the fallback and leave the top border orphaned.
         for j in range(i + 1, len(candidates)):
             if j in used:
                 continue
             y2, r2, s2, e2 = candidates[j]
             if not (_BOARD_SIZE_RANGE[0] <= (y2 - y) <= _BOARD_SIZE_RANGE[1]):
-                # If we've gone past the max expected size, this candidate
-                # is in another board's territory; stop searching.
                 if y2 - y > _BOARD_SIZE_RANGE[1]:
                     break
                 continue
@@ -96,11 +98,30 @@ def detect_boards_on_page(arr: np.ndarray) -> list[tuple[int, int, int, int]]:
                 boards.append((s, y, e, y2))
                 used.add(i)
                 used.add(j)
+                matched = True
                 break
-        else:
-            # Bottom border occluded — assume square board.
+        if not matched:
+            # Bottom border occluded or out of range — assume square.
             boards.append((s, y, e, y + r))
             used.add(i)
+    # Filter out false positives — text regions occasionally show a long
+    # dark run that looks like a top border.  A real board has the
+    # checkered grey/white pattern *below* that border; text is mostly
+    # white.  Reject any candidate whose interior averages too bright.
+    real_boards: list[tuple[int, int, int, int]] = []
+    for x0, y0, x1, y1 in boards:
+        if y1 > arr.shape[0]:
+            y1 = arr.shape[0]
+        if x1 > arr.shape[1]:
+            x1 = arr.shape[1]
+        interior = arr[y0 + 5:y1 - 5, x0 + 5:x1 - 5]
+        if interior.size == 0:
+            continue
+        # Boards average ~190-210 (lots of grey squares); text ~245.
+        if interior.mean() <= 230:
+            real_boards.append((x0, y0, x1, y1))
+    boards = real_boards
+
     # Sort and de-duplicate: two candidates may converge onto the same
     # diagram if the top and bottom borders bleed into adjacent rows
     # (anti-aliasing, JPEG noise).  Drop any board that overlaps >=50%
@@ -148,8 +169,26 @@ def main() -> int:
     manifest_path = _PAGES_DIR / "diagrams_manifest.json"
     existing_by_page: dict[int, list[dict]] = {}
     if manifest_path.is_file():
+        # Re-validate every existing bbox via the same interior-brightness
+        # check used to filter detector output.  Previous extractor runs
+        # produced false positives (text regions misread as boards); any
+        # such entry that still sits in the manifest gets dropped here so
+        # the new detector's correct bbox can take its place.
         for e in json.loads(manifest_path.read_text()).get("entries", []):
-            existing_by_page.setdefault(e["page"], []).append(e)
+            page = e["page"]
+            page_path = _PAGES_DIR / f"page_{page:04d}.jpg"
+            if not page_path.is_file():
+                existing_by_page.setdefault(page, []).append(e)
+                continue
+            arr = np.asarray(Image.open(page_path).convert("L"), dtype=np.float32)
+            x0, y0, x1, y1 = e["bbox"]
+            x1 = min(x1, arr.shape[1])
+            y1 = min(y1, arr.shape[0])
+            interior = arr[y0 + 5:y1 - 5, x0 + 5:x1 - 5]
+            if interior.size > 0 and interior.mean() > 230:
+                print(f"  drop stale entry p.{page} #{e['number']} bbox={e['bbox']} (interior too bright)")
+                continue
+            existing_by_page.setdefault(page, []).append(e)
 
     def bbox_overlap(a: list[int], b: list[int]) -> float:
         ax0, ay0, ax1, ay1 = a
