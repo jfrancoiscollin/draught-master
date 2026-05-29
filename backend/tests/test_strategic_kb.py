@@ -63,3 +63,20 @@ def test_kb_theme_endpoint_and_404(client: TestClient):
 
     r = client.get("/api/strategy/kb-theme", params={"theme": "zzz-nope"})
     assert r.status_code == 404
+
+
+def test_diagram_fen_carries_validity_flag(client: TestClient):
+    """The prose-facing endpoint exposes the engine-validated flag so the
+    frontend can skip rendering a broken board for a bad auto FEN."""
+    # A known-good Sijbrands diagram.
+    r = client.get(
+        "/api/strategy/diagram-fen",
+        params={"source": "SIJBRANDS", "page": 6, "number": 1},
+    )
+    assert r.status_code == 200 and r.json()["valid"] is True
+    # A known detector failure (empty board "W:W:B").
+    r = client.get(
+        "/api/strategy/diagram-fen",
+        params={"source": "SIJBRANDS", "page": 7, "number": 7},
+    )
+    assert r.status_code == 200 and r.json()["valid"] is False

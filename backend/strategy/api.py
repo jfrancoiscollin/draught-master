@@ -436,14 +436,29 @@ def diagram_fen(
     doesn't flag the result.  Per-entry human overrides still win.
 
     404 only when neither file has an entry.
+
+    The response also carries ``valid`` — the engine-validated flag from
+    the consolidated position library (parses, 1–20 men a side, has a
+    legal move). The frontend uses it to avoid rendering a broken
+    ``<Board>`` for the ~3% of auto FENs the detector got wrong.
     """
+    def _valid(fen: str) -> bool:
+        from .position_library import get_position
+
+        entry = get_position(source, page, number)
+        # Library is built from the same manifest+FENs; if the entry is
+        # absent (unlikely) treat it as valid rather than hide a board.
+        return bool(entry.get("valid")) if entry else True
+
     fen = _load_diagram_fens(source).get((page, number))
     if fen is not None:
-        return {"fen": fen, "source": source, "page": page, "number": number, "kind": "human"}
+        return {"fen": fen, "source": source, "page": page, "number": number,
+                "kind": "human", "valid": _valid(fen)}
     fen = _load_diagram_fens_auto(source).get((page, number))
     if fen is not None:
         kind = "human" if source.upper() in _TRUSTED_AUTO_SOURCES else "auto"
-        return {"fen": fen, "source": source, "page": page, "number": number, "kind": kind}
+        return {"fen": fen, "source": source, "page": page, "number": number,
+                "kind": kind, "valid": _valid(fen)}
     raise HTTPException(
         status_code=404,
         detail=f"no FEN (human or auto) for ({source!r}, p.{page}, #{number})",

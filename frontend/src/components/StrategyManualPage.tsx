@@ -176,7 +176,9 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
       fetch(`/api/strategy/diagram-fen?${qs}`)
         .then(r => (r.ok ? r.json() : null))
         .then(j => {
-          if (j?.fen) setFen(j.fen)
+          // Skip boards the engine flagged invalid (bad auto FEN) so a
+          // broken position never renders next to the prose.
+          if (j?.fen && j.valid !== false) setFen(j.fen)
         })
         .catch(() => {})
       return
@@ -191,7 +193,9 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
           return fetch(`/api/strategy/diagram-fen?${qs}`)
             .then(r => (r.ok ? r.json() : null))
             .then(j => {
-              if (j?.fen) setFen(j.fen)
+              // Skip boards the engine flagged invalid (bad auto FEN) so a
+          // broken position never renders next to the prose.
+          if (j?.fen && j.valid !== false) setFen(j.fen)
             })
         }
       })
