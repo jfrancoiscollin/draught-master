@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 
 from .models import (
     StrategyPassageOut,
@@ -26,16 +26,28 @@ router = APIRouter(prefix="/api/strategy", tags=["strategy"])
 
 
 @lru_cache(maxsize=8)
-def _load_diagram_manifest(source: str) -> dict[tuple[int, int], str]:
-    """Return ``{(page, number): crop_filename}`` for a source, or {} if no
-    manifest is bundled. Cached — manifests are small (<50 KB) and immutable
-    at runtime."""
+def _load_diagram_manifest(source: str) -> dict[tuple[int, int], dict]:
+    """Return ``{(page, number): entry_dict}`` for a source, or {} if no
+    manifest is bundled. Cached — manifests are small (<100 KB) and
+    immutable at runtime.
+
+    Two manifest schemas are supported:
+      - ``{"crop": "diagram_NNN_pXXXX.jpg"}`` — Sijbrands/Springer style,
+        pre-extracted JPEG files in ``pages/<source>/diagrams/``.
+      - ``{"bbox": [x0, y0, x1, y1]}`` — Roozenburg/Keller style, the
+        crop is computed on the fly from the page-image at request
+        time.  Cuts the need to store separate JPGs for sources where
+        no good auto-extractor exists yet.
+
+    The returned dicts contain whichever set of keys the source uses;
+    callers branch on key presence.
+    """
     manifest_path = _PAGES_DIR / source.lower() / "diagrams_manifest.json"
     if not manifest_path.is_file():
         return {}
     with manifest_path.open() as f:
         data = json.load(f)
-    return {(e["page"], e["number"]): e["crop"] for e in data.get("entries", [])}
+    return {(e["page"], e["number"]): e for e in data.get("entries", [])}
 
 
 @lru_cache(maxsize=8)
@@ -182,18 +194,40 @@ def diagram(
             status_code=404,
             detail=f"no diagram crops bundled for source {source!r}",
         )
-    crop_name = manifest.get((page, number))
-    if crop_name is None:
+    entry = manifest.get((page, number))
+    if entry is None:
         raise HTTPException(
             status_code=404,
             detail=f"diagram {number} on page {page} not extracted for {source!r}",
         )
+    if "bbox" in entry:
+        # Bbox manifest entry (Roozenburg / Keller): crop on the fly from
+        # the page-image.  Avoids storing redundant JPEGs in the repo.
+        return _crop_from_page_image(source, page, entry["bbox"])
+    crop_name = entry["crop"]
     crop_path = _PAGES_DIR / source.lower() / "diagrams" / crop_name
     if not crop_path.is_file():
-        # Manifest entry without backing file — corruption / partial bundle.
         log.warning("manifest entry %s missing on disk", crop_path)
         raise HTTPException(status_code=404, detail="crop file missing")
     return FileResponse(crop_path, media_type="image/jpeg")
+
+
+def _crop_from_page_image(source: str, page: int, bbox: list[int]) -> Response:
+    """Crop ``bbox`` out of the source's page-image JPEG and return as
+    JPEG.  Used by bbox-style manifest entries — see
+    ``_load_diagram_manifest`` for the schema."""
+    from io import BytesIO
+    from PIL import Image
+
+    img_path = _PAGES_DIR / source.lower() / f"page_{page:04d}.jpg"
+    if not img_path.is_file():
+        raise HTTPException(status_code=404, detail=f"page {page} not bundled for {source!r}")
+    x0, y0, x1, y1 = bbox
+    with Image.open(img_path) as im:
+        crop = im.crop((x0, y0, x1, y1))
+        buf = BytesIO()
+        crop.save(buf, format="JPEG", quality=85)
+    return Response(content=buf.getvalue(), media_type="image/jpeg")
 
 
 @router.get("/diagram-index")
@@ -236,17 +270,26 @@ def diagram_suggest_fen(
     editor).
     """
     manifest = _load_diagram_manifest(source)
-    crop_name = manifest.get((page, number))
-    if crop_name is None:
+    entry = manifest.get((page, number))
+    if entry is None:
         raise HTTPException(
             status_code=404,
             detail=f"no crop for ({source!r}, p.{page}, #{number}) — nothing to detect",
         )
-    crop_path = _PAGES_DIR / source.lower() / "diagrams" / crop_name
-    if not crop_path.is_file():
-        raise HTTPException(status_code=404, detail="crop file missing")
     from .fen_detector import detect_fen
 
+    if "bbox" in entry:
+        from PIL import Image
+
+        img_path = _PAGES_DIR / source.lower() / f"page_{page:04d}.jpg"
+        if not img_path.is_file():
+            raise HTTPException(status_code=404, detail=f"page {page} not bundled")
+        x0, y0, x1, y1 = entry["bbox"]
+        with Image.open(img_path) as im:
+            return {"fen": detect_fen(im.crop((x0, y0, x1, y1)))}
+    crop_path = _PAGES_DIR / source.lower() / "diagrams" / entry["crop"]
+    if not crop_path.is_file():
+        raise HTTPException(status_code=404, detail="crop file missing")
     return {"fen": detect_fen(crop_path)}
 
 

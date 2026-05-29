@@ -7,6 +7,7 @@ import {
 } from '../api/client'
 import Board from './Board'
 import FenAnnotator from './FenAnnotator'
+import CropTool from './CropTool'
 import { fenToBoard } from '../utils/fen'
 
 interface Props {
@@ -71,6 +72,11 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   const [jumpSource, setJumpSource] = useState('SIJBRANDS')
   const [jumpPage, setJumpPage] = useState('')
   const [jumpNumber, setJumpNumber] = useState('')
+  // Manual crop tool — open for sources without an auto-extraction
+  // pipeline (Roozenburg / Keller).  When set, fills the screen with
+  // a full-page image and lets the operator tap two corners to define
+  // a diagram bbox, then copies the JSON manifest entry.
+  const [croppingSource, setCroppingSource] = useState<string | null>(null)
   // {page: [number, ...]} index for the *currently selected* source — drives
   // the diagram-number dropdown so operators can only pick (page, number)
   // tuples that have a backing crop.  Fetched on source change and cached
@@ -443,6 +449,17 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
           >
             {lang === 'fr' ? 'Voir' : 'Open'}
           </button>
+          {/* Manual crop tool for sources without an auto-extracted
+              manifest.  Click → fullscreen page-image + 2-tap bbox
+              capture → copy JSON manifest entry. */}
+          <button
+            type="button"
+            onClick={() => setCroppingSource(jumpSource)}
+            className="px-2 py-1 text-amber-400 hover:text-amber-300 text-xs underline"
+            title={lang === 'fr' ? 'Crop manuel d’un diagramme' : 'Manual diagram crop'}
+          >
+            {lang === 'fr' ? '✂ crop' : '✂ crop'}
+          </button>
         </form>
       </div>
 
@@ -722,6 +739,14 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
           </div>
         )
       })()}
+      {croppingSource && (
+        <CropTool
+          source={croppingSource}
+          initialPage={parseInt(jumpPage, 10) || undefined}
+          onClose={() => setCroppingSource(null)}
+          lang={lang}
+        />
+      )}
     </div>
   )
 }
