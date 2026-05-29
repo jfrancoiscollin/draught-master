@@ -39,35 +39,85 @@ _DEPTH = 6
 # A leaf score this large means the search reached annihilation (see
 # ai_engine.evaluate / game_result == ±100000). Side-to-move relative.
 _WIN = 99000.0
+# Screening floor (side-to-move relative, ~100 per man). Positions whose
+# best line doesn't reach at least this are not promising — skip without
+# the cost of reconstructing a line.
+_SCREEN = 150.0
+# A line qualifies as a winning combination when the mover nets at least
+# this much material (~2 men) by its quiet end, and still stands clearly
+# ahead. Being up two men is decisive in practice.
+_MATERIAL_GAIN = 200
+_MIN_END_EVAL = 100
 # Hard cap on reconstructed line length (plies) — guards against any
 # pathological non-terminating search.
 _MAX_PLIES = 12
 
 
-def _forced_win_line(state: ge.GameState) -> list[str] | None:
-    """Reconstruct the forced winning line, or None if there isn't one.
+def _net_material(state: ge.GameState, mover: str) -> int:
+    """Mover-relative material balance (men=100, kings=325)."""
+    bal = 0
+    for p in state.board:
+        if p == ge.WHITE_MAN:
+            bal += 100
+        elif p == ge.WHITE_KING:
+            bal += 325
+        elif p == ge.BLACK_MAN:
+            bal -= 100
+        elif p == ge.BLACK_KING:
+            bal -= 325
+    return bal if mover == "white" else -bal
 
-    Plays the engine's best move for both sides until the original mover
-    wins. Returns the PDN move list. Returns None when the position is
-    not a forced win for the side to move (best score below threshold) or
-    the line fails to terminate in a win within ``_MAX_PLIES``.
+
+def _has_capture(state: ge.GameState) -> bool:
+    return any("x" in ge.move_to_pdn(m) for m in ge.get_legal_moves(state))
+
+
+def _winning_line(state: ge.GameState) -> tuple[list[str], str, int] | None:
+    """Reconstruct a winning line, or None.
+
+    Screens with a single search, then plays the mover's first move and
+    follows the *forced* capture exchange (continuing only while the side
+    to move must capture) until the position is quiet or the game ends.
+    Returns ``(moves, outcome, material_gain)`` where outcome is
+    ``"win"`` (forced annihilation) or ``"material"`` (mover nets ≥ 2 men
+    and stays clearly ahead). Already-winning positions net ~0 and are
+    rejected — only genuine gains qualify.
     """
     mover = state.turn
     ranked = ai.rank_moves(state, n=1, depth=_DEPTH)
-    if not ranked or ranked[0][1] < _WIN:
+    if not ranked or ranked[0][1] < _SCREEN:
         return None
 
+    start_material = _net_material(state, mover)
     moves: list[str] = []
     cur = state
-    for _ in range(_MAX_PLIES):
+    for ply in range(_MAX_PLIES):
+        if ge.game_result(cur) is not None:
+            break
+        # After the mover's first move, only keep following while the side
+        # to move is forced to capture — that's the combination resolving.
+        if ply > 0 and not _has_capture(cur):
+            break
         best = ai.get_best_move(cur, depth=_DEPTH)
         if best is None:
             return None
         moves.append(ge.move_to_pdn(best))
         cur = ge.apply_move(cur, best)
-        result = ge.game_result(cur)
-        if result is not None:
-            return moves if result == mover else None
+
+    if not moves:
+        return None
+
+    result = ge.game_result(cur)
+    if result == mover:
+        return moves, "win", 100000  # opponent annihilated
+    if result is not None:
+        return None  # mover lost/drew the line
+
+    gain = _net_material(cur, mover) - start_material
+    end_eval = ai.evaluate(cur)
+    end_eval = end_eval if mover == "white" else -end_eval
+    if gain >= _MATERIAL_GAIN and end_eval >= _MIN_END_EVAL:
+        return moves, "material", gain
     return None
 
 
@@ -93,17 +143,22 @@ def generate(sources: tuple[str, ...]) -> list[dict]:
         if i % 100 == 0:
             print(f"  ... screened {i}/{total} ({len(exercises)} found)")
         state = ge.fen_to_board(p["fen"])
-        line = _forced_win_line(state)
-        if not line:
+        result = _winning_line(state)
+        if not result:
             continue
+        line, outcome, gain = result
         side = "blancs" if state.turn == "white" else "noirs"
         theme = p.get("theme")
+        if outcome == "win":
+            objective = "jouent et gagnent"
+        else:
+            objective = f"jouent et gagnent du matériel (+{gain // 100} pions)"
         exercises.append(
             {
                 "name": f"{p['source']} — combinaison (p.{p['page']} #{p['number']})",
                 "description": (
                     f"{p['source']} — diagramme {p['number']} page {p['page']}. "
-                    f"Les {side} jouent et gagnent."
+                    f"Les {side} {objective}."
                 ),
                 "initial_fen": p["fen"],
                 "solution_moves": line,
@@ -116,6 +171,8 @@ def generate(sources: tuple[str, ...]) -> list[dict]:
                 "number": p["number"],
                 "diagram_id": p["id"],
                 "fen_kind": p["kind"],
+                "outcome": outcome,
+                "material_gain": gain,
             }
         )
     return exercises

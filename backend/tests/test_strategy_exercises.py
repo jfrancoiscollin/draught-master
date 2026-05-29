@@ -24,15 +24,31 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def _replay_wins(fen: str, moves: list[str]) -> bool:
+def _net_material(state: ge.GameState, mover: str) -> int:
+    bal = 0
+    for p in state.board:
+        if p == ge.WHITE_MAN:
+            bal += 100
+        elif p == ge.WHITE_KING:
+            bal += 325
+        elif p == ge.BLACK_MAN:
+            bal -= 100
+        elif p == ge.BLACK_KING:
+            bal -= 325
+    return bal if mover == "white" else -bal
+
+
+def _replay(fen: str, moves: list[str]) -> tuple[bool, str, int]:
+    """Replay the line; return (all_legal, result, material_gain)."""
     state = ge.fen_to_board(fen)
     mover = state.turn
+    start = _net_material(state, mover)
     for mv in moves:
         legal = {ge.move_to_pdn(m): m for m in ge.get_legal_moves(state)}
         if mv not in legal:
-            return False
+            return False, "", 0
         state = ge.apply_move(state, legal[mv])
-    return ge.game_result(state) == mover
+    return True, (ge.game_result(state) or ""), _net_material(state, mover) - start
 
 
 def test_loader_rows_well_formed():
@@ -51,7 +67,16 @@ def test_every_solution_is_legal_and_winning():
     data = json.loads(_OUT_PATH.read_text())["exercises"]
     assert data, "no exercises generated"
     for ex in data:
-        assert _replay_wins(ex["initial_fen"], ex["solution_moves"]), ex["diagram_id"]
+        legal, result, gain = _replay(ex["initial_fen"], ex["solution_moves"])
+        assert legal, ex["diagram_id"]
+        mover = "white" if ex["initial_fen"].startswith("W:") else "black"
+        if ex["outcome"] == "win":
+            # Forced annihilation: the line ends in a win by the rules.
+            assert result == mover, ex["diagram_id"]
+        else:
+            # Decisive material: mover nets at least two men by the end.
+            assert ex["outcome"] == "material"
+            assert gain >= 200, (ex["diagram_id"], gain)
 
 
 def test_id_range_disjoint_and_order_deterministic():
