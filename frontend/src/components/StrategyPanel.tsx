@@ -8,6 +8,7 @@ import {
 import Board from './Board'
 import FenAnnotator from './FenAnnotator'
 import CropTool from './CropTool'
+import { PDN_MOVE_RE, replayPdnSequence } from '../utils/pdn'
 import { fenToBoard } from '../utils/fen'
 
 interface Props {
@@ -64,6 +65,12 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   // — used when adding a new FEN to diagrams_fens.json without leaving the
   // panel.  Cleared whenever the modal navigates or closes.
   const [annotating, setAnnotating] = useState(false)
+  // Move-replay state: which token in the passage text the operator
+  // clicked.  ``null`` shows the base FEN of the focused diagram;
+  // ``i >= 0`` shows the position *after* the i-th PDN move from the
+  // passage (replayed sequentially from the base FEN — see
+  // ``utils/pdn.replayPdnSequence``).
+  const [replayMoveIndex, setReplayMoveIndex] = useState<number | null>(null)
   // Jump-to-diagram: lets the operator open the modal on any (source, page,
   // number) without going through topic search.  Synthetic passage stored
   // here; when set, the modal renders it instead of passages[modalIndex].
@@ -115,6 +122,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   useEffect(() => {
     setZoomed(false)
     setAnnotating(false)
+    setReplayMoveIndex(null)
   }, [modalIndex, jumpPassage])
 
   // Fetch the (page → [numbers]) index for the selected source.  Cached so
@@ -672,21 +680,15 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   </button>
                 </div>
               </div>
-              <div
-                className={
-                  modalFen || annotating ? 'flex flex-wrap items-start gap-4' : ''
-                }
-              >
-                {/* Show the printed crop when no FEN exists yet *or* when
-                    the FEN is auto-detected — in the latter case the
-                    operator needs the source image to spot the rare
-                    detector misses.  Once a human validates and the
-                    FEN becomes ``kind: 'human'``, the crop is hidden
-                    (the Board is the source of truth then).
-                    Stays visible during annotation when the FEN is
-                    auto or absent — the editor still benefits from
-                    the original image as a reference. */}
-                {(!modalFen || modalFen.kind === 'auto') && (
+              {/* Lesson-style stack: Board on top, prose with clickable
+                  moves below.  No printed crop — every diagram is now
+                  trusted-auto across the four sources, so the Board is
+                  always the source of truth.  Click any PDN token in
+                  the prose ("33-29", "18x29", "20x31x42") to replay
+                  the moves from the base FEN up to that point and show
+                  the resulting position. */}
+              {annotating && diagramNumber !== null ? (
+                <div className="flex flex-wrap items-start gap-4">
                   <img
                     key={modalIndex}
                     src={modal.src}
@@ -694,12 +696,10 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                     className={
                       zoomed
                         ? 'cursor-zoom-out'
-                        : `${modalFen ? 'max-w-xs' : 'max-w-full'} h-auto cursor-zoom-in`
+                        : 'max-w-xs h-auto cursor-zoom-in'
                     }
                     onClick={() => setZoomed(z => !z)}
                     onError={e => {
-                      // Crop endpoint 404s for some manifest entries —
-                      // swap to the full-page image once as a fallback.
                       const img = e.currentTarget
                       if (modal.fallback && img.dataset.fallbackUsed !== 'true') {
                         img.dataset.fallbackUsed = 'true'
@@ -707,61 +707,115 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                       }
                     }}
                   />
-                )}
-                {(modalFen || annotating) && diagramNumber !== null && (
                   <div className="flex-1 min-w-[280px]">
-                    {annotating ? (
-                      <>
-                        {modalFen?.kind === 'auto' && (
-                          // Visual marker that the editor is seeded by the
-                          // auto-detector — not yet human-verified.  The
-                          // operator should sanity-check every square
-                          // before copying the JSON.
-                          <div className="mb-2 text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700/50 rounded px-2 py-1">
-                            {lang === 'fr'
-                              ? '⚠ Pré-rempli par détection auto — vérifier chaque case avant copie.'
-                              : '⚠ Pre-filled by auto-detector — verify each square before copying.'}
-                          </div>
-                        )}
-                        <FenAnnotator
-                          source={focusedPassage.source}
-                          page={focusedPassage.page}
-                          number={diagramNumber}
-                          initialFen={modalFen?.fen}
-                          onClose={() => setAnnotating(false)}
-                          lang={lang}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1 flex items-center gap-2">
-                          <span>
-                            {lang === 'fr' ? 'Plateau interactif' : 'Interactive board'}
-                          </span>
-                          {modalFen?.kind === 'auto' && (
-                            <span className="text-amber-400 text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-amber-900/40 border border-amber-700/40 rounded">
-                              {lang === 'fr' ? 'auto · non validé' : 'auto · unverified'}
-                            </span>
-                          )}
-                        </div>
-                        <Board
-                          board={fenToBoard(modalFen!.fen)}
-                          legalMoves={[]}
-                          onMove={() => {}}
-                          selectedSquare={null}
-                          onSelectSquare={() => {}}
-                          disabled
-                        />
-                      </>
+                    {modalFen?.kind === 'auto' && (
+                      <div className="mb-2 text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700/50 rounded px-2 py-1">
+                        {lang === 'fr'
+                          ? '⚠ Pré-rempli par détection auto — vérifier chaque case avant copie.'
+                          : '⚠ Pre-filled by auto-detector — verify each square before copying.'}
+                      </div>
                     )}
+                    <FenAnnotator
+                      source={focusedPassage.source}
+                      page={focusedPassage.page}
+                      number={diagramNumber}
+                      initialFen={modalFen?.fen}
+                      onClose={() => setAnnotating(false)}
+                      lang={lang}
+                    />
                   </div>
-                )}
-              </div>
-              {/* Hide the prose footer in jump mode — the synthetic
-                  passage's text is just "Diagramme N", no value to show. */}
-              {jumpPassage === null && (
-                <p className="mt-3 text-xs text-gray-200 leading-relaxed max-h-32 overflow-auto border-t border-gray-700 pt-2">
-                  {focusedPassage.text}
+                </div>
+              ) : modalFen ? (
+                (() => {
+                  // Tokenize the passage prose into a mix of text and
+                  // PDN move tokens.  Each move keeps its ordinal in
+                  // the sequence so clicking it replays the right
+                  // prefix from the base FEN.
+                  const baseBoard = fenToBoard(modalFen.fen)
+                  const text = focusedPassage.text
+                  type Tok =
+                    | { kind: 'text'; text: string }
+                    | { kind: 'move'; text: string; index: number }
+                  const tokens: Tok[] = []
+                  const moves: string[] = []
+                  PDN_MOVE_RE.lastIndex = 0
+                  let cursor = 0
+                  let m: RegExpExecArray | null
+                  while ((m = PDN_MOVE_RE.exec(text)) !== null) {
+                    if (m.index > cursor) {
+                      tokens.push({ kind: 'text', text: text.slice(cursor, m.index) })
+                    }
+                    tokens.push({ kind: 'move', text: m[0], index: moves.length })
+                    moves.push(m[0])
+                    cursor = m.index + m[0].length
+                  }
+                  if (cursor < text.length) {
+                    tokens.push({ kind: 'text', text: text.slice(cursor) })
+                  }
+                  const displayed =
+                    replayMoveIndex === null
+                      ? baseBoard
+                      : replayPdnSequence(baseBoard, moves.slice(0, replayMoveIndex + 1)).board
+                  return (
+                    <div className="flex flex-col gap-3 items-stretch">
+                      <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wide text-gray-500">
+                        <span>
+                          {lang === 'fr' ? 'Plateau interactif' : 'Interactive board'}
+                          {replayMoveIndex !== null && (
+                            <> · {lang === 'fr' ? 'après' : 'after'} <span className="text-amber-400">{moves[replayMoveIndex]}</span></>
+                          )}
+                        </span>
+                        {replayMoveIndex !== null && (
+                          <button
+                            onClick={() => setReplayMoveIndex(null)}
+                            className="text-amber-400 hover:text-amber-300 text-[10px] underline normal-case tracking-normal"
+                          >
+                            {lang === 'fr' ? '↺ position initiale' : '↺ initial position'}
+                          </button>
+                        )}
+                      </div>
+                      <Board
+                        board={displayed}
+                        legalMoves={[]}
+                        onMove={() => {}}
+                        selectedSquare={null}
+                        onSelectSquare={() => {}}
+                        disabled
+                      />
+                      {jumpPassage === null && (
+                        <p className="text-xs text-gray-200 leading-relaxed max-h-48 overflow-auto border-t border-gray-700 pt-2">
+                          {tokens.map((t, i) =>
+                            t.kind === 'text' ? (
+                              <span key={i}>{t.text}</span>
+                            ) : (
+                              <button
+                                key={i}
+                                onClick={() => setReplayMoveIndex(t.index)}
+                                className={`mx-0.5 px-1 rounded font-medium ${
+                                  replayMoveIndex === t.index
+                                    ? 'bg-amber-600 text-white'
+                                    : 'text-amber-400 hover:bg-amber-900/40'
+                                }`}
+                                title={
+                                  lang === 'fr'
+                                    ? 'Voir la position après ce coup'
+                                    : 'Show the position after this move'
+                                }
+                              >
+                                {t.text}
+                              </button>
+                            ),
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  )
+                })()
+              ) : (
+                <p className="text-xs text-gray-400 italic">
+                  {lang === 'fr'
+                    ? 'Position non disponible pour ce diagramme.'
+                    : 'Position not available for this diagram.'}
                 </p>
               )}
             </div>

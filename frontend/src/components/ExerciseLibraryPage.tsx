@@ -78,9 +78,10 @@ function ProgressBar({ value, color }: { value: number; color: string }) {
 
 interface ExerciseLibraryPageProps {
   onSelectBook: (bookId: string) => void
+  onOpenStrategy: () => void
 }
 
-export default function ExerciseLibraryPage({ onSelectBook }: ExerciseLibraryPageProps) {
+export default function ExerciseLibraryPage({ onSelectBook, onOpenStrategy }: ExerciseLibraryPageProps) {
   const { t, language } = useLanguage()
   const { user } = useAuth()
   const [stats, setStats] = useState<Record<string, BookStats>>({})
@@ -239,6 +240,36 @@ export default function ExerciseLibraryPage({ onSelectBook }: ExerciseLibraryPag
             </div>
           )
         })}
+
+        {/* ── Stratégie : corpus prose Sijbrands / Springer / Roozenburg /
+             Keller, en mode leçon avec Board + coups cliquables.
+             Anciennement accessible via le menu Analyser. ──────────── */}
+        <div className="mb-8">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3 border-b border-gray-700 pb-1">
+            {language === 'en' ? 'Strategy' : 'Stratégie'}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <button
+              onClick={onOpenStrategy}
+              className="group relative flex flex-col items-start gap-2 rounded-xl border bg-gray-800 border-gray-700 hover:border-amber-600 hover:bg-gray-750 cursor-pointer p-5 text-left transition-all duration-200"
+            >
+              <span className="text-3xl">📚</span>
+              <div className="min-w-0 w-full">
+                <p className="font-semibold text-sm leading-snug text-white group-hover:text-amber-400">
+                  {language === 'en' ? 'Strategy concepts' : 'Concepts stratégiques'}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Sijbrands · Springer · Roozenburg · Keller
+                </p>
+              </div>
+              <span className="text-xs text-amber-400 font-medium">
+                {language === 'en'
+                  ? 'Pick a topic, read the prose, click moves to replay'
+                  : 'Choisis un thème, lis, clique sur les coups'}
+              </span>
+            </button>
+          </div>
+        </div>
 
         {/* ── Motifs détectables par l'analyse pédagogique ────────── */}
         <MotifCatalogSection language={language} />
