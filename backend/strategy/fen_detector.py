@@ -62,8 +62,12 @@ class DetectorConfig:
     # piece (e.g. inner 240, ring 190 → diff +50 → white).
     bw_dark_max: float = 150.0
     bw_dark_delta: float = 20.0
-    bw_light_min: float = 215.0
-    bw_light_delta: float = 25.0
+    # Tuned against 4 ground-truth Roozenburg crops (p.14 #1, #2; p.18 #1, #2).
+    # Empty gray squares cluster at inner~190/ring~190, white pieces on gray
+    # at inner 200-240/ring 175-210 — so the 200 inner threshold + small
+    # delta cleanly separates them without false positives.
+    bw_light_min: float = 200.0
+    bw_light_delta: float = 5.0
     # King = significant inner/outer contrast inside the piece.  Tuned
     # conservatively — false positives (calling a piece a king) are
     # worse than false negatives (the operator just clicks "promote").
@@ -215,6 +219,59 @@ def _patch_mean(arr: np.ndarray, y0: int, y1: int, x0: int, x1: int) -> float:
     return float(arr[y0:y1, x0:x1].mean())
 
 
+def _detect_bw_board_bounds(arr: np.ndarray) -> tuple[int, int, int, int] | None:
+    """Locate the inner board inside a B&W crop via its dark border line.
+
+    Roozenburg diagrams have a thin solid black rectangle around the
+    10×10 grid.  When the operator's bbox includes whitespace or
+    marginal text (move numbers in the gutter), the grid 10×10 ends up
+    aligned to the crop's edge instead of the actual board, shifting
+    every cell sample.  This function finds the longest dark horizontal
+    line (the top border) and the longest dark vertical line (the left
+    border), and assumes the board is square — that fixes ~all crops
+    where the operator was slightly generous with the bbox.
+
+    Returns ``(y0, y1, x0, x1)`` of the playable area, or ``None`` if
+    no clear borders are found (caller should fall back to the
+    pure-white trim).
+    """
+    very_dark = arr < 80
+    h, w = very_dark.shape
+
+    def longest_run_per_row(mask: np.ndarray) -> np.ndarray:
+        out = np.zeros(mask.shape[0], dtype=np.int32)
+        for i in range(mask.shape[0]):
+            row = mask[i]
+            diffs = np.diff(np.concatenate(([0], row.view(np.int8), [0])))
+            starts = np.where(diffs == 1)[0]
+            ends = np.where(diffs == -1)[0]
+            if len(starts):
+                out[i] = int((ends - starts).max())
+        return out
+
+    row_runs = longest_run_per_row(very_dark)
+    col_runs = longest_run_per_row(very_dark.T)
+    min_border_len = min(h, w) // 2
+    valid_rows = np.where(row_runs >= min_border_len)[0]
+    valid_cols = np.where(col_runs >= min_border_len)[0]
+    if len(valid_rows) < 1 or len(valid_cols) < 1:
+        return None
+    y_top = int(valid_rows[0])
+    y_bot = int(valid_rows[-1])
+    x_left = int(valid_cols[0])
+    x_right = int(valid_cols[-1])
+    # Single-border case: the operator's bbox sometimes cuts the board
+    # tight against the bottom or right edge.  Estimate the missing
+    # bound from the detected border's run length — the board is square.
+    side_from_top = int(row_runs[y_top])
+    side_from_left = int(col_runs[x_left])
+    if y_bot - y_top < min_border_len:
+        y_bot = min(y_top + side_from_top, h)
+    if x_right - x_left < min_border_len:
+        x_right = min(x_left + side_from_left, w)
+    return y_top, y_bot, x_left, x_right
+
+
 def _inner_and_ring(
     arr: np.ndarray, y_mid: float, x_mid: float, cell_h: float, cell_w: float
 ) -> tuple[float, float]:
@@ -267,13 +324,16 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
     full = np.asarray(img, dtype=np.float32)
     if cfg.style == "bw":
         # B&W crops come from the manual crop tool — the operator
-        # already isolated the board, so we just trim pure-white outer
-        # padding (rows/columns where every pixel is bright background)
-        # instead of running the coverage-based bounds detector.  The
-        # latter struggles when half the board is white squares: the
-        # coverage dips below 0.35 in white-piece-heavy regions and
-        # splits the longest run.
-        arr = _trim_outer_padding(full)
+        # picks two corners that may include some white margin or
+        # adjacent text.  Try to locate the actual board via its
+        # dark rectangular border first; fall back to pure-white
+        # trim if no border is detected (e.g. very tight crops).
+        bounds = _detect_bw_board_bounds(full)
+        if bounds is not None:
+            y0, y1, x0, x1 = bounds
+            arr = full[y0:y1, x0:x1]
+        else:
+            arr = _trim_outer_padding(full)
     else:
         y0, y1, x0, x1 = _detect_board_bounds(
             full, cfg.board_pixel_max, cfg.board_coverage_min
