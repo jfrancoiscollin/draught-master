@@ -167,15 +167,19 @@ def _patch_mean(arr: np.ndarray, y0: int, y1: int, x0: int, x1: int) -> float:
     return float(arr[y0:y1, x0:x1].mean())
 
 
-def detect_fen(image_path: Path, *, config: DetectorConfig | None = None) -> str:
+def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = None) -> str:
     """Return ``W:W...:B...`` FEN string predicted from the crop.
 
     Always assumes white to move (``W:`` prefix) — printed diagrams
     don't encode the side to move and the manual annotator defaults
     to white anyway.
+
+    Accepts a file path *or* an in-memory ``PIL.Image`` — the latter
+    lets the bbox-manifest path crop a page-image on the fly without
+    a round-trip through the filesystem.
     """
     cfg = config or DetectorConfig()
-    img = Image.open(image_path).convert("L")  # grayscale; color isn't needed
+    img = (image if isinstance(image, Image.Image) else Image.open(image)).convert("L")
     full = np.asarray(img, dtype=np.float32)
     y0, y1, x0, x1 = _detect_board_bounds(
         full, cfg.board_pixel_max, cfg.board_coverage_min

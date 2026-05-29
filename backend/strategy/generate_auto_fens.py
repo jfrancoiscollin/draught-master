@@ -42,12 +42,27 @@ def generate(source: str) -> tuple[int, int]:
     crops_dir = src_dir / "diagrams"
     out_entries: list[dict] = []
     skipped = 0
+    # Cache opened page-images for bbox-style manifests so the same
+    # page isn't reloaded for each crop on it.
+    from PIL import Image
+    page_cache: dict[int, Image.Image] = {}
     for i, entry in enumerate(manifest, start=1):
-        crop_path = crops_dir / entry["crop"]
-        if not crop_path.is_file():
-            skipped += 1
-            continue
-        fen = detect_fen(crop_path)
+        if "bbox" in entry:
+            page = entry["page"]
+            if page not in page_cache:
+                img_path = src_dir / f"page_{page:04d}.jpg"
+                if not img_path.is_file():
+                    skipped += 1
+                    continue
+                page_cache[page] = Image.open(img_path).copy()
+            x0, y0, x1, y1 = entry["bbox"]
+            fen = detect_fen(page_cache[page].crop((x0, y0, x1, y1)))
+        else:
+            crop_path = crops_dir / entry["crop"]
+            if not crop_path.is_file():
+                skipped += 1
+                continue
+            fen = detect_fen(crop_path)
         out_entries.append({
             "page": entry["page"],
             "number": entry["number"],
