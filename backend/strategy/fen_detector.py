@@ -261,14 +261,17 @@ def _detect_bw_board_bounds(arr: np.ndarray) -> tuple[int, int, int, int] | None
     x_left = int(valid_cols[0])
     x_right = int(valid_cols[-1])
     # Single-border case: the operator's bbox sometimes cuts the board
-    # tight against the bottom or right edge.  Estimate the missing
-    # bound from the detected border's run length — the board is square.
-    side_from_top = int(row_runs[y_top])
-    side_from_left = int(col_runs[x_left])
+    # tight against the bottom or right edge, or includes a
+    # short-dark-column intrusion (anti-aliasing on a piece edge that
+    # happens to be long enough to pass the threshold).  Estimate the
+    # missing bound from the LONGEST run on this axis — that's the
+    # real border — and treat the board as square.
+    longest_row_side = int(row_runs.max())
+    longest_col_side = int(col_runs.max())
     if y_bot - y_top < min_border_len:
-        y_bot = min(y_top + side_from_top, h)
+        y_bot = min(y_top + longest_row_side, h)
     if x_right - x_left < min_border_len:
-        x_right = min(x_left + side_from_left, w)
+        x_right = min(x_left + longest_col_side, w)
     return y_top, y_bot, x_left, x_right
 
 
