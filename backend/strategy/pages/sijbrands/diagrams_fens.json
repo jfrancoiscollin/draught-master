@@ -321,6 +321,12 @@
       "_human_verified": true
     },
     {
+      "page": 111,
+      "number": 2,
+      "fen": "W:W15,25,26,K28:BK29",
+      "_human_verified": true
+    },
+    {
       "page": 137,
       "number": 9,
       "fen": "W:W25,27,28,30,32,33,35,37,38:B3,9,11,12,13,16,19,23,24",
