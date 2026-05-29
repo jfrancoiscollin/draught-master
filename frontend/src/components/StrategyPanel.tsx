@@ -216,9 +216,6 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
         const coerced: Record<number, number[]> = {}
         for (const [k, v] of Object.entries(index)) coerced[parseInt(k, 10)] = v
         jumpIndexCache.current[p.source] = coerced
-        // Also refresh the visible jumpIndex when this prefetch happens
-        // to match the visible source — keeps the dropdown consistent
-        // if the user opens it after a modal nav.
         if (p.source === jumpSource) setJumpIndex(coerced)
       })
       .catch(() => {})
