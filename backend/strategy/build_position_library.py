@@ -149,12 +149,21 @@ def _analyse_fen(fen: str) -> dict[str, Any]:
     n_wk = sum(1 for p in st.board if p == ge.WHITE_KING)
     n_bk = sum(1 for p in st.board if p == ge.BLACK_KING)
     moves = ge.get_legal_moves(st)
+    # A man on its own promotion row is impossible — it would already be a
+    # king. White men promote on 1-5, black men on 46-50; any such man is a
+    # sure detector misread, so the position is flagged invalid.
+    illegal_men = sum(
+        1 for sq in range(1, 6) if st.board[sq] == ge.WHITE_MAN
+    ) + sum(
+        1 for sq in range(46, 51) if st.board[sq] == ge.BLACK_MAN
+    )
     valid = (
         n_white >= 1
         and n_black >= 1
         and n_white <= 20
         and n_black <= 20
         and len(moves) >= 1
+        and illegal_men == 0
     )
     return {
         "side_to_move": st.turn,
@@ -164,6 +173,7 @@ def _analyse_fen(fen: str) -> dict[str, Any]:
         "n_black_kings": n_bk,
         "n_legal_moves": len(moves),
         "has_capture": _has_capture(moves),
+        "illegal_men": illegal_men,
         "valid": valid,
     }
 
