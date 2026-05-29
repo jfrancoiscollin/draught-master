@@ -3,6 +3,7 @@ import Board from './components/Board'
 import type { Arrow, BoardTheme } from './components/Board'
 import AnalysisPanel, { MoveAnnotationsTable } from './components/AnalysisPanel'
 import AnalysisText from './components/AnalysisText'
+import TipExamples from './components/TipExamples'
 import GameControls, { type PlayerSide } from './components/GameControls'
 import MoveList from './components/MoveList'
 import ExercisePanel from './components/ExercisePanel'
@@ -1635,6 +1636,11 @@ export default function App() {
                     </div>
                     <AnalysisText text={analysis.analysis} onMoveClick={handleAnalysisMoveClick} className="text-gray-200 leading-relaxed text-sm whitespace-pre-wrap" />
                   </div>
+                  {analysis.book_tip && (
+                    <div className="panel mt-3">
+                      <TipExamples tip={analysis.book_tip} lang={language} />
+                    </div>
+                  )}
                   {analysis.move_annotations && analysis.move_annotations.length > 0 && (
                     <div className="panel mt-3">
                       <div className="text-xs text-gray-400 uppercase font-semibold mb-2">
