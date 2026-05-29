@@ -199,9 +199,54 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
     return () => ctrl.abort()
   }, [modalIndex, jumpPassage, passages])
 
+  // Walk forward/backward through every (page, number) tuple of the
+  // current jump source.  Uses the cached index (same fetch that
+  // populates the dropdown) so navigation is instant — no per-step
+  // round-trip.  Returns null if there's no neighbour or no cached
+  // index for the source.
+  const jumpNeighbour = useCallback(
+    (direction: -1 | 1): { page: number; number: number } | null => {
+      if (!jumpPassage) return null
+      const index = jumpIndexCache.current[jumpPassage.source]
+      if (!index) return null
+      const flat: { page: number; number: number }[] = []
+      for (const page of Object.keys(index).map(Number).sort((a, b) => a - b)) {
+        for (const number of index[page]) flat.push({ page, number })
+      }
+      const i = flat.findIndex(
+        t => t.page === jumpPassage.page && t.number === jumpPassage.number,
+      )
+      if (i < 0) return null
+      const j = i + direction
+      return j >= 0 && j < flat.length ? flat[j] : null
+    },
+    [jumpPassage],
+  )
+
+  const navigateJump = useCallback(
+    (direction: -1 | 1) => {
+      const target = jumpNeighbour(direction)
+      if (!target) return
+      // ``jumpPassage`` carries the synthetic id + text expected by the
+      // modal (DIAGRAM_REF_RE matches against ``Diagramme N``), so
+      // build a fresh one rather than mutate.
+      setJumpPassage(prev =>
+        prev
+          ? {
+              ...prev,
+              passage_id: `jump:${prev.source}:${target.page}:${target.number}`,
+              text: `Diagramme ${target.number}`,
+              page: target.page,
+            }
+          : prev,
+      )
+    },
+    [jumpNeighbour],
+  )
+
   // Keyboard shortcuts inside the modal: Esc closes, ←/→ navigate to the
-  // previous/next passage when in topic-search mode.  Jump mode has no
-  // list so arrow keys are no-ops; Esc still closes.
+  // previous/next passage in topic-search mode or to the previous/next
+  // (page, number) tuple in jump mode.
   useEffect(() => {
     const open = modalIndex !== null || jumpPassage !== null
     if (!open) return
@@ -215,11 +260,14 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
         } else if (e.key === 'ArrowRight' && modalIndex < passages.length - 1) {
           setModalIndex(modalIndex + 1)
         }
+      } else if (jumpPassage !== null) {
+        if (e.key === 'ArrowLeft') navigateJump(-1)
+        else if (e.key === 'ArrowRight') navigateJump(1)
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [modalIndex, jumpPassage, passages.length])
+  }, [modalIndex, jumpPassage, passages.length, navigateJump])
 
   useEffect(() => {
     let cancelled = false
@@ -449,10 +497,21 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
           jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
         if (!focusedPassage) return null
         const modal = buildModalContent(focusedPassage)
-        // Prev/next only meaningful for topic-search results, not jumps.
-        const navEnabled = jumpPassage === null && modalIndex !== null
-        const hasPrev = navEnabled && modalIndex! > 0
-        const hasNext = navEnabled && modalIndex! < passages.length - 1
+        // Prev/next supported in both modes: topic-search walks the
+        // ``passages[]`` array, jump walks the cached diagram-index of
+        // the current source.
+        const inJump = jumpPassage !== null
+        const inTopic = jumpPassage === null && modalIndex !== null
+        const hasPrev = inTopic
+          ? modalIndex! > 0
+          : inJump && jumpNeighbour(-1) !== null
+        const hasNext = inTopic
+          ? modalIndex! < passages.length - 1
+          : inJump && jumpNeighbour(1) !== null
+        const goPrev = () =>
+          inTopic ? setModalIndex(modalIndex! - 1) : navigateJump(-1)
+        const goNext = () =>
+          inTopic ? setModalIndex(modalIndex! + 1) : navigateJump(1)
         const diagramMatch = focusedPassage.text.match(DIAGRAM_REF_RE)
         const diagramNumber = diagramMatch ? parseInt(diagramMatch[1], 10) : null
         const canAnnotate = diagramNumber !== null
@@ -474,13 +533,15 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   {modal.caption}
                 </span>
                 <div className="flex items-center gap-1 text-xs text-gray-400">
-                  {navEnabled && (
+                  {inTopic && (
+                    <span>
+                      {modalIndex! + 1} / {passages.length}
+                    </span>
+                  )}
+                  {(inTopic || inJump) && (
                     <>
-                      <span>
-                        {modalIndex! + 1} / {passages.length}
-                      </span>
                       <button
-                        onClick={() => setModalIndex(modalIndex! - 1)}
+                        onClick={goPrev}
                         disabled={!hasPrev}
                         className="px-2 py-1 rounded hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent"
                         aria-label={lang === 'fr' ? 'Précédent' : 'Previous'}
@@ -489,7 +550,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                         ←
                       </button>
                       <button
-                        onClick={() => setModalIndex(modalIndex! + 1)}
+                        onClick={goNext}
                         disabled={!hasNext}
                         className="px-2 py-1 rounded hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent"
                         aria-label={lang === 'fr' ? 'Suivant' : 'Next'}
