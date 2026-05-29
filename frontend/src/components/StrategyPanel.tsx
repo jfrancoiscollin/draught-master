@@ -199,54 +199,89 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
     return () => ctrl.abort()
   }, [modalIndex, jumpPassage, passages])
 
+  // Once a diagram is showing in the modal (whether reached via topic
+  // search or jump), ←/→ should navigate diagram-by-diagram in the
+  // source's manifest.  This requires the cached index for the focused
+  // passage's source — fetch it on demand if not already loaded
+  // (idempotent: the source-dropdown fetch hits the same cache).
+  useEffect(() => {
+    const p = jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
+    if (!p || !PAGE_IMAGE_AVAILABLE.has(p.source)) return
+    if (jumpIndexCache.current[p.source]) return
+    let cancelled = false
+    fetch(`/api/strategy/diagram-index?source=${encodeURIComponent(p.source)}`)
+      .then(r => (r.ok ? r.json() : {}))
+      .then((index: Record<string, number[]>) => {
+        if (cancelled) return
+        const coerced: Record<number, number[]> = {}
+        for (const [k, v] of Object.entries(index)) coerced[parseInt(k, 10)] = v
+        jumpIndexCache.current[p.source] = coerced
+        // Also refresh the visible jumpIndex when this prefetch happens
+        // to match the visible source — keeps the dropdown consistent
+        // if the user opens it after a modal nav.
+        if (p.source === jumpSource) setJumpIndex(coerced)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [modalIndex, jumpPassage, passages, jumpSource])
+
   // Walk forward/backward through every (page, number) tuple of the
-  // current jump source.  Uses the cached index (same fetch that
-  // populates the dropdown) so navigation is instant — no per-step
-  // round-trip.  Returns null if there's no neighbour or no cached
-  // index for the source.
-  const jumpNeighbour = useCallback(
+  // *focused* diagram's source.  Works whether the modal was reached
+  // via topic search or jump — both eventually look at the same
+  // manifest.  Returns null if the focused passage has no diagram
+  // reference or if the index isn't cached yet.
+  const diagramNeighbour = useCallback(
     (direction: -1 | 1): { page: number; number: number } | null => {
-      if (!jumpPassage) return null
-      const index = jumpIndexCache.current[jumpPassage.source]
+      const p = jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
+      if (!p) return null
+      const m = p.text.match(DIAGRAM_REF_RE)
+      if (!m) return null
+      const curNumber = parseInt(m[1], 10)
+      const index = jumpIndexCache.current[p.source]
       if (!index) return null
       const flat: { page: number; number: number }[] = []
       for (const page of Object.keys(index).map(Number).sort((a, b) => a - b)) {
         for (const number of index[page]) flat.push({ page, number })
       }
-      const i = flat.findIndex(
-        t => t.page === jumpPassage.page && t.number === jumpPassage.number,
-      )
+      const i = flat.findIndex(t => t.page === p.page && t.number === curNumber)
       if (i < 0) return null
       const j = i + direction
       return j >= 0 && j < flat.length ? flat[j] : null
     },
-    [jumpPassage],
+    [modalIndex, jumpPassage, passages],
   )
 
-  const navigateJump = useCallback(
+  const navigateDiagram = useCallback(
     (direction: -1 | 1) => {
-      const target = jumpNeighbour(direction)
+      const target = diagramNeighbour(direction)
       if (!target) return
-      // ``jumpPassage`` carries the synthetic id + text expected by the
-      // modal (DIAGRAM_REF_RE matches against ``Diagramme N``), so
-      // build a fresh one rather than mutate.
-      setJumpPassage(prev =>
-        prev
-          ? {
-              ...prev,
-              passage_id: `jump:${prev.source}:${target.page}:${target.number}`,
-              text: `Diagramme ${target.number}`,
-              page: target.page,
-            }
-          : prev,
-      )
+      const p = jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
+      if (!p) return
+      // Drop into jump mode regardless of how we got here.  The synthetic
+      // passage carries the source/page/number the modal needs; the
+      // ``text`` field stays "Diagramme N" so DIAGRAM_REF_RE keeps matching.
+      setJumpPassage({
+        passage_id: `jump:${p.source}:${target.page}:${target.number}`,
+        score: 0,
+        text: `Diagramme ${target.number}`,
+        source: p.source,
+        book: p.book,
+        page: target.page,
+        systems: [],
+        phase: null,
+        nature: null,
+      })
+      setModalIndex(null)
     },
-    [jumpNeighbour],
+    [diagramNeighbour, modalIndex, jumpPassage, passages],
   )
 
-  // Keyboard shortcuts inside the modal: Esc closes, ←/→ navigate to the
-  // previous/next passage in topic-search mode or to the previous/next
-  // (page, number) tuple in jump mode.
+  // Keyboard shortcuts inside the modal: Esc closes, ←/→ walk the
+  // source's diagram manifest when the focused passage references a
+  // diagram, and fall back to passage-list navigation (topic mode only)
+  // when it doesn't.
   useEffect(() => {
     const open = modalIndex !== null || jumpPassage !== null
     if (!open) return
@@ -254,20 +289,25 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
       if (e.key === 'Escape') {
         setModalIndex(null)
         setJumpPassage(null)
-      } else if (modalIndex !== null) {
-        if (e.key === 'ArrowLeft' && modalIndex > 0) {
-          setModalIndex(modalIndex - 1)
-        } else if (e.key === 'ArrowRight' && modalIndex < passages.length - 1) {
-          setModalIndex(modalIndex + 1)
-        }
-      } else if (jumpPassage !== null) {
-        if (e.key === 'ArrowLeft') navigateJump(-1)
-        else if (e.key === 'ArrowRight') navigateJump(1)
+        return
+      }
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      const direction: -1 | 1 = e.key === 'ArrowLeft' ? -1 : 1
+      // Diagram nav first — works in both topic and jump modes.
+      if (diagramNeighbour(direction)) {
+        navigateDiagram(direction)
+        return
+      }
+      // Passage-level fallback: only meaningful in topic mode for
+      // passages that don't reference a diagram.
+      if (modalIndex !== null) {
+        const next = modalIndex + direction
+        if (next >= 0 && next < passages.length) setModalIndex(next)
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [modalIndex, jumpPassage, passages.length, navigateJump])
+  }, [modalIndex, jumpPassage, passages, navigateDiagram, diagramNeighbour])
 
   useEffect(() => {
     let cancelled = false
@@ -497,21 +537,29 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
           jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
         if (!focusedPassage) return null
         const modal = buildModalContent(focusedPassage)
-        // Prev/next supported in both modes: topic-search walks the
-        // ``passages[]`` array, jump walks the cached diagram-index of
-        // the current source.
+        // Prev/next ALWAYS walk the source manifest when the focused
+        // passage references a diagram — regardless of whether the user
+        // reached the modal via topic search or via jump.  This is the
+        // navigation the operator wants when annotating a series of
+        // diagrams.  Topic mode only falls back to passage-list nav
+        // when the focused passage has no diagram reference.
         const inJump = jumpPassage !== null
         const inTopic = jumpPassage === null && modalIndex !== null
-        const hasPrev = inTopic
-          ? modalIndex! > 0
-          : inJump && jumpNeighbour(-1) !== null
-        const hasNext = inTopic
-          ? modalIndex! < passages.length - 1
-          : inJump && jumpNeighbour(1) !== null
-        const goPrev = () =>
-          inTopic ? setModalIndex(modalIndex! - 1) : navigateJump(-1)
-        const goNext = () =>
-          inTopic ? setModalIndex(modalIndex! + 1) : navigateJump(1)
+        const hasDiagramNav = diagramNeighbour(-1) !== null || diagramNeighbour(1) !== null
+        const hasPrev = hasDiagramNav
+          ? diagramNeighbour(-1) !== null
+          : inTopic && modalIndex! > 0
+        const hasNext = hasDiagramNav
+          ? diagramNeighbour(1) !== null
+          : inTopic && modalIndex! < passages.length - 1
+        const goPrev = () => {
+          if (hasDiagramNav) navigateDiagram(-1)
+          else if (inTopic) setModalIndex(modalIndex! - 1)
+        }
+        const goNext = () => {
+          if (hasDiagramNav) navigateDiagram(1)
+          else if (inTopic) setModalIndex(modalIndex! + 1)
+        }
         const diagramMatch = focusedPassage.text.match(DIAGRAM_REF_RE)
         const diagramNumber = diagramMatch ? parseInt(diagramMatch[1], 10) : null
         const canAnnotate = diagramNumber !== null
