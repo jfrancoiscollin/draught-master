@@ -305,6 +305,63 @@ def diagram_suggest_fen(
 _TRUSTED_AUTO_SOURCES = {"SPRINGER", "ROOZENBURG", "KELLER"}
 
 
+@router.get("/manual")
+def manual(
+    source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
+    per_chapter: int = Query(20, ge=1, le=50, description="Max passages per chapter"),
+) -> dict:
+    """Return a structured "manual" view of one source's strategy corpus.
+
+    Groups passages into chapters by topic: each topic whose
+    ``source_filter`` includes the requested source (or is empty for
+    "finales", which spans all sources) becomes a chapter, populated
+    with the topic's top-K most representative passages filtered to
+    that source.  Used by the new in-app manual view (one per source)
+    that replaces the old topic-button modal — same passage data,
+    structured pedagogically instead of as a search result list.
+    """
+    src_upper = source.upper()
+    chapters: list[dict] = []
+    for spec in TOPICS:
+        # Match the topic when no source filter (cross-source) or when
+        # the source filter explicitly mentions the requested source.
+        if spec.source_filter and src_upper not in spec.source_filter:
+            continue
+        centroid = topic_centroid(spec.key)
+        if centroid is None:
+            continue
+        from pedagogy.prose.retrieval import search_with_vector  # noqa: PLC0415
+
+        # Always restrict to the requested source — even for the
+        # cross-source "finales" topic, we want only the slice that
+        # belongs to this manual.
+        results = search_with_vector(centroid, k=per_chapter, sources=(src_upper,))
+        passages = [
+            {
+                "passage_id": p.passage_id,
+                "score": float(score),
+                "text": p.text,
+                "source": p.source,
+                "book": p.book,
+                "page": p.page,
+                "systems": list(p.systems),
+                "phase": p.phase,
+                "nature": p.nature,
+            }
+            for score, p in results
+        ]
+        if not passages:
+            continue
+        chapters.append({
+            "topic_key": spec.key,
+            "title_fr": spec.label_fr,
+            "title_en": spec.label_en,
+            "description_fr": spec.description_fr,
+            "passages": passages,
+        })
+    return {"source": source, "chapters": chapters}
+
+
 @router.get("/diagram-fen")
 def diagram_fen(
     source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
