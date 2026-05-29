@@ -632,12 +632,15 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   modalFen || annotating ? 'flex flex-wrap items-start gap-4' : ''
                 }
               >
-                {/* Show the printed crop only when no FEN is available —
-                    once we have either a human-verified or auto-detected
-                    FEN, the interactive ``<Board>`` replaces the JPG.
-                    During annotation we hide the crop too: the editor
-                    has enough screen space on its own. */}
-                {!modalFen && !annotating && (
+                {/* Show the printed crop when no FEN exists yet *or* when
+                    the FEN is auto-detected — in the latter case the
+                    operator needs the source image to spot the rare
+                    detector misses.  Once a human validates and the
+                    FEN becomes ``kind: 'human'``, the crop is hidden
+                    (the Board is the source of truth then).
+                    During annotation we hide it: the editor has enough
+                    screen space on its own. */}
+                {(!modalFen || modalFen.kind === 'auto') && !annotating && (
                   <img
                     key={modalIndex}
                     src={modal.src}
@@ -645,7 +648,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                     className={
                       zoomed
                         ? 'cursor-zoom-out'
-                        : 'max-w-full h-auto cursor-zoom-in'
+                        : `${modalFen ? 'max-w-xs' : 'max-w-full'} h-auto cursor-zoom-in`
                     }
                     onClick={() => setZoomed(z => !z)}
                     onError={e => {
