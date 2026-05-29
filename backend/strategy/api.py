@@ -250,6 +250,16 @@ def diagram_suggest_fen(
     return {"fen": detect_fen(crop_path)}
 
 
+# Sources where the auto-detector has been validated end-to-end and the
+# operator has chosen to trust its output without per-diagram review.
+# Adding a source here causes ``/diagram-fen`` to return ``kind: "human"``
+# even for ``diagrams_fens_auto.json`` entries — the frontend then drops
+# the "auto · non validé" badge and the printed-crop side panel.
+# Per-entry overrides remain possible: writing to ``diagrams_fens.json``
+# always wins over the auto file.
+_TRUSTED_AUTO_SOURCES = {"SPRINGER"}
+
+
 @router.get("/diagram-fen")
 def diagram_fen(
     source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
@@ -265,17 +275,19 @@ def diagram_fen(
          on Sijbrands).  Lets the frontend render an interactive
          ``<Board>`` for diagrams nobody has hand-validated yet.
 
-    ``kind`` tells the frontend whether to show the "auto" badge.
-    404 only when neither file has an entry — i.e. the source has no
-    FEN data at all, *or* the requested (page, number) doesn't exist
-    in any file.
+    For sources in ``_TRUSTED_AUTO_SOURCES`` the auto file is treated
+    as authoritative — ``kind`` returns ``"human"`` so the frontend
+    doesn't flag the result.  Per-entry human overrides still win.
+
+    404 only when neither file has an entry.
     """
     fen = _load_diagram_fens(source).get((page, number))
     if fen is not None:
         return {"fen": fen, "source": source, "page": page, "number": number, "kind": "human"}
     fen = _load_diagram_fens_auto(source).get((page, number))
     if fen is not None:
-        return {"fen": fen, "source": source, "page": page, "number": number, "kind": "auto"}
+        kind = "human" if source.upper() in _TRUSTED_AUTO_SOURCES else "auto"
+        return {"fen": fen, "source": source, "page": page, "number": number, "kind": kind}
     raise HTTPException(
         status_code=404,
         detail=f"no FEN (human or auto) for ({source!r}, p.{page}, #{number})",
