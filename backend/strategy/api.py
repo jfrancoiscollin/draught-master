@@ -302,7 +302,7 @@ def diagram_suggest_fen(
 # the "auto · non validé" badge and the printed-crop side panel.
 # Per-entry overrides remain possible: writing to ``diagrams_fens.json``
 # always wins over the auto file.
-_TRUSTED_AUTO_SOURCES = {"SPRINGER", "ROOZENBURG"}
+_TRUSTED_AUTO_SOURCES = {"SPRINGER", "ROOZENBURG", "KELLER"}
 
 
 @router.get("/diagram-fen")
