@@ -99,6 +99,12 @@
       "_human_verified": true
     },
     {
+      "page": 49,
+      "number": 3,
+      "fen": "W:W27,28,30,32,35,38:B13,16,19,20,23,24",
+      "_human_verified": true
+    },
+    {
       "page": 50,
       "number": 6,
       "fen": "W:W27,28,30,32,38,39,40:B12,13,15,16,19,20,23",
