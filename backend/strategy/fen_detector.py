@@ -79,11 +79,11 @@ class DetectorConfig:
     # whites on the adjacent text.  3% shrink trims that bleed; tighter
     # cuts into real cells, looser leaves the false positives.  Brought
     # the per-square score from 85% to 95% on the 10-GT calibration set.
-    kh_black_std_min: float = 60.0
-    kh_black_mean_max: float = 180.0
-    kh_white_std_min: float = 38.0
-    kh_white_mean_max: float = 210.0
-    kh_shrink: float = 0.03
+    kh_black_std_min: float = 55.0
+    kh_black_mean_max: float = 170.0
+    kh_white_std_min: float = 39.0
+    kh_white_mean_max: float = 205.0
+    kh_shrink: float = 0.035
     # King = significant inner/outer contrast inside the piece.  Tuned
     # conservatively — false positives (calling a piece a king) are
     # worse than false negatives (the operator just clicks "promote").
