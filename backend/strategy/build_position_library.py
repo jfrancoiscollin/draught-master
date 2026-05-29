@@ -28,6 +28,7 @@ deterministic — safe to commit and to wire into CI as a freshness check.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -70,6 +71,65 @@ def _sections_by_page(payload: Any) -> dict[int, dict[str, str]]:
     if not payload:
         return {}
     return {int(k): v for k, v in payload.items()}
+
+
+# A *real* lesson marker, e.g. "Leçon 24", "Thème 6", "Chapitre 3".
+# ``extract_strategy_sections.py`` is heuristic: the numbered heading is
+# reliable, but the accompanying ``title`` drifts between a genuine
+# lesson title ("Le débordement") and a stray caption ("DIAGRAMME 1",
+# "Exercice 2") or a wrapped sentence. We therefore (1) require a
+# numbered lesson heading and (2) resolve, per heading, the best clean
+# title seen across the source's pages — unmatched pages keep their
+# position in the library but carry no theme.
+_THEME_HEADING_RE = re.compile(
+    r"^\s*(le[cç]on|th[eè]me|theme|chapitre|partie)\s*\d",
+    re.IGNORECASE,
+)
+# Titles that are captions / TOC lines / wrapped prose, not lesson names.
+_JUNK_TITLE_RE = re.compile(r"^\s*(diagramme|exercice)\b", re.IGNORECASE)
+
+
+def _clean_heading(sec: dict[str, str]) -> Optional[str]:
+    heading = (sec.get("heading") or "").strip()
+    return heading if _THEME_HEADING_RE.match(heading) else None
+
+
+def _is_clean_title(title: str) -> bool:
+    title = (title or "").strip()
+    if not title or len(title) > 60:
+        return False
+    if _JUNK_TITLE_RE.match(title):
+        return False
+    if "...." in title:  # table-of-contents dot leader
+        return False
+    if re.fullmatch(r"\d+(\.\d+)*\.?", title):  # bare section number "1.1"
+        return False
+    return True
+
+
+def _resolve_theme_titles(
+    sections: dict[int, dict[str, str]]
+) -> dict[str, str]:
+    """Map each clean heading to its best human-readable lesson title.
+
+    Picks the most frequent non-junk title seen for the heading, falling
+    back to the heading itself when no clean title exists.
+    """
+    from collections import Counter
+
+    candidates: dict[str, Counter] = {}
+    for sec in sections.values():
+        heading = _clean_heading(sec)
+        if not heading:
+            continue
+        candidates.setdefault(heading, Counter())
+        title = (sec.get("title") or "").strip()
+        if _is_clean_title(title):
+            candidates[heading][title] += 1
+    resolved: dict[str, str] = {}
+    for heading, counter in candidates.items():
+        resolved[heading] = counter.most_common(1)[0][0] if counter else heading
+    return resolved
 
 
 def _has_capture(moves: list[ge.Move]) -> bool:
@@ -119,6 +179,7 @@ def build_source(source: str) -> list[dict[str, Any]]:
     human = _fens_by_key(_load(src_dir, "diagrams_fens.json"))
     auto = _fens_by_key(_load(src_dir, "diagrams_fens_auto.json"))
     sections = _sections_by_page(_load(src_dir, "diagram_sections.json"))
+    theme_titles = _resolve_theme_titles(sections)
 
     entries: list[dict[str, Any]] = []
     for m in manifest["entries"]:
@@ -132,7 +193,8 @@ def build_source(source: str) -> list[dict[str, Any]]:
             # Diagram detected (crop exists) but no FEN at all.
             fen, kind = None, "none"
 
-        sec = sections.get(page, {})
+        heading = _clean_heading(sections.get(page, {}))
+        theme = theme_titles.get(heading) if heading else None
         entry: dict[str, Any] = {
             "id": f"{source}_p{page:04d}_d{number}",
             "source": source,
@@ -140,8 +202,8 @@ def build_source(source: str) -> list[dict[str, Any]]:
             "number": number,
             "fen": fen,
             "kind": kind,
-            "section_heading": sec.get("heading"),
-            "theme": sec.get("title"),
+            "section_heading": heading,
+            "theme": theme,
         }
         if fen:
             entry.update(_analyse_fen(fen))

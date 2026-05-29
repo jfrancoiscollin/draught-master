@@ -250,6 +250,37 @@ def diagram_index(
     return index
 
 
+@router.get("/kb-themes")
+def kb_themes(
+    source: Optional[str] = Query(None, description="Restrict to one manual"),
+) -> list[dict]:
+    """Thematic strategic knowledge base — one card per lesson theme.
+
+    Each card aggregates the engine-validated diagram positions filed
+    under a manual lesson ("Le débordement", "Bloquer des pions", …),
+    with counts and a 3-position teaser. Powers a browse-by-theme entry
+    point alongside the embedding-based topic buttons.
+    """
+    from .strategic_kb import theme_index
+
+    return theme_index(source)
+
+
+@router.get("/kb-theme")
+def kb_theme(
+    theme: str = Query(..., description="Exact lesson title, e.g. 'Le débordement'"),
+    source: Optional[str] = Query(None, description="Restrict to one manual"),
+    limit: int = Query(50, ge=1, le=200),
+) -> dict:
+    """Every position illustrating one strategic theme (capped)."""
+    from .strategic_kb import theme_detail
+
+    detail = theme_detail(theme, source, limit)
+    if detail["n_positions"] == 0:
+        raise HTTPException(status_code=404, detail=f"no positions for theme {theme!r}")
+    return detail
+
+
 @router.get("/diagram-suggest-fen")
 def diagram_suggest_fen(
     source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
