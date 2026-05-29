@@ -48,6 +48,25 @@ def test_examples_carry_provenance_and_dedup():
             assert {"id", "source", "page", "number", "fen", "kind"} <= set(e)
 
 
+def test_select_book_tip_surfaces_examples():
+    """The advisor returns the tip's example positions (capped) so the UI
+    can render them as boards beside the in-game advice."""
+    import scan_advisor as adv
+
+    # Marchand de bois: white on 27/32/38 (require_all).
+    fen = "W:W27,28,31,32,33,34,35,36,38,40,45,48:B3,9,13,15,18,19,20,23,24,25"
+    st = fen_to_board(fen)
+    counts = adv._piece_counts(st)
+    phase = adv._phase(adv._total_pieces(counts))
+    loc = adv._select_book_tip(
+        st, counts, phase, [], None, len(get_legal_moves(st))
+    )
+    assert loc is not None
+    examples = loc.get("example_positions", [])
+    assert 1 <= len(examples) <= 3
+    assert all("fen" in e and "source" in e for e in examples)
+
+
 def test_enrichment_is_idempotent_and_fresh():
     """A fresh dry-run must reproduce exactly the committed examples."""
     report = et.enrich(dry_run=True)

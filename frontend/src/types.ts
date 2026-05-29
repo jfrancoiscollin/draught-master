@@ -76,12 +76,28 @@ export interface MoveAnnotationItem {
   book_tip: { concept: string; source: string } | null
 }
 
+export interface TipExamplePosition {
+  id: string
+  source: string
+  page: number
+  number: number
+  fen: string
+  kind: string
+}
+
+export interface BookTip {
+  concept: string
+  source: string
+  example_positions?: TipExamplePosition[]
+}
+
 export interface AnalysisResponse {
   analysis: string
   best_moves: string[]
   key_squares: number[]
   strategic_advice: string
   move_annotations?: MoveAnnotationItem[]
+  book_tip?: BookTip | null
 }
 
 export interface HistoryItem {
