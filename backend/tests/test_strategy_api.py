@@ -199,12 +199,11 @@ def test_diagram_crop_unextracted_pair_404s(client: TestClient) -> None:
 
 
 def test_diagram_crop_unbundled_source_404s(client: TestClient) -> None:
-    """Sources without an extraction manifest (KELLER and ROOZENBURG —
-    see docs/STRATEGIE_DIAGRAMS_PLAN.md for why we skipped them) must
-    404 with a clear hint."""
+    """A source with no extraction manifest must 404 with a clear hint.
+    All four manuals are now scanned, so this probes an unknown source."""
     r = client.get(
         "/api/strategy/diagram",
-        params={"source": "KELLER", "page": 10, "number": 1},
+        params={"source": "NONEXISTENT", "page": 10, "number": 1},
     )
     assert r.status_code == 404
     assert "no diagram crops" in r.json()["detail"]
