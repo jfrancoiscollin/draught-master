@@ -1,11 +1,13 @@
 {
   "tips": [
-
-
     {
       "id": "dame_pion_vs_trois",
-      "phase": ["endgame"],
-      "conditions": ["dame_pion_vs_trois"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "dame_pion_vs_trois"
+      ],
       "require_all": false,
       "fr": {
         "concept": "1 dame + 1 pion contre 3 pions",
@@ -16,13 +18,58 @@
         "concept": "1 king + 1 pawn vs 3 pawns",
         "text": "With a king and pawn against 3 opponent pawns, act before they coordinate. Key mechanisms: angular blocking of the group, a hook on the promotion square, and long-range attacks to separate the pawns.",
         "source": "Dubois, Endgames, Ch. 12 — 1 king and 1 pawn vs 3 pawns"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0088_d2",
+          "source": "SIJBRANDS",
+          "page": 88,
+          "number": 2,
+          "fen": "W:WK39,48:B20,25,43",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0100_d6",
+          "source": "SIJBRANDS",
+          "page": 100,
+          "number": 6,
+          "fen": "W:WK5,33:B27,31,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0100_d8",
+          "source": "SIJBRANDS",
+          "page": 100,
+          "number": 8,
+          "fen": "W:WK5,43:B21,31,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0101_d13",
+          "source": "SIJBRANDS",
+          "page": 101,
+          "number": 13,
+          "fen": "W:WK23,30:B15,25,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0100_d9",
+          "source": "SIJBRANDS",
+          "page": 100,
+          "number": 9,
+          "fen": "W:WK5,22:B21,31,36",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "dame_pion_vs_deux",
-      "phase": ["endgame"],
-      "conditions": ["dame_pion_vs_deux"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "dame_pion_vs_deux"
+      ],
       "require_all": false,
       "fr": {
         "concept": "1 dame + 1 pion contre 2 pions",
@@ -33,13 +80,58 @@
         "concept": "1 king + 1 pawn vs 2 pawns",
         "text": "The endgame of 1 king + 1 pawn vs 2 pawns is often winning for the stronger side when the pawn is advanced. Promote the pawn while using your king to attack the opponent's pawns from a distance and prevent their advance.",
         "source": "Dubois, Endgames, Ch. 4 — 1 king and 1 pawn vs 2 pawns"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0101_d12",
+          "source": "SIJBRANDS",
+          "page": 101,
+          "number": 12,
+          "fen": "W:WK4,17:B2,33",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0101_d15",
+          "source": "SIJBRANDS",
+          "page": 101,
+          "number": 15,
+          "fen": "W:WK5,47:B29,31",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0098_d17",
+          "source": "SIJBRANDS",
+          "page": 98,
+          "number": 17,
+          "fen": "W:WK4,45:B16,39",
+          "kind": "auto"
+        },
+        {
+          "id": "SIJBRANDS_p0098_d18",
+          "source": "SIJBRANDS",
+          "page": 98,
+          "number": 18,
+          "fen": "W:WK5,26:B27,30",
+          "kind": "auto"
+        },
+        {
+          "id": "SIJBRANDS_p0106_d15",
+          "source": "SIJBRANDS",
+          "page": 106,
+          "number": 15,
+          "fen": "W:WK3,24:B15,37",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "pions_vs_pions",
-      "phase": ["endgame"],
-      "conditions": ["pions_vs_pions"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "pions_vs_pions"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Finale de pions purs",
@@ -50,13 +142,58 @@
         "concept": "Pure pawn endgame",
         "text": "In a pure pawn ending, count tempi precisely. With a 3-tempo advantage and the move, winning by forced promotion is possible. Opposition and tempo manipulation are the decisive tools.",
         "source": "Dubois, Endgames, Ch. 3 — Pawns vs pawns; Ch. 5 — 1 pawn vs 1 with 3 tempi"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0006_d1",
+          "source": "SIJBRANDS",
+          "page": 6,
+          "number": 1,
+          "fen": "W:W33,34,42,47:B14,24,31,35",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0012_d1",
+          "source": "SIJBRANDS",
+          "page": 12,
+          "number": 1,
+          "fen": "W:W24,32,33,37,39:B9,13,15,18,26",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0015_d5",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 5,
+          "fen": "W:W28,32,33,34,40,45:B9,13,19,21,23,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0015_d8",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 8,
+          "fen": "W:W27,28,32,33,35,38,40,42,45:B3,9,11,13,15,16,19,23,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0019_d6",
+          "source": "SIJBRANDS",
+          "page": 19,
+          "number": 6,
+          "fen": "W:W30,35,38,42,43,44,45:B12,13,16,18,19,20,24",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "dame_vs_deux_pions",
-      "phase": ["endgame"],
-      "conditions": ["dame_vs_two_pawns"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "dame_vs_two_pawns"
+      ],
       "require_all": false,
       "fr": {
         "concept": "1 dame contre 2 pions",
@@ -67,13 +204,59 @@
         "concept": "1 king against 2 pawns",
         "text": "The endgame of 1 king vs 2 pawns depends critically on relative positions. Winning mechanisms: angular blocking, long-diagonal blocking (tric-trac 1-45), and rear blocking. If the pawns are too advanced and coordinated, a draw is often unavoidable.",
         "source": "Dubois, Endgames, Ch. 2 — 1 king against 2 pawns"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0095_d1",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 1,
+          "fen": "W:WK1:B10,21",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d2",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 2,
+          "fen": "W:WK34:B17,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d3",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 3,
+          "fen": "W:WK16:B6,30",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0096_d6",
+          "source": "SIJBRANDS",
+          "page": 96,
+          "number": 6,
+          "fen": "W:WK38:B16,28",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0099_d2",
+          "source": "SIJBRANDS",
+          "page": 99,
+          "number": 2,
+          "fen": "W:WK34:B13,31",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "blocage_grande_diagonale",
-      "phase": ["endgame"],
-      "conditions": ["kings_present", "few_pieces"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "kings_present",
+        "few_pieces"
+      ],
       "require_all": true,
       "fr": {
         "concept": "Blocage sur la grande diagonale",
@@ -84,13 +267,58 @@
         "concept": "Blocking on the long diagonal",
         "text": "If two opponent pawns are aligned on the long diagonal (tric-trac 1-45 or 6-50), the king can insert itself between them to block both simultaneously. This prevents the lead pawn from advancing without being captured.",
         "source": "Dubois, Endgames, Ch. 2.2-2.4 — Blocking on the diagonals"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0088_d2",
+          "source": "SIJBRANDS",
+          "page": 88,
+          "number": 2,
+          "fen": "W:WK39,48:B20,25,43",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d1",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 1,
+          "fen": "W:WK1:B10,21",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d2",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 2,
+          "fen": "W:WK34:B17,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d3",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 3,
+          "fen": "W:WK16:B6,30",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0096_d6",
+          "source": "SIJBRANDS",
+          "page": 96,
+          "number": 6,
+          "fen": "W:WK38:B16,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "blocage_arriere",
-      "phase": ["endgame"],
-      "conditions": ["dame_vs_two_pawns"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "dame_vs_two_pawns"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le blocage arrière",
@@ -101,13 +329,59 @@
         "concept": "Rear blocking",
         "text": "Rear blocking means attacking the trailing pawn from a diagonal behind it, forcing its capture or immobilisation, then neutralising the second pawn. This is the third major mechanism in the 1 king vs 2 pawns endgame.",
         "source": "Dubois, Endgames, Ch. 2.5 — Rear blocking"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0095_d1",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 1,
+          "fen": "W:WK1:B10,21",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d2",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 2,
+          "fen": "W:WK34:B17,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d3",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 3,
+          "fen": "W:WK16:B6,30",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0096_d6",
+          "source": "SIJBRANDS",
+          "page": 96,
+          "number": 6,
+          "fen": "W:WK38:B16,28",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0099_d2",
+          "source": "SIJBRANDS",
+          "page": 99,
+          "number": 2,
+          "fen": "W:WK34:B13,31",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "comite_accueil_46_47",
-      "phase": ["endgame"],
-      "conditions": ["king_vs_pawns", "pion_avance_noir"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "king_vs_pawns",
+        "pion_avance_noir"
+      ],
       "require_all": true,
       "fr": {
         "concept": "Comité d'accueil — cases 46-47",
@@ -118,13 +392,59 @@
         "concept": "Reception committee — squares 46-47",
         "text": "When opponent pawns threaten to promote on 46 or 47, prepare a reception committee: position your king to set up a double hook covering both promotion squares. A prior long-range attack forces the pawns to walk straight into the trap.",
         "source": "Dubois, Endgames, Ch. 6 — Reception committee on squares 46 and 47"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0088_d2",
+          "source": "SIJBRANDS",
+          "page": 88,
+          "number": 2,
+          "fen": "W:WK39,48:B20,25,43",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0100_d6",
+          "source": "SIJBRANDS",
+          "page": 100,
+          "number": 6,
+          "fen": "W:WK5,33:B27,31,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0100_d8",
+          "source": "SIJBRANDS",
+          "page": 100,
+          "number": 8,
+          "fen": "W:WK5,43:B21,31,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0101_d13",
+          "source": "SIJBRANDS",
+          "page": 101,
+          "number": 13,
+          "fen": "W:WK23,30:B15,25,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0098_d17",
+          "source": "SIJBRANDS",
+          "page": 98,
+          "number": 17,
+          "fen": "W:WK4,45:B16,39",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "traversee_grande_diagonale",
-      "phase": ["endgame"],
-      "conditions": ["kings_present", "pion_avance_blanc"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "kings_present",
+        "pion_avance_blanc"
+      ],
       "require_all": true,
       "fr": {
         "concept": "Traversée de la grande diagonale",
@@ -135,13 +455,58 @@
         "concept": "Crossing the long diagonal",
         "text": "Crossing the long diagonal with your king is a powerful manoeuvre that cuts the opponent in two. This crossing often forces opponent pieces to retreat or to expose weaknesses that can be immediately exploited.",
         "source": "Dubois, Endgames, Ch. 11 — Crossing the long diagonal"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0111_d2",
+          "source": "SIJBRANDS",
+          "page": 111,
+          "number": 2,
+          "fen": "W:W15,25,26,K28:BK29",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0111_d3",
+          "source": "SIJBRANDS",
+          "page": 111,
+          "number": 3,
+          "fen": "W:W15,20,24,35:BK28",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0113_d12",
+          "source": "SIJBRANDS",
+          "page": 113,
+          "number": 12,
+          "fen": "W:WK4,11,49:BK2",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0113_d13",
+          "source": "SIJBRANDS",
+          "page": 113,
+          "number": 13,
+          "fen": "W:W9,36,48:BK15",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0109_d13",
+          "source": "SIJBRANDS",
+          "page": 109,
+          "number": 13,
+          "fen": "W:WK2,13,43:B37",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "comite_accueil",
-      "phase": ["endgame"],
-      "conditions": ["king_vs_pawns"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "king_vs_pawns"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le Comité d'accueil",
@@ -152,13 +517,59 @@
         "concept": "The Reception Committee",
         "text": "The Reception Committee is a fundamental endgame mechanism: the king prepares a double hook on the opponent's promotion squares to prevent pawn promotion. A long-range attack beforehand forces the pawn to go exactly where the trap awaits.",
         "source": "Dubois, Endgames, Ch. 1 — The reception committee"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0088_d2",
+          "source": "SIJBRANDS",
+          "page": 88,
+          "number": 2,
+          "fen": "W:WK39,48:B20,25,43",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d1",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 1,
+          "fen": "W:WK1:B10,21",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d2",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 2,
+          "fen": "W:WK34:B17,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d3",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 3,
+          "fen": "W:WK16:B6,30",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0096_d6",
+          "source": "SIJBRANDS",
+          "page": 96,
+          "number": 6,
+          "fen": "W:WK38:B16,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "attaque_distance",
-      "phase": ["endgame"],
-      "conditions": ["kings_present", "few_pieces"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "kings_present",
+        "few_pieces"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'attaque à distance",
@@ -169,13 +580,58 @@
         "concept": "Long-range attack",
         "text": "The long-range attack — moving a king to threaten two opponent pieces simultaneously — is the most powerful tool for restricting the opponent in the endgame. It forces precise replies and sets up the final mechanism.",
         "source": "Dubois, Endgames, Ch. 1 — The long-range attack"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0006_d1",
+          "source": "SIJBRANDS",
+          "page": 6,
+          "number": 1,
+          "fen": "W:W33,34,42,47:B14,24,31,35",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0012_d1",
+          "source": "SIJBRANDS",
+          "page": 12,
+          "number": 1,
+          "fen": "W:W24,32,33,37,39:B9,13,15,18,26",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0015_d5",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 5,
+          "fen": "W:W28,32,33,34,40,45:B9,13,19,21,23,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0015_d8",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 8,
+          "fen": "W:W27,28,32,33,35,38,40,42,45:B3,9,11,13,15,16,19,23,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0019_d6",
+          "source": "SIJBRANDS",
+          "page": 19,
+          "number": 6,
+          "fen": "W:W30,35,38,42,43,44,45:B12,13,16,18,19,20,24",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "opposition_finale",
-      "phase": ["endgame"],
-      "conditions": ["equal_endgame"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "equal_endgame"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'opposition en finale",
@@ -186,13 +642,58 @@
         "concept": "Opposition in the endgame",
         "text": "In a balanced endgame, opposition is the fundamental principle: the player who achieves opposition (pieces face to face, opponent to move) forces their side to yield ground. Tempo advantages then become decisive.",
         "source": "Dubois, Endgames — Opposition; Game Sense, Ch. 5"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0006_d1",
+          "source": "SIJBRANDS",
+          "page": 6,
+          "number": 1,
+          "fen": "W:W33,34,42,47:B14,24,31,35",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0054_d1",
+          "source": "SIJBRANDS",
+          "page": 54,
+          "number": 1,
+          "fen": "W:W24,34,43:B4,13,19",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0055_d5",
+          "source": "SIJBRANDS",
+          "page": 55,
+          "number": 5,
+          "fen": "W:W24,27,33,42:B13,14,15,16",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0081_d10",
+          "source": "SIJBRANDS",
+          "page": 81,
+          "number": 10,
+          "fen": "W:W23,36,40:B20,24",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0088_d2",
+          "source": "SIJBRANDS",
+          "page": 88,
+          "number": 2,
+          "fen": "W:WK39,48:B20,25,43",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "blocage_angulaire",
-      "phase": ["endgame"],
-      "conditions": ["piece_in_corner"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "piece_in_corner"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le blocage angulaire",
@@ -203,14 +704,61 @@
         "concept": "Angular blocking",
         "text": "Angular blocking exploits the geometry of the board's corners to trap the opponent's king or neutralise advanced pawns. It is the most common theme in 1 king vs 2 pawns: the opponent must sacrifice a pawn, and the king pursues the second.",
         "source": "Dubois, Endgames, Ch. 2.1 — Angular blocking"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0048_d6",
+          "source": "SIJBRANDS",
+          "page": 48,
+          "number": 6,
+          "fen": "W:W26,31,36,37,38,39,43,48,50:B2,4,8,12,13,17,22,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0095_d1",
+          "source": "SIJBRANDS",
+          "page": 95,
+          "number": 1,
+          "fen": "W:WK1:B10,21",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0100_d6",
+          "source": "SIJBRANDS",
+          "page": 100,
+          "number": 6,
+          "fen": "W:WK5,33:B27,31,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0100_d8",
+          "source": "SIJBRANDS",
+          "page": 100,
+          "number": 8,
+          "fen": "W:WK5,43:B21,31,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0101_d15",
+          "source": "SIJBRANDS",
+          "page": 101,
+          "number": 15,
+          "fen": "W:WK5,47:B29,31",
+          "kind": "human"
+        }
+      ]
     },
-
-
     {
       "id": "marchand_de_bois",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_27", "white_on_32", "white_on_38"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_27",
+        "white_on_32",
+        "white_on_38"
+      ],
       "require_all": true,
       "fr": {
         "concept": "Le Marchand de Bois",
@@ -221,13 +769,60 @@
         "concept": "The Merchant of Wood",
         "text": "The Merchant of Wood formation (pawns on 27-32-38) is a classic locking system that restricts Black's freedom across an entire wing. Typical combinations arise from this blockade — know them from both sides to avoid being caught off guard.",
         "source": "Grégoire, Enchainements, Ch. Merchant of Wood; Dubois, Reference Guide, Part 2 Ch. 2"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "ROOZENBURG_p0014_d2",
+          "source": "ROOZENBURG",
+          "page": 14,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,43,47,48,49:B2,6,8,9,12,13,15,16,18,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0017_d1",
+          "source": "ROOZENBURG",
+          "page": 17,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,11,12,13,15,16,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d2",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,35,36,37,38,39,40,42,43,45,47,49:B2,4,6,7,8,9,10,13,15,16,17,18,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0021_d1",
+          "source": "ROOZENBURG",
+          "page": 21,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,42,43,44,45,47,49:B1,2,4,7,8,9,11,12,13,15,16,17,18,20,23,25",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "jeu_central_blanc",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_27", "white_on_28"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_27",
+        "white_on_28"
+      ],
       "require_all": true,
       "fr": {
         "concept": "Jeu Central (Classique offensif)",
@@ -238,13 +833,60 @@
         "concept": "Central Game (Offensive Classic)",
         "text": "Pieces on 27 and 28 form the pivot of the Offensive Classic: they control the centre alone and open the way to territorial domination. The goal is to maintain this grip while restricting the opponent's freedom via the arrow or lateral exchanges.",
         "source": "Dubois, Guide to Systems of Play, Ch. 1 — The Offensive Classic"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0065_d1",
+          "source": "ROOZENBURG",
+          "page": 65,
+          "number": 1,
+          "fen": "W:W24,27,28,29,30,32,34,37,38,40,41,42,43,44,45,46,48:B2,4,6,7,9,13,14,15,16,17,18,19,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0015_d6",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 6,
+          "fen": "W:W27,28,32,33,34,37,38,39,40,43,45,47,48:B3,8,9,13,14,15,16,18,19,20,21,23,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0015_d7",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 7,
+          "fen": "W:W27,28,32,33,34,35,36,37,38,40,45:B3,9,11,13,16,18,19,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0015_d9",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 9,
+          "fen": "W:W27,28,31,32,33,34,35,36,38,40,45,48:B3,9,13,15,16,17,18,19,21,23,24,25",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "jeu_central_noir",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["black_on_23", "black_on_24"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "black_on_23",
+        "black_on_24"
+      ],
       "require_all": true,
       "fr": {
         "concept": "Jeu Central Noirs (23-24-27)",
@@ -255,13 +897,59 @@
         "concept": "Black Central Game (23-24-27)",
         "text": "The black formation on 23-24 aims to drive white from the centre and claim the space alone. The arrow 6-11-17 is often the key to breaking the central balance. Black must act quickly before white consolidates.",
         "source": "Dubois, Guide to Systems of Play, Ch. 2 — The central game 23-24-27"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0015_d9",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 9,
+          "fen": "W:W27,28,31,32,33,34,35,36,38,40,45,48:B3,9,13,15,16,17,18,19,21,23,24,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0034_d8",
+          "source": "SIJBRANDS",
+          "page": 34,
+          "number": 8,
+          "fen": "W:W27,28,32,33,35,37,38,39,44,45:B6,11,12,13,14,16,18,19,23,24",
+          "kind": "human"
+        },
+        {
+          "id": "SPRINGER_p0167_d11",
+          "source": "SPRINGER",
+          "page": 167,
+          "number": 11,
+          "fen": "W:W25,26,30,32,35,37,38,39,42,44,45,47,48,49:B1,3,9,10,13,14,16,17,18,19,22,23,24,36",
+          "kind": "human"
+        },
+        {
+          "id": "SPRINGER_p0170_d22",
+          "source": "SPRINGER",
+          "page": 170,
+          "number": 22,
+          "fen": "W:W16,25,26,28,32,33,35,37,38,43,47:B1,7,11,12,13,14,17,19,23,24,36",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0069_d1",
+          "source": "ROOZENBURG",
+          "page": 69,
+          "number": 1,
+          "fen": "W:W25,26,28,30,31,32,33,35,36,37,38,40,42,43,45,47,49:B3,5,6,7,9,11,12,13,14,15,17,19,21,22,23,24,27",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "formation_45_40",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["formation_45_40"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "formation_45_40"
+      ],
       "require_all": false,
       "fr": {
         "concept": "La formation 45-40",
@@ -272,13 +960,59 @@
         "concept": "The 45-40 formation",
         "text": "The 45-40 formation is a solid white pawn system on the right wing. It provides a reliable defensive base while preparing offensive pushes via squares 34 or 35. Dubois devotes an entire chapter to it in formations.",
         "source": "Dubois, Game Sense, Part 5 Ch. 1 — The 45-40 formation"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "fleche_33_38_42",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["formation_33_38"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "formation_33_38"
+      ],
       "require_all": false,
       "fr": {
         "concept": "La flèche 33-38-42",
@@ -289,13 +1023,59 @@
         "concept": "The 33-38-42 arrow",
         "text": "The 33-38-42 arrow is an offensive white wedge formation that pressures Black's left wing. It creates combination threats on squares 22-24 and can force favourable exchanges for White.",
         "source": "Dubois, Game Sense, Part 5 Ch. 2 — The 33-38-42 arrow"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "formation_34_39_43",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["formation_34_39"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "formation_34_39"
+      ],
       "require_all": false,
       "fr": {
         "concept": "La formation 34-39-43",
@@ -306,14 +1086,59 @@
         "concept": "The 34-39-43 formation",
         "text": "The 34-39-43 formation is an offensive complement to the 33-38-42 arrow. It prepares a right-wing attack and offers combination opportunities when Black's pawns are poorly coordinated on that part of the board.",
         "source": "Dubois, Game Sense, Part 5 Ch. 3 — The 34-39-43 formation"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        }
+      ]
     },
-
-
     {
       "id": "avant_poste_24",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["black_on_24"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "black_on_24"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'avant-poste 24 (pion taquin)",
@@ -324,13 +1149,59 @@
         "concept": "The 24 outpost (teasing pawn)",
         "text": "The black pawn on 24 is the 'teasing pawn': it disrupts White's development and creates imbalances. Its presence demands a precise response, as it threatens to use neighbouring pawns to trigger combinations on the central white squares.",
         "source": "Dubois, Game Sense, Ch. 6 — The pawn 24; Reference Guide, Part 5 Ch. 1"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "ROOZENBURG_p0014_d1",
+          "source": "ROOZENBURG",
+          "page": 14,
+          "number": 1,
+          "fen": "W:W26,28,30,31,33,35,36,37,38,39,42,43,44,45,49:B3,8,9,10,11,12,13,14,17,18,19,22,24,27",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0061_d1",
+          "source": "ROOZENBURG",
+          "page": 61,
+          "number": 1,
+          "fen": "W:W26,28,31,32,33,34,35,36,38,39,41,42,43,44,47,49,50:B2,3,4,5,6,8,9,10,11,12,13,17,19,21,22,24,27",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0015_d9",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 9,
+          "fen": "W:W27,28,31,32,33,34,35,36,38,40,45,48:B3,9,13,15,16,17,18,19,21,23,24,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0034_d8",
+          "source": "SIJBRANDS",
+          "page": 34,
+          "number": 8,
+          "fen": "W:W27,28,32,33,35,37,38,39,44,45:B6,11,12,13,14,16,18,19,23,24",
+          "kind": "human"
+        },
+        {
+          "id": "SPRINGER_p0167_d11",
+          "source": "SPRINGER",
+          "page": 167,
+          "number": 11,
+          "fen": "W:W25,26,30,32,35,37,38,39,42,44,45,47,48,49:B1,3,9,10,13,14,16,17,18,19,22,23,24,36",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_bande_26",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["black_on_26"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "black_on_26"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion de bande 26",
@@ -341,13 +1212,59 @@
         "concept": "The edge pawn 26",
         "text": "The black pawn on 26 is an active edge pawn: it controls the left wing and can act as a lever to attack white's flank pawns. It must be supported to avoid becoming an isolated weakness, as its edge position makes it vulnerable.",
         "source": "Dubois, Game Sense, Part 3 Ch. 2 — The edge pawn 26; Reference Guide, Part 5 Ch. 2"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0014_d2",
+          "source": "ROOZENBURG",
+          "page": 14,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,43,47,48,49:B2,6,8,9,12,13,15,16,18,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0017_d1",
+          "source": "ROOZENBURG",
+          "page": 17,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,11,12,13,15,16,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d2",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,35,36,37,38,39,40,42,43,45,47,49:B2,4,6,7,8,9,10,13,15,16,17,18,20,21,23,25,26",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_bande_36_blanc",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_36"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_36"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion blanc 36",
@@ -358,13 +1275,59 @@
         "concept": "The white pawn 36",
         "text": "The white pawn on 36 is a strategic edge pawn: well supported by 41 and 31, it reinforces the right wing and prepares the right-wing lock (EAD). However, its premature advance without support can create a weakness on square 41.",
         "source": "Dubois, Game Sense, Part 3 Ch. 1 — The white pawn 36; Reference Guide, Part 2 Ch. 5"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_angle_46",
-      "phase": ["middlegame", "endgame"],
-      "conditions": ["white_on_46"],
+      "phase": [
+        "middlegame",
+        "endgame"
+      ],
+      "conditions": [
+        "white_on_46"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion d'angle 46",
@@ -375,13 +1338,59 @@
         "concept": "The corner pawn 46",
         "text": "The white pawn on 46 is a fundamental base pawn. Dubois devotes three chapters to it: it serves as a defensive anchor and strategic asset for resisting opponent locks. Its premature advance permanently weakens White's base.",
         "source": "Dubois, Game Sense, Part 2 Ch. 1-3 — The corner pawn 46"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0056_d1",
+          "source": "KELLER",
+          "page": 56,
+          "number": 1,
+          "fen": "W:W15,24,26,31,33,34,36,37,38,39,41,43,45,46,48,49:B2,4,6,8,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_base_47",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_47"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_47"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion de base 47",
@@ -392,13 +1401,59 @@
         "concept": "The base pawn 47",
         "text": "The white pawn on 47 is an essential base pawn controlling squares 41 and 42. Its premature advance to 41 or 42 can destabilise White's base. It should advance at the right moment, when its departure does not weaken the structure.",
         "source": "Dubois, Game Sense, Part 2 Ch. 4-5 — The base pawn 47"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_bande_45",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_45"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_45"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion blanc 45",
@@ -409,13 +1464,59 @@
         "concept": "The white pawn 45",
         "text": "The white pawn on 45 is a powerful edge pawn that, paired with pawn 40, forms the solid 45-40 formation. Its presence on the right edge prepares offensive moves via squares 34 and 39 while maintaining a stable defensive base.",
         "source": "Dubois, Game Sense, Part 3 Ch. 5 — The white pawn 45"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_bande_35",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_35"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_35"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion blanc 35",
@@ -426,13 +1527,59 @@
         "concept": "The white pawn 35",
         "text": "The white pawn on 35 is an advanced edge pawn. Dubois devotes a chapter to it: well used, it pressures Black's right wing and prepares advances on squares 29-30. Without support, it becomes a vulnerable target.",
         "source": "Dubois, Game Sense, Part 3 Ch. 6 — The white pawn 35"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_bande_15_noir",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["black_on_15"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "black_on_15"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion noir 15",
@@ -443,13 +1590,59 @@
         "concept": "The black pawn 15",
         "text": "The black pawn on 15 has important edge-pawn specificities. It can anchor a lateral lock on the left wing, but its edge position exposes it to direct attacks. Support from pawn 20 is often necessary.",
         "source": "Dubois, Game Sense, Part 3 Ch. 8 — The pawn 15: specific features"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0014_d2",
+          "source": "ROOZENBURG",
+          "page": 14,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,43,47,48,49:B2,6,8,9,12,13,15,16,18,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0017_d1",
+          "source": "ROOZENBURG",
+          "page": 17,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,11,12,13,15,16,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d2",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,35,36,37,38,39,40,42,43,45,47,49:B2,4,6,7,8,9,10,13,15,16,17,18,20,21,23,25,26",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_offensif_28",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_28"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_28"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion offensif 28",
@@ -460,13 +1653,59 @@
         "concept": "The offensive pawn 28",
         "text": "The white pawn on 28 is one of the most important offensive pawns: it sits at the heart of the centre and controls squares 22-23. Maintaining it on 28 creates constant pressure on the opponent's central zone and sets up combinations on key squares.",
         "source": "Dubois, Game Sense, Part 4 Ch. 2 — The pawn 28; Reference Guide, Ch. 1 (offensive classic)"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0014_d1",
+          "source": "ROOZENBURG",
+          "page": 14,
+          "number": 1,
+          "fen": "W:W26,28,30,31,33,35,36,37,38,39,42,43,44,45,49:B3,8,9,10,11,12,13,14,17,18,19,22,24,27",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0061_d1",
+          "source": "ROOZENBURG",
+          "page": 61,
+          "number": 1,
+          "fen": "W:W26,28,31,32,33,34,35,36,38,39,41,42,43,44,47,49,50:B2,3,4,5,6,8,9,10,11,12,13,17,19,21,22,24,27",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0065_d1",
+          "source": "ROOZENBURG",
+          "page": 65,
+          "number": 1,
+          "fen": "W:W24,27,28,29,30,32,34,37,38,40,41,42,43,44,45,46,48:B2,4,6,7,9,13,14,15,16,17,18,19,20,21,23,25,26",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_offensif_29",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_29"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_29"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion blanc 29",
@@ -477,13 +1716,59 @@
         "concept": "The white pawn 29",
         "text": "The white pawn on 29 occupies an important central offensive square. It supports pawns 28 and 34 while threatening an advance to 23. This square is strategically sensitive as it conditions control of the entire central zone.",
         "source": "Dubois, Game Sense, Part 4 Ch. 3 — The pawn 29"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "piquet_canadien",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["piquet_canadien"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "piquet_canadien"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le piquet canadien",
@@ -494,13 +1779,59 @@
         "concept": "The Canadian pillar",
         "text": "The Canadian pillar is a black pawn planted on 23 without adjacent support. Well placed, it immobilises several white pawns and creates a permanent central threat. But it is also a potential target if white manages to encircle it.",
         "source": "Dubois, Game Sense, Ch. 2 — The Canadian pillar; Reference Guide, Part 3 Ch. 6"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_16_noir",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["black_on_16"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "black_on_16"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion noir 16",
@@ -511,13 +1842,58 @@
         "concept": "The black pawn 16",
         "text": "The pawn on square 16 is an edge pawn studied in the Reference Guide. Its presence on 16 can anchor a left-wing encirclement, provided it is well coordinated with the central pawns.",
         "source": "Dubois, Reference Guide, Part 5 Ch. 4 — The pawn 16"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_6_noir",
-      "phase": ["middlegame"],
-      "conditions": ["black_on_6"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "black_on_6"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion 6 en création",
@@ -528,13 +1904,59 @@
         "concept": "The pawn 6 (advanced edge)",
         "text": "The black pawn on 6 is a very advanced left-wing edge pawn. Its mere presence creates a promotion threat along the edge. Evaluate whether this outpost is durable or vulnerable based on the surrounding structure.",
         "source": "Dubois, Game Sense, Part 3 Ch. 4 — The edge pawn 6; Reference Guide, Part 5 Ch. 5"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_21_noir",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["black_on_21"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "black_on_21"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion 21 en création",
@@ -545,13 +1967,58 @@
         "concept": "The pawn 21 (central post)",
         "text": "The black pawn on 21 occupies an important central square in the intermediate zone. Its presence here conditions control of squares 27 and 16, and can prepare an offensive on White's left wing. It is often a decisive offensive outpost.",
         "source": "Dubois, Reference Guide, Part 5 Ch. 6 — The pawn 21"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0058_d1",
+          "source": "KELLER",
+          "page": 58,
+          "number": 1,
+          "fen": "W:W15,24,26,31,33,34,35,36,37,38,39,43,46,47,48:B3,4,6,8,11,13,14,16,17,18,21,22,23,25,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_22_noir",
-      "phase": ["middlegame"],
-      "conditions": ["black_on_22"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "black_on_22"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion noir en 22",
@@ -562,13 +2029,59 @@
         "concept": "The black pawn on 22",
         "text": "The black pawn on 22 is an active offensive pawn controlling the white squares 17 and 27. It creates direct pressure on the white formation and prepares 2-move combinations via the contact points it establishes with opponent pawns.",
         "source": "Dubois, Learning Combinations, Ch. 5 — The contact points method"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_passe_blanc",
-      "phase": ["middlegame", "endgame"],
-      "conditions": ["pion_avance_blanc"],
+      "phase": [
+        "middlegame",
+        "endgame"
+      ],
+      "conditions": [
+        "pion_avance_blanc"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Pion blanc avancé (pion passé)",
@@ -579,13 +2092,59 @@
         "concept": "Advanced white pawn (passed pawn)",
         "text": "A white pawn advanced into enemy territory is a permanent promotion threat. The opponent must either block it or sacrifice to stop it. Exploit this threat by forcing the opponent into reactive moves, which frees space elsewhere.",
         "source": "Dubois, Game Sense, Ch. 2 — The passed pawn"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_passe_noir",
-      "phase": ["middlegame", "endgame"],
-      "conditions": ["pion_avance_noir"],
+      "phase": [
+        "middlegame",
+        "endgame"
+      ],
+      "conditions": [
+        "pion_avance_noir"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Pion noir avancé (pion passé)",
@@ -596,14 +2155,59 @@
         "concept": "Advanced black pawn (passed pawn)",
         "text": "A black pawn advanced into white territory is a permanent promotion threat. Force the opponent to react by combining the promotion threat with attacks on other parts of the board. An unblocked passed pawn can decide the game on its own.",
         "source": "Dubois, Game Sense, Ch. 2 — The passed pawn"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SIJBRANDS_p0088_d2",
+          "source": "SIJBRANDS",
+          "page": 88,
+          "number": 2,
+          "fen": "W:WK39,48:B20,25,43",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0100_d6",
+          "source": "SIJBRANDS",
+          "page": 100,
+          "number": 6,
+          "fen": "W:WK5,33:B27,31,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0100_d8",
+          "source": "SIJBRANDS",
+          "page": 100,
+          "number": 8,
+          "fen": "W:WK5,43:B21,31,36",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0101_d13",
+          "source": "SIJBRANDS",
+          "page": 101,
+          "number": 13,
+          "fen": "W:WK23,30:B15,25,36",
+          "kind": "human"
+        },
+        {
+          "id": "SPRINGER_p0167_d11",
+          "source": "SPRINGER",
+          "page": 167,
+          "number": 11,
+          "fen": "W:W25,26,30,32,35,37,38,39,42,44,45,47,48,49:B1,3,9,10,13,14,16,17,18,19,22,23,24,36",
+          "kind": "human"
+        }
+      ]
     },
-
-
     {
       "id": "classique_positions_ref",
-      "phase": ["opening"],
-      "conditions": ["white_on_27", "opening_general"],
+      "phase": [
+        "opening"
+      ],
+      "conditions": [
+        "white_on_27",
+        "opening_general"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Système classique — positions de référence",
@@ -614,13 +2218,59 @@
         "concept": "Classical system — reference positions",
         "text": "The classical system is built on reference positions that both sides can adopt. Dubois identifies ten sub-variations based on wing and centre management. Knowing these reference positions avoids inaccuracies in the opening moves.",
         "source": "Dubois, Reference Guide, Ch. 3 — The classical system (3.1)"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0067_d2",
+          "source": "KELLER",
+          "page": 67,
+          "number": 2,
+          "fen": "W:W15,26,29,31,33,34,35,36,37,38,39,41,43,45,46,47,48,49:B2,3,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "classique_ghestem",
-      "phase": ["opening"],
-      "conditions": ["white_on_36", "white_on_27"],
+      "phase": [
+        "opening"
+      ],
+      "conditions": [
+        "white_on_36",
+        "white_on_27"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'avancée Ghestem",
@@ -631,13 +2281,58 @@
         "concept": "The Ghestem advance",
         "text": "The Ghestem advance is an offensive idea in the classical system: advance the edge pawn at the right moment to unbalance the opponent's formation. It creates combination threats on the wing and must be prepared with precision.",
         "source": "Dubois, Reference Guide, Ch. 3.4 — The Ghestem advance"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0067_d2",
+          "source": "KELLER",
+          "page": 67,
+          "number": 2,
+          "fen": "W:W15,26,29,31,33,34,35,36,37,38,39,41,43,45,46,47,48,49:B2,3,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "classique_kerkhof",
-      "phase": ["opening"],
-      "conditions": ["white_on_28"],
+      "phase": [
+        "opening"
+      ],
+      "conditions": [
+        "white_on_28"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'incursion Kerkhof",
@@ -648,13 +2343,59 @@
         "concept": "The Kerkhof incursion",
         "text": "The Kerkhof incursion is a manoeuvre in the classical system: penetrate into enemy territory via an unexpected square to create an outpost. This surprising move forces the opponent to reorganise their defence under pressure.",
         "source": "Dubois, Reference Guide, Ch. 3.8 — The Kerkhof incursion"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0009_d1",
+          "source": "SIJBRANDS",
+          "page": 9,
+          "number": 1,
+          "fen": "W:W28,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,23",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0010_d1",
+          "source": "KELLER",
+          "page": 10,
+          "number": 1,
+          "fen": "W:W15,26,28,29,33,35,36,37,38,39,40,41,42,43,45,46,47,48,49:B2,4,5,6,7,8,9,11,12,13,14,17,18,21,22,23,25",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0095_d3",
+          "source": "KELLER",
+          "page": 95,
+          "number": 3,
+          "fen": "W:W24,26,28,29,30,31,32,33,34,36,38,39,42,43,44,45,47,49:B2,4,6,8,10,11,12,13,14,15,17,18,19,20,21,22,25,27",
+          "kind": "auto"
+        },
+        {
+          "id": "ROOZENBURG_p0007_d4",
+          "source": "ROOZENBURG",
+          "page": 7,
+          "number": 4,
+          "fen": "W:W28,29,31,33,35,36,37,38,39,40,41,42,43,44,45,47,48,49:B2,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "classique_dpk",
-      "phase": ["opening"],
-      "conditions": ["white_on_27", "white_on_28"],
+      "phase": [
+        "opening"
+      ],
+      "conditions": [
+        "white_on_27",
+        "white_on_28"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le double pion Kerkhof (DPK)",
@@ -665,13 +2406,59 @@
         "concept": "The double Kerkhof pawn (DPK)",
         "text": "The Double Kerkhof Pawn is an aggressive classical system variant where both central pawns (27-28) advance together to create a double central threat. This structure requires precise follow-up to avoid weakening the base.",
         "source": "Dubois, Reference Guide, Ch. 3.10 — The double Kerkhof pawn (DPK)"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0026_d1",
+          "source": "ROOZENBURG",
+          "page": 26,
+          "number": 1,
+          "fen": "W:W24,27,29,32,34,37,38,39,40,41,42,43,44,45,46,47,48,49:B1,2,3,4,5,6,7,8,9,11,12,13,15,16,18,20,23,25",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0064_d1",
+          "source": "ROOZENBURG",
+          "page": 64,
+          "number": 1,
+          "fen": "W:W24,27,29,30,32,33,34,36,37,38,39,40,42,44,45,46,47,48,49:B2,4,6,7,8,9,10,11,12,13,15,16,17,18,19,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0009_d1",
+          "source": "SIJBRANDS",
+          "page": 9,
+          "number": 1,
+          "fen": "W:W28,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,23",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0010_d1",
+          "source": "KELLER",
+          "page": 10,
+          "number": 1,
+          "fen": "W:W15,26,28,29,33,35,36,37,38,39,40,41,42,43,45,46,47,48,49:B2,4,5,6,7,8,9,11,12,13,14,17,18,21,22,23,25",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "faux_mdb",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_27"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_27"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le faux marchand de bois",
@@ -682,13 +2469,59 @@
         "concept": "The fake Merchant of Wood",
         "text": "The fake Merchant of Wood is a white formation resembling the true MdB but with poorly coordinated pawns. Black must recognise it to identify the typical combinations that break this incomplete lock.",
         "source": "Dubois, Reference Guide, Part 2 Ch. 1 — The fake Merchant of Wood"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "ROOZENBURG_p0014_d2",
+          "source": "ROOZENBURG",
+          "page": 14,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,43,47,48,49:B2,6,8,9,12,13,15,16,18,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0017_d1",
+          "source": "ROOZENBURG",
+          "page": 17,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,11,12,13,15,16,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d2",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,35,36,37,38,39,40,42,43,45,47,49:B2,4,6,7,8,9,10,13,15,16,17,18,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0021_d1",
+          "source": "ROOZENBURG",
+          "page": 21,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,42,43,44,45,47,49:B1,2,4,7,8,9,11,12,13,15,16,17,18,20,23,25",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "tenailles",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["restricted_side"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "restricted_side"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Les tenailles",
@@ -699,13 +2532,59 @@
         "concept": "The pincers",
         "text": "The pincers are a lateral lock where two white pawns arranged as pincers block a black formation across an entire wing. It is a classic lock structure that generates many tactical combinations.",
         "source": "Dubois, Reference Guide, Part 2 Ch. 4 — The pincer lock"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0008_d2",
+          "source": "KELLER",
+          "page": 8,
+          "number": 2,
+          "fen": "W:W15,22,23,26,29,31,33,34,35,36,38,41,42,43,46,47,48,49:B2,3,4,6,7,8,9,11,12,13,17,18,25,27,28",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0010_d1",
+          "source": "KELLER",
+          "page": 10,
+          "number": 1,
+          "fen": "W:W15,26,28,29,33,35,36,37,38,39,40,41,42,43,45,46,47,48,49:B2,4,5,6,7,8,9,11,12,13,14,17,18,21,22,23,25",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0010_d2",
+          "source": "KELLER",
+          "page": 10,
+          "number": 2,
+          "fen": "W:W15,22,23,26,29,30,31,33,34,36,37,38,41,43,45,46,48,49:B2,4,6,8,9,12,13,14,16,17,18,19,25,27,28",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0013_d1",
+          "source": "KELLER",
+          "page": 13,
+          "number": 1,
+          "fen": "W:W15,20,23,25,30,31,35,36,37,41,43,46,48,49:B3,4,6,8,12,13,16,18,19,22,26,27,28",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "enchaînement_EAD",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_36"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_36"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'Enchaînement de l'Aile Droite (EAD)",
@@ -716,13 +2595,59 @@
         "concept": "The Right-Wing Lock (EAD)",
         "text": "The EAD is a right-wing lock system, often triggered by advancing pawn 36. It creates lateral pressure on Black's right-wing pawns and prepares combinations specific to this structure.",
         "source": "Dubois, Reference Guide, Part 2 Ch. 5 — The Right-Wing Lock"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "enchaînement_EAG",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["white_on_46"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "white_on_46"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'Enchaînement de l'Aile Gauche (EAG)",
@@ -733,13 +2658,58 @@
         "concept": "The Left-Wing Lock (EAG)",
         "text": "The EAG is a left-wing lock system. It exploits well-placed white pawns on the left wing to create a blockade and force precise replies from the opponent, under threat of decisive combinations.",
         "source": "Dubois, Reference Guide, Part 2 Ch. 6 — The Left-Wing Lock"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "systeme_utrecht",
-      "phase": ["opening"],
-      "conditions": ["opening_general"],
+      "phase": [
+        "opening"
+      ],
+      "conditions": [
+        "opening_general"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le système d'Utrecht",
@@ -750,13 +2720,59 @@
         "concept": "The Utrecht system",
         "text": "The Utrecht system is an offensive system that emphasises a rapid advance on one wing to create imbalance. It surprises the opponent with its directness and demands a precise response to avoid suffering a devastating attack.",
         "source": "Dubois, Reference Guide, Part 3 Ch. 1 — The Utrecht system"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0067_d2",
+          "source": "KELLER",
+          "page": 67,
+          "number": 2,
+          "fen": "W:W15,26,29,31,33,34,35,36,37,38,39,41,43,45,46,47,48,49:B2,3,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "systeme_roozenburg",
-      "phase": ["opening"],
-      "conditions": ["black_on_23", "opening_general"],
+      "phase": [
+        "opening"
+      ],
+      "conditions": [
+        "black_on_23",
+        "opening_general"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le système Roozenburg",
@@ -767,13 +2783,59 @@
         "concept": "The Roozenburg system",
         "text": "The Roozenburg system, developed by 1948 world champion Piet Roozenburg, is an offensive system based on rapid central territorial expansion. It seeks spatial domination to force the opponent into defensive positions.",
         "source": "Dubois, Reference Guide, Part 3 Ch. 2 — The Roozenburg system"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0067_d2",
+          "source": "KELLER",
+          "page": 67,
+          "number": 2,
+          "fen": "W:W15,26,29,31,33,34,35,36,37,38,39,41,43,45,46,47,48,49:B2,3,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "batterie_chizhov",
-      "phase": ["opening"],
-      "conditions": ["black_on_24", "opening_general"],
+      "phase": [
+        "opening"
+      ],
+      "conditions": [
+        "black_on_24",
+        "opening_general"
+      ],
       "require_all": false,
       "fr": {
         "concept": "La batterie Chizhov",
@@ -784,13 +2846,59 @@
         "concept": "The Chizhov battery",
         "text": "The Chizhov battery is an offensive black formation that places pawns as outposts to create multiple threats. It demands a precise and active defence from White, as any delay in responding can quickly lead to a losing position.",
         "source": "Dubois, Reference Guide, Part 3 Ch. 3 — The Chizhov battery"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0067_d2",
+          "source": "KELLER",
+          "page": 67,
+          "number": 2,
+          "fen": "W:W15,26,29,31,33,34,35,36,37,38,39,41,43,45,46,47,48,49:B2,3,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "encerclement_lateral",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["wing_imbalance"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "wing_imbalance"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'encerclement latéral",
@@ -801,13 +2909,58 @@
         "concept": "Lateral encirclement",
         "text": "Lateral encirclement means concentrating forces on one wing to encircle and isolate the opponent's pieces. This strategy creates a decisive local superiority. Ensure that the forces used for encirclement do not weaken the rest of the position.",
         "source": "Dubois, Reference Guide, Part 4 Ch. 3 — Lateral encirclement"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0014_d2",
+          "source": "ROOZENBURG",
+          "page": 14,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,43,47,48,49:B2,6,8,9,12,13,15,16,18,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0028_d1",
+          "source": "ROOZENBURG",
+          "page": 28,
+          "number": 1,
+          "fen": "W:W5,24,27,29,32,33,34,37,38,39,41,42,43,44,46,48,49:B1,2,3,6,7,8,9,11,12,13,15,16,18,20,23,25",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0038_d1",
+          "source": "ROOZENBURG",
+          "page": 38,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,40,42,43,44,48:B1,2,7,8,9,12,13,14,15,16,18,20,21,23,25",
+          "kind": "human"
+        },
+        {
+          "id": "SIJBRANDS_p0015_d6",
+          "source": "SIJBRANDS",
+          "page": 15,
+          "number": 6,
+          "fen": "W:W27,28,32,33,34,37,38,39,40,43,45,47,48:B3,8,9,13,14,15,16,18,19,20,21,23,25",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "encerclement_central",
-      "phase": ["middlegame"],
-      "conditions": ["many_contacts"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_contacts"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'encerclement central",
@@ -818,13 +2971,59 @@
         "concept": "Central encirclement",
         "text": "Central encirclement aims to surround and neutralise the opponent's forces in the board's centre. By occupying the key squares around the opponent's pieces, you deprive them of movement and create the conditions for decisive combinations.",
         "source": "Dubois, Reference Guide, Part 4 Ch. 4 — Central encirclement"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "enchaînement_general",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["restricted_side"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "restricted_side"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Position d'enchaînement",
@@ -835,14 +3034,59 @@
         "concept": "Locked position",
         "text": "A lock occurs when one side immobilises the opponent's pieces on one wing. Most combinations arise in these closed positions. The goal is to maintain the blockade while seeking the decisive capture among the direct contacts.",
         "source": "Grégoire, Enchainements — Introduction; Dubois, Reference Guide, Part 2"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0008_d2",
+          "source": "KELLER",
+          "page": 8,
+          "number": 2,
+          "fen": "W:W15,22,23,26,29,31,33,34,35,36,38,41,42,43,46,47,48,49:B2,3,4,6,7,8,9,11,12,13,17,18,25,27,28",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0010_d1",
+          "source": "KELLER",
+          "page": 10,
+          "number": 1,
+          "fen": "W:W15,26,28,29,33,35,36,37,38,39,40,41,42,43,45,46,47,48,49:B2,4,5,6,7,8,9,11,12,13,14,17,18,21,22,23,25",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0010_d2",
+          "source": "KELLER",
+          "page": 10,
+          "number": 2,
+          "fen": "W:W15,22,23,26,29,30,31,33,34,36,37,38,41,43,45,46,48,49:B2,4,6,8,9,12,13,14,16,17,18,19,25,27,28",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0013_d1",
+          "source": "KELLER",
+          "page": 13,
+          "number": 1,
+          "fen": "W:W15,20,23,25,30,31,35,36,37,41,43,46,48,49:B3,4,6,8,12,13,16,18,19,22,26,27,28",
+          "kind": "auto"
+        }
+      ]
     },
-
-
     {
       "id": "avantage_structurel",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["balanced_material"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "balanced_material"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Les avantages structurels durables",
@@ -853,13 +3097,58 @@
         "concept": "Durable structural advantages",
         "text": "Durable structural advantages — lateral lock, clover formation, hanging pawn, Canadian pillar, passed pawn — outweigh circumstantial advantages (tempo, counter-timing). Seek to create them actively rather than waiting for them.",
         "source": "Dubois, Game Sense, Ch. 2 — The notion of advantage"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "les_echanges",
-      "phase": ["middlegame"],
-      "conditions": ["balanced_material"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "balanced_material"
+      ],
       "require_all": false,
       "fr": {
         "concept": "La valeur des échanges",
@@ -870,13 +3159,58 @@
         "concept": "The value of exchanges",
         "text": "Exchanges modify space and freedom of movement. An exchange should not be judged only by the material balance, but by the resulting position. Dubois insists: an exchange that shifts pressure to a favourable zone is worth more than mere material equality.",
         "source": "Dubois, Game Sense, Ch. 4 — Exchanges"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "temps_reserve_general",
-      "phase": ["middlegame"],
-      "conditions": ["balanced_material"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "balanced_material"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Les temps de réserve",
@@ -887,13 +3221,59 @@
         "concept": "Reserve moves",
         "text": "In a closed position, reserve moves — moves available without weakening the structure — are precious. Having 2-3 more reserve moves than the opponent allows you to maintain control. Dubois shows how to manage them to force the opponent to weaken.",
         "source": "Dubois, Game Sense, Ch. 6 — Reserve moves"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "pion_arriere_suspendu",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["opening_general"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "opening_general"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le pion arrière ou suspendu",
@@ -904,13 +3284,58 @@
         "concept": "The backward and hanging pawn",
         "text": "A backward pawn can no longer be supported by neighbours and is blocked in its advance. A hanging pawn is an advanced pawn with no support in enemy territory. Both are structural weaknesses to be actively exploited by the opponent.",
         "source": "Dubois, Game Sense, Ch. 7 — Backward and hanging pawns"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0067_d2",
+          "source": "KELLER",
+          "page": 67,
+          "number": 2,
+          "fen": "W:W15,26,29,31,33,34,35,36,37,38,39,41,43,45,46,47,48,49:B2,3,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "liberte_mouvement",
-      "phase": ["middlegame"],
-      "conditions": ["balanced_material"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "balanced_material"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Liberté de mouvement relative",
@@ -921,13 +3346,59 @@
         "concept": "Relative freedom of movement",
         "text": "Freedom of movement is relative: it only has value if the opponent is more restricted. Limit the opponent's possibilities to the maximum while preserving your own options. Exchanges must be evaluated by the resulting position, not just the material count.",
         "source": "Dubois, Game Sense, Ch. 3 — Relative freedom of movement"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "temps_avance",
-      "phase": ["opening", "middlegame"],
-      "conditions": ["tempo_advantage"],
+      "phase": [
+        "opening",
+        "middlegame"
+      ],
+      "conditions": [
+        "tempo_advantage"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Les temps d'avance",
@@ -938,13 +3409,58 @@
         "concept": "Tempo advantage",
         "text": "A tempo advantage in draughts is precious: it allows you to seize the initiative and dictate the game's rhythm. Exploit this lead by forcing the opponent to react, and choose the right moment to open hostilities.",
         "source": "Dubois, Game Sense, Ch. 5 — Tempo advantage"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SPRINGER_p0024_d5",
+          "source": "SPRINGER",
+          "page": 24,
+          "number": 5,
+          "fen": "W:W2,4,6,11,13,15,20,22,24,31,33,35,42,44,50:B12,21,23,25,32,34,43",
+          "kind": "auto"
+        },
+        {
+          "id": "SPRINGER_p0031_d14",
+          "source": "SPRINGER",
+          "page": 31,
+          "number": 14,
+          "fen": "W:W3,4,11,12,15,17,20,21,22,25,33,K36,37,38,39,41,43,45,49:B1,13,19",
+          "kind": "auto"
+        },
+        {
+          "id": "SPRINGER_p0035_d20",
+          "source": "SPRINGER",
+          "page": 35,
+          "number": 20,
+          "fen": "W:W2,4,6,11,13,15,17,20,22,24,31,33,35,42,44,45,50:B21,23,25,32,41",
+          "kind": "auto"
+        },
+        {
+          "id": "SPRINGER_p0043_d14",
+          "source": "SPRINGER",
+          "page": 43,
+          "number": 14,
+          "fen": "W:W1,4,12,13,15,18,21,24,27,29,38,41,42,43,45:B11,14,25,39",
+          "kind": "auto"
+        },
+        {
+          "id": "SPRINGER_p0112_d16",
+          "source": "SPRINGER",
+          "page": 112,
+          "number": 16,
+          "fen": "W:W1,4,8,13,15,18,21,24,27,29,36,38,43,45,47,48,49:B11,25,28",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "notion_espace",
-      "phase": ["opening"],
-      "conditions": ["opening_general"],
+      "phase": [
+        "opening"
+      ],
+      "conditions": [
+        "opening_general"
+      ],
       "require_all": false,
       "fr": {
         "concept": "La notion d'espace",
@@ -955,14 +3471,59 @@
         "concept": "The notion of space",
         "text": "Draughts is above all a game of territorial occupation. The objective is to place your pawns in the offensive intermediate zone while containing the opponent's expansion. The more squares you occupy in this zone, the greater your freedom of play.",
         "source": "Dubois, Game Sense, Ch. 1 — The notion of space"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0042_d1",
+          "source": "KELLER",
+          "page": 42,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,35,36,37,38,39,40,41,43,45,46,47,48,49:B2,3,4,6,8,10,11,12,13,14,16,17,18,19,21,22,25,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d1",
+          "source": "KELLER",
+          "page": 43,
+          "number": 1,
+          "fen": "W:W15,26,28,29,31,33,34,35,36,37,38,39,40,41,43,45,46,47,48:B2,4,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0043_d2",
+          "source": "KELLER",
+          "page": 43,
+          "number": 2,
+          "fen": "W:W15,26,30,31,33,34,35,36,37,38,39,40,41,42,43,45,46,48:B4,6,7,8,9,10,11,12,13,16,17,18,19,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0044_d1",
+          "source": "KELLER",
+          "page": 44,
+          "number": 1,
+          "fen": "W:W15,16,26,31,33,34,36,37,38,39,40,41,43,44,45,46,47,48,49:B2,3,4,6,7,8,10,11,12,13,14,17,18,19,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0067_d2",
+          "source": "KELLER",
+          "page": 67,
+          "number": 2,
+          "fen": "W:W15,26,29,31,33,34,35,36,37,38,39,41,43,45,46,47,48,49:B2,3,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
-
     {
       "id": "coup_express",
-      "phase": ["middlegame"],
-      "conditions": ["promotion_possible", "capture_possible"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "promotion_possible",
+        "capture_possible"
+      ],
       "require_all": true,
       "fr": {
         "concept": "Le coup de l'Express",
@@ -975,11 +3536,15 @@
         "source": "Dubois, Learning Combinations, Ch. 13 — The Express move"
       }
     },
-
     {
       "id": "coup_napoleon",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures", "piece_in_corner"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_captures",
+        "piece_in_corner"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup Napoléon",
@@ -992,11 +3557,15 @@
         "source": "Dubois, Learning Combinations, Ch. 17 — The Napoleon move"
       }
     },
-
     {
       "id": "coup_philippe",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures", "formation_33_38"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_captures",
+        "formation_33_38"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup Philippe",
@@ -1007,13 +3576,59 @@
         "concept": "The Philippe move",
         "text": "The Philippe move is a combination that exploits a specific pawn structure to trigger a multi-square capture via an initial sacrifice. The arrow formation pawns (33-38-42) are often the support for this combination.",
         "source": "Dubois, Learning Combinations, Ch. 20 — The Philippe move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0056_d1",
+          "source": "KELLER",
+          "page": 56,
+          "number": 1,
+          "fen": "W:W15,24,26,31,33,34,36,37,38,39,41,43,45,46,48,49:B2,4,6,8,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "coup_raichenbach",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures", "formation_45_40"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_captures",
+        "formation_45_40"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup Raichenbach",
@@ -1024,13 +3639,59 @@
         "concept": "The Raichenbach move",
         "text": "The Raichenbach move is a combination associated with pawn structures on the right wing. It exploits the position of pawns 45-40 to create an unexpected sacrifice that leads to a decisive capture on the wing.",
         "source": "Dubois, Learning Combinations, Ch. 32 — The Raichenbach move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0017_d1",
+          "source": "ROOZENBURG",
+          "page": 17,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,11,12,13,15,16,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "coup_springer",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures", "pion_avance_noir"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_captures",
+        "pion_avance_noir"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup Springer",
@@ -1041,13 +3702,59 @@
         "concept": "The Springer move",
         "text": "The Springer move is an advanced combination using multiple jumps to capture pieces in seemingly solid positions. This technique requires 5-6 move vision and often exploits advanced pawns as springboards.",
         "source": "Dubois, Learning Combinations, Ch. 24 — The Springer move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "SPRINGER_p0167_d11",
+          "source": "SPRINGER",
+          "page": 167,
+          "number": 11,
+          "fen": "W:W25,26,30,32,35,37,38,39,42,44,45,47,48,49:B1,3,9,10,13,14,16,17,18,19,22,23,24,36",
+          "kind": "human"
+        },
+        {
+          "id": "SPRINGER_p0170_d22",
+          "source": "SPRINGER",
+          "page": 170,
+          "number": 22,
+          "fen": "W:W16,25,26,28,32,33,35,37,38,43,47:B1,7,11,12,13,14,17,19,23,24,36",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0024_d1",
+          "source": "KELLER",
+          "page": 24,
+          "number": 1,
+          "fen": "W:W23,24,27,29,33,34,35,38,39,40,44,47,49:B2,5,7,8,10,11,12,13,14,15,18,20,25,36",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0024_d3",
+          "source": "KELLER",
+          "page": 24,
+          "number": 3,
+          "fen": "W:W23,24,28,29,33,34,37,39,40,42,46,47,48:B2,4,9,11,12,13,14,15,17,18,22,25,36",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0026_d1",
+          "source": "KELLER",
+          "page": 26,
+          "number": 1,
+          "fen": "W:W23,24,26,28,29,33,34,38,39,42,47,48,49:B2,3,5,6,8,10,12,13,15,16,20,22,25,36",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "coup_bombe",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures", "pion_avance_blanc"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_captures",
+        "pion_avance_blanc"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup de la Bombe",
@@ -1058,13 +3765,59 @@
         "concept": "The Bomb move",
         "text": "The Bomb move is a spectacular combination where a massive pawn sacrifice enables a devastating capture. This mechanism often uses several successive pawn sacrifices to open a decisive capture route.",
         "source": "Dubois, Learning Combinations, Ch. 23 — The Bomb move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "coup_espagnol",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures", "white_on_36"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_captures",
+        "white_on_36"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup de l'Espagnol",
@@ -1075,13 +3828,59 @@
         "concept": "The Spanish move",
         "text": "The Spanish move is a combination linked to right-wing pawn structures involving pawn 36. It uses an unexpected sacrifice to create a multi-step capture that completely wrong-foots the opponent.",
         "source": "Dubois, Learning Combinations, Ch. 33 — The Spanish move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "coup_raphael",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures", "formation_34_39"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_captures",
+        "formation_34_39"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup Raphaël",
@@ -1092,13 +3891,59 @@
         "concept": "The Raphaël move",
         "text": "The Raphaël move is a combination associated with the 34-39-43 formation. It exploits the tension created by these advanced pawns to trigger a 4-move capture with a queen sacrifice or forced promotion.",
         "source": "Dubois, Learning Combinations, Ch. 34 — The Raphaël move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0056_d1",
+          "source": "KELLER",
+          "page": 56,
+          "number": 1,
+          "fen": "W:W15,24,26,31,33,34,36,37,38,39,41,43,45,46,48,49:B2,4,6,8,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "methode_dpa",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures", "many_contacts"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_captures",
+        "many_contacts"
+      ],
       "require_all": true,
       "fr": {
         "concept": "La méthode D-P-A",
@@ -1111,11 +3956,15 @@
         "source": "Dubois, Learning Combinations, Ch. 22 — The D-P-A method"
       }
     },
-
     {
       "id": "coup_avid",
-      "phase": ["endgame"],
-      "conditions": ["capture_possible", "few_pieces"],
+      "phase": [
+        "endgame"
+      ],
+      "conditions": [
+        "capture_possible",
+        "few_pieces"
+      ],
       "require_all": true,
       "fr": {
         "concept": "Le coup Avid",
@@ -1128,11 +3977,15 @@
         "source": "Dubois, Learning Combinations, Ch. 25 — The Avid move"
       }
     },
-
     {
       "id": "coup_trappe",
-      "phase": ["middlegame"],
-      "conditions": ["capture_possible", "pion_avance_blanc"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "capture_possible",
+        "pion_avance_blanc"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup de la Trappe",
@@ -1143,13 +3996,60 @@
         "concept": "The Trap move",
         "text": "The Trap move combines the pawn 35 mechanism with a final capture. An unexpected sacrifice forces the opponent into a capture position where they thought they were safe. The trap is often invisible as it uses apparently harmless pawns.",
         "source": "Dubois, Learning Combinations, Ch. 18, 35 — The Trap and the pawn 35"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "coup_croc",
-      "phase": ["middlegame", "endgame"],
-      "conditions": ["capture_possible", "kings_present"],
+      "phase": [
+        "middlegame",
+        "endgame"
+      ],
+      "conditions": [
+        "capture_possible",
+        "kings_present"
+      ],
       "require_all": true,
       "fr": {
         "concept": "Le coup de Croc",
@@ -1162,11 +4062,15 @@
         "source": "Dubois, Learning Combinations, Ch. 26 — The hook move"
       }
     },
-
     {
       "id": "fourchette",
-      "phase": ["middlegame"],
-      "conditions": ["capture_possible", "black_on_22"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "capture_possible",
+        "black_on_22"
+      ],
       "require_all": false,
       "fr": {
         "concept": "La fourchette",
@@ -1177,13 +4081,59 @@
         "concept": "The fork",
         "text": "A fork simultaneously attacks two opponent pieces with a single pawn. It forces the capture of one piece and allows the other to be taken. Central squares 22-23-27-28 are the most frequent locations for this mechanism in draughts.",
         "source": "Dubois, Learning Combinations, Ch. 28 — The fork"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "coup_ricochet",
-      "phase": ["middlegame"],
-      "conditions": ["capture_possible", "white_on_29"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "capture_possible",
+        "white_on_29"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup de Ricochet",
@@ -1194,13 +4144,59 @@
         "concept": "The Ricochet move",
         "text": "The Ricochet move is a 4-move combination where a pawn bounces off several intermediate squares before capturing the target piece. This mechanism exploits zigzag positions only visible with 4-move vision.",
         "source": "Dubois, Learning Combinations, Ch. 14 — The ricochet move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0053_d1",
+          "source": "KELLER",
+          "page": 53,
+          "number": 1,
+          "fen": "W:W15,26,29,31,33,34,36,37,38,39,40,41,43,45,46,48,49:B2,4,6,8,9,11,12,13,14,16,17,18,22,23,25,27,28",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "coup_rappel",
-      "phase": ["middlegame"],
-      "conditions": ["capture_possible", "white_on_27"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "capture_possible",
+        "white_on_27"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup de Rappel",
@@ -1211,13 +4207,59 @@
         "concept": "The Recall move",
         "text": "The Recall move is a 4-move combination that 'recalls' (draws) an opponent piece to a specific square before capturing it. The first capture forces the opponent to recapture toward the planned square, triggering the final capture.",
         "source": "Dubois, Learning Combinations, Ch. 15 — The recall move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "ROOZENBURG_p0014_d2",
+          "source": "ROOZENBURG",
+          "page": 14,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,43,47,48,49:B2,6,8,9,12,13,15,16,18,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0017_d1",
+          "source": "ROOZENBURG",
+          "page": 17,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,11,12,13,15,16,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0018_d2",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 2,
+          "fen": "W:W24,27,29,32,33,34,35,36,37,38,39,40,42,43,45,47,49:B2,4,6,7,8,9,10,13,15,16,17,18,20,21,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "ROOZENBURG_p0021_d1",
+          "source": "ROOZENBURG",
+          "page": 21,
+          "number": 1,
+          "fen": "W:W24,27,29,32,33,34,36,37,38,39,42,43,44,45,47,49:B1,2,4,7,8,9,11,12,13,15,16,17,18,20,23,25",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "coup_renverse",
-      "phase": ["middlegame"],
-      "conditions": ["capture_possible", "balanced_material"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "capture_possible",
+        "balanced_material"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup Renversé",
@@ -1228,13 +4270,59 @@
         "concept": "The Reversed move",
         "text": "The Reversed move is a 4-move combination that captures in the opposite direction from what the opponent expects. This counter-intuitive move disrupts the defence and forces a losing position where the opponent thought they were protected.",
         "source": "Dubois, Learning Combinations, Ch. 16 — The reversed move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        }
+      ]
     },
-
     {
       "id": "coup_talon",
-      "phase": ["middlegame"],
-      "conditions": ["capture_possible", "restricted_side"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "capture_possible",
+        "restricted_side"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le coup de Talon",
@@ -1245,13 +4333,58 @@
         "concept": "The Heel move",
         "text": "The Heel move is a combination where a pawn is sacrificed 'from behind' to create a forced contact that triggers a capture. This mechanism exploits the board's rear geometry, often visible only with precise diagonal vision.",
         "source": "Dubois, Learning Combinations, Ch. 19 — The heel move"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "ROOZENBURG_p0018_d1",
+          "source": "ROOZENBURG",
+          "page": 18,
+          "number": 1,
+          "fen": "W:W24,27,28,29,32,34,36,37,38,39,40,42,43,44,45,47,49:B2,4,6,7,8,9,10,12,13,15,16,17,18,20,23,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0008_d2",
+          "source": "KELLER",
+          "page": 8,
+          "number": 2,
+          "fen": "W:W15,22,23,26,29,31,33,34,35,36,38,41,42,43,46,47,48,49:B2,3,4,6,7,8,9,11,12,13,17,18,25,27,28",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0010_d2",
+          "source": "KELLER",
+          "page": 10,
+          "number": 2,
+          "fen": "W:W15,22,23,26,29,30,31,33,34,36,37,38,41,43,45,46,48,49:B2,4,6,8,9,12,13,14,16,17,18,19,25,27,28",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0013_d1",
+          "source": "KELLER",
+          "page": 13,
+          "number": 1,
+          "fen": "W:W15,20,23,25,30,31,35,36,37,41,43,46,48,49:B3,4,6,8,12,13,16,18,19,22,26,27,28",
+          "kind": "auto"
+        },
+        {
+          "id": "KELLER_p0022_d4",
+          "source": "KELLER",
+          "page": 22,
+          "number": 4,
+          "fen": "W:W15,23,25,26,29,30,31,34,35,38,41,44,45,46,48,49:B2,3,4,6,7,11,12,13,14,16,17,18,19,22,27,28",
+          "kind": "auto"
+        }
+      ]
     },
-
     {
       "id": "collage",
-      "phase": ["middlegame"],
-      "conditions": ["capture_possible"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "capture_possible"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Le collage",
@@ -1264,11 +4397,14 @@
         "source": "Dubois, Learning Combinations, Ch. 6 — Moving fulcrum points by sticking"
       }
     },
-
     {
       "id": "temps_repos_attaque",
-      "phase": ["middlegame"],
-      "conditions": ["capture_possible"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "capture_possible"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Les temps de repos par attaque",
@@ -1281,11 +4417,14 @@
         "source": "Dubois, Learning Combinations, Ch. 8-9 — Rest tempi"
       }
     },
-
     {
       "id": "combinaisons_actives",
-      "phase": ["middlegame"],
-      "conditions": ["many_captures"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_captures"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Recherche de combinaisons",
@@ -1298,11 +4437,15 @@
         "source": "Dubois, Learning Combinations, Ch. 2 — Method for identifying captures"
       }
     },
-
     {
       "id": "combinaisons_2_temps",
-      "phase": ["middlegame", "endgame"],
-      "conditions": ["capture_possible"],
+      "phase": [
+        "middlegame",
+        "endgame"
+      ],
+      "conditions": [
+        "capture_possible"
+      ],
       "require_all": false,
       "fr": {
         "concept": "Combinaisons en 2 temps",
@@ -1315,11 +4458,14 @@
         "source": "Dubois, Learning Combinations, Ch. 1 — Two-move combinations"
       }
     },
-
     {
       "id": "envoi_dame_mecanisme",
-      "phase": ["middlegame"],
-      "conditions": ["promotion_possible"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "promotion_possible"
+      ],
       "require_all": false,
       "fr": {
         "concept": "L'envoi à dame",
@@ -1332,11 +4478,14 @@
         "source": "Dubois, Learning Combinations, Ch. 4 — The promotion sacrifice"
       }
     },
-
     {
       "id": "points_contact",
-      "phase": ["middlegame"],
-      "conditions": ["many_contacts"],
+      "phase": [
+        "middlegame"
+      ],
+      "conditions": [
+        "many_contacts"
+      ],
       "require_all": false,
       "fr": {
         "concept": "La méthode des points de contact",
@@ -1347,8 +4496,49 @@
         "concept": "Contact points method",
         "text": "When the final capture is not obvious, identify contact points between both sides' pieces, then mentally sacrifice pieces to explore mechanisms. This complementary method often reveals combinations that systematic search misses.",
         "source": "Dubois, Learning Combinations, Ch. 5 — The contact points method"
-      }
+      },
+      "example_positions": [
+        {
+          "id": "KELLER_p0043_d3",
+          "source": "KELLER",
+          "page": 43,
+          "number": 3,
+          "fen": "W:W15,26,29,30,31,34,35,36,37,38,39,40,43,45,48:B4,6,8,9,12,13,14,17,18,19,21,22,23,25,27",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0046_d1",
+          "source": "KELLER",
+          "page": 46,
+          "number": 1,
+          "fen": "W:W15,26,32,33,35,36,37,38,39,42,43,44,45,46,47,48,49:B2,4,5,6,8,9,11,12,13,14,16,17,18,19,21,22,25",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0049_d1",
+          "source": "KELLER",
+          "page": 49,
+          "number": 1,
+          "fen": "W:W23,24,29,33,34,36,37,38,39,40,43,45,49,50:B2,3,5,6,10,12,14,15,16,17,18,20,25,26",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0050_d1",
+          "source": "KELLER",
+          "page": 50,
+          "number": 1,
+          "fen": "W:W5,15,25,29,30,33,34,37,39,46,47,48,49:B2,4,6,8,13,14,18,19,21,22,23,28",
+          "kind": "human"
+        },
+        {
+          "id": "KELLER_p0051_d2",
+          "source": "KELLER",
+          "page": 51,
+          "number": 2,
+          "fen": "W:W5,15,24,26,29,30,31,33,36,38,39,41,43,46,47,48,49:B2,3,4,6,8,11,12,13,14,17,18,19,22,27,28,32",
+          "kind": "human"
+        }
+      ]
     }
-
   ]
 }

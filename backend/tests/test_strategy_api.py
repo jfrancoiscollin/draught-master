@@ -199,39 +199,40 @@ def test_diagram_crop_unextracted_pair_404s(client: TestClient) -> None:
 
 
 def test_diagram_crop_unbundled_source_404s(client: TestClient) -> None:
-    """Sources without an extraction manifest (KELLER and ROOZENBURG —
-    see docs/STRATEGIE_DIAGRAMS_PLAN.md for why we skipped them) must
-    404 with a clear hint."""
+    """A source with no extraction manifest must 404 with a clear hint.
+    All four manuals are now scanned, so this probes an unknown source."""
     r = client.get(
         "/api/strategy/diagram",
-        params={"source": "KELLER", "page": 10, "number": 1},
+        params={"source": "NONEXISTENT", "page": 10, "number": 1},
     )
     assert r.status_code == 404
     assert "no diagram crops" in r.json()["detail"]
 
 
-def test_diagram_fen_no_file_404(client: TestClient) -> None:
-    """KELLER doesn't ship a diagrams_fens.json — different 404 message
-    than 'not yet annotated' so the operator can tell the difference."""
+def test_diagram_fen_missing_entry_404(client: TestClient) -> None:
+    """All four manuals now ship auto FENs covering their manifest, so a
+    404 only happens for a (page, number) that exists in neither the human
+    nor the auto file. Probe a deliberately out-of-range coordinate."""
     r = client.get(
         "/api/strategy/diagram-fen",
-        params={"source": "KELLER", "page": 10, "number": 1},
+        params={"source": "KELLER", "page": 999, "number": 99},
     )
     assert r.status_code == 404
-    assert "no FEN file" in r.json()["detail"]
+    assert "no FEN" in r.json()["detail"]
 
 
-def test_diagram_fen_not_annotated_404(client: TestClient) -> None:
-    """Sijbrands and Springer ship diagrams_fens.json — most entries are
-    empty so the endpoint 404s with 'not yet annotated'. We probe a
-    deliberately distant (page, number) to stay future-proof as more
-    annotations get filled in."""
+def test_diagram_fen_trusted_auto_drops_badge(client: TestClient) -> None:
+    """Sijbrands is now a trusted-auto source: an auto-detected FEN is
+    served as kind='human' (no 'non validé' badge) and carries the
+    engine-validated flag."""
     r = client.get(
         "/api/strategy/diagram-fen",
-        params={"source": "SIJBRANDS", "page": 200, "number": 99},
+        params={"source": "SIJBRANDS", "page": 6, "number": 1},
     )
-    assert r.status_code == 404
-    assert "not yet annotated" in r.json()["detail"]
+    assert r.status_code == 200
+    body = r.json()
+    assert body["kind"] == "human"
+    assert body["valid"] is True
 
 
 def test_diagram_fen_returns_annotation(client: TestClient, monkeypatch) -> None:
