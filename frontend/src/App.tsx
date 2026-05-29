@@ -19,6 +19,7 @@ import LivePlayPanel from './components/LivePlayPanel'
 import LiveGameScreen from './components/LiveGameScreen'
 import ChallengeToast from './components/ChallengeToast'
 import StrategyPanel from './components/StrategyPanel'
+import StrategyManualPage from './components/StrategyManualPage'
 import type { LiveGameSessionState } from './api/client'
 import { useLiveWS } from './hooks/useLiveWS'
 import MotifDetailPage from './components/MotifDetailPage'
@@ -173,12 +174,17 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'live' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu' | 'my-games' | 'strategy'
+type Tab = 'home' | 'play' | 'live' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu' | 'my-games' | 'strategy' | 'strategy-manual'
 
 export default function App() {
   const { t, language } = useLanguage()
   const { user, logout } = useAuth()
   const [tab, setTab] = useState<Tab>('home')
+  // Source code (SIJBRANDS / SPRINGER / ROOZENBURG / KELLER) when
+  // ``tab === 'strategy-manual'`` — the new long-form manual view in
+  // Apprendre.  One manual per source, structured into chapters by
+  // topic.
+  const [strategyManualSource, setStrategyManualSource] = useState<string>('SIJBRANDS')
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
   const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
   const [preloadedUserSide, setPreloadedUserSide] = useState<'white' | 'black' | null>(null)
@@ -1661,7 +1667,22 @@ export default function App() {
         {tab === 'exercise-library' && (
           <ExerciseLibraryPage
             onSelectBook={(bookId: string) => { resetExerciseState(); setSelectedBookId(bookId); setTab('exercises') }}
-            onOpenStrategy={() => setTab('strategy')}
+            onOpenStrategyManual={(source: string) => {
+              setStrategyManualSource(source)
+              setTab('strategy-manual')
+            }}
+          />
+        )}
+
+        {/* STRATEGY MANUAL TAB — long-form pedagogical manual for one
+            corpus source (Sijbrands / Springer / Roozenburg / Keller).
+            Sections grouped by topic centroid; each passage rendered
+            with its Board (FEN) and prose with clickable PDN moves. */}
+        {tab === 'strategy-manual' && (
+          <StrategyManualPage
+            source={strategyManualSource}
+            onClose={() => setTab('exercise-library')}
+            lang={language}
           />
         )}
 
