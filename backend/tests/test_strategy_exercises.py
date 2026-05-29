@@ -70,8 +70,8 @@ def test_every_solution_is_legal_and_winning():
         legal, result, gain = _replay(ex["initial_fen"], ex["solution_moves"])
         assert legal, ex["diagram_id"]
         mover = "white" if ex["initial_fen"].startswith("W:") else "black"
-        if ex["outcome"] == "win":
-            # Forced annihilation: the line ends in a win by the rules.
+        if ex["outcome"] in ("win", "endgame"):
+            # Forced win by the rules (annihilation, or endgame technique).
             assert result == mover, ex["diagram_id"]
         else:
             # Decisive material: mover nets at least two men by the end.
