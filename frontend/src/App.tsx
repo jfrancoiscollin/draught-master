@@ -1667,6 +1667,7 @@ export default function App() {
         {tab === 'exercise-library' && (
           <ExerciseLibraryPage
             onSelectBook={(bookId: string) => { resetExerciseState(); setSelectedBookId(bookId); setTab('exercises') }}
+<<<<<<< HEAD
             onOpenStrategyManual={(source: string) => {
               setStrategyManualSource(source)
               setTab('strategy-manual')
@@ -1683,6 +1684,9 @@ export default function App() {
             source={strategyManualSource}
             onClose={() => setTab('exercise-library')}
             lang={language}
+=======
+            onOpenStrategy={() => setTab('strategy')}
+>>>>>>> origin/develop
           />
         )}
 
