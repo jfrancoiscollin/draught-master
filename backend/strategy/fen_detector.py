@@ -237,7 +237,7 @@ def _detect_bw_board_bounds(arr: np.ndarray) -> tuple[int, int, int, int] | None
     """
     very_dark = arr < 80
     h, w = very_dark.shape
-    # Per-row longest run of consecutive dark pixels — peaks at border rows.
+
     def longest_run_per_row(mask: np.ndarray) -> np.ndarray:
         out = np.zeros(mask.shape[0], dtype=np.int32)
         for i in range(mask.shape[0]):
@@ -251,9 +251,6 @@ def _detect_bw_board_bounds(arr: np.ndarray) -> tuple[int, int, int, int] | None
 
     row_runs = longest_run_per_row(very_dark)
     col_runs = longest_run_per_row(very_dark.T)
-    # Border = row/col with the longest run AND that run covers most of
-    # the eventual board's width.  Threshold: run >= half the smaller
-    # crop dimension — rules out short dark blobs (text, pieces).
     min_border_len = min(h, w) // 2
     valid_rows = np.where(row_runs >= min_border_len)[0]
     valid_cols = np.where(col_runs >= min_border_len)[0]
@@ -263,10 +260,9 @@ def _detect_bw_board_bounds(arr: np.ndarray) -> tuple[int, int, int, int] | None
     y_bot = int(valid_rows[-1])
     x_left = int(valid_cols[0])
     x_right = int(valid_cols[-1])
-    # Single-border cases: the operator's bbox sometimes cuts the board
+    # Single-border case: the operator's bbox sometimes cuts the board
     # tight against the bottom or right edge.  Estimate the missing
-    # bound from the detected border's run length — the board is
-    # square, so the perpendicular side equals the horizontal run.
+    # bound from the detected border's run length — the board is square.
     side_from_top = int(row_runs[y_top])
     side_from_left = int(col_runs[x_left])
     if y_bot - y_top < min_border_len:
@@ -274,11 +270,6 @@ def _detect_bw_board_bounds(arr: np.ndarray) -> tuple[int, int, int, int] | None
     if x_right - x_left < min_border_len:
         x_right = min(x_left + side_from_left, w)
     return y_top, y_bot, x_left, x_right
-
-
-
-    """Mean grayscale intensity in a region.  ``arr`` is HxW grayscale."""
-    return float(arr[y0:y1, x0:x1].mean())
 
 
 def _inner_and_ring(
