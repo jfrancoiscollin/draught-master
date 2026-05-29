@@ -213,6 +213,12 @@
       "_human_verified": true
     },
     {
+      "page": 81,
+      "number": 10,
+      "fen": "W:W23,36,40:B20,24",
+      "_human_verified": true
+    },
+    {
       "page": 90,
       "number": 10,
       "fen": "W:W48:B3",
