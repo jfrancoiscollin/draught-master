@@ -319,3 +319,48 @@ async def init_db() -> None:
                 await db.commit()
             except Exception as e:
                 _log.error(f"init_db: failed to drop legacy exercises: {e}")
+
+        # Seed verified 'play and win' combinations mined from the scanned
+        # strategy manuals (see backend/strategy/generate_exercises.py). IDs
+        # occupy STRATEGY_ID_OFFSET + 1 ... + N, clear of manuel_debutant.
+        try:
+            from strategy.exercises_loader import (
+                STRATEGY_ID_OFFSET,
+                all_strategy_exercises,
+            )
+        except Exception as e:
+            _log.error(f"init_db: failed to import strategy.exercises_loader: {e}")
+        else:
+            for idx, ex in enumerate(
+                all_strategy_exercises(), start=STRATEGY_ID_OFFSET + 1
+            ):
+                try:
+                    await db.execute(
+                        """
+                        INSERT INTO exercises (id, name, description, initial_fen, solution_moves, difficulty, category, hint, book_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT(id) DO UPDATE SET
+                            name=excluded.name,
+                            description=excluded.description,
+                            initial_fen=excluded.initial_fen,
+                            solution_moves=excluded.solution_moves,
+                            difficulty=excluded.difficulty,
+                            category=excluded.category,
+                            hint=excluded.hint,
+                            book_id=excluded.book_id
+                        """,
+                        (
+                            idx,
+                            ex["name"],
+                            ex["description"],
+                            ex["initial_fen"],
+                            json.dumps(ex["solution_moves"]),
+                            ex["difficulty"],
+                            ex["category"],
+                            ex["hint"],
+                            ex["book_id"],
+                        ),
+                    )
+                except Exception as e:
+                    _log.error(f"init_db: failed to upsert strategy exercise {idx}: {e}")
+            await db.commit()
