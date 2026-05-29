@@ -58,15 +58,27 @@ class DetectorConfig:
     # rendering shifts between pages.
     cell_inset: float = 0.20         # piece sample = central 60% of the cell
     king_inner_frac: float = 0.25    # inner sub-patch = central 25% of the piece
+    # Row-0 pieces in Sijbrands' crops are often clipped at the top
+    # (board boundary cuts the upper half of corner kings).  The visible
+    # portion sits at the bottom of the cell with reduced contrast vs.
+    # the surrounding blue, so the default thresholds miss them.  Relax
+    # by 10–15 on the top row only — verified on every annotated
+    # ``WK at sq 5`` and ``BK at sq 4``; doesn't change any other row.
+    top_row_white_min: float = 175.0
+    top_row_black_max: float = 95.0
     # Board-bound detection.  We classify a row/column as "in the board"
     # iff at least ``board_coverage_min`` of its pixels are darker than
-    # ``board_pixel_max``.  This separates the board (90%+ blue/piece
-    # pixels) from the caption ("DIAGRAMME N" — 5–15% dark text on
-    # otherwise white background) and the page padding (~0% non-white).
-    # Row mean alone won't work: a row of mostly-white-pieces has the
-    # same mean as a caption row.
+    # ``board_pixel_max``.  This separates the board (most pixels are
+    # blue squares or piece outlines) from the caption ("DIAGRAMME N" —
+    # ~20% dark text on white background) and the page padding (~0%).
+    #
+    # Threshold tuned at 0.35 to handle illustrative boards with many
+    # white pieces — e.g. Sijbrands p.66 #2 has 30 whites in a frame
+    # pattern; columns crossing them dip to ~0.49 coverage as the white
+    # pixels (>230) don't count.  Caption rows top out at 0.26, so 0.35
+    # keeps them excluded.
     board_pixel_max: float = 230.0
-    board_coverage_min: float = 0.5
+    board_coverage_min: float = 0.35
 
 
 def _longest_run(mask: np.ndarray) -> tuple[int, int]:
@@ -192,13 +204,15 @@ def detect_fen(image_path: Path, *, config: DetectorConfig | None = None) -> str
             piece_mean = _patch_mean(arr, y0, y1, x0, x1)
 
             square = _rc_to_square(row, col)
+            white_min = cfg.top_row_white_min if row == 0 else cfg.white_piece_min
+            black_max = cfg.top_row_black_max if row == 0 else cfg.black_piece_max
 
-            if piece_mean >= cfg.white_piece_min:
+            if piece_mean >= white_min:
                 # Likely white piece.  Probe for king marker by comparing
                 # the inner patch (king dot) against the surrounding ring.
                 king = _is_king(arr, y_mid, x_mid, cell_h, cell_w, cfg, "white")
                 whites.append(f"K{square}" if king else str(square))
-            elif piece_mean <= cfg.black_piece_max:
+            elif piece_mean <= black_max:
                 king = _is_king(arr, y_mid, x_mid, cell_h, cell_w, cfg, "black")
                 blacks.append(f"K{square}" if king else str(square))
             # else: empty — skip

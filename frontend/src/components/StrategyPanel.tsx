@@ -52,16 +52,13 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   // so the data-fallback-used dataset resets between passages.
   const [modalIndex, setModalIndex] = useState<number | null>(null)
   const [zoomed, setZoomed] = useState(false)
-  // FEN of the currently focused diagram, when manually annotated in the
-  // diagrams_fens.json file of its source.  Null while loading or when the
-  // endpoint 404s (no annotation yet) — frontend shows the crop alone.
-  const [modalFen, setModalFen] = useState<string | null>(null)
-  // Auto-detected FEN suggestion (rules-based CV — see
-  // ``backend/strategy/fen_detector.py``).  Used to pre-fill the editor
-  // when no human-verified FEN exists yet, so annotation is a few-click
-  // validation instead of placing every piece.  Null while loading or
-  // when the detector has nothing to work with (no crop bundled).
-  const [suggestedFen, setSuggestedFen] = useState<string | null>(null)
+  // FEN of the currently focused diagram + provenance.  ``human`` comes
+  // from ``diagrams_fens.json`` (validated by JF); ``auto`` from
+  // ``diagrams_fens_auto.json`` (rules-based detector run on every crop).
+  // The Board renders for either kind; the "⚠ non validé" badge only
+  // appears for ``auto``.  Null while loading or when neither file has
+  // an entry for this (source, page, number).
+  const [modalFen, setModalFen] = useState<{ fen: string; kind: 'human' | 'auto' } | null>(null)
   // Annotation mode replaces the static <Board> by an editable <FenAnnotator>
   // — used when adding a new FEN to diagrams_fens.json without leaving the
   // panel.  Cleared whenever the modal navigates or closes.
@@ -168,15 +165,13 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
     setModalIndex(null)
   }, [jumpSource, jumpPage, jumpNumber])
 
-  // Load both the human-verified FEN (if any) and the detector's
-  // suggested FEN in parallel.  Verified wins when both exist — it's
-  // the source of truth.  Suggestion only kicks in for un-annotated
-  // diagrams, seeding the editor with a few-click-to-validate guess
-  // (see ``backend/strategy/fen_detector.py``, 99.86% per-square on
-  // Sijbrands).  Both 404 silently for unsupported sources.
+  // Single fetch — ``/diagram-fen`` now serves both human-verified
+  // (``kind: "human"``) and auto-detected (``kind: "auto"``) FENs,
+  // human winning when both exist for the same square.  When ``auto``
+  // wins, the modal still renders the Board but shows a badge so the
+  // operator knows to validate before trusting it.
   useEffect(() => {
     setModalFen(null)
-    setSuggestedFen(null)
     const p = jumpPassage ?? (modalIndex !== null ? passages[modalIndex] : null)
     if (!p) return
     const diagramMatch = p.text.match(DIAGRAM_REF_RE)
@@ -187,13 +182,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
     fetch(`/api/strategy/diagram-fen?${qs}`, { signal: ctrl.signal })
       .then(r => (r.ok ? r.json() : null))
       .then(j => {
-        if (j?.fen) setModalFen(j.fen)
-      })
-      .catch(() => {})
-    fetch(`/api/strategy/diagram-suggest-fen?${qs}`, { signal: ctrl.signal })
-      .then(r => (r.ok ? r.json() : null))
-      .then(j => {
-        if (j?.fen) setSuggestedFen(j.fen)
+        if (j?.fen) setModalFen({ fen: j.fen, kind: j.kind ?? 'human' })
       })
       .catch(() => {})
     return () => ctrl.abort()
@@ -643,33 +632,38 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                   modalFen || annotating ? 'flex flex-wrap items-start gap-4' : ''
                 }
               >
-                <img
-                  key={modalIndex}
-                  src={modal.src}
-                  alt={modal.caption}
-                  className={
-                    zoomed
-                      ? 'cursor-zoom-out'
-                      : `${modalFen || annotating ? 'max-w-xs' : 'max-w-full'} h-auto cursor-zoom-in`
-                  }
-                  onClick={() => setZoomed(z => !z)}
-                  onError={e => {
-                    // Crop endpoint 404s for ~30% of (page, number) pairs that
-                    // weren't extracted — swap to full-page image once.  The
-                    // key={modalIndex} above resets data-fallback-used between
-                    // passages so each one gets its own chance.
-                    const img = e.currentTarget
-                    if (modal.fallback && img.dataset.fallbackUsed !== 'true') {
-                      img.dataset.fallbackUsed = 'true'
-                      img.src = modal.fallback
+                {/* Show the printed crop only when no FEN is available —
+                    once we have either a human-verified or auto-detected
+                    FEN, the interactive ``<Board>`` replaces the JPG.
+                    During annotation we hide the crop too: the editor
+                    has enough screen space on its own. */}
+                {!modalFen && !annotating && (
+                  <img
+                    key={modalIndex}
+                    src={modal.src}
+                    alt={modal.caption}
+                    className={
+                      zoomed
+                        ? 'cursor-zoom-out'
+                        : 'max-w-full h-auto cursor-zoom-in'
                     }
-                  }}
-                />
+                    onClick={() => setZoomed(z => !z)}
+                    onError={e => {
+                      // Crop endpoint 404s for some manifest entries —
+                      // swap to the full-page image once as a fallback.
+                      const img = e.currentTarget
+                      if (modal.fallback && img.dataset.fallbackUsed !== 'true') {
+                        img.dataset.fallbackUsed = 'true'
+                        img.src = modal.fallback
+                      }
+                    }}
+                  />
+                )}
                 {(modalFen || annotating) && diagramNumber !== null && (
                   <div className="flex-1 min-w-[280px]">
                     {annotating ? (
                       <>
-                        {!modalFen && suggestedFen && (
+                        {modalFen?.kind === 'auto' && (
                           // Visual marker that the editor is seeded by the
                           // auto-detector — not yet human-verified.  The
                           // operator should sanity-check every square
@@ -684,18 +678,25 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                           source={focusedPassage.source}
                           page={focusedPassage.page}
                           number={diagramNumber}
-                          initialFen={modalFen ?? suggestedFen ?? undefined}
+                          initialFen={modalFen?.fen}
                           onClose={() => setAnnotating(false)}
                           lang={lang}
                         />
                       </>
                     ) : (
                       <>
-                        <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">
-                          {lang === 'fr' ? 'Plateau interactif' : 'Interactive board'}
+                        <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1 flex items-center gap-2">
+                          <span>
+                            {lang === 'fr' ? 'Plateau interactif' : 'Interactive board'}
+                          </span>
+                          {modalFen?.kind === 'auto' && (
+                            <span className="text-amber-400 text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-amber-900/40 border border-amber-700/40 rounded">
+                              {lang === 'fr' ? 'auto · non validé' : 'auto · unverified'}
+                            </span>
+                          )}
                         </div>
                         <Board
-                          board={fenToBoard(modalFen!)}
+                          board={fenToBoard(modalFen!.fen)}
                           legalMoves={[]}
                           onMove={() => {}}
                           selectedSquare={null}

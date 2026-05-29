@@ -40,23 +40,28 @@ def _load_diagram_manifest(source: str) -> dict[tuple[int, int], str]:
 
 @lru_cache(maxsize=8)
 def _load_diagram_fens(source: str) -> dict[tuple[int, int], str]:
-    """Return ``{(page, number): fen}`` for a source's manually annotated
-    positions, or {} if the file is missing/empty. The FEN file is the
-    foundation of Lane C (interactive board) — see
-    ``docs/STRATEGIE_DIAGRAMS_PLAN.md`` §5. Format::
-
-        {
-          "source": "SIJBRANDS",
-          "entries": [
-            {"page": 48, "number": 6, "fen": "W:W31,32,...:B1,2,..."}
-          ]
-        }
-
-    Annotation is manual right now (one entry per diagram added by hand
-    after reading the crop). Future tooling could pre-fill via piece
-    classification + human review.
+    """Return ``{(page, number): fen}`` for a source's *human-verified*
+    positions, or {} if the file is missing.  Source of truth — wins
+    over auto-detected FENs whenever both exist for the same square.
     """
     fens_path = _PAGES_DIR / source.lower() / "diagrams_fens.json"
+    if not fens_path.is_file():
+        return {}
+    with fens_path.open() as f:
+        data = json.load(f)
+    return {(e["page"], e["number"]): e["fen"] for e in data.get("entries", [])}
+
+
+@lru_cache(maxsize=8)
+def _load_diagram_fens_auto(source: str) -> dict[tuple[int, int], str]:
+    """Return ``{(page, number): fen}`` for the *auto-detected* FENs
+    (see ``backend/strategy/generate_auto_fens.py``).  Covers the whole
+    manifest at ~99.87% per-square accuracy on Sijbrands, so most
+    diagrams render an interactive ``<Board>`` even when no human has
+    annotated them yet.  Used as a fallback when the human file has no
+    entry for a given (page, number).
+    """
+    fens_path = _PAGES_DIR / source.lower() / "diagrams_fens_auto.json"
     if not fens_path.is_file():
         return {}
     with fens_path.open() as f:
@@ -251,27 +256,28 @@ def diagram_fen(
     page: int = Query(..., ge=1, description="Page where the diagram is referenced"),
     number: int = Query(..., ge=1, description="Diagram number as printed in the book"),
 ) -> dict:
-    """Return ``{"fen": "..."}`` for a manually annotated diagram, or 404.
+    """Return ``{"fen": "...", "kind": "human"|"auto"}`` for a diagram.
 
-    Lane C foundation — the FEN file is filled by hand
-    (``backend/strategy/pages/<source>/diagrams_fens.json``). When an
-    entry exists, the frontend renders an interactive ``<Board>`` next
-    to the crop image; otherwise it just shows the crop with no Board.
+    Two-tier lookup:
+      1. ``diagrams_fens.json`` — human-verified, the source of truth.
+      2. ``diagrams_fens_auto.json`` — output of the rules-based
+         detector run on every crop in the manifest (99.87% per-square
+         on Sijbrands).  Lets the frontend render an interactive
+         ``<Board>`` for diagrams nobody has hand-validated yet.
+
+    ``kind`` tells the frontend whether to show the "auto" badge.
+    404 only when neither file has an entry — i.e. the source has no
+    FEN data at all, *or* the requested (page, number) doesn't exist
+    in any file.
     """
-    # Distinguish "source has no FEN file at all" from "source has the file
-    # but this (page, number) isn't annotated yet" — different action for
-    # the user (bundle the file vs annotate that specific entry).
-    fens_path = _PAGES_DIR / source.lower() / "diagrams_fens.json"
-    if not fens_path.is_file():
-        raise HTTPException(
-            status_code=404,
-            detail=f"no FEN file bundled for source {source!r}",
-        )
     fen = _load_diagram_fens(source).get((page, number))
-    if fen is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"diagram {number} on page {page} not yet annotated for {source!r}",
-        )
-    return {"fen": fen, "source": source, "page": page, "number": number}
+    if fen is not None:
+        return {"fen": fen, "source": source, "page": page, "number": number, "kind": "human"}
+    fen = _load_diagram_fens_auto(source).get((page, number))
+    if fen is not None:
+        return {"fen": fen, "source": source, "page": page, "number": number, "kind": "auto"}
+    raise HTTPException(
+        status_code=404,
+        detail=f"no FEN (human or auto) for ({source!r}, p.{page}, #{number})",
+    )
 
