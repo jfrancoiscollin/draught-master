@@ -56,18 +56,19 @@ class DetectorConfig:
     style: str = "blue"
     white_piece_min: float = 190.0  # patch brighter than this → white piece
     black_piece_max: float = 80.0   # patch darker than this → black piece
-    # B&W style only: inner < ring - bw_dark_delta and inner < bw_dark_max
-    # → black piece (e.g. inner 110, ring 150 → diff -40 → black).
-    # inner > ring + bw_light_delta and inner > bw_light_min → white
-    # piece (e.g. inner 240, ring 190 → diff +50 → white).
-    bw_dark_max: float = 150.0
-    bw_dark_delta: float = 20.0
-    # Tuned against 4 ground-truth Roozenburg crops (p.14 #1, #2; p.18 #1, #2).
-    # Empty gray squares cluster at inner~190/ring~190, white pieces on gray
-    # at inner 200-240/ring 175-210 — so the 200 inner threshold + small
-    # delta cleanly separates them without false positives.
-    bw_light_min: float = 200.0
-    bw_light_delta: float = 5.0
+    # B&W style: adaptive baseline classifier.  The previous fixed
+    # thresholds (200 / 150) missed pieces on low-contrast crops where
+    # the print's overall brightness drifted.  Per-crop baseline is the
+    # *median* of all odd-parity ``inner`` samples — empty grey cells
+    # dominate so the median is the empty-grey level (~192 across the
+    # bundle, but anywhere from 185 to 200 on individual crops).
+    # Black piece: inner < baseline - ``bw_dark_delta_below`` (-25
+    # comfortably separates blacks at 100-160 from grey at 192).
+    # White piece: inner > baseline + ``bw_light_delta_above`` (+2 catches
+    # faint whites at 195-205 that don't pass any absolute threshold).
+    # Tuned against 15 ground-truth Roozenburg crops → 98.3% per-square.
+    bw_dark_delta_below: float = 25.0
+    bw_light_delta_above: float = 2.0
     # King = significant inner/outer contrast inside the piece.  Tuned
     # conservatively — false positives (calling a piece a king) are
     # worse than false negatives (the operator just clicks "promote").
@@ -376,6 +377,25 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
     whites: list[str] = []
     blacks: list[str] = []
 
+    # B&W per-crop calibration: gather every playable cell's central
+    # patch mean and use the median as the empty-grey baseline.  Black
+    # / white thresholds are then expressed as ``baseline ± delta``,
+    # which absorbs per-crop brightness drift that broke fixed
+    # thresholds (e.g. p.36 #2 — washed-out print, faint whites at
+    # inner ~205 that didn't pass the static 215 cutoff).
+    bw_baseline = 0.0
+    if cfg.style == "bw":
+        inners: list[float] = []
+        for row in range(10):
+            for col in range(10):
+                if (row + col) % 2 == 0:
+                    continue
+                ym = (row + 0.5) * cell_h
+                xm = (col + 0.5) * cell_w
+                inn, _ = _inner_and_ring(arr, ym, xm, cell_h, cell_w)
+                inners.append(inn)
+        bw_baseline = float(np.median(inners))
+
     for row in range(10):
         for col in range(10):
             if (row + col) % 2 == 0:
@@ -393,19 +413,13 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
             square = _rc_to_square(row, col)
 
             if cfg.style == "bw":
-                # B&W boards (Roozenburg): empty white squares are as
-                # bright as white pieces, so absolute brightness alone
-                # mis-classifies. Compare the cell's central inner patch
-                # to a ring just outside it — a piece creates a strong
-                # delta (its colour vs. the surrounding ring crossing
-                # the outline), an empty cell stays flat.
-                inner_mean, ring_mean = _inner_and_ring(
-                    arr, y_mid, x_mid, cell_h, cell_w
-                )
-                delta = inner_mean - ring_mean
-                if inner_mean <= cfg.bw_dark_max and delta <= -cfg.bw_dark_delta:
+                # B&W boards (Roozenburg): classify via inner brightness
+                # relative to the per-crop baseline (median of all odd-
+                # parity inners ≈ empty-grey level).  See DetectorConfig.
+                inner_mean, _ = _inner_and_ring(arr, y_mid, x_mid, cell_h, cell_w)
+                if inner_mean < bw_baseline - cfg.bw_dark_delta_below:
                     blacks.append(str(square))
-                elif inner_mean >= cfg.bw_light_min and delta >= cfg.bw_light_delta:
+                elif inner_mean > bw_baseline + cfg.bw_light_delta_above:
                     whites.append(str(square))
                 # else: empty — skip
                 # NOTE: king detection deferred for B&W — needs more
