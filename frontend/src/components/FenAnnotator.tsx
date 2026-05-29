@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import Board from './Board'
 import { fenToBoard, boardToFen } from '../utils/fen'
 import { EMPTY, WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING } from '../types'
@@ -37,6 +37,19 @@ const FenAnnotator: React.FC<Props> = ({
   const [board, setBoard] = useState<number[]>(() =>
     initialFen ? fenToBoard(initialFen) : new Array(51).fill(EMPTY),
   )
+  // Seed the board once when an ``initialFen`` becomes available after
+  // mount — the auto-detector suggestion arrives a few hundred ms after
+  // the editor opens, and without this useEffect the late suggestion
+  // is silently dropped (board stays empty).  Guarded by ``seededRef``
+  // so a *later* re-render with the same prop never blows away in-
+  // progress edits.
+  const seededRef = useRef(initialFen != null)
+  useEffect(() => {
+    if (initialFen && !seededRef.current) {
+      setBoard(fenToBoard(initialFen))
+      seededRef.current = true
+    }
+  }, [initialFen])
   const [turn, setTurn] = useState<'W' | 'B'>('W')
   const [copied, setCopied] = useState<'fen' | 'json' | null>(null)
 
