@@ -69,6 +69,14 @@ class DetectorConfig:
     # Tuned against 15 ground-truth Roozenburg crops → 98.3% per-square.
     bw_dark_delta_below: float = 25.0
     bw_light_delta_above: float = 2.0
+    # ``bw_hatched`` (Keller) classifier — calibrated against 5 GT.
+    # Black: high std (dark + speckled noise) AND low mean (dark fill).
+    # White: still relatively high std (dark outline around bright centre)
+    # AND mean below empty-bg level so empty hatched cells don't pass.
+    kh_black_std_min: float = 65.0
+    kh_black_mean_max: float = 190.0
+    kh_white_std_min: float = 40.0
+    kh_white_mean_max: float = 220.0
     # King = significant inner/outer contrast inside the piece.  Tuned
     # conservatively — false positives (calling a piece a king) are
     # worse than false negatives (the operator just clicks "promote").
@@ -178,6 +186,15 @@ def config_for_source(source: str) -> DetectorConfig:
     """
     if source.upper() in ("ROOZENBURG", "KELLER"):
         return DetectorConfig(style="bw")
+    if source.upper() == "KELLER":
+        # Keller's diagrams have *hatched* dark squares (not solid grey
+        # like Roozenburg), so adaptive-baseline mean-intensity fails:
+        # empty hatched and white pieces both average ~200.  ``bw_hatched``
+        # classifies by (mean, std) of the central patch — the high-
+        # frequency speckle of empties has lower std than the dark-ring
+        # signature of a piece.  Calibrated on 5 GT samples — 85.2%
+        # per-square, will iterate with more GT.
+        return DetectorConfig(style="bw_hatched")
     return DetectorConfig()
 
 
@@ -365,6 +382,11 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
             arr = full[y0:y1, x0:x1]
         else:
             arr = _trim_outer_padding(full)
+    elif cfg.style == "bw_hatched":
+        # Keller crops come from the texture-variance extractor which
+        # already produces a tight bbox around the board (no solid
+        # border to detect anyway).  Skip the bounds step entirely.
+        arr = full
     else:
         y0, y1, x0, x1 = _detect_board_bounds(
             full, cfg.board_pixel_max, cfg.board_coverage_min
@@ -424,6 +446,22 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
                 # else: empty — skip
                 # NOTE: king detection deferred for B&W — needs more
                 # samples to calibrate; today every B&W piece is a man.
+                continue
+
+            if cfg.style == "bw_hatched":
+                # Keller: hatched dark squares + circular pieces.  Mean
+                # alone fails (empty hatched and white pieces both
+                # average ~200).  Use (mean, std) of the central patch:
+                # blacks have low mean & high std (dark fill + outline
+                # noise); whites have mid mean & medium std (the dark
+                # ring around the bright centre); empties have mid mean
+                # & low std (uniform hatching).
+                patch_mean = piece_mean
+                patch_std = float(arr[y0:y1, x0:x1].std())
+                if patch_std > cfg.kh_black_std_min and patch_mean < cfg.kh_black_mean_max:
+                    blacks.append(str(square))
+                elif patch_std > cfg.kh_white_std_min and patch_mean < cfg.kh_white_mean_max:
+                    whites.append(str(square))
                 continue
 
             white_min = cfg.top_row_white_min if row == 0 else cfg.white_piece_min
