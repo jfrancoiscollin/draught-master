@@ -276,7 +276,8 @@ def diagram_suggest_fen(
             status_code=404,
             detail=f"no crop for ({source!r}, p.{page}, #{number}) — nothing to detect",
         )
-    from .fen_detector import detect_fen
+    from .fen_detector import config_for_source, detect_fen
+    cfg = config_for_source(source)
 
     if "bbox" in entry:
         from PIL import Image
@@ -286,11 +287,21 @@ def diagram_suggest_fen(
             raise HTTPException(status_code=404, detail=f"page {page} not bundled")
         x0, y0, x1, y1 = entry["bbox"]
         with Image.open(img_path) as im:
-            return {"fen": detect_fen(im.crop((x0, y0, x1, y1)))}
+            return {"fen": detect_fen(im.crop((x0, y0, x1, y1)), config=cfg)}
     crop_path = _PAGES_DIR / source.lower() / "diagrams" / entry["crop"]
     if not crop_path.is_file():
         raise HTTPException(status_code=404, detail="crop file missing")
-    return {"fen": detect_fen(crop_path)}
+    return {"fen": detect_fen(crop_path, config=cfg)}
+
+
+# Sources where the auto-detector has been validated end-to-end and the
+# operator has chosen to trust its output without per-diagram review.
+# Adding a source here causes ``/diagram-fen`` to return ``kind: "human"``
+# even for ``diagrams_fens_auto.json`` entries — the frontend then drops
+# the "auto · non validé" badge and the printed-crop side panel.
+# Per-entry overrides remain possible: writing to ``diagrams_fens.json``
+# always wins over the auto file.
+_TRUSTED_AUTO_SOURCES = {"SPRINGER"}
 
 
 # Sources where the auto-detector has been validated end-to-end and the
