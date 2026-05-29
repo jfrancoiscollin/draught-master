@@ -683,9 +683,10 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
                     detector misses.  Once a human validates and the
                     FEN becomes ``kind: 'human'``, the crop is hidden
                     (the Board is the source of truth then).
-                    During annotation we hide it: the editor has enough
-                    screen space on its own. */}
-                {(!modalFen || modalFen.kind === 'auto') && !annotating && (
+                    Stays visible during annotation when the FEN is
+                    auto or absent — the editor still benefits from
+                    the original image as a reference. */}
+                {(!modalFen || modalFen.kind === 'auto') && (
                   <img
                     key={modalIndex}
                     src={modal.src}
