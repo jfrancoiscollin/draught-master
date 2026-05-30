@@ -8,6 +8,7 @@ import GameControls, { type PlayerSide } from './components/GameControls'
 import MoveList from './components/MoveList'
 import ExercisePanel from './components/ExercisePanel'
 import ExerciseLibraryPage from './components/ExerciseLibraryPage'
+import LearningPathPage from './components/LearningPathPage'
 import LessonPanel from './components/LessonPanel'
 import ImportGamePanel from './components/ImportGamePanel'
 import OpeningCacheBuilder from './components/OpeningCacheBuilder'
@@ -175,7 +176,7 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'live' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu' | 'my-games' | 'strategy' | 'strategy-manual'
+type Tab = 'home' | 'play' | 'live' | 'learning-path' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu' | 'my-games' | 'strategy' | 'strategy-manual'
 
 export default function App() {
   const { t, language } = useLanguage()
@@ -1186,6 +1187,14 @@ export default function App() {
                   <span className="flex-1 text-lg font-bold text-white text-right">Jouer en ligne</span>
                 </button>
               )}
+              {/* Learning path (guided curriculum) */}
+              <button
+                onClick={() => setTab('learning-path')}
+                className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
+              >
+                <img src={iconLearnSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                <span className="flex-1 text-lg font-bold text-white text-right">{language === 'fr' ? 'Parcours' : 'Learning path'}</span>
+              </button>
               {/* Exercises */}
               <button
                 onClick={() => setTab('exercise-library')}
@@ -1667,6 +1676,23 @@ export default function App() {
               </>
             )}
           </>
+        )}
+
+        {/* LEARNING PATH TAB — guided curriculum (levels -> modules ->
+            lessons) with progression. Modules unlock as prerequisites are
+            completed; clicking an exercise deep-links into the solver. */}
+        {tab === 'learning-path' && (
+          <LearningPathPage
+            onClose={() => setTab('home')}
+            onOpenExercise={async (exerciseId: number) => {
+              try {
+                resetExerciseState()
+                const ex = await getExercise(exerciseId)
+                setTab('exercises')
+                await handleExerciseLoad(ex.initial_fen, exerciseId)
+              } catch { /* ignore load failure */ }
+            }}
+          />
         )}
 
         {/* EXERCISE LIBRARY TAB */}
