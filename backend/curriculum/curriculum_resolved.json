@@ -7,6 +7,12 @@
       "title": "Débutant",
       "subtitle": "Les fondamentaux : lire le damier, gagner du matériel, les premiers coups nommés.",
       "order": 1
+    },
+    {
+      "id": "intermediaire",
+      "title": "Intermédiaire",
+      "subtitle": "La stratégie : structures, débordements, finales et combinaisons des grands manuels.",
+      "order": 2
     }
   ],
   "modules": [
@@ -30,28 +36,32 @@
               "ref": 2001,
               "name": "Capture simple — le pion saute par-dessus un adversaire",
               "difficulty": 1,
-              "category": "regle_capture"
+              "category": "regle_capture",
+              "theme": "Le pion blanc 31 saute par-dessus le pion noir 27 et atterrit sur la case immédiatement après, soit 22. Le pion noir est capturé."
             },
             {
               "kind": "exercise",
               "ref": 2002,
               "name": "Capture vers l'arrière — autorisée pour le pion en capture",
               "difficulty": 1,
-              "category": "regle_capture"
+              "category": "regle_capture",
+              "theme": "Contrairement au déplacement simple, le pion peut capturer en arrière. Ici, le pion blanc 22 saute le noir 27 vers l'arrière et atterrit en 31."
             },
             {
               "kind": "exercise",
               "ref": 2003,
               "name": "Rafle — capture multiple en chaîne",
               "difficulty": 1,
-              "category": "regle_rafle"
+              "category": "regle_rafle",
+              "theme": "Si après avoir capturé un pion, le pion qui a sauté peut en capturer un autre, il DOIT continuer. C'est la rafle."
             },
             {
               "kind": "exercise",
               "ref": 2004,
               "name": "Prise maximale — la rafle la plus longue est obligatoire",
               "difficulty": 1,
-              "category": "regle_prise_maximale"
+              "category": "regle_prise_maximale",
+              "theme": "Quand plusieurs captures sont possibles, le joueur DOIT choisir celle qui prend le plus de pions adverses. Ici, 31x22 capture 1 pion (27) mais 38x18 capture 2 pions (33 et 23). Le coup 38x18 est obligatoire."
             }
           ],
           "n_items": 4
@@ -81,133 +91,152 @@
               "ref": 2005,
               "name": "Dubois D1 — Le schéma CONTACT-PRISE-RAFLE",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Premier exemple canonique de combinaison en 2 temps. Le sacrifice 26-21 force le noir à prendre par sa rafle majoritaire (3 pions), libérant la rafle blanche finale qui capture les 4 noirs restants."
             },
             {
               "kind": "exercise",
               "ref": 2006,
               "name": "Dubois D2 — Coup de mazette classique",
               "difficulty": 2,
-              "category": "coup_de_mazette"
+              "category": "coup_de_mazette",
+              "theme": "Le coup de mazette est nommé par Dubois — combinaison en 2 temps très fréquente où un sacrifice central libère la grande diagonale."
             },
             {
               "kind": "exercise",
               "ref": 2007,
               "name": "Dubois D3 — Choisir le bon sacrifice",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Plusieurs blancs peuvent se sacrifier mais une seule combinaison fonctionne. Examiner systématiquement chaque possibilité."
             },
             {
               "kind": "exercise",
               "ref": 2009,
               "name": "Dubois D5 — Combinaison inattendue",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Une combinaison non évidente où la solution échappe à l'intuition immédiate. Il faut envisager toutes les prises majoritaires."
             },
             {
               "kind": "exercise",
               "ref": 2010,
               "name": "Dubois D6 — Attaque de 2 pions, sans collage",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Quand le collage n'est pas possible, examiner toutes les autres prises possibles."
             },
             {
               "kind": "exercise",
               "ref": 2012,
               "name": "Dubois D8 — Oser donner 3 pions",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Sacrifier 3 pions consécutifs ne vient pas naturellement. Il faut examiner toutes les prises majoritaires, même contre-intuitives."
             },
             {
               "kind": "exercise",
               "ref": 2013,
               "name": "Dubois D9 — Prise majoritaire déterminante",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "L'identification rapide de la prise majoritaire est la clé."
             },
             {
               "kind": "exercise",
               "ref": 2014,
               "name": "Dubois D10 — Solution contre-intuitive",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Comme D8, une solution qui défie l'intuition."
             },
             {
               "kind": "exercise",
               "ref": 2016,
               "name": "Dubois ch6 D1 — Prise majoritaire menant à un point d'appui",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Une combinaison en 2 temps où la prise majoritaire force le noir vers une case où il sera repris par la rafle blanche."
             },
             {
               "kind": "exercise",
               "ref": 2024,
               "name": "Dubois ch7 D8 — Coup de mazette",
               "difficulty": 2,
-              "category": "coup_de_mazette"
+              "category": "coup_de_mazette",
+              "theme": "Le coup de mazette appliqué en mode collage : deux sacrifices successifs qui forcent l'adversaire à se mettre dans la position de rafle."
             },
             {
               "kind": "exercise",
               "ref": 2025,
               "name": "Dubois ch7 D9 — Coup de mazette inversé",
               "difficulty": 2,
-              "category": "coup_de_mazette"
+              "category": "coup_de_mazette",
+              "theme": "Variante symétrique du coup de mazette où la rafle finale ne va pas sur la grande diagonale 1-50 mais sur l'autre."
             },
             {
               "kind": "exercise",
               "ref": 2029,
               "name": "Dubois ch4 D2 — Prise majoritaire surprenante (Salomé-Nimbi 2015)",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Position issue d'une partie 2015 : la prise majoritaire peut déclencher des combinaisons inattendues. Ne jamais négliger aucune piste."
             },
             {
               "kind": "exercise",
               "ref": 2030,
               "name": "Dubois ch4 D3 — Prise majoritaire avec très longue rafle",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Une combinaison où la rafle finale traverse toute la longueur du damier — 6 pions capturés en une seule rafle blanche."
             },
             {
               "kind": "exercise",
               "ref": 2031,
               "name": "Dubois ch4 D5 — Coup royal variante",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Variante de la formation en étoile menant à une rafle traversant la grande diagonale."
             },
             {
               "kind": "exercise",
               "ref": 2032,
               "name": "Dubois ch4 D7 — Règle de la prise majoritaire décisive",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Quand la prise majoritaire force le noir vers une case qui ouvre la rafle blanche, le résultat est imparable."
             },
             {
               "kind": "exercise",
               "ref": 2038,
               "name": "Dubois ch5 D2 — Prise majoritaire identifiée par les points de contact",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "La méthode des points de contact mène ici à reconnaître une prise majoritaire qui ouvre une longue rafle blanche."
             },
             {
               "kind": "exercise",
               "ref": 2041,
               "name": "Dubois ch5 D5 — Rafle longue (sans commentaire dans le livre)",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Un exemple où la rafle finale traverse pratiquement tout le damier. Dubois ne donne pas de commentaire — la beauté du coup parle d'elle-même."
             },
             {
               "kind": "exercise",
               "ref": 2061,
               "name": "Dubois ch9 D2 — Prise majoritaire ouvre la voie",
               "difficulty": 2,
-              "category": "prise_majoritaire"
+              "category": "prise_majoritaire",
+              "theme": "Une combinaison basée sur le mécanisme de la prise majoritaire qui crée naturellement un temps de repos."
             },
             {
               "kind": "exercise",
               "ref": 2149,
               "name": "Dubois ch20 D7 — Coup de Mazette classique",
               "difficulty": 3,
-              "category": "coup_de_mazette"
+              "category": "coup_de_mazette",
+              "theme": "Coup de mazette classique. À retenir : la prise forcée (13x31) libère la rafle 32x5."
             }
           ],
           "n_items": 19
@@ -223,70 +252,80 @@
               "ref": 2008,
               "name": "Dubois D4 — Le collage (attaque sur 2 pions)",
               "difficulty": 2,
-              "category": "collage"
+              "category": "collage",
+              "theme": "Quand les noirs attaquent 2 pions blancs, le mécanisme de défense par collage entre en jeu — un blanc se sacrifie pour forcer une prise majoritaire qui ouvre la rafle."
             },
             {
               "kind": "exercise",
               "ref": 2011,
               "name": "Dubois D7 — Collage classique",
               "difficulty": 2,
-              "category": "collage"
+              "category": "collage",
+              "theme": "Quand le noir attaque 2 pions blancs, le collage est la défense canonique."
             },
             {
               "kind": "exercise",
               "ref": 2015,
               "name": "Exemple introductif — Le collage en 3 temps",
               "difficulty": 2,
-              "category": "collage"
+              "category": "collage",
+              "theme": "Le collage est une combinaison en 3 temps : un premier sacrifice ouvre la position, une prise forcée du noir suit, puis un DEUXIÈME sacrifice (le collage proprement dit) crée le point d'appui à partir duquel la rafle finale peut partir."
             },
             {
               "kind": "exercise",
               "ref": 2017,
               "name": "Dubois ch6 D4 — Gambit de 2 pions (sans rafle finale)",
               "difficulty": 2,
-              "category": "gambit"
+              "category": "gambit",
+              "theme": "Une variante du collage où les blancs gagnent en sacrifiant deux pions pour atteindre une position finale supérieure. La combinaison se termine sur un coup simple, pas une rafle."
             },
             {
               "kind": "exercise",
               "ref": 2018,
               "name": "Dubois ch6 D6 — Premier collage en 3 temps",
               "difficulty": 2,
-              "category": "collage"
+              "category": "collage",
+              "theme": "Le collage classique en 3 temps : sacrifice initial, prise noire forcée, DEUXIÈME sacrifice (le collage proprement dit), puis la rafle finale qui exploite le point d'appui créé."
             },
             {
               "kind": "exercise",
               "ref": 2019,
               "name": "Dubois ch6 D7 — Collage avec élimination préalable",
               "difficulty": 2,
-              "category": "collage"
+              "category": "collage",
+              "theme": "Le collage demande parfois d'éliminer un pion qui bloque la rafle finale avant de créer le point d'appui."
             },
             {
               "kind": "exercise",
               "ref": 2022,
               "name": "Dubois ch7 D2 — Collage classique (attaque de 4 pions)",
               "difficulty": 2,
-              "category": "collage"
+              "category": "collage",
+              "theme": "Quand les noirs attaquent plusieurs pions simultanément, le collage est la défense canonique : on accepte le sacrifice pour reprendre tout le matériel adverse."
             },
             {
               "kind": "exercise",
               "ref": 2039,
               "name": "Dubois ch5 D3 — Collage identifié par les points de contact",
               "difficulty": 2,
-              "category": "collage"
+              "category": "collage",
+              "theme": "Application de la méthode au mécanisme de collage : le point de contact 26-21 mène à un collage propre."
             },
             {
               "kind": "exercise",
               "ref": 2040,
               "name": "Dubois ch5 D4 — Gambit identifié par les points de contact",
               "difficulty": 2,
-              "category": "gambit"
+              "category": "gambit",
+              "theme": "La méthode des points de contact mène à un gambit, qui se termine sur un coup simple, pas une rafle."
             },
             {
               "kind": "exercise",
               "ref": 2051,
               "name": "Dubois ch8 D3 — Gambit utilisant un temps de repos",
               "difficulty": 2,
-              "category": "gambit"
+              "category": "gambit",
+              "theme": "Pas de combinaison rafle, mais un gambit gagnant — deux sacrifices successifs qui collent la position."
             }
           ],
           "n_items": 10
@@ -302,70 +341,80 @@
               "ref": 2020,
               "name": "Dubois ch6 D9 — Le coup royal",
               "difficulty": 2,
-              "category": "coup_royal"
+              "category": "coup_royal",
+              "theme": "Le coup royal de Manoury est un classique : une rafle finale finissant à la case 7 (ou symétrique), caractérisée par une trajectoire passant par 18, 9, 7."
             },
             {
               "kind": "exercise",
               "ref": 2021,
               "name": "Dubois ch6 D10 — Envoi à dame + collage (Rustenburg-van Dartelen 1934)",
               "difficulty": 2,
-              "category": "envoi_a_dame"
+              "category": "envoi_a_dame",
+              "theme": "L'association d'un envoi à dame et d'un collage permet d'amener une pièce du camp adverse à un emplacement stratégique pour la rafle finale. Position issue d'une partie historique."
             },
             {
               "kind": "exercise",
               "ref": 2023,
               "name": "Dubois ch7 D5 — Triple mécanisme : majoritaire + envoi à dame + collage",
               "difficulty": 2,
-              "category": "envoi_a_dame"
+              "category": "envoi_a_dame",
+              "theme": "Une combinaison rare avec peu de pions qui réunit trois mécanismes : prise majoritaire, envoi à dame du noir, et collage de la dame nouvellement promue."
             },
             {
               "kind": "exercise",
               "ref": 2026,
               "name": "Exemple narratif Dubois ch4 — Envoi à dame en 3 temps",
               "difficulty": 2,
-              "category": "envoi_a_dame"
+              "category": "envoi_a_dame",
+              "theme": "Premier exemple narratif Dubois : on rêve d'une rafle aboutissant à 5, mais il manque un noir en 39. Le mécanisme est d'envoyer un de ses pions à dame en sacrifiant, puis de reprendre la dame avec avantage pour qu'elle atterrisse en 39 où elle servira de cible pour la rafle finale."
             },
             {
               "kind": "exercise",
               "ref": 2027,
               "name": "Exemple narratif Dubois ch4 — Combinaison en 3 phases (5 temps)",
               "difficulty": 2,
-              "category": "envoi_a_dame"
+              "category": "envoi_a_dame",
+              "theme": "Deuxième exemple narratif Dubois en 3 phases : phase 1 d'élimination (deux sacrifices pour retirer les pions gêneurs), phase 2 d'envoi à dame (acheminement d'une pièce sur la case clé via dame), phase 3 d'exécution de la rafle finale."
             },
             {
               "kind": "exercise",
               "ref": 2028,
               "name": "Dubois ch4 D1 — Coup royal sous sa forme la plus simple",
               "difficulty": 2,
-              "category": "coup_royal"
+              "category": "coup_royal",
+              "theme": "La formation noire en étoile 13-14-19-23-24 est l'origine la plus fréquente du coup royal. Ici la version la plus dépouillée du motif."
             },
             {
               "kind": "exercise",
               "ref": 2033,
               "name": "Dubois ch4 D8 — Envoi à dame avec double sacrifice",
               "difficulty": 2,
-              "category": "envoi_a_dame"
+              "category": "envoi_a_dame",
+              "theme": "La rafle 28x10 se dessine clairement mais il manque un noir en 22. Le mécanisme d'envoi à dame permet de placer la pièce noire au bon endroit."
             },
             {
               "kind": "exercise",
               "ref": 2034,
               "name": "Dubois ch4 D9 — Envoi à dame côté noir (Navarro-Roozenburg 1956)",
               "difficulty": 2,
-              "category": "envoi_a_dame"
+              "category": "envoi_a_dame",
+              "theme": "Position issue d'un championnat du monde 1956. Trait aux noirs. L'idée de base : une rafle aboutissant à 45. Pour y parvenir, envoyer un blanc à dame en 4, puis le forcer en 27 où il servira de point d'appui."
             },
             {
               "kind": "exercise",
               "ref": 2035,
               "name": "Dubois ch4 D10 — Envoi à dame côté noir (Bakker-Ivens 1976)",
               "difficulty": 2,
-              "category": "envoi_a_dame"
+              "category": "envoi_a_dame",
+              "theme": "Position issue d'un championnat NLD 1976. Comme D9, trait aux noirs avec envoi à dame du blanc. La rafle finale aboutit à 45."
             },
             {
               "kind": "exercise",
               "ref": 2055,
               "name": "Dubois ch8 D7 — Envoi à dame noire et reprise (Carli-van Outheusden 1988)",
               "difficulty": 2,
-              "category": "envoi_a_dame"
+              "category": "envoi_a_dame",
+              "theme": "Partie historique 1988. Mécanisme combiné : prise majoritaire + envoi à dame noire + reprise."
             }
           ],
           "n_items": 10
@@ -395,42 +444,48 @@
               "ref": 2036,
               "name": "Exemple narratif Dubois ch5 — La méthode des points de contact",
               "difficulty": 2,
-              "category": "points_de_contact"
+              "category": "points_de_contact",
+              "theme": "Au lieu de chercher la rafle finale d'abord, on identifie les points de contact entre pions adverses (ici 34-30, 29-23, 37-32, 31-27) et on imagine chaque sacrifice. L'inattendu 31-27 révèle une prise majoritaire à 4 pions qui ouvre une rafle 39x6."
             },
             {
               "kind": "exercise",
               "ref": 2042,
               "name": "Dubois ch5 D6 — Méthode noir gagnante (Laporta-Mostovoy 1970)",
               "difficulty": 2,
-              "category": "points_de_contact"
+              "category": "points_de_contact",
+              "theme": "Partie historique 1970 : trait aux noirs qui gagnent par la méthode des points de contact. Le sacrifice (17-21) ouvre la rafle finale (4x35)."
             },
             {
               "kind": "exercise",
               "ref": 2043,
               "name": "Dubois ch5 D7 — 4 points de contact à analyser",
               "difficulty": 2,
-              "category": "points_de_contact"
+              "category": "points_de_contact",
+              "theme": "Dubois identifie 4 points de contact (27-21, 32-28, 33-28, 35-30). L'exploration systématique de chacun mène à la solution : 35-30 déclenche une combinaison à 5 demi-coups."
             },
             {
               "kind": "exercise",
               "ref": 2044,
               "name": "Dubois ch5 D8 — 5 points de contact (Bergsma-de Vries 1961)",
               "difficulty": 2,
-              "category": "points_de_contact"
+              "category": "points_de_contact",
+              "theme": "Partie historique 1961 : Dubois recense 5 points de contact (35-30, 32-27, 33-29, 34-29, 34-30). Le sacrifice 33-29 (offrir 2 pions) révèle une rafle aboutissant en 16."
             },
             {
               "kind": "exercise",
               "ref": 2045,
               "name": "Dubois ch5 D9 — Rafle 'cachée' révélée par les points de contact (Leclercq-Weiss 1903)",
               "difficulty": 2,
-              "category": "points_de_contact"
+              "category": "points_de_contact",
+              "theme": "Partie historique 1903. Trait aux noirs. La rafle (1x41) semble vouée à l'échec à cause du pion 36, mais les points de contact révèlent qu'un coup intermédiaire (26-31) 36x7 fait disparaître le pion 36 et ouvre la rafle."
             },
             {
               "kind": "exercise",
               "ref": 2046,
               "name": "Dubois ch5 D10 — Point d'appui alternatif",
               "difficulty": 2,
-              "category": "points_de_contact"
+              "category": "points_de_contact",
+              "theme": "On s'attend à une rafle 36x20, mais l'analyse des points de contact révèle un autre point d'appui en 29, conduisant à une rafle 29x9 plus longue."
             }
           ],
           "n_items": 6
@@ -446,133 +501,152 @@
               "ref": 2047,
               "name": "Exemple narratif Dubois ch8 — Combinaison en 3 temps de repos",
               "difficulty": 2,
-              "category": "temps_de_repos"
+              "category": "temps_de_repos",
+              "theme": "Le pion noir 25 menace le pion blanc 30 (attaque noire). Les blancs disposent d'un temps de repos : ils peuvent jouer un coup utile car le noir devra obligatoirement capturer ensuite. Cette obligation se chaîne trois fois dans la combinaison."
             },
             {
               "kind": "exercise",
               "ref": 2048,
               "name": "Exemple narratif Dubois ch8 — Combinaison en 3 phases (envoi à dame)",
               "difficulty": 2,
-              "category": "temps_de_repos"
+              "category": "temps_de_repos",
+              "theme": "Combinaison longue exploitant les temps de repos (envoi à dame). ⚠️ La published_notation présente des incohérences de déroulé (cf claude_notes) — solution à vérifier au moteur. La position de départ est correcte : le pion noir 19 menace le pion blanc 23."
             },
             {
               "kind": "exercise",
               "ref": 2049,
               "name": "Dubois ch8 D1 — Trait aux noirs, attaque libère case 38",
               "difficulty": 2,
-              "category": "temps_de_repos"
+              "category": "temps_de_repos",
+              "theme": "Trait aux noirs. L'attaque 14-20 sur le pion blanc 25 ouvre un coup de dame à 49."
             },
             {
               "kind": "exercise",
               "ref": 2050,
               "name": "Dubois ch8 D2 — Collage et temps de repos (de Waard-Tjon A Ong 2013)",
               "difficulty": 2,
-              "category": "temps_de_repos"
+              "category": "temps_de_repos",
+              "theme": "Partie historique 2013. L'attaque noire sur 3 pions laisse supposer un collage. La combinaison gagne 1 pion net."
             },
             {
               "kind": "exercise",
               "ref": 2052,
               "name": "Dubois ch8 D4 — Coup de dame à 1",
               "difficulty": 2,
-              "category": "temps_de_repos"
+              "category": "temps_de_repos",
+              "theme": "Un coup de dame sur la case 1 est vraisemblable — le mécanisme exploite les temps de repos pour ouvrir la voie."
             },
             {
               "kind": "exercise",
               "ref": 2053,
               "name": "Dubois ch8 D5 — Attaque et point d'appui mobile",
               "difficulty": 2,
-              "category": "temps_de_repos"
+              "category": "temps_de_repos",
+              "theme": "Le pion blanc 34 devient un point d'appui mobile grâce à 2 prises majoritaires successives forcées."
             },
             {
               "kind": "exercise",
               "ref": 2054,
               "name": "Dubois ch8 D6 — Coup de dame à 46 (Janssen-van Aalten 1995)",
               "difficulty": 2,
-              "category": "temps_de_repos"
+              "category": "temps_de_repos",
+              "theme": "Partie historique 1995. Trait aux noirs. Idée d'un coup de dame à 46. Plan : éliminer le 28 et acheminer un pion en 13."
             },
             {
               "kind": "exercise",
               "ref": 2056,
               "name": "Dubois ch8 D8 — Coup de dame à 1",
               "difficulty": 2,
-              "category": "temps_de_repos"
+              "category": "temps_de_repos",
+              "theme": "Un coup de dame à 1 ou 5 semble prévisible. Le temps de repos créé par les sacrifices ouvre la voie."
             },
             {
               "kind": "exercise",
               "ref": 2057,
               "name": "Dubois ch8 D9 — Collage noir (Veresjagin-Balajan 1965)",
               "difficulty": 2,
-              "category": "temps_de_repos"
+              "category": "temps_de_repos",
+              "theme": "Partie URSS 1965. Trait aux noirs. L'attaque noire sur 2 pions laisse supposer un collage gagnant."
             },
             {
               "kind": "exercise",
               "ref": 2058,
               "name": "Exemple narratif Dubois ch9 — Créer un temps de repos en 2 sacrifices",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "On peut créer un temps de repos même sans attaque adverse, en sacrifiant pour forcer la reprise. Ici, deux sacrifices successifs (37-31 puis 38-33) créent les temps de repos nécessaires."
             },
             {
               "kind": "exercise",
               "ref": 2059,
               "name": "Exemple narratif Dubois ch9 — Méthode en 3 phases",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "Méthode systématique : phase 1 créer un temps de repos, phase 2 en profiter, phase 3 dérouler les prises."
             },
             {
               "kind": "exercise",
               "ref": 2060,
               "name": "Dubois ch9 D1 — Une seule rafle possible (Linssen-Bandstra 1982)",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "Partie historique 1982. Une seule rafle 30x6 fonctionne — ne pas hésiter à faire sauter le pion noir 19 par 28-23."
             },
             {
               "kind": "exercise",
               "ref": 2062,
               "name": "Dubois ch9 D3 — Exploitation mignonne (Loenen-Hengefeld 1990)",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "Partie historique 1990. « Une mignonne exploitation des temps de repos » selon Dubois."
             },
             {
               "kind": "exercise",
               "ref": 2063,
               "name": "Dubois ch9 D4 — Rafle rare 24x11 (Badal-Kemperman 1994)",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "Partie historique 1994. Trait aux noirs. La rafle 24x11 est très rare et inattendue. Démontre la valeur de la recherche systématique."
             },
             {
               "kind": "exercise",
               "ref": 2064,
               "name": "Dubois ch9 D5 — Élimination ciblée (Schippers-Barten 2012)",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "Partie 2012. Beaucoup de trous dans le camp noir, peu de points d'appui blancs (41 et 43). En éliminant le pion 23 et en amenant un pion en 37, la rafle 41x5 s'impose."
             },
             {
               "kind": "exercise",
               "ref": 2065,
               "name": "Dubois ch9 D6 — Combinaison compliquée (van Leeuwen-de Jong 1968)",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "Partie 1968. Trait aux noirs. La rafle a comme point de départ la case 7. Seul le pion blanc 34 peut être acheminé sur cette case."
             },
             {
               "kind": "exercise",
               "ref": 2066,
               "name": "Dubois ch9 D7 — Offre 22-17 crée un temps de repos",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "Beaucoup de trous dans le camp noir. L'offre 22-17 fournit aux blancs un temps de repos qu'ils peuvent utiliser pour la rafle finale."
             },
             {
               "kind": "exercise",
               "ref": 2067,
               "name": "Dubois ch9 D8 — Offre classique de 3 pions",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "Les cases vides en 13 et 24 laissent entrevoir une rafle finissant en 15. L'offre classique de 3 pions par 26-21 livre le temps de repos qui ouvre la rafle 33x15."
             },
             {
               "kind": "exercise",
               "ref": 2069,
               "name": "Dubois ch9 D10 — Rafle aboutissant à 3",
               "difficulty": 2,
-              "category": "creation_temps_de_repos"
+              "category": "creation_temps_de_repos",
+              "theme": "Une rafle finissant à la case 3 est la plus probable. Points d'appui possibles : 32 et 45. Le pion 32 est le meilleur candidat, à condition d'amener un pion en 28."
             }
           ],
           "n_items": 19
@@ -602,70 +676,80 @@
               "ref": 2070,
               "name": "Exemple narratif Dubois ch13 — Forme typique du coup de l'express",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "Le coup de l'express est un mécanisme combinatoire célèbre, caractérisé par une suite de 4 sacrifices consécutifs qui acheminent les pions noirs par paires successives, suivie d'une rafle finale 33x2 ou 33x4."
             },
             {
               "kind": "exercise",
               "ref": 2071,
               "name": "Position finale du coup de l'express — Trait blanc après rafle 33x2",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "Position finale typique après un coup de l'express réussi. Le pion blanc 33 a balayé la grande diagonale et atteint la case 2 (promotion)."
             },
             {
               "kind": "exercise",
               "ref": 2072,
               "name": "Dubois ch13 D1 — Acheminer un pion noir en 21",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "La rafle 26x10 semble la plus probable. Il reste à acheminer un pion noir en 21."
             },
             {
               "kind": "exercise",
               "ref": 2073,
               "name": "Dubois ch13 D5 — Acheminer un pion noir en 40 (coquille PDF corrigée)",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "Rafle 45x3 visible. Le défi : amener un pion noir en 40, en sacrifiant 38 pour ouvrir la diagonale qui forcera la rafle noire 29→38→49→40."
             },
             {
               "kind": "exercise",
               "ref": 2074,
               "name": "Dubois ch13 D6 — Rafle 39x10 ouverte",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "2 méthodes pour trouver la solution : tout essayer ou penser à la rafle 39x10."
             },
             {
               "kind": "exercise",
               "ref": 2075,
               "name": "Dubois ch13 D7 — Position noire compacte mais cassable",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "La position des noirs semble compacte. Pourtant, tout explose après 29-23."
             },
             {
               "kind": "exercise",
               "ref": 2076,
               "name": "Dubois ch13 D8 — Acheminer un pion noir en 37",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "La rafle 41x3 est présumée. Reste à amener un pion noir en 37."
             },
             {
               "kind": "exercise",
               "ref": 2077,
               "name": "Dubois ch13 D9 — Schéma typique du coup de l'express",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "On retrouve ici le schéma classique : enlever le pion 13 et amener un pion noir en 28, puis le coup de l'express déroule la rafle 33x2."
             },
             {
               "kind": "exercise",
               "ref": 2078,
               "name": "Dubois ch13 D10 — Coup de l'express caché",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "Le coup de l'express est plus dissimulé ici, mais le mécanisme reste le même : sacrifices en cascade puis rafle 33x4."
             },
             {
               "kind": "exercise",
               "ref": 2116,
               "name": "Dubois ch17 D4 — Coup de l'Express (coquille PDF corrigée)",
               "difficulty": 3,
-              "category": "coup_express"
+              "category": "coup_express",
+              "theme": "Coup de l'Express dans le chapitre Napoléon — illustre la parenté entre les mécanismes."
             }
           ],
           "n_items": 10
@@ -681,77 +765,88 @@
               "ref": 2079,
               "name": "Exemple narratif Dubois ch14 — Schéma de base du Ricochet",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Le coup de Ricochet repose sur une rafle qui revient sur la case de départ (« ricoche ») après avoir traversé une zone clé. Schéma de base : sacrifices 34-30 et 40x18, puis le pion blanc 28 ricoche sur 26 après la prise (13x22)."
             },
             {
               "kind": "exercise",
               "ref": 2080,
               "name": "Exemple narratif Dubois ch14 — Application en partie",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Application pratique du Ricochet : les blancs exploitent leur aile gauche encombrée et la présence d'un pion noir en 25 par un sacrifice 27-22 préalable, suivi du schéma classique."
             },
             {
               "kind": "exercise",
               "ref": 2081,
               "name": "Dubois ch14 D1 — Collage et coup de dame en 5",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Un coup de dame sur la case 5 utilisant le mécanisme de collage combiné au ricochet."
             },
             {
               "kind": "exercise",
               "ref": 2082,
               "name": "Dubois ch14 D2 — Coup de dame en 4",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Les trous 4 et 13 dans la position noire font penser à un coup de dame en 4."
             },
             {
               "kind": "exercise",
               "ref": 2083,
               "name": "Dubois ch14 D3 — Combinaison ultra classique",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Une combinaison ultra classique qui se présente fréquemment en partie. Le coup de ricochet caractéristique 42x24."
             },
             {
               "kind": "exercise",
               "ref": 2084,
               "name": "Dubois ch14 D4 — Coup de dame 31x4 (Kloot-Kuipers 1939)",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Partie historique 1939. Un coup de dame 31x4. Il suffit d'acheminer un pion noir en 30."
             },
             {
               "kind": "exercise",
               "ref": 2085,
               "name": "Dubois ch14 D5 — Coup de dame en 1",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Un coup de dame en 1 avec une rafle 43x1."
             },
             {
               "kind": "exercise",
               "ref": 2086,
               "name": "Dubois ch14 D6 — Rafle 44x2 (coquille PDF corrigée)",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Un coup de dame à 2 avec une case de départ de la rafle en 44."
             },
             {
               "kind": "exercise",
               "ref": 2088,
               "name": "Dubois ch14 D8 — Ricochet dissimulé (Coenen-van Ingen 1990)",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Partie 1990. Trait aux noirs. Combinaison très complexe à 7 demi-coups, le ricochet est bien dissimulé."
             },
             {
               "kind": "exercise",
               "ref": 2089,
               "name": "Dubois ch14 D9 — Coup de dame à 4 via ricochet",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Un coup de dame à 4 utilisant le mécanisme du ricochet pour faire sauter le pion noir 24 et amener un pion noir en 29."
             },
             {
               "kind": "exercise",
               "ref": 2090,
               "name": "Dubois ch14 D10 — Rafle cachée (Le Goff-Molimard 1909)",
               "difficulty": 3,
-              "category": "coup_ricochet"
+              "category": "coup_ricochet",
+              "theme": "Partie historique 1909. Trait aux noirs. La rafle finale (21x45) est très bien cachée. Méthode des points de contact essentielle."
             }
           ],
           "n_items": 11
@@ -781,70 +876,80 @@
               "ref": 2087,
               "name": "Dubois ch14 D7 — Coup Napoléon (préview)",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "Bien que le chapitre traite du Ricochet, cette fixture introduit un autre coup nommé : le coup Napoléon, caractérisé par sa rafle finale 31x24."
             },
             {
               "kind": "exercise",
               "ref": 2113,
               "name": "Dubois ch17 D1 — Envoi à dame surprenant",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "L'envoi à dame intentionnel ouvre des perspectives surprenantes pour le coup Napoléon."
             },
             {
               "kind": "exercise",
               "ref": 2114,
               "name": "Dubois ch17 D2 — Rafle 22x44 (Bom-van Dijk 1963)",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "Partie 1963. Trait aux noirs. Combinaison finissant en 44, exploitant prise majoritaire et collage."
             },
             {
               "kind": "exercise",
               "ref": 2115,
               "name": "Dubois ch17 D3 — Coup de dame en 46 (Baerends-Stoop 1984)",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "Partie 1984. Trait aux noirs. Coup de dame en 46 par Napoléon."
             },
             {
               "kind": "exercise",
               "ref": 2117,
               "name": "Dubois ch17 D5 — Schéma Napoléon (Haijtink-Scholte Lubberink 1994)",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "Partie 1994. La rafle finale dessine le schéma typique du coup Napoléon."
             },
             {
               "kind": "exercise",
               "ref": 2118,
               "name": "Dubois ch17 D6 — Rappel + Napoléon (van Leijen-Schunselaar 1971)",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "Partie 1971. Combine coup de rappel et coup Napoléon."
             },
             {
               "kind": "exercise",
               "ref": 2119,
               "name": "Dubois ch17 D7 — Coup Napoléon pur",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "Un coup Napoléon canonique en 4 sacrifices puis rafle 39x8."
             },
             {
               "kind": "exercise",
               "ref": 2120,
               "name": "Dubois ch17 D8 — Coup Napoléon (Kolodiev-Weytsman 1973)",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "Partie URSS 1973. Coup Napoléon en 4 sacrifices."
             },
             {
               "kind": "exercise",
               "ref": 2121,
               "name": "Dubois ch17 D9 — Pur coup Napoléon",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "« Un pur coup Napoléon » selon Dubois — 4 sacrifices puis rafle 31x4."
             },
             {
               "kind": "exercise",
               "ref": 2122,
               "name": "Dubois ch17 D10 — Rafle 48x6 (Papinski-Lewandowski 1979)",
               "difficulty": 3,
-              "category": "coup_napoleon"
+              "category": "coup_napoleon",
+              "theme": "Partie 1979. Une rafle 48x6 ouverte par sacrifices successifs."
             }
           ],
           "n_items": 10
@@ -860,77 +965,88 @@
               "ref": 2091,
               "name": "Exemple narratif Dubois ch15 — Schéma 1 du coup de Rappel",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Le coup de Rappel est caractérisé par un pion noir qui descend par sa prise jusqu'à la 4e ou 5e ligne, puis est « rappelé » vers le haut par un nouveau sacrifice qui force sa capture pour la rafle finale."
             },
             {
               "kind": "exercise",
               "ref": 2092,
               "name": "Exemple narratif Dubois ch15 — Schéma 2 du coup de Rappel",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Variante du coup de Rappel : la rafle finale aboutit en 4 plutôt qu'en 3."
             },
             {
               "kind": "exercise",
               "ref": 2093,
               "name": "Exemple narratif Dubois ch15 — Schéma 3 du coup de Rappel",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Variante 3 : le rappel se fait via la case 32, et la rafle finale en 4."
             },
             {
               "kind": "exercise",
               "ref": 2094,
               "name": "Dubois ch15 D1 — Rafle finissant en 7 via pion de base 49",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Le pion de base 49 peut aboutir en 7. Il manque seulement un pion en 34."
             },
             {
               "kind": "exercise",
               "ref": 2095,
               "name": "Dubois ch15 D2 — Acheminer pion noir en 22",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Rafle se terminant en 10. Le coup de Rappel force un pion noir à revenir capturer sur la case 22 (le sacrifice 32-27 puis la reprise 31x22), ce qui le ramène sur la trajectoire de la rafle blanche finale 28x10."
             },
             {
               "kind": "exercise",
               "ref": 2096,
               "name": "Dubois ch15 D3 — Acheminer pion noir en 33",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Rafle en 6 visible. Il faut amener un pion noir en 33 par le rappel."
             },
             {
               "kind": "exercise",
               "ref": 2097,
               "name": "Dubois ch15 D4 — Combinaison + fin de partie",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Combinaison qui mène à une finale gagnante. Si les noirs échangent, ils perdent par opposition."
             },
             {
               "kind": "exercise",
               "ref": 2100,
               "name": "Dubois ch15 D7 — Rappel à 4 demi-coups (Rapopport-Gertsenzon 1963)",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Partie 1963. 2 rafles plausibles. La rafle 30x6 demande d'amener le pion 15 en 24 via le rappel."
             },
             {
               "kind": "exercise",
               "ref": 2101,
               "name": "Dubois ch15 D8 — Coup de dame à 50 noir (van Aalten-Clerc 1976)",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Partie 1976. Trait aux noirs. Coup de dame à 48 ou 50. Mécanisme du coup de rappel."
             },
             {
               "kind": "exercise",
               "ref": 2102,
               "name": "Dubois ch15 D9 — Rafle en 44 (trait noir)",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Trait aux noirs. Rafle finale en 44. Case de départ : 13. Il faut amener un blanc en 27 et un autre en 18."
             },
             {
               "kind": "exercise",
               "ref": 2124,
               "name": "Dubois ch18 D2 — Coup de Rappel (révision)",
               "difficulty": 3,
-              "category": "coup_rappel"
+              "category": "coup_rappel",
+              "theme": "Révision du coup de Rappel dans le chapitre Trappe."
             }
           ],
           "n_items": 11
@@ -960,84 +1076,96 @@
               "ref": 2098,
               "name": "Dubois ch15 D5 — Coup de la Trappe (Michiels-Marini 1986)",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Partie historique 1986. Bien que ce chapitre traite du Rappel, cette fixture introduit le coup de la Trappe (chap 18 manuel) — rafle très efficace via 50x10."
             },
             {
               "kind": "exercise",
               "ref": 2099,
               "name": "Dubois ch15 D6 — Autre coup de la Trappe",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Joli petit coup de la Trappe. Mécanisme proche du Rappel mais avec rafle finale différente."
             },
             {
               "kind": "exercise",
               "ref": 2107,
               "name": "Dubois ch16 D5 — Coup de la Trappe (Clasquin-van Es 1981)",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Partie 1981. Préview coup de la Trappe (chap 14 manuel)."
             },
             {
               "kind": "exercise",
               "ref": 2123,
               "name": "Dubois ch18 D1 — Rafle 30x6",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Une rafle se terminant en 6 avec le pion 30 pour le départ."
             },
             {
               "kind": "exercise",
               "ref": 2125,
               "name": "Dubois ch18 D3 — Rafle finale en 9",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "La rafle ne peut aboutir qu'en 9. Case de départ : 36."
             },
             {
               "kind": "exercise",
               "ref": 2126,
               "name": "Dubois ch18 D4 — Trappe avec rafle 23x45 (Kocken-Doomernik 1971)",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Partie 1971. Trait aux noirs. Un genre de coup de la trappe terminé par 23x45."
             },
             {
               "kind": "exercise",
               "ref": 2127,
               "name": "Dubois ch18 D5 — Coup de dame à 4 (Hoogland-van den Broek 1912)",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Partie 1912. Coup de dame à 4 via trappe (case vide en 39)."
             },
             {
               "kind": "exercise",
               "ref": 2128,
               "name": "Dubois ch18 D6 — Pur coup de la Trappe",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Un pur coup de la Trappe avec rafle finale 42x4."
             },
             {
               "kind": "exercise",
               "ref": 2129,
               "name": "Dubois ch18 D7 — Trappe à 5 (Maertzdorf-Alofs 1997)",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Partie 1997. Coup de dame à 5 par trappe (cases vides 37, 38)."
             },
             {
               "kind": "exercise",
               "ref": 2130,
               "name": "Dubois ch18 D8 — Trappe noire (Bronstring-Holstvoogd 2005)",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Partie 2005. Trait aux noirs. Le pion 50 sert de base à la rafle. Case vide 42 autorise une trappe."
             },
             {
               "kind": "exercise",
               "ref": 2131,
               "name": "Dubois ch18 D9 — Mécanisme inattendu (van Dijk)",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Combinaison envisagée en partie par Jan van Dijk. Mécanisme inattendu, rafle finale en 9, départ obligé en 38."
             },
             {
               "kind": "exercise",
               "ref": 2132,
               "name": "Dubois ch18 D10 — Envoi à dame + ricochet (Kats-Agafonov 1965)",
               "difficulty": 3,
-              "category": "coup_de_trappe"
+              "category": "coup_de_trappe",
+              "theme": "Partie URSS 1965. Trait aux noirs. Combine envoi à dame et coup de ricochet."
             }
           ],
           "n_items": 12
@@ -1053,63 +1181,72 @@
               "ref": 2103,
               "name": "Dubois ch16 D1 — Combinaison à la case 4",
               "difficulty": 3,
-              "category": "coup_renverse"
+              "category": "coup_renverse",
+              "theme": "Combinaison aboutissant à la case 4 par coup renversé."
             },
             {
               "kind": "exercise",
               "ref": 2104,
               "name": "Dubois ch16 D2 — Coup de chevron (Datel-Schwarzman 1977)",
               "difficulty": 3,
-              "category": "coup_renverse"
+              "category": "coup_renverse",
+              "theme": "Partie 1977. Trait aux noirs. Variante du coup renversé connue sous le nom de « coup de chevron » à cause de la rafle finale 21x25."
             },
             {
               "kind": "exercise",
               "ref": 2105,
               "name": "Dubois ch16 D3 — Coup de dame à 2 via éliminations",
               "difficulty": 3,
-              "category": "coup_renverse"
+              "category": "coup_renverse",
+              "theme": "Coup de dame à 2 partant de la case 35. Élimination du 24 et acheminement d'un noir en 30."
             },
             {
               "kind": "exercise",
               "ref": 2106,
               "name": "Dubois ch16 D4 — Exploitation pion de bande 35 (Gordijn-den Hartogh 1952)",
               "difficulty": 3,
-              "category": "coup_renverse"
+              "category": "coup_renverse",
+              "theme": "Partie 1952. Exploitation du pion de bande 35 pour le coup renversé."
             },
             {
               "kind": "exercise",
               "ref": 2108,
               "name": "Dubois ch16 D6 — Coup renversé pur",
               "difficulty": 3,
-              "category": "coup_renverse"
+              "category": "coup_renverse",
+              "theme": "Un coup renversé canonique avec rafle finale 32x25."
             },
             {
               "kind": "exercise",
               "ref": 2109,
               "name": "Dubois ch16 D7 — Combinaison avec temps de repos",
               "difficulty": 3,
-              "category": "coup_renverse"
+              "category": "coup_renverse",
+              "theme": "Pendant le temps de repos, les blancs adoptent la position caractéristique du coup renversé."
             },
             {
               "kind": "exercise",
               "ref": 2110,
               "name": "Dubois ch16 D8 — Coup parallèle (Bergsma-Spoelstra 1952)",
               "difficulty": 3,
-              "category": "coup_parallele"
+              "category": "coup_parallele",
+              "theme": "Partie 1952. Mécanisme final connu sous le nom de coup parallèle. Notation (ad lib) — captures forcées équivalentes (cf §R008)."
             },
             {
               "kind": "exercise",
               "ref": 2111,
               "name": "Dubois ch16 D9 — Coup renversé avec envoi à dame (Spoelstra-Bergsma 1972)",
               "difficulty": 3,
-              "category": "coup_renverse"
+              "category": "coup_renverse",
+              "theme": "Partie 1972. Trait aux noirs. Combine coup renversé et envoi à dame du blanc."
             },
             {
               "kind": "exercise",
               "ref": 2112,
               "name": "Dubois ch16 D10 — Combinaison fulgurante",
               "difficulty": 3,
-              "category": "coup_renverse"
+              "category": "coup_renverse",
+              "theme": "Une combinaison traîtresse aboutissant à la dame en 5. Demande imagination pour identifier prise majoritaire + collage + renversé."
             }
           ],
           "n_items": 9
@@ -1139,77 +1276,88 @@
               "ref": 2068,
               "name": "Dubois ch9 D9 — Coup de talon (Toet-Luteijn 1977)",
               "difficulty": 2,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Partie 1977. La rafle 41x3 et la formation 31-36-37-41-46 sont caractéristiques du coup de talon — un coup nommé du répertoire combinatoire."
             },
             {
               "kind": "exercise",
               "ref": 2133,
               "name": "Dubois ch19 D1 — Coup de mazette dans le coup de Talon",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Combinaison inattendue à mécanisme de coup de mazette. Coup de talon dévoile le point d'appui en dernier."
             },
             {
               "kind": "exercise",
               "ref": 2134,
               "name": "Dubois ch19 D2 — Rafle aboutissant en 7",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Combinaison aboutissant sur la case 7."
             },
             {
               "kind": "exercise",
               "ref": 2135,
               "name": "Dubois ch19 D3 — Rafle 50x8 (Lewkowicz-Blokland 1998)",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Partie 1998. La rafle 50x8 est la plus vraisemblable. Le pion 24 est amené en 33 par le coup de talon."
             },
             {
               "kind": "exercise",
               "ref": 2136,
               "name": "Dubois ch19 D4 — Coup de dame à 3 par talon pur",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Coup de dame à 3 reposant sur un pur coup de talon."
             },
             {
               "kind": "exercise",
               "ref": 2137,
               "name": "Dubois ch19 D5 — Coup de dame à 1 par talon pur",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Coup de dame à 1 reposant sur un pur coup de talon."
             },
             {
               "kind": "exercise",
               "ref": 2138,
               "name": "Dubois ch19 D6 — Talon + Trappe (Vatutin-Steijlen 2007)",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Partie 2007. Coup de dame à 1 par rafle préalable 50x10 + trappe."
             },
             {
               "kind": "exercise",
               "ref": 2139,
               "name": "Dubois ch19 D7 — Trappe cachée (Wiering-Sier 2008)",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Partie 2008. Trait aux noirs. La rafle 1x41 saute aux yeux mais le coup de la trappe qui y mène est dissimulé."
             },
             {
               "kind": "exercise",
               "ref": 2140,
               "name": "Dubois ch19 D8 — Combinaison cachée (Depaepe-Groenendijk 2014)",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Partie 2014. Trait aux noirs. La rafle 1x41 et le moyen d'amener un pion en 17 reposent sur trappe + prise majoritaire."
             },
             {
               "kind": "exercise",
               "ref": 2141,
               "name": "Dubois ch19 D9 — Pur coup de la Trappe",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Un pur coup de la Trappe avec rafle 29x7."
             },
             {
               "kind": "exercise",
               "ref": 2142,
               "name": "Dubois ch19 D10 — Coup de Talon final (de Jongh-Bizot 1927)",
               "difficulty": 3,
-              "category": "coup_de_talon"
+              "category": "coup_de_talon",
+              "theme": "Partie 1927. Combinaison inattendue. La bonne case de départ est 26, par mécanisme de la trappe."
             }
           ],
           "n_items": 11
@@ -1225,69 +1373,1086 @@
               "ref": 2037,
               "name": "Dubois ch5 D1 — Le coup Philippe sous sa forme la plus simple",
               "difficulty": 2,
-              "category": "coup_philippe"
+              "category": "coup_philippe",
+              "theme": "Le « coup Philippe » est un motif tactique classique. Forme la plus épurée : 3 pions blancs contre 3 pions noirs, sacrifice central, puis rafle finissant en 7."
             },
             {
               "kind": "exercise",
               "ref": 2143,
               "name": "Dubois ch20 D1 — Coup turc avec envoi à dame",
               "difficulty": 3,
-              "category": "coup_philippe"
+              "category": "coup_philippe",
+              "theme": "La dernière combinaison à 3 temps. Un coup turc combiné à un envoi à dame."
             },
             {
               "kind": "exercise",
               "ref": 2144,
               "name": "Dubois ch20 D2 — Coup Philippe (Dartelen-Ligthart 1938)",
               "difficulty": 3,
-              "category": "coup_philippe"
+              "category": "coup_philippe",
+              "theme": "Partie historique 1938. Avec 2 pions noirs en 23 et 25, on pense au coup Philippe. Il faut faire sauter le pion 18 pour la rafle 40x16."
             },
             {
               "kind": "exercise",
               "ref": 2145,
               "name": "Dubois ch20 D3 — Variante coup Philippe",
               "difficulty": 3,
-              "category": "coup_philippe"
+              "category": "coup_philippe",
+              "theme": "Même schéma que D2 avec sacrifice initial 37-31 au lieu de 33-28. Présence simultanée des pions 23 et 25."
             },
             {
               "kind": "exercise",
               "ref": 2146,
               "name": "Dubois ch20 D4 — Schéma Philippe via attaque noire (Davidov-Romanov 1963)",
               "difficulty": 3,
-              "category": "coup_philippe"
+              "category": "coup_philippe",
+              "theme": "Partie URSS 1963. L'attaque noire permet de retrouver le schéma du coup Philippe."
             },
             {
               "kind": "exercise",
               "ref": 2147,
               "name": "Dubois ch20 D5 — Coup Philippe avec ruse",
               "difficulty": 3,
-              "category": "coup_philippe"
+              "category": "coup_philippe",
+              "theme": "La rafle se termine sur la case 7 avec départ en 38. Piège : 29-24 (19x30) 32-27 (21x23) 33-28 (ad lib) ne marche pas (4 pions en 20). Il faut trouver une autre idée."
             },
             {
               "kind": "exercise",
               "ref": 2148,
               "name": "Dubois ch20 D6 — Rafle 48x26 (Leijenaar-Romanskaia 2003)",
               "difficulty": 3,
-              "category": "coup_philippe"
+              "category": "coup_philippe",
+              "theme": "Partie Olympiade junior 2003. Avec tous les trous, il existe forcément un moyen de tourner."
             },
             {
               "kind": "exercise",
               "ref": 2150,
               "name": "Dubois ch20 D8 — Envoi à dame avec temps de réserve (Merin-Agafonow 1975)",
               "difficulty": 3,
-              "category": "coup_philippe"
+              "category": "coup_philippe",
+              "theme": "Partie URSS 1975. Trait aux noirs. Solution : envoi à dame qui procure un temps de réserve. (12x32) ou (21x23) sont les seules rafles utilisables."
             },
             {
               "kind": "exercise",
               "ref": 2151,
               "name": "Dubois ch20 D10 — Rafle 30x6 ou 48x6 (Aliar-Huijzer 2010)",
               "difficulty": 3,
-              "category": "coup_philippe"
+              "category": "coup_philippe",
+              "theme": "Partie 2010. Rafle se terminant en 6, départ 30 ou 48. La notation publiée contient une anomalie '30.48x6' (probable typo)."
             }
           ],
           "n_items": 9
         }
       ],
       "n_items": 20
+    },
+    {
+      "id": "int_structure_bande_centre",
+      "level": "intermediaire",
+      "order": 1,
+      "title": "Le pion à la bande et le pion au centre",
+      "subtitle": "Lire les structures de pions.",
+      "goal": "Comprendre l'opposition entre un pion à la bande et un pion au centre, et transformer cette structure en avantage.",
+      "prerequisites": [],
+      "lessons": [
+        {
+          "id": "int_structure_bande_centre_l1",
+          "title": "La structure bande / centre",
+          "intro": "Une structure clé du jeu positionnel : un pion fixé à la bande face à un pion au centre. Apprenez à voir qui domine et comment exploiter la position.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5029,
+              "name": "SIJBRANDS — combinaison (p.90 #10)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5030,
+              "name": "SIJBRANDS — combinaison (p.90 #11)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5031,
+              "name": "SIJBRANDS — combinaison (p.90 #13)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5032,
+              "name": "SIJBRANDS — combinaison (p.91 #15)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5033,
+              "name": "SIJBRANDS — combinaison (p.91 #17)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5034,
+              "name": "SIJBRANDS — combinaison (p.91 #18)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5035,
+              "name": "SIJBRANDS — combinaison (p.91 #19)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5036,
+              "name": "SIJBRANDS — combinaison (p.91 #20)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5043,
+              "name": "SIJBRANDS — combinaison (p.96 #6)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5044,
+              "name": "SIJBRANDS — combinaison (p.96 #9)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5045,
+              "name": "SIJBRANDS — combinaison (p.97 #11)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5046,
+              "name": "SIJBRANDS — combinaison (p.97 #12)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5047,
+              "name": "SIJBRANDS — combinaison (p.98 #16)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5048,
+              "name": "SIJBRANDS — combinaison (p.98 #19)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5050,
+              "name": "SIJBRANDS — combinaison (p.100 #10)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5051,
+              "name": "SIJBRANDS — combinaison (p.100 #9)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5052,
+              "name": "SIJBRANDS — combinaison (p.101 #11)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            }
+          ],
+          "n_items": 17
+        }
+      ],
+      "n_items": 17
+    },
+    {
+      "id": "int_blocage",
+      "level": "intermediaire",
+      "order": 2,
+      "title": "Bloquer et empêcher le débordement",
+      "subtitle": "Neutraliser l'aile adverse.",
+      "goal": "Bloquer les pions adverses et empêcher un débordement sur l'aile.",
+      "prerequisites": [
+        "int_structure_bande_centre"
+      ],
+      "lessons": [
+        {
+          "id": "int_blocage_l1",
+          "title": "Bloquer des pions",
+          "intro": "Immobiliser une chaîne de pions adverses pour la rendre inoffensive et garder l'initiative.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5077,
+              "name": "SIJBRANDS — combinaison (p.120 #1)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5078,
+              "name": "SIJBRANDS — combinaison (p.120 #2)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5079,
+              "name": "SIJBRANDS — combinaison (p.120 #3)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5080,
+              "name": "SIJBRANDS — combinaison (p.120 #4)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5081,
+              "name": "SIJBRANDS — combinaison (p.121 #10)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5082,
+              "name": "SIJBRANDS — combinaison (p.121 #12)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5083,
+              "name": "SIJBRANDS — combinaison (p.121 #5)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5084,
+              "name": "SIJBRANDS — combinaison (p.121 #6)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5085,
+              "name": "SIJBRANDS — combinaison (p.121 #7)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Bloquer des pions"
+            }
+          ],
+          "n_items": 9
+        },
+        {
+          "id": "int_blocage_l2",
+          "title": "Empêcher le débordement",
+          "intro": "Le débordement perce votre aile. Apprenez à le voir venir et à le couper à temps.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5018,
+              "name": "SIJBRANDS — combinaison (p.80 #2)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5019,
+              "name": "SIJBRANDS — combinaison (p.81 #10)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5020,
+              "name": "SIJBRANDS — combinaison (p.81 #3)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5021,
+              "name": "SIJBRANDS — combinaison (p.81 #6)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5022,
+              "name": "SIJBRANDS — combinaison (p.81 #9)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Empêcher un débordement"
+            }
+          ],
+          "n_items": 5
+        }
+      ],
+      "n_items": 14
+    },
+    {
+      "id": "int_grande_diagonale",
+      "level": "intermediaire",
+      "order": 3,
+      "title": "La dame et la grande diagonale",
+      "subtitle": "La diagonale a1-h8, axe du jeu de dames.",
+      "goal": "Maîtriser la lutte sur la grande diagonale et capturer une dame qui s'y aventure.",
+      "prerequisites": [
+        "int_blocage"
+      ],
+      "lessons": [
+        {
+          "id": "int_grande_diagonale_l1",
+          "title": "Capturer la dame sur la grande diagonale",
+          "intro": "Une dame sur la grande diagonale est puissante… mais vulnérable. Voici comment la piéger.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5060,
+              "name": "SIJBRANDS — combinaison (p.106 #17)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5063,
+              "name": "SIJBRANDS — combinaison (p.108 #10)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5064,
+              "name": "SIJBRANDS — combinaison (p.108 #12)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5065,
+              "name": "SIJBRANDS — combinaison (p.108 #4)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5066,
+              "name": "SIJBRANDS — combinaison (p.109 #14)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5067,
+              "name": "SIJBRANDS — combinaison (p.109 #17)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5068,
+              "name": "SIJBRANDS — combinaison (p.110 #18)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5069,
+              "name": "SIJBRANDS — combinaison (p.110 #19)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5071,
+              "name": "SIJBRANDS — combinaison (p.113 #13)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5072,
+              "name": "SIJBRANDS — combinaison (p.114 #14)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5073,
+              "name": "SIJBRANDS — combinaison (p.114 #16)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5074,
+              "name": "SIJBRANDS — combinaison (p.114 #17)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5075,
+              "name": "SIJBRANDS — combinaison (p.114 #18)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5076,
+              "name": "SIJBRANDS — combinaison (p.114 #19)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Capturer la dame sur la grande diagonale."
+            }
+          ],
+          "n_items": 14
+        },
+        {
+          "id": "int_grande_diagonale_l2",
+          "title": "La lutte pour la grande diagonale",
+          "intro": "Contrôler la grande diagonale, c'est contrôler la partie. Apprenez à la prendre et à la garder.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5049,
+              "name": "SIJBRANDS — combinaison (p.99 #1)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "La lutte pour la grande diagonale"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5088,
+              "name": "SIJBRANDS — combinaison (p.181 #18)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "La lutte pour la grande diagonale"
+            }
+          ],
+          "n_items": 2
+        }
+      ],
+      "n_items": 16
+    },
+    {
+      "id": "int_promotion",
+      "level": "intermediaire",
+      "order": 4,
+      "title": "La course à dame",
+      "subtitle": "Promouvoir avant l'adversaire.",
+      "goal": "Calculer une course à la promotion et inverser les rôles par un pionnage.",
+      "prerequisites": [
+        "int_grande_diagonale"
+      ],
+      "lessons": [
+        {
+          "id": "int_promotion_l1",
+          "title": "Aller à dame",
+          "intro": "Compter les temps pour savoir qui arrive le premier à dame — et forcer le passage.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5053,
+              "name": "SIJBRANDS — combinaison (p.104 #3)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5054,
+              "name": "SIJBRANDS — combinaison (p.104 #6)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5055,
+              "name": "SIJBRANDS — combinaison (p.104 #7)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5056,
+              "name": "SIJBRANDS — combinaison (p.105 #11)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5057,
+              "name": "SIJBRANDS — combinaison (p.105 #12)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5058,
+              "name": "SIJBRANDS — combinaison (p.105 #13)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5059,
+              "name": "SIJBRANDS — combinaison (p.105 #8)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Les noirs vont à dame"
+            }
+          ],
+          "n_items": 7
+        },
+        {
+          "id": "int_promotion_l2",
+          "title": "Inverser les rôles par un pionnage",
+          "intro": "Un pionnage bien placé peut renverser une course perdue en gain. Un thème qui surprend.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5037,
+              "name": "SIJBRANDS — combinaison (p.92 #2)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pionnage peut inverser les rôles!"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5038,
+              "name": "SIJBRANDS — combinaison (p.92 #4)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pionnage peut inverser les rôles!"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5039,
+              "name": "SIJBRANDS — combinaison (p.92 #6)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pionnage peut inverser les rôles!"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5040,
+              "name": "SIJBRANDS — combinaison (p.93 #8)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Un pionnage peut inverser les rôles!"
+            }
+          ],
+          "n_items": 4
+        }
+      ],
+      "n_items": 11
+    },
+    {
+      "id": "int_finales",
+      "level": "intermediaire",
+      "order": 5,
+      "title": "Finales et opposition",
+      "subtitle": "Convertir, ou sauver, les fins de partie.",
+      "goal": "Gagner ou sauver les finales élémentaires grâce à l'opposition et au comptage.",
+      "prerequisites": [
+        "int_promotion"
+      ],
+      "lessons": [
+        {
+          "id": "int_finales_l1",
+          "title": "L'opposition",
+          "intro": "L'arme reine des finales : prendre l'opposition pour gagner le tempo décisif.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5024,
+              "name": "SIJBRANDS — combinaison (p.88 #3)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5025,
+              "name": "SIJBRANDS — combinaison (p.89 #4)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5026,
+              "name": "SIJBRANDS — combinaison (p.89 #6)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5027,
+              "name": "SIJBRANDS — combinaison (p.89 #7)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5028,
+              "name": "SIJBRANDS — combinaison (p.89 #8)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "L’opposition"
+            }
+          ],
+          "n_items": 5
+        },
+        {
+          "id": "int_finales_l2",
+          "title": "Finales pratiques",
+          "intro": "Dame contre pions, finales de tric-trac : les positions concrètes qui décident des parties.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5041,
+              "name": "SIJBRANDS — combinaison (p.95 #2)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Une dame contre des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5042,
+              "name": "SIJBRANDS — combinaison (p.95 #4)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Une dame contre des pions"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5061,
+              "name": "SIJBRANDS — combinaison (p.107 #2)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Fins de partie dans le tric-trac"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5062,
+              "name": "SIJBRANDS — combinaison (p.107 #3)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Fins de partie dans le tric-trac"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5086,
+              "name": "SIJBRANDS — combinaison (p.132 #6)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "La fin de partie"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5089,
+              "name": "SIJBRANDS — combinaison (p.199 #10)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "La fin de partie"
+            }
+          ],
+          "n_items": 6
+        }
+      ],
+      "n_items": 11
+    },
+    {
+      "id": "int_coups_avances",
+      "level": "intermediaire",
+      "order": 6,
+      "title": "Coups nommés avancés",
+      "subtitle": "Les combinaisons nommées en contexte de maître.",
+      "goal": "Reconnaître le coup royal et les coups de talon/ricochet dans des positions réelles.",
+      "prerequisites": [
+        "int_finales"
+      ],
+      "lessons": [
+        {
+          "id": "int_coups_avances_l1",
+          "title": "Le coup royal",
+          "intro": "Le sacrifice de dame qui rapporte gros. À reconnaître au premier coup d'œil.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5011,
+              "name": "SIJBRANDS — combinaison (p.33 #1)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5012,
+              "name": "SIJBRANDS — combinaison (p.33 #2)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5013,
+              "name": "SIJBRANDS — combinaison (p.33 #3)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5014,
+              "name": "SIJBRANDS — combinaison (p.33 #5)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5015,
+              "name": "SIJBRANDS — combinaison (p.33 #6)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5087,
+              "name": "SIJBRANDS — combinaison (p.146 #12)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup royal"
+            }
+          ],
+          "n_items": 6
+        },
+        {
+          "id": "int_coups_avances_l2",
+          "title": "Talon et ricochet",
+          "intro": "Deux mécanismes de rafle revisités dans des positions de maître.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5007,
+              "name": "SIJBRANDS — combinaison (p.14 #1)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup de talon et le coup de ricochet"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5008,
+              "name": "SIJBRANDS — combinaison (p.14 #2)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup de talon et le coup de ricochet"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5009,
+              "name": "SIJBRANDS — combinaison (p.14 #3)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup de talon et le coup de ricochet"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5010,
+              "name": "SIJBRANDS — combinaison (p.15 #5)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Le coup de talon et le coup de ricochet"
+            }
+          ],
+          "n_items": 4
+        }
+      ],
+      "n_items": 10
+    },
+    {
+      "id": "int_combinaisons",
+      "level": "intermediaire",
+      "order": 7,
+      "title": "Trouver la combinaison forcée",
+      "subtitle": "Calculer jusqu'au bout.",
+      "goal": "Calculer une combinaison forcée dans des positions tirées des grands manuels.",
+      "prerequisites": [
+        "int_coups_avances"
+      ],
+      "lessons": [
+        {
+          "id": "int_combinaisons_l1",
+          "title": "Combinaisons forcées",
+          "intro": "Pas d'indice de thème ici : à vous de trouver la suite forcée qui gagne.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5001,
+              "name": "KELLER — combinaison (p.23 #4)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5002,
+              "name": "SIJBRANDS — combinaison (p.6 #1)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Rien que des petits coups"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5003,
+              "name": "SIJBRANDS — combinaison (p.6 #2)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Rien que des petits coups"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5004,
+              "name": "SIJBRANDS — combinaison (p.6 #4)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Rien que des petits coups"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5005,
+              "name": "SIJBRANDS — combinaison (p.8 #10)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Une rafle avec un retard"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5096,
+              "name": "SPRINGER — combinaison (p.213 #9)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5097,
+              "name": "SPRINGER — combinaison (p.239 #29)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5098,
+              "name": "SPRINGER — combinaison (p.244 #71)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5099,
+              "name": "SPRINGER — combinaison (p.254 #5)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5100,
+              "name": "SPRINGER — combinaison (p.254 #8)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5101,
+              "name": "SPRINGER — combinaison (p.255 #10)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5102,
+              "name": "SPRINGER — combinaison (p.267 #9)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5103,
+              "name": "SPRINGER — combinaison (p.275 #30)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5104,
+              "name": "SPRINGER — combinaison (p.287 #26)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5105,
+              "name": "SPRINGER — combinaison (p.293 #29)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5106,
+              "name": "SPRINGER — combinaison (p.298 #71)",
+              "difficulty": 2,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5107,
+              "name": "SPRINGER — combinaison (p.308 #8)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "exercise",
+              "ref": 5108,
+              "name": "SPRINGER — combinaison (p.309 #10)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Cherchez une combinaison forcée."
+            }
+          ],
+          "n_items": 18
+        },
+        {
+          "id": "int_combinaisons_l2",
+          "title": "Coups de dame et attaques",
+          "intro": "Coups de dame, mises en prise, attaques directes : le registre offensif du joueur confirmé.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 5006,
+              "name": "SIJBRANDS — combinaison (p.13 #7)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "De la magie"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5016,
+              "name": "SIJBRANDS — combinaison (p.40 #11)",
+              "difficulty": 1,
+              "category": "combinaisons_manuels",
+              "theme": "Mettre l’autre en prise"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5017,
+              "name": "SIJBRANDS — combinaison (p.43 #7)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "L’attaque"
+            },
+            {
+              "kind": "exercise",
+              "ref": 5023,
+              "name": "SIJBRANDS — combinaison (p.83 #10)",
+              "difficulty": 3,
+              "category": "combinaisons_manuels",
+              "theme": "Des coups de dame"
+            }
+          ],
+          "n_items": 4
+        }
+      ],
+      "n_items": 22
     }
   ]
 }

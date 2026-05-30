@@ -7,6 +7,12 @@
       "title": "Débutant",
       "subtitle": "Les fondamentaux : lire le damier, gagner du matériel, les premiers coups nommés.",
       "order": 1
+    },
+    {
+      "id": "intermediaire",
+      "title": "Intermédiaire",
+      "subtitle": "La stratégie : structures, débordements, finales et combinaisons des grands manuels.",
+      "order": 2
     }
   ],
   "modules": [
@@ -27,7 +33,11 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["regle_capture", "regle_rafle", "regle_prise_maximale"]
+              "categories": [
+                "regle_capture",
+                "regle_rafle",
+                "regle_prise_maximale"
+              ]
             }
           }
         }
@@ -40,7 +50,9 @@
       "title": "Gagner du matériel",
       "subtitle": "Prise majoritaire, collage et envoi à dame.",
       "goal": "Reconnaître et exécuter les gains de matériel élémentaires : forcer une prise favorable, coller un pion, conduire un pion à dame.",
-      "prerequisites": ["deb_notation_regles"],
+      "prerequisites": [
+        "deb_notation_regles"
+      ],
       "lessons": [
         {
           "id": "deb_gagner_materiel_l1",
@@ -50,7 +62,10 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["prise_majoritaire", "coup_de_mazette"]
+              "categories": [
+                "prise_majoritaire",
+                "coup_de_mazette"
+              ]
             }
           }
         },
@@ -62,7 +77,10 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["collage", "gambit"]
+              "categories": [
+                "collage",
+                "gambit"
+              ]
             }
           }
         },
@@ -74,7 +92,10 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["envoi_a_dame", "coup_royal"]
+              "categories": [
+                "envoi_a_dame",
+                "coup_royal"
+              ]
             }
           }
         }
@@ -87,7 +108,9 @@
       "title": "Le tempo et les points de contact",
       "subtitle": "Méthode des points de contact, temps de repos.",
       "goal": "Compter les temps, créer et exploiter un temps de repos, utiliser la méthode des points de contact pour trouver une combinaison.",
-      "prerequisites": ["deb_gagner_materiel"],
+      "prerequisites": [
+        "deb_gagner_materiel"
+      ],
       "lessons": [
         {
           "id": "deb_tempo_l1",
@@ -97,7 +120,9 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["points_de_contact"]
+              "categories": [
+                "points_de_contact"
+              ]
             }
           }
         },
@@ -109,7 +134,10 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["temps_de_repos", "creation_temps_de_repos"]
+              "categories": [
+                "temps_de_repos",
+                "creation_temps_de_repos"
+              ]
             }
           }
         }
@@ -122,7 +150,9 @@
       "title": "Les coups nommés (1) — Express et Ricochet",
       "subtitle": "Vos deux premiers coups du répertoire classique.",
       "goal": "Reconnaître et jouer le coup de l'Express et le coup de Ricochet, deux combinaisons nommées fondamentales.",
-      "prerequisites": ["deb_tempo"],
+      "prerequisites": [
+        "deb_tempo"
+      ],
       "lessons": [
         {
           "id": "deb_coups_nommes_1_l1",
@@ -132,7 +162,9 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["coup_express"]
+              "categories": [
+                "coup_express"
+              ]
             }
           }
         },
@@ -144,7 +176,9 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["coup_ricochet"]
+              "categories": [
+                "coup_ricochet"
+              ]
             }
           }
         }
@@ -157,7 +191,9 @@
       "title": "Les coups nommés (2) — Napoléon et Rappel",
       "subtitle": "Deux combinaisons de rappel du pion adverse.",
       "goal": "Reconnaître et jouer le coup Napoléon et le coup de Rappel, qui ramènent un pion adverse vers une case fatale.",
-      "prerequisites": ["deb_coups_nommes_1"],
+      "prerequisites": [
+        "deb_coups_nommes_1"
+      ],
       "lessons": [
         {
           "id": "deb_coups_nommes_2_l1",
@@ -167,7 +203,9 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["coup_napoleon"]
+              "categories": [
+                "coup_napoleon"
+              ]
             }
           }
         },
@@ -179,7 +217,9 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["coup_rappel"]
+              "categories": [
+                "coup_rappel"
+              ]
             }
           }
         }
@@ -192,7 +232,9 @@
       "title": "Les coups nommés (3) — Trappe et Renversé",
       "subtitle": "Piéger un pion et inverser le sens de la prise.",
       "goal": "Reconnaître et jouer le coup de la Trappe et le coup Renversé, deux pièges fréquents en partie.",
-      "prerequisites": ["deb_coups_nommes_2"],
+      "prerequisites": [
+        "deb_coups_nommes_2"
+      ],
       "lessons": [
         {
           "id": "deb_coups_nommes_3_l1",
@@ -202,7 +244,9 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["coup_de_trappe"]
+              "categories": [
+                "coup_de_trappe"
+              ]
             }
           }
         },
@@ -214,7 +258,10 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["coup_renverse", "coup_parallele"]
+              "categories": [
+                "coup_renverse",
+                "coup_parallele"
+              ]
             }
           }
         }
@@ -227,7 +274,9 @@
       "title": "Les coups nommés (4) — Talon et Philippe",
       "subtitle": "Les deux derniers coups nommés du répertoire débutant.",
       "goal": "Reconnaître et jouer le coup de Talon et le coup Philippe, et avoir fait le tour des combinaisons nommées de base.",
-      "prerequisites": ["deb_coups_nommes_3"],
+      "prerequisites": [
+        "deb_coups_nommes_3"
+      ],
       "lessons": [
         {
           "id": "deb_coups_nommes_4_l1",
@@ -237,7 +286,9 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["coup_de_talon"]
+              "categories": [
+                "coup_de_talon"
+              ]
             }
           }
         },
@@ -249,7 +300,274 @@
           "attach": {
             "exercises": {
               "book_id": "manuel_debutant",
-              "categories": ["coup_philippe"]
+              "categories": [
+                "coup_philippe"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_structure_bande_centre",
+      "level": "intermediaire",
+      "order": 1,
+      "title": "Le pion à la bande et le pion au centre",
+      "subtitle": "Lire les structures de pions.",
+      "goal": "Comprendre l'opposition entre un pion à la bande et un pion au centre, et transformer cette structure en avantage.",
+      "prerequisites": [],
+      "lessons": [
+        {
+          "id": "int_structure_bande_centre_l1",
+          "title": "La structure bande / centre",
+          "intro": "Une structure clé du jeu positionnel : un pion fixé à la bande face à un pion au centre. Apprenez à voir qui domine et comment exploiter la position.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Un pion à la bande et un pion dans le centre"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_blocage",
+      "level": "intermediaire",
+      "order": 2,
+      "title": "Bloquer et empêcher le débordement",
+      "subtitle": "Neutraliser l'aile adverse.",
+      "goal": "Bloquer les pions adverses et empêcher un débordement sur l'aile.",
+      "prerequisites": [
+        "int_structure_bande_centre"
+      ],
+      "lessons": [
+        {
+          "id": "int_blocage_l1",
+          "title": "Bloquer des pions",
+          "intro": "Immobiliser une chaîne de pions adverses pour la rendre inoffensive et garder l'initiative.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Bloquer des pions"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_blocage_l2",
+          "title": "Empêcher le débordement",
+          "intro": "Le débordement perce votre aile. Apprenez à le voir venir et à le couper à temps.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Empêcher un débordement"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_grande_diagonale",
+      "level": "intermediaire",
+      "order": 3,
+      "title": "La dame et la grande diagonale",
+      "subtitle": "La diagonale a1-h8, axe du jeu de dames.",
+      "goal": "Maîtriser la lutte sur la grande diagonale et capturer une dame qui s'y aventure.",
+      "prerequisites": [
+        "int_blocage"
+      ],
+      "lessons": [
+        {
+          "id": "int_grande_diagonale_l1",
+          "title": "Capturer la dame sur la grande diagonale",
+          "intro": "Une dame sur la grande diagonale est puissante… mais vulnérable. Voici comment la piéger.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Capturer la dame sur la grande diagonale."
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_grande_diagonale_l2",
+          "title": "La lutte pour la grande diagonale",
+          "intro": "Contrôler la grande diagonale, c'est contrôler la partie. Apprenez à la prendre et à la garder.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "La lutte pour la grande diagonale"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_promotion",
+      "level": "intermediaire",
+      "order": 4,
+      "title": "La course à dame",
+      "subtitle": "Promouvoir avant l'adversaire.",
+      "goal": "Calculer une course à la promotion et inverser les rôles par un pionnage.",
+      "prerequisites": [
+        "int_grande_diagonale"
+      ],
+      "lessons": [
+        {
+          "id": "int_promotion_l1",
+          "title": "Aller à dame",
+          "intro": "Compter les temps pour savoir qui arrive le premier à dame — et forcer le passage.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Les noirs vont à dame"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_promotion_l2",
+          "title": "Inverser les rôles par un pionnage",
+          "intro": "Un pionnage bien placé peut renverser une course perdue en gain. Un thème qui surprend.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Un pionnage peut inverser les rôles!"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_finales",
+      "level": "intermediaire",
+      "order": 5,
+      "title": "Finales et opposition",
+      "subtitle": "Convertir, ou sauver, les fins de partie.",
+      "goal": "Gagner ou sauver les finales élémentaires grâce à l'opposition et au comptage.",
+      "prerequisites": [
+        "int_promotion"
+      ],
+      "lessons": [
+        {
+          "id": "int_finales_l1",
+          "title": "L'opposition",
+          "intro": "L'arme reine des finales : prendre l'opposition pour gagner le tempo décisif.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "L’opposition"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_finales_l2",
+          "title": "Finales pratiques",
+          "intro": "Dame contre pions, finales de tric-trac : les positions concrètes qui décident des parties.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "La fin de partie",
+                "Une dame contre des pions",
+                "Fins de partie dans le tric-trac"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_coups_avances",
+      "level": "intermediaire",
+      "order": 6,
+      "title": "Coups nommés avancés",
+      "subtitle": "Les combinaisons nommées en contexte de maître.",
+      "goal": "Reconnaître le coup royal et les coups de talon/ricochet dans des positions réelles.",
+      "prerequisites": [
+        "int_finales"
+      ],
+      "lessons": [
+        {
+          "id": "int_coups_avances_l1",
+          "title": "Le coup royal",
+          "intro": "Le sacrifice de dame qui rapporte gros. À reconnaître au premier coup d'œil.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Le coup royal"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_coups_avances_l2",
+          "title": "Talon et ricochet",
+          "intro": "Deux mécanismes de rafle revisités dans des positions de maître.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Le coup de talon et le coup de ricochet"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_combinaisons",
+      "level": "intermediaire",
+      "order": 7,
+      "title": "Trouver la combinaison forcée",
+      "subtitle": "Calculer jusqu'au bout.",
+      "goal": "Calculer une combinaison forcée dans des positions tirées des grands manuels.",
+      "prerequisites": [
+        "int_coups_avances"
+      ],
+      "lessons": [
+        {
+          "id": "int_combinaisons_l1",
+          "title": "Combinaisons forcées",
+          "intro": "Pas d'indice de thème ici : à vous de trouver la suite forcée qui gagne.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Cherchez une combinaison forcée.",
+                "Rien que des petits coups",
+                "Une rafle avec un retard"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_combinaisons_l2",
+          "title": "Coups de dame et attaques",
+          "intro": "Coups de dame, mises en prise, attaques directes : le registre offensif du joueur confirmé.",
+          "attach": {
+            "exercises": {
+              "book_id": "strategy",
+              "themes": [
+                "Des coups de dame",
+                "Mettre l’autre en prise",
+                "L’attaque",
+                "De la magie"
+              ]
             }
           }
         }

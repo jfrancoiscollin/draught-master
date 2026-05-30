@@ -69,17 +69,24 @@ def _resolve_exercises(spec: dict[str, Any]) -> list[dict[str, Any]]:
     """Resolve an ``attach.exercises`` block to exercise references.
 
     Supported filters: ``book_id`` (required), ``categories`` (list),
-    ``difficulty`` (int or list), ``min_difficulty``/``max_difficulty``.
+    ``themes`` (list, matched against the exercise ``hint`` — the strategy
+    manuals' theme), ``difficulty`` (int or list),
+    ``min_difficulty``/``max_difficulty``.
+
+    ``book_id`` may be ``manuel_debutant``, one specific strategy book
+    (``manuel_sijbrands`` / ``manuel_springer`` / ``manuel_keller``) or
+    ``strategy`` to span all strategy books.
     """
     book = spec["book_id"]
     if book == "manuel_debutant":
         rows = _debutant_exercise_rows()
-    elif book.startswith("manuel_") or book == "strategy":
-        rows = [r for r in _strategy_exercise_rows()]
+    elif book == "strategy" or book.startswith("manuel_"):
+        rows = _strategy_exercise_rows()
     else:
         raise ValueError(f"unknown book_id in attach.exercises: {book!r}")
 
     cats = set(spec.get("categories") or [])
+    themes = set(spec.get("themes") or [])
     diff = spec.get("difficulty")
     diffs = {diff} if isinstance(diff, int) else set(diff or [])
     dmin = spec.get("min_difficulty")
@@ -87,9 +94,13 @@ def _resolve_exercises(spec: dict[str, Any]) -> list[dict[str, Any]]:
 
     out = []
     for r in rows:
-        if book != "manuel_debutant" and r.get("book_id") != book:
-            continue
+        if book == "manuel_debutant" or book == "strategy":
+            pass  # any row from the selected corpus
+        elif r.get("book_id") != book:
+            continue  # a specific strategy book
         if cats and r.get("category") not in cats:
+            continue
+        if themes and r.get("hint") not in themes:
             continue
         if diffs and r.get("difficulty") not in diffs:
             continue
@@ -103,6 +114,7 @@ def _resolve_exercises(spec: dict[str, Any]) -> list[dict[str, Any]]:
             "name": r["name"],
             "difficulty": r.get("difficulty"),
             "category": r.get("category"),
+            "theme": r.get("hint"),
         })
     return out
 
