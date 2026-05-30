@@ -880,3 +880,25 @@ export async function searchStrategyTopic(
   })
   return res.data
 }
+
+// ── Curriculum (structured learning path) ─────────────────────────────
+import type {
+  CurriculumTree,
+  CurriculumModule,
+  CurriculumProgress,
+} from '../types'
+
+export async function getCurriculum(): Promise<CurriculumTree> {
+  const res = await api.get<CurriculumTree>('/curriculum')
+  return res.data
+}
+
+export async function getCurriculumModule(id: string): Promise<CurriculumModule> {
+  const res = await api.get<CurriculumModule>(`/curriculum/module/${id}`)
+  return res.data
+}
+
+export async function getCurriculumProgress(): Promise<CurriculumProgress> {
+  const res = await api.get<CurriculumProgress>('/curriculum/progress')
+  return res.data
+}

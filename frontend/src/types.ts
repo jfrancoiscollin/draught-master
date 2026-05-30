@@ -129,6 +129,61 @@ export interface GameDetailResponse {
   move_count: number
 }
 
+// ── Curriculum (structured learning path) ─────────────────────────────
+export interface CurriculumLevel {
+  id: string
+  title: string
+  subtitle?: string
+  order: number
+}
+
+export interface CurriculumModuleSummary {
+  id: string
+  level: string
+  order: number
+  title: string
+  subtitle?: string | null
+  goal?: string | null
+  prerequisites: string[]
+  n_lessons: number
+  n_items: number
+}
+
+export interface CurriculumTree {
+  levels: CurriculumLevel[]
+  modules: CurriculumModuleSummary[]
+}
+
+export interface CurriculumItem {
+  kind: 'exercise' | 'position' | 'tip'
+  ref: number | string
+  name?: string
+  difficulty?: number
+  category?: string
+  fen?: string
+  theme?: string
+  concept?: string
+}
+
+export interface CurriculumLesson {
+  id: string
+  title: string
+  intro?: string
+  items: CurriculumItem[]
+  n_items: number
+}
+
+export interface CurriculumModule extends CurriculumModuleSummary {
+  lessons: CurriculumLesson[]
+}
+
+export type ModuleState = 'locked' | 'available' | 'in_progress' | 'done'
+
+export interface CurriculumProgress {
+  modules: { id: string; state: ModuleState; n_solved: number; n_total: number }[]
+  next_module: string | null
+}
+
 export function sqToRowCol(sq: number): [number, number] {
   const idx = sq - 1
   const row = Math.floor(idx / 5)
