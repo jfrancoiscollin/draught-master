@@ -327,6 +327,12 @@
               "themes": [
                 "Un pion à la bande et un pion dans le centre"
               ]
+            },
+            "positions": {
+              "themes": [
+                "Un pion à la bande et un pion dans le centre"
+              ],
+              "limit": 6
             }
           }
         }
@@ -353,6 +359,12 @@
               "themes": [
                 "Bloquer des pions"
               ]
+            },
+            "positions": {
+              "themes": [
+                "Bloquer des pions"
+              ],
+              "limit": 6
             }
           }
         },
@@ -366,6 +378,12 @@
               "themes": [
                 "Empêcher un débordement"
               ]
+            },
+            "positions": {
+              "themes": [
+                "Empêcher un débordement"
+              ],
+              "limit": 6
             }
           }
         }
@@ -392,6 +410,12 @@
               "themes": [
                 "Capturer la dame sur la grande diagonale."
               ]
+            },
+            "positions": {
+              "themes": [
+                "Capturer la dame sur la grande diagonale."
+              ],
+              "limit": 6
             }
           }
         },
@@ -405,6 +429,12 @@
               "themes": [
                 "La lutte pour la grande diagonale"
               ]
+            },
+            "positions": {
+              "themes": [
+                "La lutte pour la grande diagonale"
+              ],
+              "limit": 6
             }
           }
         }
@@ -431,6 +461,12 @@
               "themes": [
                 "Les noirs vont à dame"
               ]
+            },
+            "positions": {
+              "themes": [
+                "Les noirs vont à dame"
+              ],
+              "limit": 6
             }
           }
         },
@@ -444,6 +480,12 @@
               "themes": [
                 "Un pionnage peut inverser les rôles!"
               ]
+            },
+            "positions": {
+              "themes": [
+                "Un pionnage peut inverser les rôles!"
+              ],
+              "limit": 6
             }
           }
         }
@@ -470,6 +512,12 @@
               "themes": [
                 "L’opposition"
               ]
+            },
+            "positions": {
+              "themes": [
+                "L’opposition"
+              ],
+              "limit": 6
             }
           }
         },
@@ -485,6 +533,14 @@
                 "Une dame contre des pions",
                 "Fins de partie dans le tric-trac"
               ]
+            },
+            "positions": {
+              "themes": [
+                "La fin de partie",
+                "Une dame contre des pions",
+                "Fins de partie dans le tric-trac"
+              ],
+              "limit": 6
             }
           }
         }
@@ -511,6 +567,12 @@
               "themes": [
                 "Le coup royal"
               ]
+            },
+            "positions": {
+              "themes": [
+                "Le coup royal"
+              ],
+              "limit": 6
             }
           }
         },
@@ -524,6 +586,12 @@
               "themes": [
                 "Le coup de talon et le coup de ricochet"
               ]
+            },
+            "positions": {
+              "themes": [
+                "Le coup de talon et le coup de ricochet"
+              ],
+              "limit": 6
             }
           }
         }
@@ -552,6 +620,14 @@
                 "Rien que des petits coups",
                 "Une rafle avec un retard"
               ]
+            },
+            "positions": {
+              "themes": [
+                "Cherchez une combinaison forcée.",
+                "Rien que des petits coups",
+                "Une rafle avec un retard"
+              ],
+              "limit": 6
             }
           }
         },
@@ -568,6 +644,15 @@
                 "L’attaque",
                 "De la magie"
               ]
+            },
+            "positions": {
+              "themes": [
+                "Des coups de dame",
+                "Mettre l’autre en prise",
+                "L’attaque",
+                "De la magie"
+              ],
+              "limit": 6
             }
           }
         }

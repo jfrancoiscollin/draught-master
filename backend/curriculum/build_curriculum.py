@@ -123,7 +123,10 @@ def _resolve_positions(spec: dict[str, Any]) -> list[dict[str, Any]]:
     """Resolve an ``attach.positions`` block to strategy position refs.
 
     Filters: ``source`` (str or list), ``themes`` (list), ``has_capture``
-    (bool), ``min_pieces``/``max_pieces`` (total men on board).
+    (bool), ``min_pieces``/``max_pieces`` (total men on board), ``kind``
+    ('human'/'auto'). ``limit`` caps the result; selection is deterministic
+    and prefers operator-validated ('human') diagrams, then id order — so an
+    illustrative lesson shows the best few examples reproducibly.
     """
     from strategy import position_library as lib
 
@@ -133,12 +136,16 @@ def _resolve_positions(spec: dict[str, Any]) -> list[dict[str, Any]]:
     has_cap = spec.get("has_capture")
     pmin = spec.get("min_pieces")
     pmax = spec.get("max_pieces")
+    kind = spec.get("kind")
+    limit = spec.get("limit")
 
-    out = []
+    matched = []
     for p in lib.valid_positions():
         if srcs and p["source"] not in srcs:
             continue
         if themes and p.get("theme") not in themes:
+            continue
+        if kind is not None and p.get("kind") != kind:
             continue
         if has_cap is not None and bool(p.get("has_capture")) != has_cap:
             continue
@@ -147,13 +154,22 @@ def _resolve_positions(spec: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         if pmax is not None and total > pmax:
             continue
-        out.append({
+        matched.append(p)
+
+    # Deterministic: human-validated diagrams first, then by id.
+    matched.sort(key=lambda p: (p.get("kind") != "human", str(p["id"])))
+    if limit is not None:
+        matched = matched[:limit]
+
+    return [
+        {
             "kind": "position",
             "ref": p["id"],
             "fen": p["fen"],
             "theme": p.get("theme"),
-        })
-    return out
+        }
+        for p in matched
+    ]
 
 
 def _resolve_tips(spec: dict[str, Any]) -> list[dict[str, Any]]:
@@ -234,9 +250,16 @@ def _validate_and_resolve(spine: dict[str, Any]) -> dict[str, Any]:
                 **{k: v for k, v in les.items() if k != "attach"},
                 "items": items,
                 "n_items": len(items),
+                "n_exercises": sum(1 for it in items if it["kind"] == "exercise"),
+                "n_positions": sum(1 for it in items if it["kind"] == "position"),
             })
-        resolved_modules.append({**m, "lessons": resolved_lessons,
-                                 "n_items": sum(l["n_items"] for l in resolved_lessons)})
+        resolved_modules.append({
+            **m,
+            "lessons": resolved_lessons,
+            "n_items": sum(l["n_items"] for l in resolved_lessons),
+            "n_exercises": sum(l["n_exercises"] for l in resolved_lessons),
+            "n_positions": sum(l["n_positions"] for l in resolved_lessons),
+        })
 
     # prerequisites resolve + acyclic
     for m in spine["modules"]:

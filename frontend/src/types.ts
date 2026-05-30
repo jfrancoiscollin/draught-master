@@ -147,6 +147,8 @@ export interface CurriculumModuleSummary {
   prerequisites: string[]
   n_lessons: number
   n_items: number
+  n_exercises: number
+  n_positions: number
 }
 
 export interface CurriculumTree {
@@ -172,6 +174,8 @@ export interface CurriculumLesson {
   intro?: string
   items: CurriculumItem[]
   n_items: number
+  n_exercises?: number
+  n_positions?: number
 }
 
 export interface CurriculumModule extends CurriculumModuleSummary {
