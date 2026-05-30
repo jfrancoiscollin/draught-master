@@ -1489,9 +1489,3375 @@
       "n_positions": 0
     },
     {
-      "id": "int_structure_bande_centre",
+      "id": "int_comb_2",
       "level": "intermediaire",
       "order": 1,
+      "title": "Combinaisons en deux temps",
+      "subtitle": "Le mécanisme de base de toute combinaison.",
+      "goal": "Voir et calculer les combinaisons gagnantes en deux temps, le socle de tout le calcul tactique.",
+      "prerequisites": [],
+      "lessons": [
+        {
+          "id": "int_comb_2_l1",
+          "title": "Combinaisons en 2 temps",
+          "intro": "Deux coups pour gagner du matériel. Entraînez l'œil à repérer le motif et à calculer la suite forcée.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 7001,
+              "name": "COMBINAISONS EN 2 TEMPS – D1",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "le premier temps est nécessairement un contact avec un pion adverse, ici 26-21 Le pion noir peut prendre de trois manièr"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7002,
+              "name": "COMBINAISONS EN 2 TEMPS – D2",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "Le coup est connu sous le nom de coup de mazette. Ce coup se rencontre fréquemment en partie. 28-22   32x5"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7003,
+              "name": "COMBINAISONS EN 2 TEMPS – D3",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "les Blancs ont plusieurs manières de sacrifier leurs pions. Il est nécessaire de toutes les passer en revue et de faire"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7004,
+              "name": "COMBINAISONS EN 2 TEMPS – D4",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "Les Noirs attaquent 2 pions. Cette situation doit orienter les recherches vers un collage : 34-29   29x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7005,
+              "name": "COMBINAISONS EN 2 TEMPS – D5",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "La solution n’est pas évidente. Là encore, il est nécessaire de tout examiner attentivement en s’attachant aux prises ma"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7006,
+              "name": "COMBINAISONS EN 2 TEMPS – D6",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "Une attaque de 2 pions par les Noirs. Cela oriente normalement vers un collage. Ici, ce n’est pas possible. Un tour d’ho"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7007,
+              "name": "COMBINAISONS EN 2 TEMPS – D7",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "Une attaque de 2 pions, donc un collage : 33-29   29x18"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7008,
+              "name": "COMBINAISONS EN 2 TEMPS – D8",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "Oser donner 3 pions ne vient pas naturellement à l’esprit. Dans bien des cas, la solution échappe à notre intuition. Il"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7009,
+              "name": "COMBINAISONS EN 2 TEMPS – D9",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "La prise majoritaire est ici déterminante : 43-38   48x10"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7010,
+              "name": "COMBINAISONS EN 2 TEMPS – D10",
+              "difficulty": 1,
+              "category": "combinaisons_2",
+              "theme": "Comme dans le diagramme n°8, la solution est contre intuitive : 34-30   30x37  7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7011,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "pour trouver la solution, il faut s’intéresser aux points de contact. Le 1 er coup ne peut être que 2721 ou 37-31. Ensui"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7012,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Les Noirs viennent d’attaquer en lunette. Ils menacent de prendre un pion et de damer. Il faut penser à la règle de la p"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7013,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La solution est basée sur le même principe que le diagramme précédent. Solution : 33-28   48x28"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7014,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Attention, ce sont cette fois les Noirs qui gagnent. Il est important de voir les combinaisons avec les Blancs et avec l"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7015,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La solution est inattendue. Notre esprit n’est pas préparé à déceler ce genre de combinaison. Il faut s’habituer à envis"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7016,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Ce coup est connu sous le nom de « coup de l’express ». Il s’agit ici de sa forme la plus simple. Solution : 37-31   33x"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7017,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "27-22 ne donne qu’un échange de pions. Le gain s’obtient par 33-28   39x6"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7018,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "l’attaque de plusieurs pions est souvent à l’origine de « collages ». Solution : 33-28   28x19"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7019,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Là encore, la prise majoritaire est la clé. Solution : 42-38   20x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7020,
+              "name": "COMBINAISONS EN 2 et 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "En examinant la position, on peut espérer faire un coup de dame aboutissant à la case 2. La case de départ est donc néce"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7021,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La formation de 4 pions 33-38-42-43 est très intéressante pour réaliser des combinaisons connues sous le nom de « Coup p"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7022,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Les Noirs sont entrés en lunette et menacent 2 pions. En examinant la position des Noirs, on voit qu’il suffit d’amener"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7023,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Beaucoup de trous dans le camp des Noirs. La prise majoritaire permet à nouveau de conclure. Solution : 33-29   47x29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7024,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Solution : 33-29   29x36"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7025,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Solution : 29-23   21x5"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7026,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Solution : 28-22   23x1"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7027,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Ce genre de situation se présente assez fréquemment en partie. Sur les attaques de pions, il faut tout envisager. Les co"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7028,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Un cas très pratique. Une attaque de 2 pions apparemment décisive. La prise majoritaire est bien souvent un moyen de déf"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7029,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Harry KOLK – Leo MOUS   Une combinaison en 3 temps. La réflexion se porte automatiquement sur la rafle et sur le point d"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7030,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "S. LAUTENBACH – J. van der DOE   La rafle 28x30 est déjà prête. Il ne manque que le pion 17 à faire sauter. Solution : 3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7031,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La formation des Noirs en étoile 13-14-19-23-24 est souvent à l’origine d’une combinaison connue sous le nom de « Coup r"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7032,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Gil SALOME – Fidèle NIMBI   La prise majoritaire réserve bien des surprises. Le premier coup est inattendu. Cela prove u"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7033,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "A nouveau la prise majoritaire. Solution : 32-27   49x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7034,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Un intrus dans cette série de combinaisons. Il s’agit d’un gambit. Cette forme de gain basée sur le sacrifice d’un pion"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7035,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "33-29   37x10"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7036,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Une attaque de 3 pions. Il faut avoir le réflexe de penser au collage. Solution : 32-27   27x29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7037,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La règle de la prise majoritaire est inattendue mais décisive. Solution : 33-29   37x10"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7038,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La rafle 28x10 se dessine. Il faut trouver le moyen de placer une pièce noire en 22. L’envoi à dame est le mécanisme app"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7039,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Marcel NAVARRO – Piet ROOZENBURG   L’idée de base repose sur une combinaison aboutissant à 45. Le point d’appui se situe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7040,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Cees BAKKER – Fred IVENS   Il faut commencer par éliminer l’idée d’une combinaison en 47 ou 49 car il n’y a pas de point"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7041,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Ce coup est connu sous le nom de « coup Philippe ». Il s’agit ici de sa forme la plus élémentaire. Solution : 34-30   40"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7042,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "On retrouve le thème de la prise majoritaire. Solution : 27-21   43x3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7043,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "On retrouve le thème du collage Solution : 26-21   21x3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7044,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "On retrouve le thème du gambit. Solution : 26-21   38-32"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7045,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "17-12   44x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7046,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Francesco LAPORTA – Georges MOSTOVOY   Les Noirs gagnent par   26x10"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7047,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La rafle finale 27x49 ne saute pas aux yeux car les pions 18 et 29 semblent bien en place. Les points de contact sont 27"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7048,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Pieter BERGSMA – J. de VRIES   Les points de contact sont 35-30, 32-27, 33-29, 34-29 et 34-30. En offrant 2 pions par 33"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7049,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Eugène LECLERCQ – Isidore WEISS   La rafle   est cachée car elle semble vouée à l’échec en raison du pion 36. En recherc"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7050,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La rafle n’est pas très évidente à trouver. On s’attend normalement à une rafle 36x20. Il existe un autre point d’appui"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7051,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Une combinaison étonnante sur le principe de la prise majoritaire. Solution : 25-20   36x20"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7052,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Une application de la prise majoritaire. Solution : 38-32   32x34"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7053,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Michael KORENIEVSKI - Viacheslav SHCHEGOLEV   On ne pense pas toujours à tout. Même les coups en 2 temps peuvent échappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7054,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Les Blancs gagnent par un gambit de 2 pions. Solution : 27-21   28-23"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7055,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La règle précise que l’on doit d’abord effectuer la prise et seulement ensuite enlever les pions. L’application de cette"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7056,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La rafle 29x16 ou 29x27 est immédiatement repérable. Sans point d’appui à 29, il faut penser au collage. Solution : 32-2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7057,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "L’idée d’une rafle aboutissant à 6 est plausible. Il faut d’une part éliminer le pion 19 et d’autre part trouver un poin"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7058,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Rien d’évident à première vue. La seule manière de procéder est d’envisager le coup inattendu 33-28 et d’examiner mental"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7059,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La rafle 40x7 caractérise le Coup royal. Solution : 27-22   32x21   40x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7060,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Wim RUSTENBURG – Piet van DARTELEN   L’idée est d’aboutir sur la case 7. Le pion 29 peut servir d’appui. Il reste à ache"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7061,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "une combinaison basée sur la prise majoritaire Solution : 29-24   42x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7062,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "les Noirs ont attaqué 4 pions. Il faut penser au collage Solution : 29-23   23x1"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7063,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "l’attaque du pion 24 est souvent décisive. On y parvient par un gambit. Solution : 32-27   34-29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7064,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Rienk van Marle – Johan Krajenbrink   De nombreuses prises possibles. Il faut penser simultanément à une rafle se termin"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7065,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "une combinaison avec peu de pions qui réunit de nombreux mécanismes, à savoir la prise majoritaire, l’envoi à dame et le"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7066,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Benedictus SPRINGER – R.C. KELLER   La combinaison peut se trouver de 2 manières. Soit en envoyant le pion blanc à 23 à"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7067,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Claude GOURNIER – Baba SY   Là encore, 2 manières de procéder. Soit commencer par l’envoi à dame  , soit supposer une ra"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7068,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "un grand classique, le coup de mazette : 34-29   27-22   31x3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7069,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "un coup de mazette inversé : 28-22   24-19   29x27"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7070,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "la rafle 36x9 est à rechercher. Il faut amener un pion noir en 31. Le pion 24 est un bon candidat. Solution : 33-28   42"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7071,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "L’attaque 38-32 libère la case 38 et rend envisageable un coup de dame à 49. Il reste à trouver comment acheminer un pio"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7072,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Harry de WAARD – Andrew TJON A ONG   Une attaque de 3 pions qui laisse supposer un collage. Solution : 27-21   21x43 +1p"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7073,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Pas de combinaison possible, mais un très joli gambit. Solution : 27-22   29-23"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7074,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Un coup de dame sur la case 1 semble vraisemblable. Solution : 28-22   43x34   34x1"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7075,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Une attaque après laquelle le pion blanc 34 devient un point d’appui grâce à 2 prises majoritaires successives. Solution"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7076,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Joop JANSSEN – Geert van AALTEN   Dès que les Noirs ont l’idée d’un coup de dame à 46, le plan se précise. Enlever le 28"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7077,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Patrick CARLI – Adrie van OUTHEUSDEN   A nouveau le mécanisme de la prise majoritaire. Solution : 28-23   23x3   25x34"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7078,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Un coup de dame à 1 ou à 5 semble prévisible, oui mais comment ? Solution : 39-34   29-24   34x1"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7079,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "A. VERESJAGIN – S. BALAJAN   L’attaque de 2 pions laisse supposer un collage. Solution :   27x7   32x21"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7080,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La formation 33-38-42-43 est propice aux coups parallèles. Solution : 32-27   33-28   38x29  28"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7081,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "G. LINSSEN,G. – Menno BANDSTRA   Une seule rafle possible, à savoir 30x6. Il ne faut pas hésiter à faire sauter le pion"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7082,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Une combinaison base sur le mécanisme de la prise majoritaire. Solution : 33-29   29x29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7083,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Jan LOENEN – Jasper HENGEFELD   Une mignonne exploitation des temps de repos. Solution : 33-29   32-27   27x9"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7084,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Soerish BADAL – Mark KEMPERMAN   L’attaque des Blancs crée pour les Noirs un temps de repos, ou l’opportunité d’un colla"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7085,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Theo SCHIPPERS – Frank BARTEN   Beaucoup de trous dans le camp des Noirs mais peu de points d’appui chez les Blancs. Cel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7086,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "J. van LEEUWEN – Douwe de JONG   Une combinaison compliquée. Par le raisonnement, on peut la trouver. Les Noirs disposen"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7087,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Beaucoup de trous dans le camp des Noirs. L’offre 22-17 fournit aux Blancs un temps de repos qu’ils peuvent utiliser. So"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7088,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Les cases vides en 13 et 24 laissent entrevoir une rafle aboutissant à la case 15. L’offre classique de 3 pions par 26-2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7089,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Krijn TOET – Frits LUTEIJN   La rafle 41x3 est à envisager. Avec la formation 31-36-37-41-46, il faut penser au mécanism"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7090,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Une rafle aboutissant à la case 3 est la plus probable. Quels sont les points d’appui possibles ? Les pions 32 et 45. Le"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7091,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Matthias de KRUIJF – Ad de HEK   Une attaque de 3 pions. Il faut penser aux collages. Solution :   26x19"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7092,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Pas de point d’appui. Il faut penser aux combinaisons basées sur le principe du collage. Solution : 28-22   34-29   29x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7093,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Il faut s’intéresser aux points de contact et suivre mentalement les prises. Solution : 38-33   32x43   26x8"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7094,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Tout est prêt pour une rafle 33x4. Il suffit de faire sauter le pion noir 24. Solution : 25-20   35-30   33x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7095,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Une combinaison qui about sur la case 10. Il faut supprimer le pion 17 et acheminer un pion noir en 32. Solution : 26-21"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7096,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Boris FELDMAN – GAINULLIN   Une jolie combinaison assez surprenante. Le but est d’arriver en 10. Le point d’appui est le"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7097,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "A. DUSSAUT – Isidore WEISS   Le mécanisme de la prise majoritaire n’est pas inné. Un examen scrupuleux de la position pe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7098,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Une composition de Van DARTELEN. En laissant prendre à dame, on remarque que la dame devra ensuite prendre 2 pions. Il f"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7099,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "La formation des Noirs comporte de nombreux trous. Une rafle 39x6 semble réaliste. La question est simplement de savoir"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7100,
+              "name": "COMBINAISONS EN 2 ET 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_2_3",
+              "theme": "Jos STOKKEL - Yevgeniy SKLYAROV   Une rafle aboutissant en 45 est la plus probable. Il suffit de faire sauter le pion 32"
+            }
+          ],
+          "n_items": 100,
+          "n_exercises": 100,
+          "n_positions": 0
+        }
+      ],
+      "n_items": 100,
+      "n_exercises": 100,
+      "n_positions": 0
+    },
+    {
+      "id": "int_comb_3",
+      "level": "intermediaire",
+      "order": 2,
+      "title": "Combinaisons en trois temps",
+      "subtitle": "Allonger le calcul.",
+      "goal": "Calculer des combinaisons de trois temps sans se tromper dans l'ordre des coups.",
+      "prerequisites": [
+        "int_comb_2"
+      ],
+      "lessons": [
+        {
+          "id": "int_comb_3_l1",
+          "title": "Combinaisons en 3 temps",
+          "intro": "Un temps de plus à anticiper. La précision dans l'ordre des coups devient décisive.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 7101,
+              "name": "COMBINAISONS EN 3 TEMPS – D1",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "A van der VOORT – Henk EIJKELKAMP   Comment exploiter les nombreux trous dans la position des Noirs ? Pas vraiment d’aut"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7102,
+              "name": "COMBINAISONS EN 3 TEMPS – D2",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "Un coup Napoléon : 23-18   24-19   29x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7103,
+              "name": "COMBINAISONS EN 3 TEMPS – D3",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "D. BUMBULE – Elena ALTCHOUL   L’expérience est utile pour découvrir rapidement cette combinaison. Le principe d’un envoi"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7104,
+              "name": "COMBINAISONS EN 3 TEMPS – D4",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "Un coup de dame usuel 31x4. Il faut faire sauter les pions 13 et 22. Solution :24-19   39x17   31x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7105,
+              "name": "COMBINAISONS EN 3 TEMPS – D5",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "Douwe de JONG – T. van PROOIJEN   Une combinaison très usuelle dans ce genre de position. La case vide en 9 laisse augur"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7106,
+              "name": "COMBINAISONS EN 3 TEMPS – D6",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "J. GAROUTE – Maurice RAICHENBACH   Des pions très avancés du côté des Noirs. Un envoi à dame suivi d’un collage est plus"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7107,
+              "name": "COMBINAISONS EN 3 TEMPS – D7",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "Une attaque de 2 pions. Il faut penser aux collages et aux coups inattendus. Au jeu de dames, tout est possible. Solutio"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7108,
+              "name": "COMBINAISONS EN 3 TEMPS – D8",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "Une combinaison très logique avec une rafle 35x2. Solution : 33-29   36-31   35x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7109,
+              "name": "COMBINAISONS EN 3 TEMPS – D9",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "Beaucoup de trous dans la position des Noirs. Une case d’arrivée à 7 plus légitime que les autres, Une seule case de dép"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7110,
+              "name": "COMBINAISONS EN 3 TEMPS – D10",
+              "difficulty": 2,
+              "category": "combinaisons_3",
+              "theme": "Un coup de dame en 2. Il faut placer un pion en 17 et acheminer un pion en 27. Solution : 27-21   28-23   31x2  38"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7111,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une jolie combinaison avec une rafle finale 45x5. Solution : 30-24   28-22   45x5"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7112,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une combinaison peu évidente. Il faut penser à la règle de la prise majoritaire. Solution : 22-17   29-24   32x3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7113,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Piet HOVINGH – Flip JERNBERG   Solution :   25x5   5x28"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7114,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une rafle en 31x4 est plausible. Il faut faire sauter le pion 22 et acheminer un pion noir en 27. Solution : 33-28   39-"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7115,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Baris DUKEL - Jan de KLUIJVER   En voyant les trous dans la position des Blancs, on pense forcément à une rafle 9x… Il r"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7116,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Les trous dans la position des Noirs augurent une rafle 34x… Solution : 22-17   27-21   34x3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7117,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un exemple typique du coup de ricochet. Solution : 28-22   26x17   27x29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7118,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Rien de compliqué. On pense à une rafle vers la case 6 et le mécanisme du coup de rappel assure la mise en place du pion"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7119,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Remco BLOMSMA – Henk GROTENHUIS TEN HARKEL   Beaucoup de trous chez les Blancs, beaucoup de rafles possibles, mais un se"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7120,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une combinaison en 4 temps. La rafle finale n’est pas évidente à concevoir. La rafle intermédiaire 38x9 est plus accessi"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7121,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "La rafle 26x10 semble la plus probable. Il reste à acheminer un pion noir en 21. Solution : 34-29   31-27   26x10"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7122,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Henk GROTENHUIS TEN HARKEL – Jos STOKKEL   Une position d’enchaînement. Il faut regarder ce que donnent les différentes"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7123,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Pierre PEROT – Georges MOSTOVOY   Une combinaison très usuelle en présence d’un pion à 16. Solution :   33x15   16x27"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7124,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "J. KETELAARS – Frans KALSBEEK   Je crois que la meilleure manière de trouver la solution consiste à examiner mentalement"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7125,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une rafle 45x3 semble se dessiner. Oui mais comment acheminer un pion noir en 40 ? Solution : 32-27   43-38   45x3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7126,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "2 manières de trouver la solution. Soit tout essayer, soit penser à la rafle 39x10. Solution : 32-27   24-20   39x10"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7127,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "La position des Noirs semble compacte. Pourtant, tout explose après 29-23   33x24   36x9"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7128,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "La rafle présumée est 41x3. Il ne reste qu’à acheminer un pion noir en 37. Solution : 34-29   39x30   41x3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7129,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "On retrouve le schéma du coup de l’express. Il faut enlever le pion 13 et amener un pion noir en 28. Solution : 24-19"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7130,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Le coup de l’express est plus caché. Solution : 29-24   37-31   38-32   33x4  44"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7131,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup de dame sur la case 5. On retrouve le thème du collage. Solution : 28-22   40-34   34x5"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7132,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Les trous 4 et 13 dans la position noire font immédiatement penser à un coup de dame en 4. Solution : 29-24   49-44   31"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7133,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une combinaison ultra classique qui se présente fréquemment en partie. Solution : 28-22   27-21   42x24"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7134,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "J. KLOOT – J. KUIPERS   Un coup de dame 31x4. Il suffit d’achemiiner un pion noir en 30. Solution : 37-31   40-34   35x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7135,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup de dame en 1 avec une rafle 43x1. Solution : 37-31   29-23   43x1"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7136,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup de dame à 2. Une case de départ de la rafle en 44. Solution : 37-31   40-34   44x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7137,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup Napoléon : 28-22   27-21   31x24"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7138,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Frans COENEN – J. Van INGEN   Les Blancs attaquent 3 pions. La solution provient vraisemblablement d’une prise majoritai"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7139,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup de dame à la case 4 parait possible. Il suffit de faire sauter le pion noir 24 et d’amener un pion noir en 29. L"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7140,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Yves le GOFF – Alfred MOLIMARD   La rafle finale à découvrir,  , est bien cachée. Certaines combinaisons sont difficiles"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7141,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Pas très évident de terminer une rafle en 7. Il faut penser au pion de base 49 qui peut aboutir sur cette case. Il ne ma"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7142,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "On pense à une rafle se terminant en 10. Le coup de rappel permet d’amener un pion noir en 22. Solution : 22-17   32-27"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7143,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une rafle en 6 se profile. Il faut acheminer un pion noir en 33. Solution : 34-30   43-38   39x6"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7144,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une combinaison avec fin de partie. Solution : 24-20   32-28   37x19 etc. Si les Noirs échangent, ils perdent par opposi"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7145,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Stephan MICHIELS – Fernand MARINI   Un coup de la trappe terriblement efficace : 44-39   32-28   50x10"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7146,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un joli petit coup de la trappe par 38-32   27-22   44x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7147,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "W. RAPOPPORT – Boris GERTSENZON   2 rafles plausibles, 26x10 ou 30x6. On s’aperçoit rapidement qu’il n’est pas possible"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7148,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Gerrit van AALTEN – Rob CLERC   Un coup de dame à 48 ou 50 est le plus vraisemblable. La case de départ pour la rafle ne"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7149,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "La rafle finale aboutit à la case 44. La seule case de départ cohérente est la case 13. Il faut donc amener un pion blan"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7150,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Edmondo FANELLI – Oscar VERPOEST   La rafle finale semble aboutir en 6 ou en 10. Une case de départ possible est la case"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7151,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une combinaison aboutissant à la case 4. Il faut trouver la bonne case de départ de la rafle. Ensuite, tout s’enchaîne."
+            },
+            {
+              "kind": "exercise",
+              "ref": 7152,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Arie DATEL – Alex SCHWARZMAN   Il faut avoir l’idée de faire sauter le pion 32 pour faire une rafle 21x25 Solution :   2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7153,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup de dame sur la case 2. La case de départ ne peut être que la case 35. Il faut éliminer le pion 24 et acheminer u"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7154,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Freek GORDIJN – B. den HARTOGH   Une exploitation du pion de bande 35. Solution : 34-30   33-28   38x18"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7155,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Harry CLASQUIN – Teus van ES   Un coup de la trappe : 28-22   24-20   29x27"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7156,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup renversé : 33-29   39x30   27-21   32x25"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7157,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Pendant le temps de repos, les blancs adoptent la position caractéristique du mécanisme de coup renversé. Solution : 28-"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7158,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Pieter BERGSMA – Jac SPOELSTRA   Une rafle se terminant en 5 parait possible. La case de départ 43 semble s’imposer. Il"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7159,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Jacob SPOELSTRA – Pieter BERGSMA   La rafle se termine en 45. La case de départ est la case 21. Pour acheminer un pion b"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7160,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une combinaison traitre. Evidemment, le but est de damer en 5. Sauf qu’il n’y a pas de case de départ évidente. Il faut"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7161,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "On ne pense pas naturellement à l’envoi à dame. Ce procédé surprenant offre pourtant d’intéressantes perspectives. Solut"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7162,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Jan BOM – Geert van DIJK   Les Blancs attaquent 3 pions. Une combinaison se terminant sur la case 44 serait parfaite. Le"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7163,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Stef BAERENDS – Henk STOOP   Un coup de dame en 46 :   34x23   31x13"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7164,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup de l’express : 28-22   37-31   33x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7165,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Johan HAIJTINK – C. SCHOLTE LUBBERINK   La rafle finale n’est pas évidente. Il y a pourtant le schéma d’une rafle de cou"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7166,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "J. van LEIJEN – Peter SCHUNSELAAR   En principe, pas de problème. La rafle se termine en 6 et part de la case 30. Le cou"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7167,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup Napoléon :22-18   32-28   34-29   39x8"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7168,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Jurij KOLODIEV – Vladimir WEYTSMAN   Un coup Napoléon par : 32-28   24-19   34-30   40x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7169,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un pur coup Napoléon : 27-22   28-22   26-21   31x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7170,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Stanislaw PAPINSKI - Jerzy LEWANDOWSKI   Une rafle 48x6 se dessine. Pas de problème particulier. Solution :34-30   28-22"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7171,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une rafle se terminant en 6 avec le pion 30 pour le départ. Solution : 26-21   32-27   30x6"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7172,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup de rappel : 28-23   38-33   32x14"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7173,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "La rafle ne peut aboutir qu’en 9. La case de départ ne peut être que la case 36. Solution : 28-23   33-28   36x9"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7174,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Nico KOCKEN,- Harry DOOMERNIK   Un genre de coup de la trappe se terminant par une rafle 23x45. Solution :   27x7   7x20"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7175,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Herman HOOGLAND – Henri van den BROEK   Un coup de dame à 4. Avec la case vide en 39, un coup de la trappe est envisagea"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7176,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un pur coup de la trappe : 31-27   26-21   37x26   42x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7177,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "André MAERTZDORF – Marijn ALOFS   Evidemment un coup de dame à 5, avec sans doute le pion 43 comme départ de la rafle. L"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7178,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Evert BRONSTRING – Ed HOLSTVOOGD   Normalement pas de difficulté. Le pion 50 doit légitimement servir de base à la rafle"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7179,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une combinaison envisagée en partie par Jan van DIJK. Son mécanisme est inattendu. La rafle finale ne peut-être qu’en 9"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7180,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "L. KATS – Vladimir AGAFONOV   Une combinaison basée sur l’envoi à dame et le coup de ricochet. Solution :   23x3   3x17"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7181,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une combinaison inattendue qui pourrait surprendre de nombreux fors joueurs. Il faut encore une fois penser à la prise m"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7182,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Une combinaison aboutissant sur la case 7. Solution : 34-30   33-28   29x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7183,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "John LEWKOWICZ – Erik BLOKLAND   La rafle 50x8 est la plus vraisemblable. Le pion 24 peut être amené en 33 par le coup d"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7184,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Le coup de dame à 3 repose sur un pur coup de talon : 34-29   33-29   28x48   32x3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7185,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Le coup de dame à 1 repose sur un pur coup de talon : 32-28   33-28   29x49   34x1"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7186,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Evgeni VATUTIN – Pieter STEIJLEN   Le coup de dame direct à 1 par 28-22 n’est pas correct. Les Blancs peuvent y parvenir"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7187,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Johan WIERING – Paul SIER   La rafle 1x41 doit sauter aux yeux. Le coup de la trappe qui permet d’y parvenir est un peu"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7188,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Jimmy DEPAEPE – Jan GROENENDIJK   Une combinaison assez cachée. Tout d’abord, la rafle 1x41 n’est pas apparente. Ensuite"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7189,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un pur coup de la trappe : 37-31   38-33   24-20   29x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7190,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Herman de JONGH- Stanislas BIZOT   Une combinaison inattendue. La rafle évidente est 48x10, mais cela ne marche pas car"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7191,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "La dernière combinaison en 3 temps. Un coup turc : 37-31  47-41   38x29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7192,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Piet DARTELEN – A. LIGTHART   Avec deux pions noirs en 23 et 25, il faut penser au coup philippe. Il faut faire sauter l"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7193,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Là encore, la présence simultanée des pions 23 et 25 laisse augurer un coup philippe. Solution : 37-31   33x22   34-30"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7194,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Serguei DAVIDOV – W. ROMANOV   L’attaque des Noirs permet de retrouver le schéma du coup philippe. Solution : 31-26   26"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7195,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "On imagine bien que la rafle se terminera sur la case 7. On soupçonne également que la case de départ sera la case 38. M"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7196,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Klaas Hendrik LEIJENAAR – Julia ROMANSKAIA   Avec tous ces trous, il y a forcément un moyen de tourner. Solution : 33-28"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7197,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Un coup de mazette classique : 28-22   25-20   40x18   32x5. A se souvenir, la prise forcée   qui libère la rafle 32x5."
+            },
+            {
+              "kind": "exercise",
+              "ref": 7198,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Emmanuel MERIN - Wladimir AGAFONOW   L’attaque des blancs crée un temps de repos. Les cases vides dans le camp des blanc"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7199,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Pas de vraie méthode pour trouver la solution. Il faut visualiser mentalement les conséquences de 32-28. Solution : 34x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7200,
+              "name": "COMBINAISONS EN 3 ET 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_3_4",
+              "theme": "Leo ALIAR – Marco HUIJZER   Pas de secret. La rafle finale se termine sûrement en 6. La case de départ ne peut être que"
+            }
+          ],
+          "n_items": 100,
+          "n_exercises": 100,
+          "n_positions": 0
+        }
+      ],
+      "n_items": 100,
+      "n_exercises": 100,
+      "n_positions": 0
+    },
+    {
+      "id": "int_comb_4",
+      "level": "intermediaire",
+      "order": 3,
+      "title": "Combinaisons en quatre temps",
+      "subtitle": "Profondeur et précision.",
+      "goal": "Mener à terme des combinaisons de quatre temps en visualisant la position finale.",
+      "prerequisites": [
+        "int_comb_3"
+      ],
+      "lessons": [
+        {
+          "id": "int_comb_4_l1",
+          "title": "Combinaisons en 4 temps",
+          "intro": "Quatre coups forcés : il faut voir la position d'arrivée avant de se lancer.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 7201,
+              "name": "COMBINAISONS EN 4 TEMPS – D1",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "Jan HENDRIK Vos- R.C KELLER   Quelle rafle finale ? 28x6 parait peu probable. 26x10 semble envisageable. Amener un pion"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7202,
+              "name": "COMBINAISONS EN 4 TEMPS – D2",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "Une combinaison assez simple, mais qui échappe à notre raisonnement. Cette manière de combiner est très rare. Solution :"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7203,
+              "name": "COMBINAISONS EN 4 TEMPS – D3",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "Une combinaison ultra classique sur le mécanisme du coup parallèle : 37-31   27-21   38-32   42x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7204,
+              "name": "COMBINAISONS EN 4 TEMPS – D4",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "Jan APELDOORN – Cock van WIJK   2 rafles sont envisageables   et  . Les possibilités de sacrifier les pions noirs montre"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7205,
+              "name": "COMBINAISONS EN 4 TEMPS – D5",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "Rein van der PAL – Teake KOOISTRA   Normalement, pas de problème particulier. La rafle envisageable est 29x7 démarrant p"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7206,
+              "name": "COMBINAISONS EN 4 TEMPS – D6",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "B. SJKITKIN – Andris ANDREIKO   Une combinaison inattendue mais simple : 34-30   24-20   35-30   40x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7207,
+              "name": "COMBINAISONS EN 4 TEMPS – D7",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "Alfred MOLIMARD – Marcel BONNARD   Une seule rafle possible 35x4. Un seul pion noir 19 pouvant parvenir à la case 30. Le"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7208,
+              "name": "COMBINAISONS EN 4 TEMPS – D8",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "Une combinaison qui fait se creuser les méninges pour visualiser les pions qui restent en place et les rafles vraiment p"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7209,
+              "name": "COMBINAISONS EN 4 TEMPS – D9",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "Une combinaison ultra classique sur le thème du coup philippe par : 35-30   33x24   25x34   38x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7210,
+              "name": "COMBINAISONS EN 4 TEMPS – D10",
+              "difficulty": 3,
+              "category": "combinaisons_4",
+              "theme": "Sergey EGOROV - Nikolai SRETENSKI   Cela tourne par   27x18   28x19   19x8    68"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7211,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "L’attaque des noirs livre un temps de repos. La rafle 28x6 est la plus vraisemblable. Solution : 29-24   38-33   33-29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7212,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "V. KRIVOROEK – Iser KOUPERMAN   Une combinaison ultra classique connue sous le nom de coup de chevron, en raison de la f"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7213,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Ben SPRINGER – Maurice RAICHENBACH   En principe, pas de difficulté pour damer à 4 par   22x31   23x12   12x21"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7214,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Frits LUTEIJN – R. SCHIPPERS   Avec tous les trous dans la position des blancs, on pense à une rafle se terminant en 45."
+            },
+            {
+              "kind": "exercise",
+              "ref": 7215,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "W LIMON – Jaap RIESENKAMP   Evidemment, un coup de dame à 46. La case de départ la plus logique est la case 8. Solution"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7216,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Arie STOORVOGEL - Radijnder BANARSI   Pas de raisonnement particulier pour voir cette combinaison. Il faut avoir à l’esp"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7217,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Thé van den HOEK – N. KEESSEN   Il faut avoir l’idée d’une rafle 50x6. Après, cela devient facile de sacrifier 5 pions p"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7218,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Une petite combinaison qui peut échapper si on ne pense pas aux conséquences de l’envoi à dame qui livre un temps de rep"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7219,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Mariusz ADAMASZEK – Konstantin ALEKSEJEV   Que la rafle aboutisse en 7 n’est pas surprenant. Oui mais quelle peut être l"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7220,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Il s’agit d’un coup de dame sur la case 2, avec une rafle 31x2. Comment raisonner ? Pour qu’une combinaison soit possibl"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7221,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Une combinaison ultra classique, mais toujours surprenante. Solution : 37-31  32x41   34-29   29x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7222,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Piet ROOZENBURG – Dammis van der STAAY   Avec le raisonnement, on parvient assez facilement à la solution. Coup de dame"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7223,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Pieter BERGSMA – F. MULDER   Normalement, pas de difficulté pour exécuter une rafle 48x10. Solution : 34-30   28-22   42"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7224,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Aleksej DOMCHEV – Y. LEIKIN   Pas de rafle visible. Il faut commencer par donner mentalement les pions et voir si on peu"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7225,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Un coup royal très pur : 27-22   32x21   44-40   40x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7226,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Stanislas BIZOT – Marius FABRE   Avec un pion avancé à 22, le mécanisme d’envoi à dame doit être un réflexe. Concevoir l"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7227,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Rafle finale en 10. Il manque simplement un pion en 32 pour y parvenir. Solution : 35-30   44-39   31-27"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7228,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Joop ROEDOLPH – Cock vanWIJK   Coup de dame en 5. Il faut éliminer le pion 23, puis penser au mécanime de coup parallèle"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7229,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "La rafle 36x16 semble la plus probable. Eliminer le pion noir 27 et amener un pion en 31, sont les 2 difficultés à surmo"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7230,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Wim van der SLUIS - Viacheslav SHCHEGOLEV   Comment damer à 2 ? Phase de déblaiement : aucune Phase de positionnement 1"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7231,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Arie BOM – Fred IVENS   La rafle 21x25 est à portée de main. Il suffit d’enlever le pion 23. L’envoi à dame est la solut"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7232,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "KAPLAN   - STEPANOV,I.   La rafle n’est pas évidente à imaginer. Aller en 45 semble impossible. Il faut donc y aller par"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7233,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Rob GEURTSEN – Bernard LEMMENS   En principe, pas de problème. Juste un peu de concentration. Solution : 32-27   35-30"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7234,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Wim de JONG – Joop ANSEMS   Le genre de cmbinaison ultra simple si on pense à la rafle 26x6. En 2 temps, 3 mouvements, o"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7235,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Une combinaison ultra classique : 25-20   35-30   33x13   27x49"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7236,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Assez simple, mais on n’y pense pas forcément. Notre esprit est attiré sur la droite alors que la combinaison se termine"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7237,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Une combinaison avec double envoi à dame connue sous le nom de coup de l’escalier : 27-21   40-35   35x24   45x1"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7238,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Jean TSCHUDIN – Marcel BONNARD   Le raisonnement peut être le suivant. Si une combinaison existe pour les Noirs, on conç"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7239,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "L’enchaînement de l’aile droite associé au centre est souvent à l’origine de belles combinaisons. Ici, le but est d’amen"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7240,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Un très joli coup de talon. Cette combinaison est un peu déroutante par son mécanisme. Solution : 42-37   34-29   33-29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7241,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Aleksandr VERETE - Moisej STANOWSKI   L’attaque des Noirs donne un temps de repos. Une rafle se terminant en 43 ou 44 es"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7242,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Nina JANKOVSKAJA-HOEKMAN – Heike VERHEUL   Le raisonnement est le suivant. En examinant les trous dans la position des N"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7243,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Oscar VERPOEST – Piet ROOZENBURG   Une combinaison inattendue. Le mécanisme repose à la fois sur un envoi à dame et sur"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7244,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Une rafle aboutissant à 6. Une seule case de départ possible à 28. Pour amener un pion à 23, un seul mécanisme possible,"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7245,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Viktor GALPERIN – Rob Clerc   L’attaque des Noirs procure un temps de réserve. Il est toujours difficile de trouver le p"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7246,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Un coup de dame à 2. Normalement, rien de très compliqué. Solution : 30-24   27-21   39-33   44x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7247,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Avec un peu d’expérience, on subodore une fafle finale 32x.. La position 22-28-32-37, avec un pion noir en 17 laisse aug"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7248,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Johnny RAMDIEN - Bert RAVEN   Si on enlève le pion 17, on voit une rafle se dessiner autour des pions 12-13-14-22-23. Le"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7249,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "H. van SILFHOUT – Joop de VRIES   On retrouve le coup Springer 27-22   32x21   21-17   42-37   38x29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7250,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Henk LAROS – Piet BEERS   Les pions noirs 12-13-14-17 sont en ligne pour une rafle. Le point de départ ne peut être que"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7251,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Une rafle commençant par 29 est plus que probable. Il faut trouver le moyen de faire sauter le pion 18. Solution : 24-19"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7252,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Un coup de dame 35x2 avec envoi à dame. Solution : 38-33   40-35   30-24   35x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7253,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Une combinaison très originale basée sur la prise majoritaire. Solution : 25-20   34-29   39-33   40x16  ."
+            },
+            {
+              "kind": "exercise",
+              "ref": 7254,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Sur le thème d’une combinaison d’Alexander FOURMAN contre Alexander VERKHOVYKH   Une jolie combinaison avec une rafle 1x"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7255,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "J. SLUITER – A. MIEDEMA   Une combinaison élégante qui peut échapper. La rafle est évidemment 39x6. Le premier coup est"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7256,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "La rafle finale est masquée. Il s’agit d’une rafle 26x10. On la rencontre assez rarement, c’est la raison pour laquelle"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7257,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Wim RUSTENBURG – C. SUYK   Une rafle à 6 est a priori la solution. Le point de départ est soit le pion 26, soit le pion"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7258,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "R. MEERBEEK – A. POELSTRA   Un coup de dame à 5 semble possible à condition de placer un pion noir en 28 et de faire sau"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7259,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "H. DENTROUX – SAKAYAN   Un coup philippe standard : 27-21   33x22   32x21   34-30   40x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7260,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Lev SLOBODSKOJ – Iser KOUPERMAN   La solution repose sur une longue phase de positionnement pour parvenir à une rafle 50"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7261,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Pierre DIONIS – Michel DEYDIER   En principe, pas de difficulté majeure sur cette combinaison : 25-20   20-14   2420   3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7262,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Une combinaison basée sur l’envoi à dame, sur la prise majoritaire et le coup de talon. Un cocktail bien difficile à déc"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7263,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "La rafle 36x20 semble aller de soi. L’utilisation du coup de la trappe permet d’arriver à ses fins. Solution : 29-23   3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7264,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "La rafle 35x2 est évidente. Amener un pion noir en 30 ne peut se faire que par un envoi à dame. Il ne reste plus qu’à fa"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7265,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Comment damer à 2 ? Il suffit de mettre en place un pion noir en 39 et un autre en 28. Solution : Phase de déblaiement :"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7266,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Cor WESTERVELD – Ramon SAKIDIN   Un coup de dame en 5 semble plausible. La formation 36-37-37-41-46 et la présence d’un"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7267,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Rajeev BIHARI - Theo HERMSEN   Un coup parallèle 48x10 dans lequel il suffit de mettre en place les pions pour rendre la"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7268,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Anatoli GANTVARG – B. KHAMELIS   L’attaque du pion par les Noirs donne un temps de repos. La case vide à 44 amène à pens"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7269,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Joop ANSEMS – Menno BANDSTRA   Un coup Philippe sur l’attaque de 2 pions. Tous les pions noirs sont en place. La difficu"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7270,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Un autre coup Philippe sur l’attaque d’un pion. La solution est surprenante, mais très utile à connaître, car elle se pr"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7271,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "A. HAMBURGER – R. VENEKAMP   Solution : 28-23   35-30   29-24   34x23"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7272,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Un coup de dame à 48 basé sur une prise majoritaire et un collage. Solution :   32x14   30x8   8x17"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7273,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Hans de KNIKKER – ALATENGHUA   On pressent que la rafle doit se terminer en 41 ou en 45. La case de départ présumée est"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7274,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Marco VERONESI – Erik HOOGENDOORN   Une combinaison complexe car la solution repose sur la succession de 2 rafles. Le mé"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7275,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "En ôtant le pion 18, on voit une belle rafle se dessiner, aboutissant à la case 10. Le point de départ est vraisemblable"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7276,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Harry VOS – Ton SIJBRANDS   Une combinaison standard avec dame à 5. La formation des pions 5-10-14-15 en présence d’un p"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7277,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "I. PRESBURG – A. VISSER   Un coup de dame à 5, c’est certain. La case de départ ? logiquement la case 43. Que manquet-il"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7278,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Ivan NOVGORODOV – G. USENOV   Une rafle aboutissant à 6, c’est certain. La case 48 comme départ, cela paraît probable. I"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7279,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "K. ten BRUGGENCATE – W. ZOMERDIJK   Un coup philippe basé sur l’élimination des pions 16, 18 et 29. Solution : 30-24   2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7280,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Lykle THIJSSEN - Alexander SHVARTSMAN   Une petite combinaison inattendue car les rafles commençant par la case 1, sont"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7281,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Anna CHUPROVA - Alexander VERKHOVYKH En partie, les Noirs n’ont pas pensé à la combinaison. Ils ont joué  . La combinais"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7282,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "S. JOESOEPOW. – Jurij KOLODIEV   L’attaque de 3 pions est propice aux collages. Solution :   28x19   34x14   46x37"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7283,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Fred PASSCHIER – Max SHAVEL   Une combinaison simple si on pense à la rafle 24x22. Dans ce cas, il ne resque le pion 33"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7284,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Pas de difficulté dans le mécanisme. Il est important de bien visualiser mentalement les 2 prises successives. Solution"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7285,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Henk GOUDBEEK – Emiel LEIJSER 5Huissen oc, 2000) Un coup de dame en 46 se profile. La case 10 est forcément la case de d"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7286,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "MAGIS – Pierre PEROT   Il ne manque qu’un pion en 18 pour obtenir une rafle 1x45. Solution : Phase de déblaiement :   25"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7287,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Pieter BERGSMA – J. TEKELENBURG   Un pion noir en 25. Une formation 34-40-45. Il faut penser au coup philippe : 32-28"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7288,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Un mécanisme de coup royal très utile à connaître :34-30   27-22   32x21   44-40   40x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7289,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "La rafle doit logiquement aboutir sur la case 6. La case de départ est donc sur l’une des lignes impaires 1, 3 ou 5, La"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7290,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "I. de JONG – Peter BERGSMA   Il faut trouver le moyen d’éliminer le pion 19 pour ouvrir la rafle 30x6. Solution : 27-21"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7291,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Une combinaison avec 2 rafles successives, basée sur le principe du temps de repos. Pas de vraie méthode pour trouver la"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7292,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Un coup de dame très spectaculaire, assez difficile à voir car la rafle finale est peu courante. Solution : 34-29   38-3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7293,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Jo HOBBELEN – Ferdi OKROGELNIK   Comment se rendre sur la case 45 ? Comment s’y prendre pour que le pion blanc 28 revien"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7294,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Johan STERRENBURG – Anko BAKSOELLAH   Un coup de dame à 5 démarrant de la case 41. Solution : Phase de déblaiement : 33-"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7295,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Sven BEUGELINK - Christien SCHNEIDER   Un passage à damme grace à un coup parallèle. Solution : 25-20   44-39   33-28"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7296,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Bertus BOSCH – Igor CHARTORIYSKI   Une combinaison assez simple mais peu courante. Pas tellement d’autre moyen que de to"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7297,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Un pur coup de la trappe : 24-19   31-27   26-21   37x26   42x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7298,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Erik van de WEERDHOF – Wouter LUDWIG   Un coup de dame en 46. Quelle case de départ sinon la case 10. Comment faite saut"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7299,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "Marcel KOSTERS – Gerard van der WOUDEN   Un coup de dame en 46, la case de départ en 8, le mécanisme du coup parallèle.."
+            },
+            {
+              "kind": "exercise",
+              "ref": 7300,
+              "name": "COMBINAISONS EN 4 ET 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_4_5",
+              "theme": "un coup de mazette : 35-30   33-29   39x30   28-22   32x5  96"
+            }
+          ],
+          "n_items": 100,
+          "n_exercises": 100,
+          "n_positions": 0
+        }
+      ],
+      "n_items": 100,
+      "n_exercises": 100,
+      "n_positions": 0
+    },
+    {
+      "id": "int_comb_5_6",
+      "level": "intermediaire",
+      "order": 4,
+      "title": "Combinaisons en cinq et six temps",
+      "subtitle": "Les combinaisons longues des maîtres.",
+      "goal": "Calculer des combinaisons profondes (5-6 temps) et vérifier qu'elles sont réellement forcées.",
+      "prerequisites": [
+        "int_comb_4"
+      ],
+      "lessons": [
+        {
+          "id": "int_comb_5_6_l1",
+          "title": "Combinaisons en 5-6 temps",
+          "intro": "Les enchaînements longs. Calcul, visualisation et vérification que chaque coup est bien forcé.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 7301,
+              "name": "COMBINAISONS EN 5 TEMPS – D1",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "Jaap PLUIM – Niels MEIJER   Solution : 34-30   45-40   31-27   42-37   47x20"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7302,
+              "name": "COMBINAISONS EN 5 TEMPS – D2",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "Daouda SOUMAH – Anton van BERKEL   Beaucoup de trous, mais comment en profiter ? Pas tellement d’autre moyen que de suiv"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7303,
+              "name": "COMBINAISONS EN 5 TEMPS – D3",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "Pierre DIONIS – Stanislas BIZOT   Un coup de dame sur la case 49. Solution : Phase de déblaiement :   32x23   33x22 Phas"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7304,
+              "name": "COMBINAISONS EN 5 TEMPS – D4",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "J. RENKENS – Hans LADAGE   Un coup de dame classique sur la case 46, utilisant le mécanisme du coup parallèle. Solution"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7305,
+              "name": "COMBINAISONS EN 5 TEMPS – D5",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "Arie KOSTER – Erik DUBELAAR   Il faut faire sauter le pion 18 et acheminent une pièce en 41. Solution : 28-23   49-44"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7306,
+              "name": "COMBINAISONS EN 5 TEMPS – D6",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "Auke SCHOLMA – Anton van BERKEL   Une combinaison aboutissant sur la case 8. Solution : Phase de déblaiement : 35-30   3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7307,
+              "name": "COMBINAISONS EN 5 TEMPS – D7",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "Sur une idée de combinaison de Laurent NICAULT au cht de France 1997 Solution : 33-29   25-20   34-29   32x14   48x19"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7308,
+              "name": "COMBINAISONS EN 5 TEMPS – D8",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "Cees van ATTEN – Krijn BRAAKE   Un coup de dame sur la case 46 en utilisant un temps de repos pour faire sauter le pion"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7309,
+              "name": "COMBINAISONS EN 5 TEMPS – D9",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "Une combinaison avec double rafle : 34-30   27-21   43-39   37x8   31x33"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7310,
+              "name": "COMBINAISONS EN 5 TEMPS – D10",
+              "difficulty": 4,
+              "category": "combinaisons_5",
+              "theme": "J. KIVITS – Nico KOCKEN   Un coup Philippe : 25-20   27-22   32x21   38-33   40x16  99"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7311,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "P. LACROIX – Ad van TILBORG   Une combinaison en 46 semble probable. Oui, mais comment éliminer le pion blanc 28 ? La so"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7312,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de la trappe : 28-22   26x17   34-29   32x12   27x40"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7313,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de dame 35x… cela signifie qu’il faut acheminer un pion noir en 30 et faire sauter le pion 24. Solution : 22-18"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7314,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Ton SIJBRANDS – Henk KALK   Observer les points de contact et visualiser mentalement les prises conduit à la solution de"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7315,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "A. IVENS – T. van STEIJN   En examinant les points de contact, on imagine une rafle possible 39x… à condition de faire s"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7316,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Philippe LERUTH – Yves VANDEBERG   Un coup de dame à 46 basé sur le thème du coup parallèle :   31x22   37x26   25x23"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7317,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Johan WIERING – Adama KONE   Un coup de dame en 46 avec une rafle 10x46, c’est évidemment ce qui vient en premier lieu à"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7318,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Michel HISARD – Emile BISCONS   Un coup Philippe : 23-19   33-28   44-39   35-30   40x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7319,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D9",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Philip BATTEFELD – Stanislas BIZOT   Un coup de dame sur la case 1. La case de départ ne peut être que la case 45. Le re"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7320,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D10",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Pieter WIJN – T. FONVILLE   Un coup Philippe inhabituel : 37-31   42x31   38-32   33x13   34-30   40x16  102"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7321,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Anatoli KOWRIZJKIN – G. GRIGOREW   Une combinaison construite sur le mécanisme de la trappe. Solution : 34-29   43-39"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7322,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Wim van der SLUIS - Viacheslav SHCHEGOLEV   Un coup de dame en 2 très pur. Solution : 37-31   48-42   29-23   30-24  35x"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7323,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Toby HAGE – Danny VERSCHUEREN   L’attaque des Noirs donne un temps de repos et ouvre la perspective d’une combinaison se"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7324,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Wim BREMMER – Robbert WESTERINK   Un coup aboutissant à la case 43 parait plausible. Dans ce cas-là, la case de départ n"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7325,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "R.C. KELLER – E. WERTWIJN   Un coup du cheval : 27-22   33-29   30-24   43x32   28x37"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7326,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un genre de coup royal décomposé en 2 phases. Solution : 32-28   38x27   34x23   43-38   40x9"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7327,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Stanislaw GULYAEV - Anatoli CHULKOV   Une combinaison 10x46. Solution : Phase de déblaiement :   26x28   28x30 Phase de"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7328,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Stanislaw GULYAEV - Vladimir WEYTSMAN   La conception de la rafle est un préalable pour trouver la combinaison. Après, t"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7329,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D9",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Isidore WEISS – A. DUSSAUT   Un coup de dame en 5. Une seule rafle possible 41x5. Il ne reste qu’à mettre les pions en p"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7330,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D10",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "J. VELTMAN – Leo STEYNTJES   Une rafle aboutissant à 45. Un point d’appui en 43. Il reste à tout mettre en place. Soluti"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7331,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Bert LOOMS – J. de JONG   Une combinaison aboutissant sur la case 10, basée sur le mécanisme d’envoi à dame. Solution :"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7332,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Joeri HEZEMANS – Erno PROSMAN   C’est la rafle qui est difficile à envisager. Solution :   33x24   35x24   27x29   24x13"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7333,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de dame à 2. Phase de positionnement : 30-24   39-34   38-33   Phase d’acheminement : 26-21   42x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7334,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Une double combinaison basée sur le mécanisme de la trappe. Solution : 31-27   35-30   36-31   33x24   39x10"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7335,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Michael GALACHOV – Sergei KALINOV   Pas évident de concevoir la rafle. Solution : 33-29   24-19   25-20   32-27   48x17"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7336,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de dame à 5 un peu surprenant. Pas d’autre méthode que de tester les points de contact les uns après les autres."
+            },
+            {
+              "kind": "exercise",
+              "ref": 7337,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "P. REIMANN - Sergei ANDREJEV   Un coup de dame sur la case 49 sur le thème du temps de repos. Solution : Phase de positi"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7338,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "La rafle vraisemblable est 48x17 ou 48x26. Le pion noir pouvant être acheminé en 43 est le pion 21. Le raisonnement est"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7339,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D9",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Alfred DUSSAUT – Georges BALEDENT  . Beaucoup de trous dans la position des noirs, mais comment en profiter ? Il faut pe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7340,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D10",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Solik GERSHT - Viacheslav SHCHEGOLEV   Une combinaison déroutante car elle se déroule en 2 temps. Il faut tout d’abord m"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7341,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup Napoléon : 23-18   33-29   32-28   24-19   29x7"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7342,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Fred IVENS – Waldo ALIAR   Solution : 28-22   32x23   23-19   42-38   37x6"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7343,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Pieter BERGSMA – Evert BRONSTRING   Une combinaison aboutissant sur la case 6 ou sur la case 9 ? La recherche de la case"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7344,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Ommo DOORNBOS – J. LAMMERTS   Un joli coup Napoléon. Solution : 38-33   31x22   34-29   35-30   40x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7345,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Beaucoup de « trous » dans la position des Blancs. Une rafle aboutissant en 35 est envisageable, mais à partir de quelle"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7346,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Jan KOERSELMAN – Maurice BERGBOER   Un coup de dame 10x46. Solution : Phase de déblaiement :   28x26 Phase de positionne"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7347,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de dame sur la case 4 sur le thème du coup de l’express. Solution : 24-19   27-22   28-22   37-31   38-32   33x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7348,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Une combinaison un peu compliquée car la rafle finale n’est pas évidente. De plus le point d’appui pour le départ de la"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7349,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D9",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Avec la case vide en 43, il faut chercher un coup de chevron avec une rafle finale 25x… Solution :   27x16   28x17   29x"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7350,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D10",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Fred IVENS – M. van de WIEL   Avec un pion de bande à 25, le réflexe est de chercher un coup Philippe avec une rafle 40x"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7351,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Valerij SWIZINSKI – W. DASJKEWITSJ   Une fois que la rafle finale 21x45 est imaginée, le reste prend forme. Solution : P"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7352,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "I. STEPANOV – S. KORCHOV   Une combinaison que l’on trouve en examinant les points de contact et en suivant mentalement"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7353,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de l’express : 27-22   28-22   37-31   38-32   33x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7354,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Une rafle 36x20 s’appuyant sur le mécanisme de l’envoi à dame : 39-33   29-23   38-32   42x24   36x20"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7355,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "FABRE – DUMONT Un coup Napoléon : 32-27   28-22   35-30   26-21   31x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7356,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Barbara GRAAS - Annemieke van de KRAATS STUNNENBERG   Un coup de dame en 1. Difficile de trouver ce coup lorsque l’on ne"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7357,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Mijndert VERKAIK - Michael PALMER   Un coup de dame en 46 partant de la case 8. Solution : Phase 1 de déblaiement :   32"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7358,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Maks SHAVEL - Rostislav LESTCHINSKI   Une attaque fautive du pion taquin 24 qui livre un coup de dame en 5. De manière t"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7359,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D9",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Le mécanisme de la trappe associé à un temps de repos permet de damer sur la case 1. Solution : 37-31   38-32   24-19"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7360,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D10",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "P. CORNELISSEN – Ferdi OKROGELNIK   Les noirs gagnent un pion par   29x18   27x16   16x7   36x47   34x23    114"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7361,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Bert vav OOSTEROM – Carlo van den HURK   Un coup de rappel :   27x18   29x18   33x13   13x24"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7362,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup Philippe. Il suffit d’effectuer les prises dans le bon ordre. Solution : 27-22   35-30   33x24   25x34   38x20"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7363,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Vadim VIRNY – Fred IVENS   De nombreux trous chez les blancs. Un envoi à dame possible avec collage envisageable. Tout e"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7364,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Raphaël ZDOROVIAK – Aleksej DOMCHEV   Une rafle finale 3x34 n’est pas courante. Une fois qu’on a l’idée, tout s’enchaîne"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7365,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un thème intéressant qui permet d’utiliser l’envoi à dame comme moyen intermédiaire. Solution : 28-22   47-41   38-33"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7366,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de l’express : 43-38   39-34   29-24   28-23   38-33   32x3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7367,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup Philippe : 27-22   32x21   35-30   33x24   25x34   38x20"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7368,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Alexey KHALIN – Alexey TOMASHEVSKIY  . Un coup de dame en 5 avec rafle 41x5. Solution :  118"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7369,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Une combinaison basée sur l’envoi à dame et la prise majoritaire : 34-30   27-21   47-41   43-39   50x6"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7370,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de dame à 4 exploitant le temps de repos : 32-28   48-42   34x43   28-23   33x4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7371,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Une combinaison basée sur l’envoi à dame : 37-32   48-43   39-34   34-30   29x36"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7372,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "A. STRUNKIS – Andris ANDREIKO   Une combinaison avec double rafle. Pas tellement d’autre solution que de suivre mentalem"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7373,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Wim van der KOOIJ – H. HESSEL   Un coup de l’express : 24-20   28x19   29x20   27-22   38-32   33x15"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7374,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de dame en 2 partant de la case 35. Solution : Phase de positionnement : 29-23   28-22   45-40   38-32   Phase d"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7375,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Edmondo FANELLI – Andris ANDREIKO   Un coup Philippe inattendu conçu à partir de 2 rafles. Solution :  25x5   35x24   5x"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7376,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Jan van KRIEKEN – Hans VERMIN   Beaucoup de trous dans le camp des Noirs. Une attaque qui livre un temps de repos. Il fa"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7377,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D9",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup parallèle : 27-21   33-28   24-19   42-38   48x17   31x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7378,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D10",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un coup de dame à 1. Phase de déblaiement : 36-31   23-18   38x18   Phase de positionnement : 37-31   Phase d’achemineme"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7379,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Paul TEER – Martin DOLFING   Une combinaison difficile à voir car la rafle finale n’est pas en place. Solution :   27x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7380,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Réfléchir à la rafle pour profiter du temps de repos provoqué par l’attaque du pion taquin. Solution : 27-21   29-23   2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7381,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Evert BRONSTRING – Tengiz BARAMIDZE   Une rafle aboutissant à 6. Un coup Napoléon. Solution : 24-19   37-32   43-38   41"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7382,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "La présence des 2 pions 41 et 37 fait imaginer une double rafle 37x8 puis 31x. Le but est donc d’amener un pion noir en"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7383,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Iser KOUPERMAN. Une jolie combinaison sur la case 1. Pas d’autre solution que d’examiner tous les points de contact et d"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7384,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "F. TROMPEN – R.C. KELLER   Avec le pion 16, on pense à un coup de la trappe :   16x7   33x22   7x29   36x27   29x18"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7385,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Il faut parvenir à éliminer les pions noirs 13 et 22 pour obtenir une rafle 31x. Solution : 24-19   25-20   34-30   44-4"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7386,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Kenneth KARP - Mindaugas SIMA   Un coup parallèle aboutissant sur la case 6. Solution : 38-33   33-28   45-40   43-39"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7387,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D9",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Un pur coup Philippe : 26-21   27-22   37-31   41x21   34-30   40x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7388,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D10",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Paul OUDSHOORN – Jacob OKKEN   Un coup parallèle aboutissant sur la case 5. Solution : 34-30   25-20   27-21   38-32   3"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7389,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Jean-Marc NDJOFANG- Otgonbayaryd TUVSHINBOLD   Vu par Ton Sijbrands : 24-19   35-30   34-29   29-23   33x2. En partie, l"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7390,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Jan de KLUIJVER – Jean SIMONATA   Un coup de chevron, c’est-à-dire un coup avec une rafle de 4 pions en forme de chevron"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7391,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Jean-Pierre DUBOIS : Une combinaison aboutissant sur la case 5. La case de départ est nécessairement la case 34. Il faut"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7392,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Fred PASSCHIER – J. BLAAUW   Un coup philippe : 27-22   32x21   30-24   25x34   34-30   40x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7393,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Mari van BALLEGOOIJEN – Marinus MORSINK   Une combinaison classique sur l’attaque du pion taquin lorsque les noirs possè"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7394,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Tjeerd HARMSMA – Anatoli GANTVARG  . Une combinaison 3x34 très logique. Solution :   29x20   30x19   37x17   36x27   19x"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7395,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Coup de l’Espagnol : 27-22   32x21   37-31   42x11   28-23   33x11"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7396,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Ton SIJBRANDS   Un coup philippe inhabituel : 38-33   42x22   39-33   27-22   25-20   40x16"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7397,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D9",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Kaspar HEIJNEN – Nicole SCHOUTEN   Un coup parallèle : 24-20   34-30   33-29   26-21   42-38   47x20"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7398,
+              "name": "COMBINAISONS EN 5 ET 6 TEMPS – D10",
+              "difficulty": 5,
+              "category": "combinaisons_5_6",
+              "theme": "Jean-Marc NDJOFANG – Alexander SHVARTSMAN  . Une combinaison aboutissant sur la case 45 :   29x20   28x19   37x26   26x2"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7399,
+              "name": "COMBINAISONS EN 6 TEMPS – D1",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "Alexander FEDORUK – GORJATSCHEW  . Un coup Napoléon : 28-23   29-23   40-34   27-22   26-21   31x15"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7400,
+              "name": "COMBINAISONS EN 6 TEMPS – D2",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "G. DERBY – A. VLAM   Un coup de dame en 46 basé sur le mécanisme du rappel :   26x17   37x17   28x17   34x12   12x23"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7401,
+              "name": "COMBINAISONS EN 6 TEMPS – D3",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "La flèche 34-39-43 doit faire penser à une rafle 39x17. Solution : Phase de déblaiement : 27-22   28-23   33x31   Phase"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7402,
+              "name": "COMBINAISONS EN 6 TEMPS – D4",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "Thijs GERRITSEN - Harmjan LAMMERS   Un coup de dame à 46 basé le mécanisme du coup de talon :   34x25   27x7   7x9   25x"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7403,
+              "name": "COMBINAISONS EN 6 TEMPS – D5",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "L. SWAAB – van der SLEEN   Une rafle 3x34. Solution : Phase positionnement :   28x17   26x17   36x27 Phase d’acheminemen"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7404,
+              "name": "COMBINAISONS EN 6 TEMPS – D6",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "Coup de mazette : 34-30   40x20   35-30   33-29   39x30   28-22   32x5"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7405,
+              "name": "COMBINAISONS EN 6 TEMPS – D7",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "Ramon SAKIDIN – Edwin FEDDEMA   Une rafle difficile à déterminer car très rare. Le mécanisme est simple. Solution :   29"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7406,
+              "name": "COMBINAISONS EN 6 TEMPS – D8",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "Ganbold GERELBOLD - Andrejs CEHANOVICS   Un coup de dame 43x3 ou 43x5. Oui mais comment éliminer le pion noir 14 et ache"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7407,
+              "name": "COMBINAISONS EN 6 TEMPS – D9",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "Cor van DUSSELDORP – Bert WOOLSCHOT   Une combinaison 48x6 basée sur le mécanisme du coup parallèle : 34-30   43-39   33"
+            },
+            {
+              "kind": "exercise",
+              "ref": 7408,
+              "name": "COMBINAISONS EN 6 TEMPS – D10",
+              "difficulty": 5,
+              "category": "combinaisons_6",
+              "theme": "Alexander PRESMAN – Edvard BUZINSKIJ   Une combinaison 3x34 basée sur les mécanismes de temps de repos et coup parallèle"
+            }
+          ],
+          "n_items": 108,
+          "n_exercises": 108,
+          "n_positions": 0
+        }
+      ],
+      "n_items": 108,
+      "n_exercises": 108,
+      "n_positions": 0
+    },
+    {
+      "id": "int_structure_bande_centre",
+      "level": "intermediaire",
+      "order": 5,
       "title": "Le pion à la bande et le pion au centre",
       "subtitle": "Lire les structures de pions.",
       "goal": "Comprendre l'opposition entre un pion à la bande et un pion au centre, et transformer cette structure en avantage.",
@@ -1687,7 +5053,7 @@
     {
       "id": "int_blocage",
       "level": "intermediaire",
-      "order": 2,
+      "order": 6,
       "title": "Bloquer et empêcher le débordement",
       "subtitle": "Neutraliser l'aile adverse.",
       "goal": "Bloquer les pions adverses et empêcher un débordement sur l'aile.",
@@ -1907,7 +5273,7 @@
     {
       "id": "int_grande_diagonale",
       "level": "intermediaire",
-      "order": 3,
+      "order": 7,
       "title": "La dame et la grande diagonale",
       "subtitle": "La diagonale a1-h8, axe du jeu de dames.",
       "goal": "Maîtriser la lutte sur la grande diagonale et capturer une dame qui s'y aventure.",
@@ -2143,7 +5509,7 @@
     {
       "id": "int_promotion",
       "level": "intermediaire",
-      "order": 4,
+      "order": 8,
       "title": "La course à dame",
       "subtitle": "Promouvoir avant l'adversaire.",
       "goal": "Calculer une course à la promotion et inverser les rôles par un pionnage.",
@@ -2339,7 +5705,7 @@
     {
       "id": "int_finales",
       "level": "intermediaire",
-      "order": 5,
+      "order": 9,
       "title": "Finales et opposition",
       "subtitle": "Convertir, ou sauver, les fins de partie.",
       "goal": "Gagner ou sauver les finales élémentaires grâce à l'opposition et au comptage.",
@@ -2535,7 +5901,7 @@
     {
       "id": "int_coups_avances",
       "level": "intermediaire",
-      "order": 6,
+      "order": 10,
       "title": "Coups nommés avancés",
       "subtitle": "Les combinaisons nommées en contexte de maître.",
       "goal": "Reconnaître le coup royal et les coups de talon/ricochet dans des positions réelles.",
@@ -2723,7 +6089,7 @@
     {
       "id": "int_combinaisons",
       "level": "intermediaire",
-      "order": 7,
+      "order": 11,
       "title": "Trouver la combinaison forcée",
       "subtitle": "Calculer jusqu'au bout.",
       "goal": "Calculer une combinaison forcée dans des positions tirées des grands manuels.",
