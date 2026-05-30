@@ -187,6 +187,7 @@ export default function App() {
   // Apprendre.  One manual per source, structured into chapters by
   // topic.
   const [strategyManualSource, setStrategyManualSource] = useState<string>('SIJBRANDS')
+  const [strategyJumpSource, setStrategyJumpSource] = useState<string | undefined>(undefined)
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
   const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
   const [preloadedUserSide, setPreloadedUserSide] = useState<'white' | 'black' | null>(null)
@@ -1280,6 +1281,7 @@ export default function App() {
           <StrategyPanel
             onClose={() => setTab('exercise-library')}
             lang={language}
+            initialJumpSource={strategyJumpSource}
           />
         )}
 
@@ -1707,8 +1709,15 @@ export default function App() {
           <ExerciseLibraryPage
             onSelectBook={(bookId: string) => { resetExerciseState(); setSelectedBookId(bookId); setTab('exercises') }}
             onOpenStrategyManual={(source: string) => {
-              setStrategyManualSource(source)
-              setTab('strategy-manual')
+              // Diagram-only sources (no prose passages) open the diagram
+              // annotation tool directly; prose sources open the manual.
+              if (source === 'GOEDEMOED') {
+                setStrategyJumpSource(source)
+                setTab('strategy')
+              } else {
+                setStrategyManualSource(source)
+                setTab('strategy-manual')
+              }
             }}
           />
         )}
