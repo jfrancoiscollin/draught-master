@@ -121,6 +121,11 @@ class DetectorConfig:
     # ``grey_inset`` trims a thin margin off the tight crop to clear the
     # double-line border before grid placement.
     grey_inset: float = 0.02
+    # ``grey`` white-piece texture guard: a solid white disc has high patch
+    # variance (bright fill + dark outline, std ~55); a bright-but-uniform
+    # hatched empty square (blank/template boards) has low std (~19). Require
+    # std above this to accept a white piece.
+    grey_white_std_min: float = 30.0
 
 
 def _longest_run(mask: np.ndarray) -> tuple[int, int]:
@@ -508,6 +513,15 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
 
             white_min = cfg.top_row_white_min if row == 0 else cfg.white_piece_min
             black_max = cfg.top_row_black_max if row == 0 else cfg.black_piece_max
+
+            if cfg.style == "grey" and piece_mean >= white_min:
+                # Goedemoed: solid white discs have high internal variance
+                # (bright interior + dark outline inside the patch, std ~55+),
+                # whereas the hatched dark squares of an *empty/template* board
+                # are bright but uniform (std ~19). Require texture so a blank
+                # hatched board isn't read as 50 white pieces.
+                if float(arr[y0:y1, x0:x1].std()) < cfg.grey_white_std_min:
+                    continue  # bright but flat -> empty hatched square
 
             if piece_mean >= white_min:
                 # Likely white piece.  Probe for king marker by comparing
