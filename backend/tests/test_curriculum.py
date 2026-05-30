@@ -118,6 +118,26 @@ def test_progress_unlocks_in_order():
         assert by_id[d["id"]]["state"] != "locked"
 
 
+def test_debutant_level_covers_all_exercises():
+    """The Débutant level is meant to be complete: every manuel_debutant
+    exercise must be reachable from some lesson, so none is orphaned."""
+    from manuels.loader import DEBUTANT_ID_OFFSET, all_debutant_exercises
+
+    all_ids = {
+        DEBUTANT_ID_OFFSET + 1 + i for i in range(len(all_debutant_exercises()))
+    }
+    resolved = cur.build()
+    referenced = {
+        item["ref"]
+        for m in resolved["modules"]
+        if m["level"] == "debutant"
+        for les in m["lessons"]
+        for item in les["items"]
+        if item["kind"] == "exercise"
+    }
+    assert all_ids <= referenced, f"orphaned exercises: {sorted(all_ids - referenced)}"
+
+
 def test_lesson_chapter_refs_are_valid():
     """Every lesson that links to a manual chapter links to one that exists,
     so the 'Read the lesson' button always resolves to real prose."""
