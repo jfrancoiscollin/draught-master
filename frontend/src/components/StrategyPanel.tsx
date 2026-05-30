@@ -443,6 +443,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
             <option value="SPRINGER">SPRINGER</option>
             <option value="ROOZENBURG">ROOZENBURG</option>
             <option value="KELLER">KELLER</option>
+            <option value="GOEDEMOED">GOEDEMOED</option>
           </select>
           <input
             type="number"
