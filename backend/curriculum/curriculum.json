@@ -1,0 +1,146 @@
+{
+  "$comment": "Hand-authored pedagogical spine. This is the curated MAP of the learning platform: levels -> modules -> lessons, with explicit order, prerequisites and learning goals. It owns NO position/exercise data — each lesson declares deterministic `attach` rules that build_curriculum.py resolves against the real content (manuel_debutant exercises, strategy positions/exercises, knowledge_base tips). Edit this file to shape the curriculum; run `python -m curriculum.build_curriculum` to validate and materialize.",
+  "version": 1,
+  "levels": [
+    {
+      "id": "debutant",
+      "title": "Débutant",
+      "subtitle": "Les fondamentaux : lire le damier, gagner du matériel, les premiers coups nommés.",
+      "order": 1
+    }
+  ],
+  "modules": [
+    {
+      "id": "deb_notation_regles",
+      "level": "debutant",
+      "order": 1,
+      "title": "Lire le damier et les règles",
+      "subtitle": "La numérotation des cases et les règles de prise.",
+      "goal": "Savoir nommer chaque case (1-50), comprendre la prise obligatoire, la rafle et la règle de prise maximale.",
+      "prerequisites": [],
+      "lessons": [
+        {
+          "id": "deb_notation_regles_l1",
+          "title": "La notation et les règles de capture",
+          "intro": "Avant de combiner, il faut parler la langue du jeu : les 50 cases jouables et comment une prise s'enchaîne. Ces exercices vous font appliquer la prise obligatoire, la rafle et la règle de prise maximale.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["regle_capture", "regle_rafle", "regle_prise_maximale"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "deb_gagner_materiel",
+      "level": "debutant",
+      "order": 2,
+      "title": "Gagner du matériel",
+      "subtitle": "Prise majoritaire, collage et envoi à dame.",
+      "goal": "Reconnaître et exécuter les gains de matériel élémentaires : forcer une prise favorable, coller un pion, conduire un pion à dame.",
+      "prerequisites": ["deb_notation_regles"],
+      "lessons": [
+        {
+          "id": "deb_gagner_materiel_l1",
+          "title": "La prise majoritaire",
+          "intro": "Le sacrifice qui rapporte : offrir un pion pour en reprendre deux. Le mécanisme de base de presque toutes les combinaisons.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["prise_majoritaire", "coup_de_mazette"]
+            }
+          }
+        },
+        {
+          "id": "deb_gagner_materiel_l2",
+          "title": "Le collage",
+          "intro": "Immobiliser un pion adverse contre la bande ou un de ses propres pions, pour le gagner au coup suivant.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["collage", "gambit"]
+            }
+          }
+        },
+        {
+          "id": "deb_gagner_materiel_l3",
+          "title": "L'envoi à dame",
+          "intro": "Conduire un pion jusqu'à la dernière rangée par un sacrifice forcé. Le but ultime du pion.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["envoi_a_dame", "coup_royal"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "deb_tempo",
+      "level": "debutant",
+      "order": 3,
+      "title": "Le tempo et les points de contact",
+      "subtitle": "Méthode des points de contact, temps de repos.",
+      "goal": "Compter les temps, créer et exploiter un temps de repos, utiliser la méthode des points de contact pour trouver une combinaison.",
+      "prerequisites": ["deb_gagner_materiel"],
+      "lessons": [
+        {
+          "id": "deb_tempo_l1",
+          "title": "Les points de contact",
+          "intro": "Une méthode systématique : repérer les cases où vos pions touchent l'adversaire, ce sont les amorces de combinaison.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["points_de_contact"]
+            }
+          }
+        },
+        {
+          "id": "deb_tempo_l2",
+          "title": "Les temps de repos",
+          "intro": "Un coup d'attente qui force l'adversaire à se découvrir. Savoir le créer et l'exploiter change tout.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["temps_de_repos", "creation_temps_de_repos"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "deb_coups_nommes_1",
+      "level": "debutant",
+      "order": 4,
+      "title": "Les coups nommés (1) — Express et Ricochet",
+      "subtitle": "Vos deux premiers coups du répertoire classique.",
+      "goal": "Reconnaître et jouer le coup de l'Express et le coup de Ricochet, deux combinaisons nommées fondamentales.",
+      "prerequisites": ["deb_tempo"],
+      "lessons": [
+        {
+          "id": "deb_coups_nommes_1_l1",
+          "title": "Le coup de l'Express",
+          "intro": "Une rafle express qui traverse le damier. Le premier coup nommé à maîtriser.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["coup_express"]
+            }
+          }
+        },
+        {
+          "id": "deb_coups_nommes_1_l2",
+          "title": "Le coup de Ricochet",
+          "intro": "La prise rebondit d'une direction à l'autre. Un classique qui surprend souvent l'adversaire.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["coup_ricochet"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
