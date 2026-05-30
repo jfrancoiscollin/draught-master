@@ -61,6 +61,8 @@ def test_attached_exercise_ids_match_db_seed():
     }
     resolved = cur.build()
     for m in resolved["modules"]:
+        if m["level"] != "debutant":
+            continue  # debutant modules attach manuel_debutant exercises
         for les in m["lessons"]:
             for item in les["items"]:
                 if item["kind"] != "exercise":
@@ -136,6 +138,34 @@ def test_debutant_level_covers_all_exercises():
         if item["kind"] == "exercise"
     }
     assert all_ids <= referenced, f"orphaned exercises: {sorted(all_ids - referenced)}"
+
+
+def test_intermediate_attaches_strategy_exercises_by_theme():
+    """Intermediate lessons attach playable strategy exercises by theme
+    (the exercise `hint`), and the resolved refs equal the DB ids the seed
+    assigns so they deep-link into the solver."""
+    from strategy.exercises_loader import (
+        STRATEGY_ID_OFFSET,
+        all_strategy_exercises,
+    )
+
+    expected = {
+        STRATEGY_ID_OFFSET + 1 + i: ex["hint"]
+        for i, ex in enumerate(all_strategy_exercises())
+    }
+    resolved = cur.build()
+    inter = [m for m in resolved["modules"] if m["level"] == "intermediaire"]
+    assert inter, "no intermediate modules"
+    seen = 0
+    for m in inter:
+        for les in m["lessons"]:
+            for item in les["items"]:
+                assert item["kind"] == "exercise"
+                assert item["ref"] in expected, item["ref"]
+                # the item's theme is the source exercise's hint
+                assert item.get("theme") == expected[item["ref"]]
+                seen += 1
+    assert seen >= 100  # ~101 curated strategy exercises
 
 
 def test_lesson_chapter_refs_are_valid():
