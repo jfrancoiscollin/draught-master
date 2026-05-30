@@ -7,6 +7,7 @@
     {"page": 20, "number": 5, "fen": "W:W18,26,34,37,39,40,44,45:B6,7,11,15,25,K47,K49", "_human_verified": true},
     {"page": 34, "number": 4, "fen": "W:W:B", "_human_verified": true},
     {"page": 50, "number": 3, "fen": "W:WK5,35,40,48,49,50:B2,4,6,8,11,12,16,24", "_human_verified": true},
+    {"page": 84, "number": 4, "fen": "W:W27,28,32,35,36,37,38,39,40,42,45,48:B3,10,13,14,15,16,17,18,19,21,23,24", "_human_verified": true},
     {"page": 161, "number": 3, "fen": "W:WK20,31,36,37,42,45,48,50:B1,2,11,13,16,K49", "_human_verified": true}
   ]
 }
