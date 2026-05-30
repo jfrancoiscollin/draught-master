@@ -168,6 +168,7 @@ export interface CurriculumItem {
 export interface CurriculumLesson {
   id: string
   title: string
+  chapter?: number
   intro?: string
   items: CurriculumItem[]
   n_items: number

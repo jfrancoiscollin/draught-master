@@ -1684,6 +1684,7 @@ export default function App() {
         {tab === 'learning-path' && (
           <LearningPathPage
             onClose={() => setTab('home')}
+            onOpenLesson={(chapter: number) => setNarrativeLessonChapter(chapter)}
             onOpenExercise={async (exerciseId: number) => {
               try {
                 resetExerciseState()

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -17,6 +17,8 @@ interface Props {
   onClose: () => void
   // Deep-link an exercise into the existing solver (book + exercise id).
   onOpenExercise: (exerciseId: number) => void
+  // Open a manual chapter's lesson prose (reuses the rich LessonPanel overlay).
+  onOpenLesson: (chapter: number) => void
 }
 
 const STATE_STYLE: Record<ModuleState, { ring: string; badge: string; label: string; labelEn: string }> = {
@@ -36,8 +38,8 @@ const ProgressBar: React.FC<{ value: number; total: number; state: ModuleState }
   )
 }
 
-const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise }) => {
-  const { t, language } = useLanguage()
+const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLesson }) => {
+  const { language } = useLanguage()
   const { isLoggedIn } = useAuth()
   const fr = language === 'fr'
 
@@ -47,6 +49,20 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise }) => {
   const [openModule, setOpenModule] = useState<CurriculumModule | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Refetch progress: solving exercises elsewhere should reflect here when
+  // the user returns to the overview (the overview stays mounted while a
+  // module detail is open, so a re-mount alone wouldn't refresh it).
+  const refreshProgress = useCallback(async () => {
+    if (!isLoggedIn) { setStateById({}); setNextModule(null); return }
+    try {
+      const prog = await getCurriculumProgress()
+      const map: Record<string, { state: ModuleState; n_solved: number; n_total: number }> = {}
+      prog.modules.forEach(m => { map[m.id] = { state: m.state, n_solved: m.n_solved, n_total: m.n_total } })
+      setStateById(map)
+      setNextModule(prog.next_module)
+    } catch { /* no progress yet */ }
+  }, [isLoggedIn])
+
   useEffect(() => {
     let alive = true
     setLoading(true)
@@ -54,20 +70,11 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise }) => {
       .then(async curr => {
         if (!alive) return
         setTree(curr)
-        if (isLoggedIn) {
-          try {
-            const prog = await getCurriculumProgress()
-            if (!alive) return
-            const map: Record<string, { state: ModuleState; n_solved: number; n_total: number }> = {}
-            prog.modules.forEach(m => { map[m.id] = { state: m.state, n_solved: m.n_solved, n_total: m.n_total } })
-            setStateById(map)
-            setNextModule(prog.next_module)
-          } catch { /* not logged in / no progress yet */ }
-        }
+        await refreshProgress()
       })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
-  }, [isLoggedIn])
+  }, [refreshProgress])
 
   const stateFor = (m: CurriculumModuleSummary): ModuleState => {
     if (stateById[m.id]) return stateById[m.id].state
@@ -90,7 +97,10 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise }) => {
   if (openModule) {
     return (
       <div className="max-w-3xl mx-auto p-4 sm:p-6">
-        <button onClick={() => setOpenModule(null)} className="text-amber-400 hover:text-amber-300 mb-4 flex items-center gap-1">
+        <button
+          onClick={() => { setOpenModule(null); refreshProgress() }}
+          className="text-amber-400 hover:text-amber-300 mb-4 flex items-center gap-1"
+        >
           ← {fr ? 'Retour au parcours' : 'Back to path'}
         </button>
         <h2 className="text-2xl font-bold text-amber-500">{openModule.title}</h2>
@@ -108,9 +118,20 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise }) => {
                 <h3 className="text-lg font-semibold text-gray-100">{les.title}</h3>
               </div>
               {les.intro && <p className="text-gray-400 text-sm mt-1 leading-relaxed">{les.intro}</p>}
-              <div className="mt-3">
+
+              {/* The lesson comes first: read the teaching, then practise. */}
+              {les.chapter != null && (
+                <button
+                  onClick={() => onOpenLesson(les.chapter as number)}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-amber-700 bg-amber-900/20 px-3 py-2 text-sm font-semibold text-amber-200 hover:bg-amber-800/30 transition-colors"
+                >
+                  📖 {fr ? 'Lire la leçon' : 'Read the lesson'}
+                </button>
+              )}
+
+              <div className="mt-4 border-t border-gray-700 pt-3">
                 <div className="text-xs text-gray-500 uppercase font-semibold mb-2">
-                  {les.items.length} {fr ? 'exercices' : 'exercises'}
+                  {fr ? 'Pratiquez' : 'Practise'} · {les.items.length} {fr ? 'exercices' : 'exercises'}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {les.items.filter(it => it.kind === 'exercise').map(it => (
@@ -146,8 +167,10 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise }) => {
       </p>
 
       {!isLoggedIn && (
-        <div className="mb-6 rounded-lg border border-gray-700 bg-gray-800 p-3 text-sm text-gray-400">
-          {fr ? 'Connectez-vous pour suivre votre progression et débloquer les modules.' : 'Log in to track progress and unlock modules.'}
+        <div className="mb-6 rounded-lg border border-amber-800 bg-amber-900/15 p-3 text-sm text-amber-100">
+          {fr
+            ? '🔑 Connectez-vous pour enregistrer votre progression : sans connexion, les exercices résolus ne sont pas suivis et les modules suivants ne se débloquent pas.'
+            : '🔑 Log in to save your progress: without an account, solved exercises are not tracked and later modules stay locked.'}
         </div>
       )}
 
