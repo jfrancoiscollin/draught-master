@@ -410,3 +410,49 @@ async def init_db() -> None:
                 except Exception as e:
                     _log.error(f"init_db: failed to upsert combinaisons exercise {idx}: {e}")
             await db.commit()
+
+        # Seed the Dubois "Apprendre le sens du jeu" corpus (72 positional
+        # exercises, 14 chapters). IDs occupy SENS_DU_JEU_ID_OFFSET + 1 ... + N,
+        # clear of all other corpora and the burned 1-572 legacy range.
+        # See backend/sens_du_jeu_loader.py.
+        try:
+            from sens_du_jeu_loader import (
+                SENS_DU_JEU_ID_OFFSET,
+                all_sens_du_jeu_exercises,
+            )
+        except Exception as e:
+            _log.error(f"init_db: failed to import sens_du_jeu_loader: {e}")
+        else:
+            for idx, ex in enumerate(
+                all_sens_du_jeu_exercises(), start=SENS_DU_JEU_ID_OFFSET + 1
+            ):
+                try:
+                    await db.execute(
+                        """
+                        INSERT INTO exercises (id, name, description, initial_fen, solution_moves, difficulty, category, hint, book_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT(id) DO UPDATE SET
+                            name=excluded.name,
+                            description=excluded.description,
+                            initial_fen=excluded.initial_fen,
+                            solution_moves=excluded.solution_moves,
+                            difficulty=excluded.difficulty,
+                            category=excluded.category,
+                            hint=excluded.hint,
+                            book_id=excluded.book_id
+                        """,
+                        (
+                            idx,
+                            ex["name"],
+                            ex["description"],
+                            ex["initial_fen"],
+                            json.dumps(ex["solution_moves"]),
+                            ex["difficulty"],
+                            ex["category"],
+                            ex["hint"],
+                            ex["book_id"],
+                        ),
+                    )
+                except Exception as e:
+                    _log.error(f"init_db: failed to upsert sens_du_jeu exercise {idx}: {e}")
+            await db.commit()

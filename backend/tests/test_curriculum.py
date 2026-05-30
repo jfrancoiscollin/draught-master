@@ -154,11 +154,12 @@ def test_intermediate_attaches_strategy_exercises_by_theme():
         for i, ex in enumerate(all_strategy_exercises())
     }
     resolved = cur.build()
-    # strategy concept modules only (the Dubois combination modules attach a
-    # different corpus, covered by test_dubois_combinations_resolve_to_seed_ids)
+    # strategy concept modules only (the Dubois combination and sens-du-jeu
+    # modules attach different corpora, covered by their own tests)
     inter = [
         m for m in resolved["modules"]
-        if m["level"] == "intermediaire" and not m["id"].startswith("int_comb_")
+        if m["level"] == "intermediaire"
+        and not m["id"].startswith(("int_comb_", "int_sdj_"))
     ]
     assert inter, "no intermediate strategy modules"
     seen = 0
@@ -203,6 +204,36 @@ def test_dubois_combinations_resolve_to_seed_ids():
     assert seen == 408  # the whole Dubois corpus is curated in
 
 
+def test_sens_du_jeu_resolves_to_seed_ids_with_prose():
+    """The Dubois 'sens du jeu' modules attach exercises whose refs equal the
+    seed DB ids (offset 8000) and every lesson links to a real prose chapter
+    so 'Read the lesson' works."""
+    from sens_du_jeu_loader import (
+        SENS_DU_JEU_ID_OFFSET,
+        all_sens_du_jeu_exercises,
+        sens_du_jeu_chapters,
+    )
+
+    expected = {
+        SENS_DU_JEU_ID_OFFSET + 1 + i: ex["category"]
+        for i, ex in enumerate(all_sens_du_jeu_exercises())
+    }
+    chapters = set(int(k) for k in sens_du_jeu_chapters())
+    resolved = cur.build()
+    sdj = [m for m in resolved["modules"] if m["id"].startswith("int_sdj_")]
+    assert len(sdj) == 4
+    seen = 0
+    for m in sdj:
+        for les in m["lessons"]:
+            assert les.get("chapter") in chapters, les["id"]
+            for item in les["items"]:
+                assert item["kind"] == "exercise"
+                assert item["ref"] in expected, item["ref"]
+                assert expected[item["ref"]] == item["category"]
+                seen += 1
+    assert seen == 72  # the whole sens du jeu corpus is curated in
+
+
 def test_intermediate_lessons_carry_illustrative_positions():
     """Strategy concepts have no manual prose, so each intermediate lesson
     shows illustrative positions (capped) with a renderable FEN."""
@@ -222,10 +253,13 @@ def test_intermediate_lessons_carry_illustrative_positions():
 
 def test_lesson_chapter_refs_are_valid():
     """Every lesson that links to a manual chapter links to one that exists,
-    so the 'Read the lesson' button always resolves to real prose."""
+    so the 'Read the lesson' button always resolves to real prose (débutant
+    chapters 1-16 or Dubois 'sens du jeu' chapters 101-135)."""
     from manuels.prose_loader import load_debutant_chapters
+    from sens_du_jeu_loader import sens_du_jeu_chapters
 
     valid = {int(k) for k in load_debutant_chapters().keys()}
+    valid |= {int(k) for k in sens_du_jeu_chapters().keys()}
     resolved = cur.build()
     for m in resolved["modules"]:
         for les in m["lessons"]:
@@ -246,7 +280,7 @@ def test_unknown_chapter_is_rejected():
             }],
         }],
     }
-    with pytest.raises(cur.CurriculumError, match="unknown debutant chapter"):
+    with pytest.raises(cur.CurriculumError, match="unknown manual chapter"):
         cur._validate_and_resolve(spine)
 
 
