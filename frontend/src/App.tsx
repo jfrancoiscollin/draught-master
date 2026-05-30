@@ -252,6 +252,10 @@ export default function App() {
     fen: string
     exerciseId: number | null
   } | null>(null)
+  // When an exercise is opened by deep-link (e.g. from the Parcours screen),
+  // remember where to return so the back arrow goes there instead of the
+  // default chapter list.
+  const [exerciseOrigin, setExerciseOrigin] = useState<Tab | null>(null)
   const [exerciseLegalMoves, setExerciseLegalMoves] = useState<MoveData[]>([])
   const [exerciseSelectedSquare, setExerciseSelectedSquare] = useState<number | null>(null)
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseCheckResponse | null>(null)
@@ -351,6 +355,7 @@ export default function App() {
     setExerciseStep(0)
     setExerciseMovesLoading(false)
     setExerciseLastMove(null)
+    setExerciseOrigin(null)
     if (exerciseAutoMoveTimerRef.current) clearTimeout(exerciseAutoMoveTimerRef.current)
   }, [])
 
@@ -1689,6 +1694,7 @@ export default function App() {
               try {
                 resetExerciseState()
                 const ex = await getExercise(exerciseId)
+                setExerciseOrigin('learning-path')
                 setTab('exercises')
                 await handleExerciseLoad(ex.initial_fen, exerciseId)
               } catch { /* ignore load failure */ }
@@ -1781,7 +1787,14 @@ export default function App() {
             {/* Below-board row: back arrow left, perspective center, loading right */}
             <div className="flex items-center w-full mt-2" style={{ maxWidth: '560px' }}>
               <button
-                onClick={resetExerciseState}
+                onClick={() => {
+                  resetExerciseState()
+                  if (exerciseOrigin) {
+                    const origin = exerciseOrigin
+                    setExerciseOrigin(null)
+                    setTab(origin)
+                  }
+                }}
                 className="text-gray-400 hover:text-amber-500 text-2xl w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors flex-shrink-0"
                 title={t('exercises')}
               >
