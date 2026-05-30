@@ -22,6 +22,7 @@
         {
           "id": "deb_notation_regles_l1",
           "title": "La notation et les règles de capture",
+          "chapter": 2,
           "intro": "Avant de combiner, il faut parler la langue du jeu : les 50 cases jouables et comment une prise s'enchaîne. Ces exercices vous font appliquer la prise obligatoire, la rafle et la règle de prise maximale.",
           "attach": {
             "exercises": {
@@ -44,6 +45,7 @@
         {
           "id": "deb_gagner_materiel_l1",
           "title": "La prise majoritaire",
+          "chapter": 3,
           "intro": "Le sacrifice qui rapporte : offrir un pion pour en reprendre deux. Le mécanisme de base de presque toutes les combinaisons.",
           "attach": {
             "exercises": {
@@ -55,6 +57,7 @@
         {
           "id": "deb_gagner_materiel_l2",
           "title": "Le collage",
+          "chapter": 4,
           "intro": "Immobiliser un pion adverse contre la bande ou un de ses propres pions, pour le gagner au coup suivant.",
           "attach": {
             "exercises": {
@@ -66,6 +69,7 @@
         {
           "id": "deb_gagner_materiel_l3",
           "title": "L'envoi à dame",
+          "chapter": 5,
           "intro": "Conduire un pion jusqu'à la dernière rangée par un sacrifice forcé. Le but ultime du pion.",
           "attach": {
             "exercises": {
@@ -88,6 +92,7 @@
         {
           "id": "deb_tempo_l1",
           "title": "Les points de contact",
+          "chapter": 6,
           "intro": "Une méthode systématique : repérer les cases où vos pions touchent l'adversaire, ce sont les amorces de combinaison.",
           "attach": {
             "exercises": {
@@ -99,6 +104,7 @@
         {
           "id": "deb_tempo_l2",
           "title": "Les temps de repos",
+          "chapter": 7,
           "intro": "Un coup d'attente qui force l'adversaire à se découvrir. Savoir le créer et l'exploiter change tout.",
           "attach": {
             "exercises": {
@@ -121,6 +127,7 @@
         {
           "id": "deb_coups_nommes_1_l1",
           "title": "Le coup de l'Express",
+          "chapter": 9,
           "intro": "Une rafle express qui traverse le damier. Le premier coup nommé à maîtriser.",
           "attach": {
             "exercises": {
@@ -132,6 +139,7 @@
         {
           "id": "deb_coups_nommes_1_l2",
           "title": "Le coup de Ricochet",
+          "chapter": 10,
           "intro": "La prise rebondit d'une direction à l'autre. Un classique qui surprend souvent l'adversaire.",
           "attach": {
             "exercises": {

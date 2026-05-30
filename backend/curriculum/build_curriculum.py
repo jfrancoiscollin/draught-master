@@ -166,6 +166,13 @@ def _resolve_tips(spec: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def _debutant_chapter_ids() -> set[int]:
+    """Chapter numbers that have manual prose (lessons may link to them)."""
+    from manuels.prose_loader import load_debutant_chapters
+
+    return {int(k) for k in load_debutant_chapters().keys()}
+
+
 def _resolve_lesson(lesson: dict[str, Any]) -> list[dict[str, Any]]:
     attach = lesson.get("attach", {})
     items: list[dict[str, Any]] = []
@@ -204,6 +211,10 @@ def _validate_and_resolve(spine: dict[str, Any]) -> dict[str, Any]:
             if les["id"] in lesson_ids:
                 errors.append(f"duplicate lesson id: {les['id']}")
             lesson_ids.add(les["id"])
+            if "chapter" in les and les["chapter"] not in _debutant_chapter_ids():
+                errors.append(
+                    f"lesson {les['id']} references unknown debutant chapter {les['chapter']}"
+                )
             items = _resolve_lesson(les)
             if not items:
                 errors.append(f"lesson {les['id']} resolves to 0 content items")

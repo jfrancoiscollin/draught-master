@@ -118,6 +118,36 @@ def test_progress_unlocks_in_order():
         assert by_id[d["id"]]["state"] != "locked"
 
 
+def test_lesson_chapter_refs_are_valid():
+    """Every lesson that links to a manual chapter links to one that exists,
+    so the 'Read the lesson' button always resolves to real prose."""
+    from manuels.prose_loader import load_debutant_chapters
+
+    valid = {int(k) for k in load_debutant_chapters().keys()}
+    resolved = cur.build()
+    for m in resolved["modules"]:
+        for les in m["lessons"]:
+            if "chapter" in les:
+                assert les["chapter"] in valid, (les["id"], les["chapter"])
+
+
+def test_unknown_chapter_is_rejected():
+    spine = {
+        "version": 1,
+        "levels": [{"id": "x", "title": "X", "order": 1}],
+        "modules": [{
+            "id": "a", "level": "x", "order": 1, "prerequisites": [],
+            "lessons": [{
+                "id": "a_l1", "title": "L", "chapter": 999,
+                "attach": {"exercises": {"book_id": "manuel_debutant",
+                                          "categories": ["regle_capture"]}},
+            }],
+        }],
+    }
+    with pytest.raises(cur.CurriculumError, match="unknown debutant chapter"):
+        cur._validate_and_resolve(spine)
+
+
 def test_committed_resolved_is_fresh():
     if not cur._OUT_PATH.is_file():
         pytest.skip("curriculum_resolved.json not built yet")
