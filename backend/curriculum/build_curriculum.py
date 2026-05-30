@@ -65,6 +65,19 @@ def _strategy_exercise_rows() -> list[dict[str, Any]]:
     return rows
 
 
+def _combinaisons_exercise_rows() -> list[dict[str, Any]]:
+    """Dubois 'Apprendre les combinaisons' exercises with their seed DB id."""
+    from combinaisons_loader import (
+        COMBINAISONS_ID_OFFSET,
+        all_combinaisons_exercises,
+    )
+
+    rows = []
+    for i, ex in enumerate(all_combinaisons_exercises(), start=COMBINAISONS_ID_OFFSET + 1):
+        rows.append({**ex, "_db_id": i})
+    return rows
+
+
 def _resolve_exercises(spec: dict[str, Any]) -> list[dict[str, Any]]:
     """Resolve an ``attach.exercises`` block to exercise references.
 
@@ -73,13 +86,15 @@ def _resolve_exercises(spec: dict[str, Any]) -> list[dict[str, Any]]:
     manuals' theme), ``difficulty`` (int or list),
     ``min_difficulty``/``max_difficulty``.
 
-    ``book_id`` may be ``manuel_debutant``, one specific strategy book
-    (``manuel_sijbrands`` / ``manuel_springer`` / ``manuel_keller``) or
-    ``strategy`` to span all strategy books.
+    ``book_id`` may be ``manuel_debutant``, ``manuel_dubois_combinaisons``,
+    one specific strategy book (``manuel_sijbrands`` / ``manuel_springer`` /
+    ``manuel_keller``) or ``strategy`` to span all strategy books.
     """
     book = spec["book_id"]
     if book == "manuel_debutant":
         rows = _debutant_exercise_rows()
+    elif book == "manuel_dubois_combinaisons":
+        rows = _combinaisons_exercise_rows()
     elif book == "strategy" or book.startswith("manuel_"):
         rows = _strategy_exercise_rows()
     else:
@@ -92,9 +107,12 @@ def _resolve_exercises(spec: dict[str, Any]) -> list[dict[str, Any]]:
     dmin = spec.get("min_difficulty")
     dmax = spec.get("max_difficulty")
 
+    # Books resolved as a whole corpus (no per-row book_id filtering).
+    whole_corpus = {"manuel_debutant", "manuel_dubois_combinaisons", "strategy"}
+
     out = []
     for r in rows:
-        if book == "manuel_debutant" or book == "strategy":
+        if book in whole_corpus:
             pass  # any row from the selected corpus
         elif r.get("book_id") != book:
             continue  # a specific strategy book

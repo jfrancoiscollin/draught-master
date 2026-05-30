@@ -154,8 +154,13 @@ def test_intermediate_attaches_strategy_exercises_by_theme():
         for i, ex in enumerate(all_strategy_exercises())
     }
     resolved = cur.build()
-    inter = [m for m in resolved["modules"] if m["level"] == "intermediaire"]
-    assert inter, "no intermediate modules"
+    # strategy concept modules only (the Dubois combination modules attach a
+    # different corpus, covered by test_dubois_combinations_resolve_to_seed_ids)
+    inter = [
+        m for m in resolved["modules"]
+        if m["level"] == "intermediaire" and not m["id"].startswith("int_comb_")
+    ]
+    assert inter, "no intermediate strategy modules"
     seen = 0
     for m in inter:
         for les in m["lessons"]:
@@ -167,6 +172,35 @@ def test_intermediate_attaches_strategy_exercises_by_theme():
                 assert item.get("theme") == expected[item["ref"]]
                 seen += 1
     assert seen >= 100  # ~101 curated strategy exercises
+
+
+def test_dubois_combinations_resolve_to_seed_ids():
+    """The Dubois 'Apprendre les combinaisons' modules attach playable
+    exercises whose refs equal the seed DB ids (offset 7000), so they
+    deep-link into the solver."""
+    from combinaisons_loader import (
+        COMBINAISONS_ID_OFFSET,
+        all_combinaisons_exercises,
+    )
+
+    expected = {
+        COMBINAISONS_ID_OFFSET + 1 + i: ex["category"]
+        for i, ex in enumerate(all_combinaisons_exercises())
+    }
+    resolved = cur.build()
+    comb_modules = [
+        m for m in resolved["modules"] if m["id"].startswith("int_comb_")
+    ]
+    assert len(comb_modules) == 4
+    seen = 0
+    for m in comb_modules:
+        for les in m["lessons"]:
+            for item in les["items"]:
+                assert item["kind"] == "exercise"
+                assert item["ref"] in expected, item["ref"]
+                assert expected[item["ref"]] == item["category"]
+                seen += 1
+    assert seen == 408  # the whole Dubois corpus is curated in
 
 
 def test_intermediate_lessons_carry_illustrative_positions():

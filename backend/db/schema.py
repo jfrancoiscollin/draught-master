@@ -364,3 +364,49 @@ async def init_db() -> None:
                 except Exception as e:
                     _log.error(f"init_db: failed to upsert strategy exercise {idx}: {e}")
             await db.commit()
+
+        # Seed the Dubois "Apprendre les combinaisons" corpus (408 exercises,
+        # combination depth 2->6). IDs occupy COMBINAISONS_ID_OFFSET + 1 ... + N,
+        # a fresh range clear of manuel_debutant (2000+), strategy (5000+) and
+        # the burned 1-572 legacy range. See backend/combinaisons_loader.py.
+        try:
+            from combinaisons_loader import (
+                COMBINAISONS_ID_OFFSET,
+                all_combinaisons_exercises,
+            )
+        except Exception as e:
+            _log.error(f"init_db: failed to import combinaisons_loader: {e}")
+        else:
+            for idx, ex in enumerate(
+                all_combinaisons_exercises(), start=COMBINAISONS_ID_OFFSET + 1
+            ):
+                try:
+                    await db.execute(
+                        """
+                        INSERT INTO exercises (id, name, description, initial_fen, solution_moves, difficulty, category, hint, book_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT(id) DO UPDATE SET
+                            name=excluded.name,
+                            description=excluded.description,
+                            initial_fen=excluded.initial_fen,
+                            solution_moves=excluded.solution_moves,
+                            difficulty=excluded.difficulty,
+                            category=excluded.category,
+                            hint=excluded.hint,
+                            book_id=excluded.book_id
+                        """,
+                        (
+                            idx,
+                            ex["name"],
+                            ex["description"],
+                            ex["initial_fen"],
+                            json.dumps(ex["solution_moves"]),
+                            ex["difficulty"],
+                            ex["category"],
+                            ex["hint"],
+                            ex["book_id"],
+                        ),
+                    )
+                except Exception as e:
+                    _log.error(f"init_db: failed to upsert combinaisons exercise {idx}: {e}")
+            await db.commit()

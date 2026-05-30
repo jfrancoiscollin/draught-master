@@ -11,7 +11,7 @@
     {
       "id": "intermediaire",
       "title": "Intermédiaire",
-      "subtitle": "La stratégie : structures, débordements, finales et combinaisons des grands manuels.",
+      "subtitle": "Tactique et stratégie : combinaisons en profondeur, structures, débordements et finales des grands manuels.",
       "order": 2
     }
   ],
@@ -309,9 +309,116 @@
       ]
     },
     {
-      "id": "int_structure_bande_centre",
+      "id": "int_comb_2",
       "level": "intermediaire",
       "order": 1,
+      "title": "Combinaisons en deux temps",
+      "subtitle": "Le mécanisme de base de toute combinaison.",
+      "goal": "Voir et calculer les combinaisons gagnantes en deux temps, le socle de tout le calcul tactique.",
+      "prerequisites": [],
+      "lessons": [
+        {
+          "id": "int_comb_2_l1",
+          "title": "Combinaisons en 2 temps",
+          "intro": "Deux coups pour gagner du matériel. Entraînez l'œil à repérer le motif et à calculer la suite forcée.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_combinaisons",
+              "categories": [
+                "combinaisons_2",
+                "combinaisons_2_3"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_comb_3",
+      "level": "intermediaire",
+      "order": 2,
+      "title": "Combinaisons en trois temps",
+      "subtitle": "Allonger le calcul.",
+      "goal": "Calculer des combinaisons de trois temps sans se tromper dans l'ordre des coups.",
+      "prerequisites": [
+        "int_comb_2"
+      ],
+      "lessons": [
+        {
+          "id": "int_comb_3_l1",
+          "title": "Combinaisons en 3 temps",
+          "intro": "Un temps de plus à anticiper. La précision dans l'ordre des coups devient décisive.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_combinaisons",
+              "categories": [
+                "combinaisons_3",
+                "combinaisons_3_4"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_comb_4",
+      "level": "intermediaire",
+      "order": 3,
+      "title": "Combinaisons en quatre temps",
+      "subtitle": "Profondeur et précision.",
+      "goal": "Mener à terme des combinaisons de quatre temps en visualisant la position finale.",
+      "prerequisites": [
+        "int_comb_3"
+      ],
+      "lessons": [
+        {
+          "id": "int_comb_4_l1",
+          "title": "Combinaisons en 4 temps",
+          "intro": "Quatre coups forcés : il faut voir la position d'arrivée avant de se lancer.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_combinaisons",
+              "categories": [
+                "combinaisons_4",
+                "combinaisons_4_5"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_comb_5_6",
+      "level": "intermediaire",
+      "order": 4,
+      "title": "Combinaisons en cinq et six temps",
+      "subtitle": "Les combinaisons longues des maîtres.",
+      "goal": "Calculer des combinaisons profondes (5-6 temps) et vérifier qu'elles sont réellement forcées.",
+      "prerequisites": [
+        "int_comb_4"
+      ],
+      "lessons": [
+        {
+          "id": "int_comb_5_6_l1",
+          "title": "Combinaisons en 5-6 temps",
+          "intro": "Les enchaînements longs. Calcul, visualisation et vérification que chaque coup est bien forcé.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_combinaisons",
+              "categories": [
+                "combinaisons_5",
+                "combinaisons_5_6",
+                "combinaisons_6"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_structure_bande_centre",
+      "level": "intermediaire",
+      "order": 5,
       "title": "Le pion à la bande et le pion au centre",
       "subtitle": "Lire les structures de pions.",
       "goal": "Comprendre l'opposition entre un pion à la bande et un pion au centre, et transformer cette structure en avantage.",
@@ -341,7 +448,7 @@
     {
       "id": "int_blocage",
       "level": "intermediaire",
-      "order": 2,
+      "order": 6,
       "title": "Bloquer et empêcher le débordement",
       "subtitle": "Neutraliser l'aile adverse.",
       "goal": "Bloquer les pions adverses et empêcher un débordement sur l'aile.",
@@ -392,7 +499,7 @@
     {
       "id": "int_grande_diagonale",
       "level": "intermediaire",
-      "order": 3,
+      "order": 7,
       "title": "La dame et la grande diagonale",
       "subtitle": "La diagonale a1-h8, axe du jeu de dames.",
       "goal": "Maîtriser la lutte sur la grande diagonale et capturer une dame qui s'y aventure.",
@@ -443,7 +550,7 @@
     {
       "id": "int_promotion",
       "level": "intermediaire",
-      "order": 4,
+      "order": 8,
       "title": "La course à dame",
       "subtitle": "Promouvoir avant l'adversaire.",
       "goal": "Calculer une course à la promotion et inverser les rôles par un pionnage.",
@@ -494,7 +601,7 @@
     {
       "id": "int_finales",
       "level": "intermediaire",
-      "order": 5,
+      "order": 9,
       "title": "Finales et opposition",
       "subtitle": "Convertir, ou sauver, les fins de partie.",
       "goal": "Gagner ou sauver les finales élémentaires grâce à l'opposition et au comptage.",
@@ -549,7 +656,7 @@
     {
       "id": "int_coups_avances",
       "level": "intermediaire",
-      "order": 6,
+      "order": 10,
       "title": "Coups nommés avancés",
       "subtitle": "Les combinaisons nommées en contexte de maître.",
       "goal": "Reconnaître le coup royal et les coups de talon/ricochet dans des positions réelles.",
@@ -600,7 +707,7 @@
     {
       "id": "int_combinaisons",
       "level": "intermediaire",
-      "order": 7,
+      "order": 11,
       "title": "Trouver la combinaison forcée",
       "subtitle": "Calculer jusqu'au bout.",
       "goal": "Calculer une combinaison forcée dans des positions tirées des grands manuels.",
