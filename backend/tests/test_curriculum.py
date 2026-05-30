@@ -69,6 +69,55 @@ def test_attached_exercise_ids_match_db_seed():
                 assert expected[item["ref"]] == item["category"]
 
 
+def test_api_tree_and_module_detail():
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from curriculum.api import router
+
+    app = FastAPI()
+    app.include_router(router)
+    client = TestClient(app)
+
+    r = client.get("/api/curriculum")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["levels"] and body["modules"]
+    first = body["modules"][0]
+    assert first["goal"] and first["title"]
+
+    mid = first["id"]
+    r2 = client.get(f"/api/curriculum/module/{mid}")
+    assert r2.status_code == 200
+    assert r2.json()["lessons"]
+
+    assert client.get("/api/curriculum/module/nope").status_code == 404
+
+
+def test_progress_unlocks_in_order():
+    from curriculum import loader
+    from curriculum.api import progress_payload
+
+    # Nothing solved: first module available, rest with prereqs locked.
+    empty = progress_payload([])
+    by_id = {s["id"]: s for s in empty["modules"]}
+    roots = [m for m in loader.modules() if not m.get("prerequisites")]
+    for m in roots:
+        assert by_id[m["id"]]["state"] in ("available", "in_progress")
+    assert empty["next_module"] is not None
+
+    # Solve every exercise of the first root module -> it becomes done and
+    # unlocks its dependents.
+    root = roots[0]
+    refs = loader.module_exercise_refs(root["id"])
+    after = progress_payload(refs)
+    by_id = {s["id"]: s for s in after["modules"]}
+    assert by_id[root["id"]]["state"] == "done"
+    dependents = [m for m in loader.modules() if root["id"] in m.get("prerequisites", [])]
+    for d in dependents:
+        assert by_id[d["id"]]["state"] != "locked"
+
+
 def test_committed_resolved_is_fresh():
     if not cur._OUT_PATH.is_file():
         pytest.skip("curriculum_resolved.json not built yet")

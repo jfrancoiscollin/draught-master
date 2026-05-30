@@ -146,6 +146,9 @@ app.include_router(live_router)
 from strategy.api import router as strategy_router  # noqa: E402
 app.include_router(strategy_router)
 
+from curriculum.api import router as curriculum_router  # noqa: E402
+app.include_router(curriculum_router)
+
 # Shared BookRAG singleton — populated at startup if corpus is present.
 # `explain_verdict` degrades gracefully to template mode when None.
 shared_book_rag = None
@@ -1037,6 +1040,20 @@ async def auth_set_username(
 async def auth_me_progress(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
     solved_ids = await get_user_solved_exercise_ids(current_user["id"])
     return {"solved_exercise_ids": solved_ids}
+
+
+@app.get("/api/curriculum/progress")
+async def curriculum_progress(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
+    """Per-module learning progress for the authenticated user.
+
+    Derived from the existing solved-exercise tracking — module states
+    (locked / available / in_progress / done) and the recommended next
+    module. See curriculum/api.py::progress_payload.
+    """
+    from curriculum.api import progress_payload
+
+    solved_ids = await get_user_solved_exercise_ids(current_user["id"])
+    return progress_payload(solved_ids)
 
 
 @app.get("/api/auth/me/stats")
