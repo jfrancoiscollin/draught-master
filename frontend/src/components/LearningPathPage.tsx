@@ -40,7 +40,8 @@ const ProgressBar: React.FC<{ value: number; total: number; state: ModuleState }
 
 const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLesson }) => {
   const { language } = useLanguage()
-  const { isLoggedIn } = useAuth()
+  const { user } = useAuth()
+  const isLoggedIn = !!user
   const fr = language === 'fr'
 
   const [tree, setTree] = useState<CurriculumTree | null>(null)
