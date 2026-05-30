@@ -13,6 +13,22 @@ upstream changelog see
 
 ### Added
 
+- **Stratégie — base de connaissances depuis les diagrammes scannés**
+  (PR #118, #119). Les positions extraites des quatre manuels
+  (Sijbrands, Springer, Roozenburg, Keller) alimentent un pipeline en
+  quatre couches : (1) une **bibliothèque consolidée** de 1369 positions
+  validées par le moteur (1308 valides) — `build_position_library.py` +
+  `position_library.json` ; (2) une **base de connaissances thématique**
+  (66 thèmes de leçon → positions, endpoints `/api/strategy/kb-themes` et
+  `/kb-theme`) plus 68/79 tips enrichis de positions-exemples des manuels,
+  affichées en jeu sous l'analyse (`TipExamples.tsx`) ; (3) **108
+  exercices vérifiés** (61 finales + 45 gains de matériel + 2 annihilations
+  forcées), chaque solution rejouée pour prouver légalité et gain, seedés
+  via `generate_exercises.py` / `exercises_loader.py` (IDs 5001+) ; (4)
+  **prose interactive** — Sijbrands rejoint les sources *trusted-auto* et
+  un flag `valid` évite tout plateau cassé. Garde de légalité : un pion
+  sur sa rangée de promotion est rejeté. Voir
+  [`docs/STRATEGIE_KNOWLEDGE_BASE.md`](docs/STRATEGIE_KNOWLEDGE_BASE.md).
 - **Live PvP — J6 (global ChallengeToast + polish)**. v1 complete.
   New `<ChallengeToast>` mounted at the App level so a
   `challenge_received` push surfaces on any tab — single-slot
