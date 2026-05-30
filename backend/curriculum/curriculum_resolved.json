@@ -64,10 +64,14 @@
               "theme": "Quand plusieurs captures sont possibles, le joueur DOIT choisir celle qui prend le plus de pions adverses. Ici, 31x22 capture 1 pion (27) mais 38x18 capture 2 pions (33 et 23). Le coup 38x18 est obligatoire."
             }
           ],
-          "n_items": 4
+          "n_items": 4,
+          "n_exercises": 4,
+          "n_positions": 0
         }
       ],
-      "n_items": 4
+      "n_items": 4,
+      "n_exercises": 4,
+      "n_positions": 0
     },
     {
       "id": "deb_gagner_materiel",
@@ -239,7 +243,9 @@
               "theme": "Coup de mazette classique. À retenir : la prise forcée (13x31) libère la rafle 32x5."
             }
           ],
-          "n_items": 19
+          "n_items": 19,
+          "n_exercises": 19,
+          "n_positions": 0
         },
         {
           "id": "deb_gagner_materiel_l2",
@@ -328,7 +334,9 @@
               "theme": "Pas de combinaison rafle, mais un gambit gagnant — deux sacrifices successifs qui collent la position."
             }
           ],
-          "n_items": 10
+          "n_items": 10,
+          "n_exercises": 10,
+          "n_positions": 0
         },
         {
           "id": "deb_gagner_materiel_l3",
@@ -417,10 +425,14 @@
               "theme": "Partie historique 1988. Mécanisme combiné : prise majoritaire + envoi à dame noire + reprise."
             }
           ],
-          "n_items": 10
+          "n_items": 10,
+          "n_exercises": 10,
+          "n_positions": 0
         }
       ],
-      "n_items": 39
+      "n_items": 39,
+      "n_exercises": 39,
+      "n_positions": 0
     },
     {
       "id": "deb_tempo",
@@ -488,7 +500,9 @@
               "theme": "On s'attend à une rafle 36x20, mais l'analyse des points de contact révèle un autre point d'appui en 29, conduisant à une rafle 29x9 plus longue."
             }
           ],
-          "n_items": 6
+          "n_items": 6,
+          "n_exercises": 6,
+          "n_positions": 0
         },
         {
           "id": "deb_tempo_l2",
@@ -649,10 +663,14 @@
               "theme": "Une rafle finissant à la case 3 est la plus probable. Points d'appui possibles : 32 et 45. Le pion 32 est le meilleur candidat, à condition d'amener un pion en 28."
             }
           ],
-          "n_items": 19
+          "n_items": 19,
+          "n_exercises": 19,
+          "n_positions": 0
         }
       ],
-      "n_items": 25
+      "n_items": 25,
+      "n_exercises": 25,
+      "n_positions": 0
     },
     {
       "id": "deb_coups_nommes_1",
@@ -752,7 +770,9 @@
               "theme": "Coup de l'Express dans le chapitre Napoléon — illustre la parenté entre les mécanismes."
             }
           ],
-          "n_items": 10
+          "n_items": 10,
+          "n_exercises": 10,
+          "n_positions": 0
         },
         {
           "id": "deb_coups_nommes_1_l2",
@@ -849,10 +869,14 @@
               "theme": "Partie historique 1909. Trait aux noirs. La rafle finale (21x45) est très bien cachée. Méthode des points de contact essentielle."
             }
           ],
-          "n_items": 11
+          "n_items": 11,
+          "n_exercises": 11,
+          "n_positions": 0
         }
       ],
-      "n_items": 21
+      "n_items": 21,
+      "n_exercises": 21,
+      "n_positions": 0
     },
     {
       "id": "deb_coups_nommes_2",
@@ -952,7 +976,9 @@
               "theme": "Partie 1979. Une rafle 48x6 ouverte par sacrifices successifs."
             }
           ],
-          "n_items": 10
+          "n_items": 10,
+          "n_exercises": 10,
+          "n_positions": 0
         },
         {
           "id": "deb_coups_nommes_2_l2",
@@ -1049,10 +1075,14 @@
               "theme": "Révision du coup de Rappel dans le chapitre Trappe."
             }
           ],
-          "n_items": 11
+          "n_items": 11,
+          "n_exercises": 11,
+          "n_positions": 0
         }
       ],
-      "n_items": 21
+      "n_items": 21,
+      "n_exercises": 21,
+      "n_positions": 0
     },
     {
       "id": "deb_coups_nommes_3",
@@ -1168,7 +1198,9 @@
               "theme": "Partie URSS 1965. Trait aux noirs. Combine envoi à dame et coup de ricochet."
             }
           ],
-          "n_items": 12
+          "n_items": 12,
+          "n_exercises": 12,
+          "n_positions": 0
         },
         {
           "id": "deb_coups_nommes_3_l2",
@@ -1249,10 +1281,14 @@
               "theme": "Une combinaison traîtresse aboutissant à la dame en 5. Demande imagination pour identifier prise majoritaire + collage + renversé."
             }
           ],
-          "n_items": 9
+          "n_items": 9,
+          "n_exercises": 9,
+          "n_positions": 0
         }
       ],
-      "n_items": 21
+      "n_items": 21,
+      "n_exercises": 21,
+      "n_positions": 0
     },
     {
       "id": "deb_coups_nommes_4",
@@ -1360,7 +1396,9 @@
               "theme": "Partie 1927. Combinaison inattendue. La bonne case de départ est 26, par mécanisme de la trappe."
             }
           ],
-          "n_items": 11
+          "n_items": 11,
+          "n_exercises": 11,
+          "n_positions": 0
         },
         {
           "id": "deb_coups_nommes_4_l2",
@@ -1441,10 +1479,14 @@
               "theme": "Partie 2010. Rafle se terminant en 6, départ 30 ou 48. La notation publiée contient une anomalie '30.48x6' (probable typo)."
             }
           ],
-          "n_items": 9
+          "n_items": 9,
+          "n_exercises": 9,
+          "n_positions": 0
         }
       ],
-      "n_items": 20
+      "n_items": 20,
+      "n_exercises": 20,
+      "n_positions": 0
     },
     {
       "id": "int_structure_bande_centre",
@@ -1595,12 +1637,52 @@
               "difficulty": 1,
               "category": "combinaisons_manuels",
               "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0090_d10",
+              "fen": "W:W48:B3",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0090_d11",
+              "fen": "W:W48:B12",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0096_d6",
+              "fen": "W:WK38:B16,28",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0100_d6",
+              "fen": "W:WK5,33:B27,31,36",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0100_d8",
+              "fen": "W:WK5,43:B21,31,36",
+              "theme": "Un pion à la bande et un pion dans le centre"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0101_d11",
+              "fen": "W:W7,22:B21,34",
+              "theme": "Un pion à la bande et un pion dans le centre"
             }
           ],
-          "n_items": 17
+          "n_items": 23,
+          "n_exercises": 17,
+          "n_positions": 6
         }
       ],
-      "n_items": 17
+      "n_items": 23,
+      "n_exercises": 17,
+      "n_positions": 6
     },
     {
       "id": "int_blocage",
@@ -1689,9 +1771,47 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0120_d1",
+              "fen": "W:W33,42,43:B23,32",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0120_d2",
+              "fen": "W:W28,32,37:B16,17,26",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0120_d3",
+              "fen": "W:W38,50:B20,35",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0120_d4",
+              "fen": "W:W37,47,48:B27,38",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0121_d10",
+              "fen": "W:W35,44,45:B24,34",
+              "theme": "Bloquer des pions"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0121_d11",
+              "fen": "W:W25,28,29:B13,14,18",
+              "theme": "Bloquer des pions"
             }
           ],
-          "n_items": 9
+          "n_items": 15,
+          "n_exercises": 9,
+          "n_positions": 6
         },
         {
           "id": "int_blocage_l2",
@@ -1737,12 +1857,52 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0080_d1",
+              "fen": "W:W27,28,33,37,39:B6,16,25,26,30",
+              "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0081_d10",
+              "fen": "W:W23,36,40:B20,24",
+              "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0080_d2",
+              "fen": "W:W37,38,42:B26,27",
+              "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0081_d11",
+              "fen": "W:W33,38,48,49:B26,31",
+              "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0081_d3",
+              "fen": "W:W23,28,32:B4,21,26",
+              "theme": "Empêcher un débordement"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0081_d4",
+              "fen": "W:W32,43,44,49:B9,21,27,34",
+              "theme": "Empêcher un débordement"
             }
           ],
-          "n_items": 5
+          "n_items": 11,
+          "n_exercises": 5,
+          "n_positions": 6
         }
       ],
-      "n_items": 14
+      "n_items": 26,
+      "n_exercises": 14,
+      "n_positions": 12
     },
     {
       "id": "int_grande_diagonale",
@@ -1871,9 +2031,47 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0112_d4",
+              "fen": "W:WK3,K16,K32:BK2",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0112_d5",
+              "fen": "W:WK5,K16,K26:BK30",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0112_d6",
+              "fen": "W:WK25,K48,K49:BK12",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0112_d7",
+              "fen": "W:WK16,K27,K48:BK2",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0113_d10",
+              "fen": "W:WK7,K35,K37:BK43",
+              "theme": "Capturer la dame sur la grande diagonale."
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0113_d11",
+              "fen": "W:WK11,K34,K45:BK49",
+              "theme": "Capturer la dame sur la grande diagonale."
             }
           ],
-          "n_items": 14
+          "n_items": 20,
+          "n_exercises": 14,
+          "n_positions": 6
         },
         {
           "id": "int_grande_diagonale_l2",
@@ -1895,12 +2093,52 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "La lutte pour la grande diagonale"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0099_d2",
+              "fen": "W:WK34:B13,31",
+              "theme": "La lutte pour la grande diagonale"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0099_d1",
+              "fen": "W:W7:B13,26",
+              "theme": "La lutte pour la grande diagonale"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0099_d3",
+              "fen": "W:W14,37,41:B26,31",
+              "theme": "La lutte pour la grande diagonale"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0099_d5",
+              "fen": "W:WK28:B4,8,16",
+              "theme": "La lutte pour la grande diagonale"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0181_d17",
+              "fen": "W:WK23:B27,31,36",
+              "theme": "La lutte pour la grande diagonale"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0181_d18",
+              "fen": "W:WK32:B26,31,36",
+              "theme": "La lutte pour la grande diagonale"
             }
           ],
-          "n_items": 2
+          "n_items": 8,
+          "n_exercises": 2,
+          "n_positions": 6
         }
       ],
-      "n_items": 16
+      "n_items": 28,
+      "n_exercises": 16,
+      "n_positions": 12
     },
     {
       "id": "int_promotion",
@@ -1973,9 +2211,47 @@
               "difficulty": 1,
               "category": "combinaisons_manuels",
               "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0104_d1",
+              "fen": "W:W14,34,45:B31",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0104_d2",
+              "fen": "W:W14,15,24:B27",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0104_d3",
+              "fen": "W:W39,45,49:B32",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0104_d5",
+              "fen": "W:WK2,29,35:B32",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0104_d6",
+              "fen": "W:W33,34,39:B25,35",
+              "theme": "Les noirs vont à dame"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0104_d7",
+              "fen": "W:W6,27,36:B34",
+              "theme": "Les noirs vont à dame"
             }
           ],
-          "n_items": 7
+          "n_items": 13,
+          "n_exercises": 7,
+          "n_positions": 6
         },
         {
           "id": "int_promotion_l2",
@@ -2013,12 +2289,52 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "Un pionnage peut inverser les rôles!"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0092_d1",
+              "fen": "W:W35,42:B8,25",
+              "theme": "Un pionnage peut inverser les rôles!"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0092_d2",
+              "fen": "W:W43,48:B16,33",
+              "theme": "Un pionnage peut inverser les rôles!"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0092_d3",
+              "fen": "W:W26,49:B9,17",
+              "theme": "Un pionnage peut inverser les rôles!"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0092_d4",
+              "fen": "W:W47,48:B11,33",
+              "theme": "Un pionnage peut inverser les rôles!"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0092_d5",
+              "fen": "W:W26,32:B2,22",
+              "theme": "Un pionnage peut inverser les rôles!"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0092_d6",
+              "fen": "W:W44,50:B14,35",
+              "theme": "Un pionnage peut inverser les rôles!"
             }
           ],
-          "n_items": 4
+          "n_items": 10,
+          "n_exercises": 4,
+          "n_positions": 6
         }
       ],
-      "n_items": 11
+      "n_items": 23,
+      "n_exercises": 11,
+      "n_positions": 12
     },
     {
       "id": "int_finales",
@@ -2075,9 +2391,47 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "L’opposition"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0088_d2",
+              "fen": "W:WK39,48:B20,25,43",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0088_d1",
+              "fen": "W:W42,43,47:B34",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0088_d3",
+              "fen": "W:W24,35,45:B23",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0089_d4",
+              "fen": "W:W46,48:B31,38",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0089_d5",
+              "fen": "W:W29,33,48:B32",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0089_d6",
+              "fen": "W:W39,43,44:B24,30",
+              "theme": "L’opposition"
             }
           ],
-          "n_items": 5
+          "n_items": 11,
+          "n_exercises": 5,
+          "n_positions": 6
         },
         {
           "id": "int_finales_l2",
@@ -2131,12 +2485,52 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "La fin de partie"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0095_d1",
+              "fen": "W:WK1:B10,21",
+              "theme": "Une dame contre des pions"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0095_d2",
+              "fen": "W:WK34:B17,25",
+              "theme": "Une dame contre des pions"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0095_d3",
+              "fen": "W:WK16:B6,30",
+              "theme": "Une dame contre des pions"
+            },
+            {
+              "kind": "position",
+              "ref": "ROOZENBURG_p0008_d1",
+              "fen": "W:W29,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,49:B2,4,6,7,8,9,10,11,12,13,14,15,16,17,18,20,22,23",
+              "theme": "La fin de partie"
+            },
+            {
+              "kind": "position",
+              "ref": "ROOZENBURG_p0008_d2",
+              "fen": "W:W27,29,30,32,33,34,35,37,38,39,41,42,43,44,45,47,49:B2,4,6,7,8,9,11,12,13,14,15,16,17,18,19,23,25",
+              "theme": "La fin de partie"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0095_d4",
+              "fen": "W:W8:B10,16",
+              "theme": "Une dame contre des pions"
             }
           ],
-          "n_items": 6
+          "n_items": 12,
+          "n_exercises": 6,
+          "n_positions": 6
         }
       ],
-      "n_items": 11
+      "n_items": 23,
+      "n_exercises": 11,
+      "n_positions": 12
     },
     {
       "id": "int_coups_avances",
@@ -2201,9 +2595,47 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "Le coup royal"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0033_d1",
+              "fen": "W:W27,28,32,33,35,37,38,39,40,45:B6,11,12,13,14,18,19,23,24",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0033_d2",
+              "fen": "W:W28,32,37,38,39,40,45:B11,12,13,14,19,23,24",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0033_d3",
+              "fen": "W:W27,28,32,35,37,38,39,40,45:B6,11,12,13,14,16,19,23,24",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0033_d4",
+              "fen": "W:W27,32,33,35,38,39,40,45,48:B11,12,13,14,16,18,19,23,24",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0033_d5",
+              "fen": "W:W27,28,31,32,33,36,38,39,40,45:B3,11,12,13,14,16,18,19,23,24",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0033_d6",
+              "fen": "W:W27,28,32,33,37,38,39,40,45,48:B7,12,13,14,17,18,19,23,24,26",
+              "theme": "Le coup royal"
             }
           ],
-          "n_items": 6
+          "n_items": 12,
+          "n_exercises": 6,
+          "n_positions": 6
         },
         {
           "id": "int_coups_avances_l2",
@@ -2241,12 +2673,52 @@
               "difficulty": 2,
               "category": "combinaisons_manuels",
               "theme": "Le coup de talon et le coup de ricochet"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0015_d5",
+              "fen": "W:W28,32,33,34,40,45:B9,13,19,21,23,25",
+              "theme": "Le coup de talon et le coup de ricochet"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0015_d6",
+              "fen": "W:W27,28,32,33,34,37,38,39,40,43,45,47,48:B3,8,9,13,14,15,16,18,19,20,21,23,25",
+              "theme": "Le coup de talon et le coup de ricochet"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0015_d7",
+              "fen": "W:W27,28,32,33,34,35,36,37,38,40,45:B3,9,11,13,16,18,19,21,23,25,26",
+              "theme": "Le coup de talon et le coup de ricochet"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0015_d8",
+              "fen": "W:W27,28,32,33,35,38,40,42,45:B3,9,11,13,15,16,19,23,25",
+              "theme": "Le coup de talon et le coup de ricochet"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0015_d9",
+              "fen": "W:W27,28,31,32,33,34,35,36,38,40,45,48:B3,9,13,15,16,17,18,19,21,23,24,25",
+              "theme": "Le coup de talon et le coup de ricochet"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0014_d1",
+              "fen": "W:W28,32,37,38,43:B11,19,21,23,26",
+              "theme": "Le coup de talon et le coup de ricochet"
             }
           ],
-          "n_items": 4
+          "n_items": 10,
+          "n_exercises": 4,
+          "n_positions": 6
         }
       ],
-      "n_items": 10
+      "n_items": 22,
+      "n_exercises": 10,
+      "n_positions": 12
     },
     {
       "id": "int_combinaisons",
@@ -2407,9 +2879,47 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "Cherchez une combinaison forcée."
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0006_d1",
+              "fen": "W:W33,34,42,47:B14,24,31,35",
+              "theme": "Rien que des petits coups"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0006_d2",
+              "fen": "W:W32,34,38,39:B7,18,23,28",
+              "theme": "Rien que des petits coups"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0006_d3",
+              "fen": "W:W27,28,32,37,38:B7,9,13,18,26",
+              "theme": "Rien que des petits coups"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0006_d4",
+              "fen": "W:W30,31,32,38:B9,18,26,29",
+              "theme": "Rien que des petits coups"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0006_d5",
+              "fen": "W:W24,35,38,44:B9,15,28,30",
+              "theme": "Rien que des petits coups"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0006_d6",
+              "fen": "W:W29,37,39,41,42,49:B12,13,14,18,22,27",
+              "theme": "Rien que des petits coups"
             }
           ],
-          "n_items": 18
+          "n_items": 24,
+          "n_exercises": 18,
+          "n_positions": 6
         },
         {
           "id": "int_combinaisons_l2",
@@ -2447,12 +2957,52 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "Des coups de dame"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0012_d1",
+              "fen": "W:W24,32,33,37,39:B9,13,15,18,26",
+              "theme": "De la magie"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0034_d8",
+              "fen": "W:W27,28,32,33,35,37,38,39,44,45:B6,11,12,13,14,16,18,19,23,24",
+              "theme": "Mettre l’autre en prise"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0012_d2",
+              "fen": "W:W25,27,28,30,32,33,35,37,38:B3,9,11,12,13,16,19,23,24",
+              "theme": "De la magie"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0013_d10",
+              "fen": "W:W24,34,36,39,44,48:B4,8,12,13,18,22,27",
+              "theme": "De la magie"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0013_d11",
+              "fen": "W:W25,27,34,50:B14,23,28,33,35",
+              "theme": "De la magie"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0013_d3",
+              "fen": "W:W26,27,32,33,38:B10,16,17,18,19,23",
+              "theme": "De la magie"
             }
           ],
-          "n_items": 4
+          "n_items": 10,
+          "n_exercises": 4,
+          "n_positions": 6
         }
       ],
-      "n_items": 22
+      "n_items": 34,
+      "n_exercises": 22,
+      "n_positions": 12
     }
   ]
 }

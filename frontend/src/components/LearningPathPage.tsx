@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import Board from './Board'
+import { fenToBoard } from '../utils/fen'
 import { useLanguage } from '../i18n/LanguageContext'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -113,7 +115,10 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLess
           </div>
         )}
         <div className="mt-6 space-y-6">
-          {openModule.lessons.map((les, i) => (
+          {openModule.lessons.map((les, i) => {
+            const positions = les.items.filter(it => it.kind === 'position')
+            const exercises = les.items.filter(it => it.kind === 'exercise')
+            return (
             <div key={les.id} className="rounded-xl border border-gray-700 bg-gray-800 p-4">
               <div className="flex items-baseline gap-2">
                 <span className="text-xs text-gray-500">{fr ? 'Leçon' : 'Lesson'} {i + 1}</span>
@@ -131,25 +136,53 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLess
                 </button>
               )}
 
-              <div className="mt-4 border-t border-gray-700 pt-3">
-                <div className="text-xs text-gray-500 uppercase font-semibold mb-2">
-                  {fr ? 'Pratiquez' : 'Practise'} · {les.items.length} {fr ? 'exercices' : 'exercises'}
+              {/* Illustrative positions — the visual lesson for strategy
+                  concepts that have no manual prose. Static diagrams. */}
+              {positions.length > 0 && (
+                <div className="mt-3">
+                  <div className="text-xs text-gray-500 uppercase font-semibold mb-2">
+                    📖 {fr ? 'La leçon en images' : 'The lesson in pictures'} · {positions.length} {fr ? 'positions types' : 'example positions'}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {positions.map(it => (
+                      <div key={it.ref} className="rounded-md overflow-hidden bg-gray-900 p-1">
+                        <Board
+                          board={fenToBoard(String(it.fen))}
+                          legalMoves={[]}
+                          onMove={() => {}}
+                          selectedSquare={null}
+                          onSelectSquare={() => {}}
+                          disabled
+                          flipped={String(it.fen).startsWith('B:')}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {les.items.filter(it => it.kind === 'exercise').map(it => (
-                    <button
-                      key={it.ref}
-                      onClick={() => onOpenExercise(Number(it.ref))}
-                      title={it.name}
-                      className="px-2.5 py-1 rounded-md text-xs bg-gray-700 hover:bg-amber-700 text-gray-200 transition-colors"
-                    >
-                      {'★'.repeat(it.difficulty ?? 1)} #{it.ref}
-                    </button>
-                  ))}
+              )}
+
+              {exercises.length > 0 && (
+                <div className="mt-4 border-t border-gray-700 pt-3">
+                  <div className="text-xs text-gray-500 uppercase font-semibold mb-2">
+                    {fr ? 'Pratiquez' : 'Practise'} · {exercises.length} {fr ? 'exercices' : 'exercises'}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {exercises.map(it => (
+                      <button
+                        key={it.ref}
+                        onClick={() => onOpenExercise(Number(it.ref))}
+                        title={it.name}
+                        className="px-2.5 py-1 rounded-md text-xs bg-gray-700 hover:bg-amber-700 text-gray-200 transition-colors"
+                      >
+                        {'★'.repeat(it.difficulty ?? 1)} #{it.ref}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
       </div>
@@ -223,7 +256,7 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLess
                       <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                         <span>{m.n_lessons} {fr ? 'leçons' : 'lessons'}</span>
                         <span>·</span>
-                        <span>{m.n_items} {fr ? 'exercices' : 'exercises'}</span>
+                        <span>{m.n_exercises} {fr ? 'exercices' : 'exercises'}</span>
                         {prog && prog.n_total > 0 && (
                           <span className="ml-auto">{prog.n_solved}/{prog.n_total}</span>
                         )}

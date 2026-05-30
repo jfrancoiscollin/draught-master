@@ -160,12 +160,30 @@ def test_intermediate_attaches_strategy_exercises_by_theme():
     for m in inter:
         for les in m["lessons"]:
             for item in les["items"]:
-                assert item["kind"] == "exercise"
+                if item["kind"] != "exercise":
+                    continue  # lessons also carry illustrative positions
                 assert item["ref"] in expected, item["ref"]
                 # the item's theme is the source exercise's hint
                 assert item.get("theme") == expected[item["ref"]]
                 seen += 1
     assert seen >= 100  # ~101 curated strategy exercises
+
+
+def test_intermediate_lessons_carry_illustrative_positions():
+    """Strategy concepts have no manual prose, so each intermediate lesson
+    shows illustrative positions (capped) with a renderable FEN."""
+    resolved = cur.build()
+    inter = [m for m in resolved["modules"] if m["level"] == "intermediaire"]
+    lessons_with_positions = 0
+    for m in inter:
+        for les in m["lessons"]:
+            positions = [it for it in les["items"] if it["kind"] == "position"]
+            assert len(positions) <= 6, (les["id"], len(positions))
+            for p in positions:
+                assert p.get("fen", "").startswith(("W:", "B:")), p
+            if positions:
+                lessons_with_positions += 1
+    assert lessons_with_positions >= 10  # most concepts are illustrated
 
 
 def test_lesson_chapter_refs_are_valid():
