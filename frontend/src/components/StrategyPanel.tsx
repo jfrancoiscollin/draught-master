@@ -14,6 +14,10 @@ import { fenToBoard } from '../utils/fen'
 interface Props {
   onClose: () => void
   lang?: 'fr' | 'en'
+  // When set, the panel opens straight on the jump-to-diagram form for this
+  // source (used for diagram-only sources like Goedemoed that have no prose
+  // passages — the jump form is the in-app annotation entry point).
+  initialJumpSource?: string
 }
 
 // Sources for which we ship rendered PDF page JPGs.  When a passage from
@@ -41,7 +45,7 @@ const DIAGRAM_REF_RE = /\bdiagramme\s+(\d+)/i
  * displayed verbatim so the reader can cross-reference the original
  * PDF (cf. CADRAGE_STRATEGIE.md §4.S1 — no synthesis without citation).
  */
-const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
+const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr', initialJumpSource }) => {
   const [topics, setTopics] = useState<StrategyTopic[]>([])
   const [activeTopic, setActiveTopic] = useState<string | null>(null)
   const [passages, setPassages] = useState<StrategyPassage[]>([])
@@ -76,7 +80,7 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr' }) => {
   // here; when set, the modal renders it instead of passages[modalIndex].
   // No prev/next navigation in jump mode (no passage list).
   const [jumpPassage, setJumpPassage] = useState<StrategyPassage | null>(null)
-  const [jumpSource, setJumpSource] = useState('SIJBRANDS')
+  const [jumpSource, setJumpSource] = useState(initialJumpSource ?? 'SIJBRANDS')
   const [jumpPage, setJumpPage] = useState('')
   const [jumpNumber, setJumpNumber] = useState('')
   // Manual crop tool — open for sources without an auto-extraction
