@@ -114,6 +114,13 @@ class DetectorConfig:
     # keeps them excluded.
     board_pixel_max: float = 230.0
     board_coverage_min: float = 0.35
+    # ``grey`` style (Goedemoed "A Course in Draughts"): gray-checkerboard
+    # workbook diagrams whose crops already come tight from the gray-fill
+    # board detector, so we must NOT re-localise (running board-bound
+    # detection on the grey squares mis-bounds and corrupts the grid).
+    # ``grey_inset`` trims a thin margin off the tight crop to clear the
+    # double-line border before grid placement.
+    grey_inset: float = 0.02
 
 
 def _longest_run(mask: np.ndarray) -> tuple[int, int]:
@@ -191,6 +198,22 @@ def config_for_source(source: str) -> DetectorConfig:
     brightness signal, so the classifier looks at inner-vs-ring
     contrast instead.
     """
+    if source.upper() == "GOEDEMOED":
+        # Goedemoed "A Course in Draughts": gray-checkerboard workbook
+        # diagrams.  White pieces are bright discs (~255), black pieces are
+        # mid-gray discs (~110-165), empty grey squares ~192.  Crops are
+        # already tight (gray-fill detector) -> style "grey" skips
+        # re-localisation.  Thresholds will be tuned against ground truth.
+        return DetectorConfig(
+            style="grey",
+            white_piece_min=215.0,
+            black_piece_max=165.0,
+            top_row_white_min=215.0,
+            top_row_black_max=165.0,
+            # smaller central patch: white discs have a thin dark outline;
+            # the default 60% patch dilutes the bright interior below 215.
+            cell_inset=0.30,
+        )
     if source.upper() == "ROOZENBURG":
         return DetectorConfig(style="bw")
     if source.upper() == "KELLER":
@@ -401,6 +424,11 @@ def detect_fen(image: Path | Image.Image, *, config: DetectorConfig | None = Non
         dy = int(h_full * cfg.kh_shrink)
         dx = int(w_full * cfg.kh_shrink)
         arr = full[dy:h_full - dy, dx:w_full - dx]
+    elif cfg.style == "grey":
+        # Goedemoed crops are already tight boards (bbox from the gray-fill
+        # detector); only trim a thin border margin — no re-localisation.
+        m = int(min(full.shape) * cfg.grey_inset)
+        arr = full[m:full.shape[0] - m, m:full.shape[1] - m] if m else full
     else:
         y0, y1, x0, x1 = _detect_board_bounds(
             full, cfg.board_pixel_max, cfg.board_coverage_min
