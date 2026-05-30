@@ -149,6 +149,111 @@
           }
         }
       ]
+    },
+    {
+      "id": "deb_coups_nommes_2",
+      "level": "debutant",
+      "order": 5,
+      "title": "Les coups nommés (2) — Napoléon et Rappel",
+      "subtitle": "Deux combinaisons de rappel du pion adverse.",
+      "goal": "Reconnaître et jouer le coup Napoléon et le coup de Rappel, qui ramènent un pion adverse vers une case fatale.",
+      "prerequisites": ["deb_coups_nommes_1"],
+      "lessons": [
+        {
+          "id": "deb_coups_nommes_2_l1",
+          "title": "Le coup Napoléon",
+          "chapter": 13,
+          "intro": "Un sacrifice qui rappelle un pion adverse pour le faire tomber dans une rafle décisive.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["coup_napoleon"]
+            }
+          }
+        },
+        {
+          "id": "deb_coups_nommes_2_l2",
+          "title": "Le coup de Rappel",
+          "chapter": 11,
+          "intro": "On force l'adversaire à reprendre vers l'arrière, ouvrant la voie à une combinaison gagnante.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["coup_rappel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "deb_coups_nommes_3",
+      "level": "debutant",
+      "order": 6,
+      "title": "Les coups nommés (3) — Trappe et Renversé",
+      "subtitle": "Piéger un pion et inverser le sens de la prise.",
+      "goal": "Reconnaître et jouer le coup de la Trappe et le coup Renversé, deux pièges fréquents en partie.",
+      "prerequisites": ["deb_coups_nommes_2"],
+      "lessons": [
+        {
+          "id": "deb_coups_nommes_3_l1",
+          "title": "Le coup de la Trappe",
+          "chapter": 14,
+          "intro": "On laisse une case ouverte comme un appât : l'adversaire s'y engage et tombe dans le piège.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["coup_de_trappe"]
+            }
+          }
+        },
+        {
+          "id": "deb_coups_nommes_3_l2",
+          "title": "Le coup Renversé",
+          "chapter": 12,
+          "intro": "La prise part dans le sens inverse de celui attendu. À connaître pour ne pas se faire surprendre — et pour surprendre.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["coup_renverse", "coup_parallele"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "deb_coups_nommes_4",
+      "level": "debutant",
+      "order": 7,
+      "title": "Les coups nommés (4) — Talon et Philippe",
+      "subtitle": "Les deux derniers coups nommés du répertoire débutant.",
+      "goal": "Reconnaître et jouer le coup de Talon et le coup Philippe, et avoir fait le tour des combinaisons nommées de base.",
+      "prerequisites": ["deb_coups_nommes_3"],
+      "lessons": [
+        {
+          "id": "deb_coups_nommes_4_l1",
+          "title": "Le coup de Talon",
+          "chapter": 15,
+          "intro": "La prise revient sur ses pas, comme un talon, pour cueillir un pion resté en arrière.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["coup_de_talon"]
+            }
+          }
+        },
+        {
+          "id": "deb_coups_nommes_4_l2",
+          "title": "Le coup Philippe",
+          "chapter": 16,
+          "intro": "Une combinaison élégante qui clôt le tour des coups nommés. Maîtrisez-la et le niveau Débutant est complet.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_debutant",
+              "categories": ["coup_philippe"]
+            }
+          }
+        }
+      ]
     }
   ]
 }

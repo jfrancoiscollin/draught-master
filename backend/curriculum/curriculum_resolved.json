@@ -758,6 +758,536 @@
         }
       ],
       "n_items": 21
+    },
+    {
+      "id": "deb_coups_nommes_2",
+      "level": "debutant",
+      "order": 5,
+      "title": "Les coups nommés (2) — Napoléon et Rappel",
+      "subtitle": "Deux combinaisons de rappel du pion adverse.",
+      "goal": "Reconnaître et jouer le coup Napoléon et le coup de Rappel, qui ramènent un pion adverse vers une case fatale.",
+      "prerequisites": [
+        "deb_coups_nommes_1"
+      ],
+      "lessons": [
+        {
+          "id": "deb_coups_nommes_2_l1",
+          "title": "Le coup Napoléon",
+          "chapter": 13,
+          "intro": "Un sacrifice qui rappelle un pion adverse pour le faire tomber dans une rafle décisive.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 2087,
+              "name": "Dubois ch14 D7 — Coup Napoléon (préview)",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2113,
+              "name": "Dubois ch17 D1 — Envoi à dame surprenant",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2114,
+              "name": "Dubois ch17 D2 — Rafle 22x44 (Bom-van Dijk 1963)",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2115,
+              "name": "Dubois ch17 D3 — Coup de dame en 46 (Baerends-Stoop 1984)",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2117,
+              "name": "Dubois ch17 D5 — Schéma Napoléon (Haijtink-Scholte Lubberink 1994)",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2118,
+              "name": "Dubois ch17 D6 — Rappel + Napoléon (van Leijen-Schunselaar 1971)",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2119,
+              "name": "Dubois ch17 D7 — Coup Napoléon pur",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2120,
+              "name": "Dubois ch17 D8 — Coup Napoléon (Kolodiev-Weytsman 1973)",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2121,
+              "name": "Dubois ch17 D9 — Pur coup Napoléon",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2122,
+              "name": "Dubois ch17 D10 — Rafle 48x6 (Papinski-Lewandowski 1979)",
+              "difficulty": 3,
+              "category": "coup_napoleon"
+            }
+          ],
+          "n_items": 10
+        },
+        {
+          "id": "deb_coups_nommes_2_l2",
+          "title": "Le coup de Rappel",
+          "chapter": 11,
+          "intro": "On force l'adversaire à reprendre vers l'arrière, ouvrant la voie à une combinaison gagnante.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 2091,
+              "name": "Exemple narratif Dubois ch15 — Schéma 1 du coup de Rappel",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2092,
+              "name": "Exemple narratif Dubois ch15 — Schéma 2 du coup de Rappel",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2093,
+              "name": "Exemple narratif Dubois ch15 — Schéma 3 du coup de Rappel",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2094,
+              "name": "Dubois ch15 D1 — Rafle finissant en 7 via pion de base 49",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2095,
+              "name": "Dubois ch15 D2 — Acheminer pion noir en 22",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2096,
+              "name": "Dubois ch15 D3 — Acheminer pion noir en 33",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2097,
+              "name": "Dubois ch15 D4 — Combinaison + fin de partie",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2100,
+              "name": "Dubois ch15 D7 — Rappel à 4 demi-coups (Rapopport-Gertsenzon 1963)",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2101,
+              "name": "Dubois ch15 D8 — Coup de dame à 50 noir (van Aalten-Clerc 1976)",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2102,
+              "name": "Dubois ch15 D9 — Rafle en 44 (trait noir)",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2124,
+              "name": "Dubois ch18 D2 — Coup de Rappel (révision)",
+              "difficulty": 3,
+              "category": "coup_rappel"
+            }
+          ],
+          "n_items": 11
+        }
+      ],
+      "n_items": 21
+    },
+    {
+      "id": "deb_coups_nommes_3",
+      "level": "debutant",
+      "order": 6,
+      "title": "Les coups nommés (3) — Trappe et Renversé",
+      "subtitle": "Piéger un pion et inverser le sens de la prise.",
+      "goal": "Reconnaître et jouer le coup de la Trappe et le coup Renversé, deux pièges fréquents en partie.",
+      "prerequisites": [
+        "deb_coups_nommes_2"
+      ],
+      "lessons": [
+        {
+          "id": "deb_coups_nommes_3_l1",
+          "title": "Le coup de la Trappe",
+          "chapter": 14,
+          "intro": "On laisse une case ouverte comme un appât : l'adversaire s'y engage et tombe dans le piège.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 2098,
+              "name": "Dubois ch15 D5 — Coup de la Trappe (Michiels-Marini 1986)",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2099,
+              "name": "Dubois ch15 D6 — Autre coup de la Trappe",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2107,
+              "name": "Dubois ch16 D5 — Coup de la Trappe (Clasquin-van Es 1981)",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2123,
+              "name": "Dubois ch18 D1 — Rafle 30x6",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2125,
+              "name": "Dubois ch18 D3 — Rafle finale en 9",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2126,
+              "name": "Dubois ch18 D4 — Trappe avec rafle 23x45 (Kocken-Doomernik 1971)",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2127,
+              "name": "Dubois ch18 D5 — Coup de dame à 4 (Hoogland-van den Broek 1912)",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2128,
+              "name": "Dubois ch18 D6 — Pur coup de la Trappe",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2129,
+              "name": "Dubois ch18 D7 — Trappe à 5 (Maertzdorf-Alofs 1997)",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2130,
+              "name": "Dubois ch18 D8 — Trappe noire (Bronstring-Holstvoogd 2005)",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2131,
+              "name": "Dubois ch18 D9 — Mécanisme inattendu (van Dijk)",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2132,
+              "name": "Dubois ch18 D10 — Envoi à dame + ricochet (Kats-Agafonov 1965)",
+              "difficulty": 3,
+              "category": "coup_de_trappe"
+            }
+          ],
+          "n_items": 12
+        },
+        {
+          "id": "deb_coups_nommes_3_l2",
+          "title": "Le coup Renversé",
+          "chapter": 12,
+          "intro": "La prise part dans le sens inverse de celui attendu. À connaître pour ne pas se faire surprendre — et pour surprendre.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 2103,
+              "name": "Dubois ch16 D1 — Combinaison à la case 4",
+              "difficulty": 3,
+              "category": "coup_renverse"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2104,
+              "name": "Dubois ch16 D2 — Coup de chevron (Datel-Schwarzman 1977)",
+              "difficulty": 3,
+              "category": "coup_renverse"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2105,
+              "name": "Dubois ch16 D3 — Coup de dame à 2 via éliminations",
+              "difficulty": 3,
+              "category": "coup_renverse"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2106,
+              "name": "Dubois ch16 D4 — Exploitation pion de bande 35 (Gordijn-den Hartogh 1952)",
+              "difficulty": 3,
+              "category": "coup_renverse"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2108,
+              "name": "Dubois ch16 D6 — Coup renversé pur",
+              "difficulty": 3,
+              "category": "coup_renverse"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2109,
+              "name": "Dubois ch16 D7 — Combinaison avec temps de repos",
+              "difficulty": 3,
+              "category": "coup_renverse"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2110,
+              "name": "Dubois ch16 D8 — Coup parallèle (Bergsma-Spoelstra 1952)",
+              "difficulty": 3,
+              "category": "coup_parallele"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2111,
+              "name": "Dubois ch16 D9 — Coup renversé avec envoi à dame (Spoelstra-Bergsma 1972)",
+              "difficulty": 3,
+              "category": "coup_renverse"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2112,
+              "name": "Dubois ch16 D10 — Combinaison fulgurante",
+              "difficulty": 3,
+              "category": "coup_renverse"
+            }
+          ],
+          "n_items": 9
+        }
+      ],
+      "n_items": 21
+    },
+    {
+      "id": "deb_coups_nommes_4",
+      "level": "debutant",
+      "order": 7,
+      "title": "Les coups nommés (4) — Talon et Philippe",
+      "subtitle": "Les deux derniers coups nommés du répertoire débutant.",
+      "goal": "Reconnaître et jouer le coup de Talon et le coup Philippe, et avoir fait le tour des combinaisons nommées de base.",
+      "prerequisites": [
+        "deb_coups_nommes_3"
+      ],
+      "lessons": [
+        {
+          "id": "deb_coups_nommes_4_l1",
+          "title": "Le coup de Talon",
+          "chapter": 15,
+          "intro": "La prise revient sur ses pas, comme un talon, pour cueillir un pion resté en arrière.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 2068,
+              "name": "Dubois ch9 D9 — Coup de talon (Toet-Luteijn 1977)",
+              "difficulty": 2,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2133,
+              "name": "Dubois ch19 D1 — Coup de mazette dans le coup de Talon",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2134,
+              "name": "Dubois ch19 D2 — Rafle aboutissant en 7",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2135,
+              "name": "Dubois ch19 D3 — Rafle 50x8 (Lewkowicz-Blokland 1998)",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2136,
+              "name": "Dubois ch19 D4 — Coup de dame à 3 par talon pur",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2137,
+              "name": "Dubois ch19 D5 — Coup de dame à 1 par talon pur",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2138,
+              "name": "Dubois ch19 D6 — Talon + Trappe (Vatutin-Steijlen 2007)",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2139,
+              "name": "Dubois ch19 D7 — Trappe cachée (Wiering-Sier 2008)",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2140,
+              "name": "Dubois ch19 D8 — Combinaison cachée (Depaepe-Groenendijk 2014)",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2141,
+              "name": "Dubois ch19 D9 — Pur coup de la Trappe",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2142,
+              "name": "Dubois ch19 D10 — Coup de Talon final (de Jongh-Bizot 1927)",
+              "difficulty": 3,
+              "category": "coup_de_talon"
+            }
+          ],
+          "n_items": 11
+        },
+        {
+          "id": "deb_coups_nommes_4_l2",
+          "title": "Le coup Philippe",
+          "chapter": 16,
+          "intro": "Une combinaison élégante qui clôt le tour des coups nommés. Maîtrisez-la et le niveau Débutant est complet.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 2037,
+              "name": "Dubois ch5 D1 — Le coup Philippe sous sa forme la plus simple",
+              "difficulty": 2,
+              "category": "coup_philippe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2143,
+              "name": "Dubois ch20 D1 — Coup turc avec envoi à dame",
+              "difficulty": 3,
+              "category": "coup_philippe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2144,
+              "name": "Dubois ch20 D2 — Coup Philippe (Dartelen-Ligthart 1938)",
+              "difficulty": 3,
+              "category": "coup_philippe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2145,
+              "name": "Dubois ch20 D3 — Variante coup Philippe",
+              "difficulty": 3,
+              "category": "coup_philippe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2146,
+              "name": "Dubois ch20 D4 — Schéma Philippe via attaque noire (Davidov-Romanov 1963)",
+              "difficulty": 3,
+              "category": "coup_philippe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2147,
+              "name": "Dubois ch20 D5 — Coup Philippe avec ruse",
+              "difficulty": 3,
+              "category": "coup_philippe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2148,
+              "name": "Dubois ch20 D6 — Rafle 48x26 (Leijenaar-Romanskaia 2003)",
+              "difficulty": 3,
+              "category": "coup_philippe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2150,
+              "name": "Dubois ch20 D8 — Envoi à dame avec temps de réserve (Merin-Agafonow 1975)",
+              "difficulty": 3,
+              "category": "coup_philippe"
+            },
+            {
+              "kind": "exercise",
+              "ref": 2151,
+              "name": "Dubois ch20 D10 — Rafle 30x6 ou 48x6 (Aliar-Huijzer 2010)",
+              "difficulty": 3,
+              "category": "coup_philippe"
+            }
+          ],
+          "n_items": 9
+        }
+      ],
+      "n_items": 20
     }
   ]
 }
