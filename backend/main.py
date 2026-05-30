@@ -1354,6 +1354,11 @@ async def get_lesson(chapter: int) -> Dict[str, Any]:
     chapters = load_debutant_chapters()
     lesson = chapters.get(str(chapter))
     if not lesson:
+        # Fall back to the Dubois "sens du jeu" chapters (ids 101-135),
+        # which carry their own prose + illustrative diagrams.
+        from sens_du_jeu_loader import sens_du_jeu_chapters
+        lesson = sens_du_jeu_chapters().get(str(chapter))
+    if not lesson:
         raise HTTPException(status_code=404, detail=f"No lesson for chapter {chapter}")
     return lesson
 

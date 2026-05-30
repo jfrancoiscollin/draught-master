@@ -78,6 +78,19 @@ def _combinaisons_exercise_rows() -> list[dict[str, Any]]:
     return rows
 
 
+def _sens_du_jeu_exercise_rows() -> list[dict[str, Any]]:
+    """Dubois 'Apprendre le sens du jeu' exercises with their seed DB id."""
+    from sens_du_jeu_loader import (
+        SENS_DU_JEU_ID_OFFSET,
+        all_sens_du_jeu_exercises,
+    )
+
+    rows = []
+    for i, ex in enumerate(all_sens_du_jeu_exercises(), start=SENS_DU_JEU_ID_OFFSET + 1):
+        rows.append({**ex, "_db_id": i})
+    return rows
+
+
 def _resolve_exercises(spec: dict[str, Any]) -> list[dict[str, Any]]:
     """Resolve an ``attach.exercises`` block to exercise references.
 
@@ -87,14 +100,17 @@ def _resolve_exercises(spec: dict[str, Any]) -> list[dict[str, Any]]:
     ``min_difficulty``/``max_difficulty``.
 
     ``book_id`` may be ``manuel_debutant``, ``manuel_dubois_combinaisons``,
-    one specific strategy book (``manuel_sijbrands`` / ``manuel_springer`` /
-    ``manuel_keller``) or ``strategy`` to span all strategy books.
+    ``manuel_dubois_sens_du_jeu``, one specific strategy book
+    (``manuel_sijbrands`` / ``manuel_springer`` / ``manuel_keller``) or
+    ``strategy`` to span all strategy books.
     """
     book = spec["book_id"]
     if book == "manuel_debutant":
         rows = _debutant_exercise_rows()
     elif book == "manuel_dubois_combinaisons":
         rows = _combinaisons_exercise_rows()
+    elif book == "manuel_dubois_sens_du_jeu":
+        rows = _sens_du_jeu_exercise_rows()
     elif book == "strategy" or book.startswith("manuel_"):
         rows = _strategy_exercise_rows()
     else:
@@ -108,7 +124,12 @@ def _resolve_exercises(spec: dict[str, Any]) -> list[dict[str, Any]]:
     dmax = spec.get("max_difficulty")
 
     # Books resolved as a whole corpus (no per-row book_id filtering).
-    whole_corpus = {"manuel_debutant", "manuel_dubois_combinaisons", "strategy"}
+    whole_corpus = {
+        "manuel_debutant",
+        "manuel_dubois_combinaisons",
+        "manuel_dubois_sens_du_jeu",
+        "strategy",
+    }
 
     out = []
     for r in rows:
@@ -212,11 +233,15 @@ def _resolve_tips(spec: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
-def _debutant_chapter_ids() -> set[int]:
-    """Chapter numbers that have manual prose (lessons may link to them)."""
+def _valid_chapter_ids() -> set[int]:
+    """Chapter ids that have manual prose a lesson may link to: the débutant
+    chapters (1-16) plus the Dubois 'sens du jeu' chapters (101-135)."""
     from manuels.prose_loader import load_debutant_chapters
+    from sens_du_jeu_loader import sens_du_jeu_chapters
 
-    return {int(k) for k in load_debutant_chapters().keys()}
+    ids = {int(k) for k in load_debutant_chapters().keys()}
+    ids |= {int(k) for k in sens_du_jeu_chapters().keys()}
+    return ids
 
 
 def _resolve_lesson(lesson: dict[str, Any]) -> list[dict[str, Any]]:
@@ -257,9 +282,9 @@ def _validate_and_resolve(spine: dict[str, Any]) -> dict[str, Any]:
             if les["id"] in lesson_ids:
                 errors.append(f"duplicate lesson id: {les['id']}")
             lesson_ids.add(les["id"])
-            if "chapter" in les and les["chapter"] not in _debutant_chapter_ids():
+            if "chapter" in les and les["chapter"] not in _valid_chapter_ids():
                 errors.append(
-                    f"lesson {les['id']} references unknown debutant chapter {les['chapter']}"
+                    f"lesson {les['id']} references unknown manual chapter {les['chapter']}"
                 )
             items = _resolve_lesson(les)
             if not items:

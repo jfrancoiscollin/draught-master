@@ -11,7 +11,7 @@
     {
       "id": "intermediaire",
       "title": "Intermédiaire",
-      "subtitle": "La stratégie : structures, débordements, finales et combinaisons des grands manuels.",
+      "subtitle": "Tactique et stratégie : combinaisons en profondeur, structures, débordements et finales des grands manuels.",
       "order": 2
     }
   ],
@@ -6369,6 +6369,798 @@
       "n_items": 34,
       "n_exercises": 22,
       "n_positions": 12
+    },
+    {
+      "id": "int_sdj_fondamentaux",
+      "level": "intermediaire",
+      "order": 12,
+      "title": "Sens du jeu — les fondamentaux",
+      "subtitle": "Avantage, mobilité, échanges.",
+      "goal": "Évaluer une position : reconnaître l'avantage, la liberté de mouvement et le bon moment pour échanger.",
+      "prerequisites": [],
+      "lessons": [
+        {
+          "id": "int_sdj_l102",
+          "title": "La notion d'avantage",
+          "chapter": 102,
+          "intro": "Qu'est-ce qu'un avantage en jeu de dames ? Apprenez à le reconnaître et à le mesurer.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8001,
+              "name": "LA NOTION D'AVANTAGE – D1",
+              "difficulty": 1,
+              "category": "sdj_ch102",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8002,
+              "name": "LA NOTION D'AVANTAGE – D2",
+              "difficulty": 1,
+              "category": "sdj_ch102",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8003,
+              "name": "LA NOTION D'AVANTAGE – D3",
+              "difficulty": 1,
+              "category": "sdj_ch102",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8004,
+              "name": "LA NOTION D'AVANTAGE – D4",
+              "difficulty": 1,
+              "category": "sdj_ch102",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8005,
+              "name": "LA NOTION D'AVANTAGE – D5",
+              "difficulty": 1,
+              "category": "sdj_ch102",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8006,
+              "name": "LA NOTION D'AVANTAGE – D6",
+              "difficulty": 1,
+              "category": "sdj_ch102",
+              "theme": ""
+            }
+          ],
+          "n_items": 6,
+          "n_exercises": 6,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l103",
+          "title": "La liberté de mouvement relative",
+          "chapter": 103,
+          "intro": "La liberté de mouvement : avoir plus de coups utiles que l'adversaire, c'est dominer.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8007,
+              "name": "LIBERTÉ DE MOUVEMENT – D1",
+              "difficulty": 1,
+              "category": "sdj_ch103",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8008,
+              "name": "LIBERTÉ DE MOUVEMENT – D2",
+              "difficulty": 1,
+              "category": "sdj_ch103",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8009,
+              "name": "LIBERTÉ DE MOUVEMENT – D3",
+              "difficulty": 1,
+              "category": "sdj_ch103",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8010,
+              "name": "LIBERTÉ DE MOUVEMENT – D4",
+              "difficulty": 1,
+              "category": "sdj_ch103",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8011,
+              "name": "LIBERTÉ DE MOUVEMENT – D5",
+              "difficulty": 1,
+              "category": "sdj_ch103",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8012,
+              "name": "LIBERTÉ DE MOUVEMENT – D6",
+              "difficulty": 1,
+              "category": "sdj_ch103",
+              "theme": ""
+            }
+          ],
+          "n_items": 6,
+          "n_exercises": 6,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l104",
+          "title": "Les échanges",
+          "chapter": 104,
+          "intro": "Échanger au bon moment : un échange peut consolider ou ruiner votre position.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8013,
+              "name": "LES ÉCHANGES – D1",
+              "difficulty": 1,
+              "category": "sdj_ch104",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8014,
+              "name": "LES ÉCHANGES – D2",
+              "difficulty": 1,
+              "category": "sdj_ch104",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8015,
+              "name": "LES ÉCHANGES – D3",
+              "difficulty": 1,
+              "category": "sdj_ch104",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8016,
+              "name": "LES ÉCHANGES – D4",
+              "difficulty": 1,
+              "category": "sdj_ch104",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8017,
+              "name": "LES ÉCHANGES – D5",
+              "difficulty": 1,
+              "category": "sdj_ch104",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8018,
+              "name": "LES ÉCHANGES – D6",
+              "difficulty": 1,
+              "category": "sdj_ch104",
+              "theme": ""
+            }
+          ],
+          "n_items": 6,
+          "n_exercises": 6,
+          "n_positions": 0
+        }
+      ],
+      "n_items": 18,
+      "n_exercises": 18,
+      "n_positions": 0
+    },
+    {
+      "id": "int_sdj_pion_46",
+      "level": "intermediaire",
+      "order": 13,
+      "title": "Le pion d'angle 46",
+      "subtitle": "Le pion clé de l'aile droite, en trois temps.",
+      "goal": "Comprendre le rôle du pion d'angle 46 et savoir quand l'avancer, le garder ou l'échanger.",
+      "prerequisites": [
+        "int_sdj_fondamentaux"
+      ],
+      "lessons": [
+        {
+          "id": "int_sdj_l108",
+          "title": "Le pion d'angle 46 (1ère partie)",
+          "chapter": 108,
+          "intro": "Le pion d'angle 46 (1) : sa fonction défensive et les pièges à éviter.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8019,
+              "name": "LE PION D'ANGLE 46 (1) – D1",
+              "difficulty": 2,
+              "category": "sdj_ch108",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8020,
+              "name": "LE PION D'ANGLE 46 (1) – D2",
+              "difficulty": 2,
+              "category": "sdj_ch108",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8021,
+              "name": "LE PION D'ANGLE 46 (1) – D3",
+              "difficulty": 2,
+              "category": "sdj_ch108",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8022,
+              "name": "LE PION D'ANGLE 46 (1) – D4",
+              "difficulty": 2,
+              "category": "sdj_ch108",
+              "theme": ""
+            }
+          ],
+          "n_items": 4,
+          "n_exercises": 4,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l109",
+          "title": "Le pion d'angle 46 (seconde partie)",
+          "chapter": 109,
+          "intro": "Le pion d'angle 46 (2) : l'exploiter offensivement.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8023,
+              "name": "LE PION D'ANGLE 46 (2) – D1",
+              "difficulty": 2,
+              "category": "sdj_ch109",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8024,
+              "name": "LE PION D'ANGLE 46 (2) – D2",
+              "difficulty": 2,
+              "category": "sdj_ch109",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8025,
+              "name": "LE PION D'ANGLE 46 (2) – D3",
+              "difficulty": 2,
+              "category": "sdj_ch109",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8026,
+              "name": "LE PION D'ANGLE 46 (2) – D4",
+              "difficulty": 2,
+              "category": "sdj_ch109",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8027,
+              "name": "LE PION D'ANGLE 46 (2) – D5",
+              "difficulty": 2,
+              "category": "sdj_ch109",
+              "theme": ""
+            }
+          ],
+          "n_items": 5,
+          "n_exercises": 5,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l110",
+          "title": "Le pion d'angle 46 (3e partie)",
+          "chapter": 110,
+          "intro": "Le pion d'angle 46 (3) : les cas limites et les transformations.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8028,
+              "name": "LE PION D'ANGLE 46 (3) – D1",
+              "difficulty": 2,
+              "category": "sdj_ch110",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8029,
+              "name": "LE PION D'ANGLE 46 (3) – D2",
+              "difficulty": 2,
+              "category": "sdj_ch110",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8030,
+              "name": "LE PION D'ANGLE 46 (3) – D3",
+              "difficulty": 2,
+              "category": "sdj_ch110",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8031,
+              "name": "LE PION D'ANGLE 46 (3) – D4",
+              "difficulty": 2,
+              "category": "sdj_ch110",
+              "theme": ""
+            }
+          ],
+          "n_items": 4,
+          "n_exercises": 4,
+          "n_positions": 0
+        }
+      ],
+      "n_items": 13,
+      "n_exercises": 13,
+      "n_positions": 0
+    },
+    {
+      "id": "int_sdj_pions_cles",
+      "level": "intermediaire",
+      "order": 14,
+      "title": "Les pions clés",
+      "subtitle": "Pions de base 49/50, pion 36, pion de bande 26.",
+      "goal": "Maîtriser le rôle stratégique des pions de base et de bande dans la structure.",
+      "prerequisites": [
+        "int_sdj_pion_46"
+      ],
+      "lessons": [
+        {
+          "id": "int_sdj_l115",
+          "title": "Les pions de base 49 et 50",
+          "chapter": 115,
+          "intro": "Les pions de base 49 et 50 : le socle de votre position arrière.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8032,
+              "name": "LES PIONS 49 ET 50 – D1",
+              "difficulty": 2,
+              "category": "sdj_ch115",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8033,
+              "name": "LES PIONS 49 ET 50 – D2",
+              "difficulty": 2,
+              "category": "sdj_ch115",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8034,
+              "name": "LES PIONS 49 ET 50 – D3",
+              "difficulty": 2,
+              "category": "sdj_ch115",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8035,
+              "name": "LES PIONS 49 ET 50 – D4",
+              "difficulty": 2,
+              "category": "sdj_ch115",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8036,
+              "name": "LES PIONS 49 ET 50 – D5",
+              "difficulty": 2,
+              "category": "sdj_ch115",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8037,
+              "name": "LES PIONS 49 ET 50 – D6",
+              "difficulty": 2,
+              "category": "sdj_ch115",
+              "theme": ""
+            }
+          ],
+          "n_items": 6,
+          "n_exercises": 6,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l116",
+          "title": "Le pion blanc 36",
+          "chapter": 116,
+          "intro": "Le pion blanc 36 : un pion charnière entre défense et attaque.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8038,
+              "name": "LE PION BLANC 36 – D1",
+              "difficulty": 3,
+              "category": "sdj_ch116",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8039,
+              "name": "LE PION BLANC 36 – D2",
+              "difficulty": 3,
+              "category": "sdj_ch116",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8040,
+              "name": "LE PION BLANC 36 – D3",
+              "difficulty": 3,
+              "category": "sdj_ch116",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8041,
+              "name": "LE PION BLANC 36 – D4",
+              "difficulty": 3,
+              "category": "sdj_ch116",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8042,
+              "name": "LE PION BLANC 36 – D5",
+              "difficulty": 3,
+              "category": "sdj_ch116",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8043,
+              "name": "LE PION BLANC 36 – D6",
+              "difficulty": 3,
+              "category": "sdj_ch116",
+              "theme": ""
+            }
+          ],
+          "n_items": 6,
+          "n_exercises": 6,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l117",
+          "title": "Le pion de bande 26",
+          "chapter": 117,
+          "intro": "Le pion de bande 26 : forces et faiblesses du jeu de bande.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8044,
+              "name": "LE PION DE BANDE 26 – D1",
+              "difficulty": 3,
+              "category": "sdj_ch117",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8045,
+              "name": "LE PION DE BANDE 26 – D2",
+              "difficulty": 3,
+              "category": "sdj_ch117",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8046,
+              "name": "LE PION DE BANDE 26 – D3",
+              "difficulty": 3,
+              "category": "sdj_ch117",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8047,
+              "name": "LE PION DE BANDE 26 – D4",
+              "difficulty": 3,
+              "category": "sdj_ch117",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8048,
+              "name": "LE PION DE BANDE 26 – D5",
+              "difficulty": 3,
+              "category": "sdj_ch117",
+              "theme": ""
+            }
+          ],
+          "n_items": 5,
+          "n_exercises": 5,
+          "n_positions": 0
+        }
+      ],
+      "n_items": 17,
+      "n_exercises": 17,
+      "n_positions": 0
+    },
+    {
+      "id": "int_sdj_formations",
+      "level": "intermediaire",
+      "order": 15,
+      "title": "Pions et formations avancés",
+      "subtitle": "Pions 45/35 et formations types.",
+      "goal": "Reconnaître et jouer les formations clés (45-40, flèche 33-38-42, 34-39-43) et les pions 45/35.",
+      "prerequisites": [
+        "int_sdj_pions_cles"
+      ],
+      "lessons": [
+        {
+          "id": "int_sdj_l120",
+          "title": "Le pion blanc 45",
+          "chapter": 120,
+          "intro": "Le pion blanc 45 : son rôle dans l'équilibre des ailes.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8049,
+              "name": "LE PION BLANC 45 – D1",
+              "difficulty": 3,
+              "category": "sdj_ch120",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8050,
+              "name": "LE PION BLANC 45 – D2",
+              "difficulty": 3,
+              "category": "sdj_ch120",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8051,
+              "name": "LE PION BLANC 45 – D3",
+              "difficulty": 3,
+              "category": "sdj_ch120",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8052,
+              "name": "LE PION BLANC 45 – D4",
+              "difficulty": 3,
+              "category": "sdj_ch120",
+              "theme": ""
+            }
+          ],
+          "n_items": 4,
+          "n_exercises": 4,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l121",
+          "title": "Le pion blanc 35",
+          "chapter": 121,
+          "intro": "Le pion blanc 35 : mobilité et points d'appui.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8053,
+              "name": "LE PION BLANC 35 – D1",
+              "difficulty": 3,
+              "category": "sdj_ch121",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8054,
+              "name": "LE PION BLANC 35 – D2",
+              "difficulty": 3,
+              "category": "sdj_ch121",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8055,
+              "name": "LE PION BLANC 35 – D3",
+              "difficulty": 3,
+              "category": "sdj_ch121",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8056,
+              "name": "LE PION BLANC 35 – D4",
+              "difficulty": 3,
+              "category": "sdj_ch121",
+              "theme": ""
+            }
+          ],
+          "n_items": 4,
+          "n_exercises": 4,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l130",
+          "title": "La formation 45-40",
+          "chapter": 130,
+          "intro": "La formation 45-40 : une structure offensive classique.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8057,
+              "name": "LA FORMATION 45-40 – D1",
+              "difficulty": 4,
+              "category": "sdj_ch130",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8058,
+              "name": "LA FORMATION 45-40 – D2",
+              "difficulty": 4,
+              "category": "sdj_ch130",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8059,
+              "name": "LA FORMATION 45-40 – D3",
+              "difficulty": 4,
+              "category": "sdj_ch130",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8060,
+              "name": "LA FORMATION 45-40 – D4",
+              "difficulty": 4,
+              "category": "sdj_ch130",
+              "theme": ""
+            }
+          ],
+          "n_items": 4,
+          "n_exercises": 4,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l131",
+          "title": "La flèche 33-38-42",
+          "chapter": 131,
+          "intro": "La flèche 33-38-42 : une formation de pression.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8061,
+              "name": "LA FLÈCHE 33-38-42 – D1",
+              "difficulty": 4,
+              "category": "sdj_ch131",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8062,
+              "name": "LA FLÈCHE 33-38-42 – D2",
+              "difficulty": 4,
+              "category": "sdj_ch131",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8063,
+              "name": "LA FLÈCHE 33-38-42 – D3",
+              "difficulty": 4,
+              "category": "sdj_ch131",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8064,
+              "name": "LA FLÈCHE 33-38-42 – D4",
+              "difficulty": 4,
+              "category": "sdj_ch131",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8065,
+              "name": "LA FLÈCHE 33-38-42 – D5",
+              "difficulty": 4,
+              "category": "sdj_ch131",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8066,
+              "name": "LA FLÈCHE 33-38-42 – D6",
+              "difficulty": 4,
+              "category": "sdj_ch131",
+              "theme": ""
+            }
+          ],
+          "n_items": 6,
+          "n_exercises": 6,
+          "n_positions": 0
+        },
+        {
+          "id": "int_sdj_l132",
+          "title": "La formation 34-39-43",
+          "chapter": 132,
+          "intro": "La formation 34-39-43 : contrôle du centre droit.",
+          "items": [
+            {
+              "kind": "exercise",
+              "ref": 8067,
+              "name": "LA FORMATION 34-39-43 – D1",
+              "difficulty": 4,
+              "category": "sdj_ch132",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8068,
+              "name": "LA FORMATION 34-39-43 – D2",
+              "difficulty": 4,
+              "category": "sdj_ch132",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8069,
+              "name": "LA FORMATION 34-39-43 – D3",
+              "difficulty": 4,
+              "category": "sdj_ch132",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8070,
+              "name": "LA FORMATION 34-39-43 – D4",
+              "difficulty": 4,
+              "category": "sdj_ch132",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8071,
+              "name": "LA FORMATION 34-39-43 – D5",
+              "difficulty": 4,
+              "category": "sdj_ch132",
+              "theme": ""
+            },
+            {
+              "kind": "exercise",
+              "ref": 8072,
+              "name": "LA FORMATION 34-39-43 – D6",
+              "difficulty": 4,
+              "category": "sdj_ch132",
+              "theme": ""
+            }
+          ],
+          "n_items": 6,
+          "n_exercises": 6,
+          "n_positions": 0
+        }
+      ],
+      "n_items": 24,
+      "n_exercises": 24,
+      "n_positions": 0
     }
   ]
 }

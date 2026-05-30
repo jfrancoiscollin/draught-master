@@ -764,6 +764,252 @@
           }
         }
       ]
+    },
+    {
+      "id": "int_sdj_fondamentaux",
+      "level": "intermediaire",
+      "order": 12,
+      "title": "Sens du jeu — les fondamentaux",
+      "subtitle": "Avantage, mobilité, échanges.",
+      "goal": "Évaluer une position : reconnaître l'avantage, la liberté de mouvement et le bon moment pour échanger.",
+      "prerequisites": [],
+      "lessons": [
+        {
+          "id": "int_sdj_l102",
+          "title": "La notion d'avantage",
+          "chapter": 102,
+          "intro": "Qu'est-ce qu'un avantage en jeu de dames ? Apprenez à le reconnaître et à le mesurer.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch102"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l103",
+          "title": "La liberté de mouvement relative",
+          "chapter": 103,
+          "intro": "La liberté de mouvement : avoir plus de coups utiles que l'adversaire, c'est dominer.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch103"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l104",
+          "title": "Les échanges",
+          "chapter": 104,
+          "intro": "Échanger au bon moment : un échange peut consolider ou ruiner votre position.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch104"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_sdj_pion_46",
+      "level": "intermediaire",
+      "order": 13,
+      "title": "Le pion d'angle 46",
+      "subtitle": "Le pion clé de l'aile droite, en trois temps.",
+      "goal": "Comprendre le rôle du pion d'angle 46 et savoir quand l'avancer, le garder ou l'échanger.",
+      "prerequisites": [
+        "int_sdj_fondamentaux"
+      ],
+      "lessons": [
+        {
+          "id": "int_sdj_l108",
+          "title": "Le pion d'angle 46 (1ère partie)",
+          "chapter": 108,
+          "intro": "Le pion d'angle 46 (1) : sa fonction défensive et les pièges à éviter.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch108"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l109",
+          "title": "Le pion d'angle 46 (seconde partie)",
+          "chapter": 109,
+          "intro": "Le pion d'angle 46 (2) : l'exploiter offensivement.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch109"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l110",
+          "title": "Le pion d'angle 46 (3e partie)",
+          "chapter": 110,
+          "intro": "Le pion d'angle 46 (3) : les cas limites et les transformations.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch110"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_sdj_pions_cles",
+      "level": "intermediaire",
+      "order": 14,
+      "title": "Les pions clés",
+      "subtitle": "Pions de base 49/50, pion 36, pion de bande 26.",
+      "goal": "Maîtriser le rôle stratégique des pions de base et de bande dans la structure.",
+      "prerequisites": [
+        "int_sdj_pion_46"
+      ],
+      "lessons": [
+        {
+          "id": "int_sdj_l115",
+          "title": "Les pions de base 49 et 50",
+          "chapter": 115,
+          "intro": "Les pions de base 49 et 50 : le socle de votre position arrière.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch115"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l116",
+          "title": "Le pion blanc 36",
+          "chapter": 116,
+          "intro": "Le pion blanc 36 : un pion charnière entre défense et attaque.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch116"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l117",
+          "title": "Le pion de bande 26",
+          "chapter": 117,
+          "intro": "Le pion de bande 26 : forces et faiblesses du jeu de bande.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch117"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "int_sdj_formations",
+      "level": "intermediaire",
+      "order": 15,
+      "title": "Pions et formations avancés",
+      "subtitle": "Pions 45/35 et formations types.",
+      "goal": "Reconnaître et jouer les formations clés (45-40, flèche 33-38-42, 34-39-43) et les pions 45/35.",
+      "prerequisites": [
+        "int_sdj_pions_cles"
+      ],
+      "lessons": [
+        {
+          "id": "int_sdj_l120",
+          "title": "Le pion blanc 45",
+          "chapter": 120,
+          "intro": "Le pion blanc 45 : son rôle dans l'équilibre des ailes.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch120"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l121",
+          "title": "Le pion blanc 35",
+          "chapter": 121,
+          "intro": "Le pion blanc 35 : mobilité et points d'appui.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch121"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l130",
+          "title": "La formation 45-40",
+          "chapter": 130,
+          "intro": "La formation 45-40 : une structure offensive classique.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch130"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l131",
+          "title": "La flèche 33-38-42",
+          "chapter": 131,
+          "intro": "La flèche 33-38-42 : une formation de pression.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch131"
+              ]
+            }
+          }
+        },
+        {
+          "id": "int_sdj_l132",
+          "title": "La formation 34-39-43",
+          "chapter": 132,
+          "intro": "La formation 34-39-43 : contrôle du centre droit.",
+          "attach": {
+            "exercises": {
+              "book_id": "manuel_dubois_sens_du_jeu",
+              "categories": [
+                "sdj_ch132"
+              ]
+            }
+          }
+        }
+      ]
     }
   ]
 }
