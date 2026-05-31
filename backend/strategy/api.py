@@ -454,7 +454,11 @@ def manual(
     # scores highest on. This keeps the chapters distinct: on a small manual
     # (e.g. Keller) several transversal centroids otherwise return the same
     # handful of passages. Each passage appears once, in its best-fit chapter.
-    over_k = max(per_chapter * 3, per_chapter + 20)
+    # Over-fetch generously because the prose filter below discards the many
+    # move-score / game-citation paragraphs that carry no readable lesson.
+    from .prose_quality import has_prose  # noqa: PLC0415
+
+    over_k = max(per_chapter * 6, 120)
     best: dict[str, tuple[float, str, object]] = {}  # passage_id -> (score, topic_key, passage)
     centroids = {}
     for spec in specs:
@@ -463,6 +467,8 @@ def manual(
             continue
         centroids[spec.key] = centroid
         for score, p in search_with_vector(centroid, k=over_k, sources=(src_upper,)):
+            if not has_prose(p.text):
+                continue  # skip pure move-score dumps — unreadable as a lesson
             prev = best.get(p.passage_id)
             if prev is None or score > prev[0]:
                 best[p.passage_id] = (float(score), spec.key, p)

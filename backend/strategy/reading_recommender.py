@@ -155,6 +155,8 @@ def recommend_reading(
 
     from pedagogy.prose.retrieval import search_with_vector  # noqa: PLC0415
 
+    from .prose_quality import has_prose  # noqa: PLC0415
+
     out: list[dict[str, Any]] = []
     for sig in signals[:max_reco]:
         topic = get_topic(sig["topic_key"])
@@ -162,7 +164,10 @@ def recommend_reading(
         if topic is None or centroid is None:
             continue
         passages = []
-        for score, p in search_with_vector(centroid, k=per_topic):
+        # Over-fetch and keep only readable prose (skip move-score dumps).
+        for score, p in search_with_vector(centroid, k=max(per_topic * 8, 40)):
+            if not has_prose(p.text):
+                continue
             passages.append({
                 "passage_id": p.passage_id,
                 "source": p.source,
@@ -171,6 +176,8 @@ def recommend_reading(
                 "text": p.text,
                 "score": float(score),
             })
+            if len(passages) >= per_topic:
+                break
         if not passages:
             continue
         out.append({
