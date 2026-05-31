@@ -1711,7 +1711,7 @@ export default function App() {
             onOpenStrategyManual={(source: string) => {
               // Diagram-only sources (no prose passages) open the diagram
               // annotation tool directly; prose sources open the manual.
-              if (source === 'GOEDEMOED') {
+              if (source === 'GOEDEMOED' || source === 'GOEDEMOED3') {
                 setStrategyJumpSource(source)
                 setTab('strategy')
               } else {

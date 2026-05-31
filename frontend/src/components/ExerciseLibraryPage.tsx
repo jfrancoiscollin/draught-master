@@ -91,6 +91,7 @@ const STRATEGY_MANUALS: Array<{ source: string; titleFr: string; titleEn: string
   { source: 'ROOZENBURG', titleFr: 'Manuel Roozenburg', titleEn: 'Roozenburg Manual', author: 'Piet Roozenburg', emoji: '🛡️' },
   { source: 'KELLER',    titleFr: 'Manuel Keller',     titleEn: 'Keller Manual',     author: 'Keller',         emoji: '🎯' },
   { source: 'GOEDEMOED', titleFr: 'Goedemoed — A Course in Draughts', titleEn: 'Goedemoed — A Course in Draughts', author: 'Tjalling Goedemoed', emoji: '📘' },
+  { source: 'GOEDEMOED3', titleFr: 'Goedemoed — Exercices (vol. 3)', titleEn: 'Goedemoed — Exercises (vol. 3)', author: 'Tjalling Goedemoed', emoji: '📗' },
 ]
 
 export default function ExerciseLibraryPage({ onSelectBook, onOpenStrategyManual }: ExerciseLibraryPageProps) {

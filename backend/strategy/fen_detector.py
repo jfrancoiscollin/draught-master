@@ -203,12 +203,12 @@ def config_for_source(source: str) -> DetectorConfig:
     brightness signal, so the classifier looks at inner-vs-ring
     contrast instead.
     """
-    if source.upper() == "GOEDEMOED":
-        # Goedemoed "A Course in Draughts": gray-checkerboard workbook
-        # diagrams.  White pieces are bright discs (~255), black pieces are
-        # mid-gray discs (~110-165), empty grey squares ~192.  Crops are
-        # already tight (gray-fill detector) -> style "grey" skips
-        # re-localisation.  Thresholds will be tuned against ground truth.
+    if source.upper() in ("GOEDEMOED", "GOEDEMOED3"):
+        # Goedemoed "A Course in Draughts" workbooks (Exercise_2 = GOEDEMOED,
+        # Exercise_3 = GOEDEMOED3): same author, same gray-checkerboard style.
+        # White pieces are bright discs (~255), black pieces are mid-gray discs
+        # (~110-165), empty grey squares ~192.  Crops are already tight
+        # (gray-fill detector) -> style "grey" skips re-localisation.
         return DetectorConfig(
             style="grey",
             white_piece_min=215.0,

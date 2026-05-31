@@ -42,8 +42,6 @@ _HERE = Path(__file__).resolve().parent
 _BACKEND = _HERE.parent
 sys.path.insert(0, str(_BACKEND))
 
-_OUT = _HERE / "pages" / "goedemoed"
-_VERIFIED = _OUT / "solutions_verified.json"
 _EXERCISES = _HERE / "strategy_exercises.json"
 _LIBRARY = _HERE / "position_library.json"
 
@@ -126,10 +124,10 @@ def _all_sequences(pdf: Path) -> list[list[str]]:
 # ----------------------------------------------------------------------------
 # 2. Legality matching against the detected diagram FENs
 # ----------------------------------------------------------------------------
-def _load_fens() -> list[dict]:
+def _load_fens(source: str = "GOEDEMOED") -> list[dict]:
     lib = json.loads(_LIBRARY.read_text())
     items = lib if isinstance(lib, list) else lib.get("positions", lib)
-    return [p for p in items if p.get("source") == "GOEDEMOED" and p.get("valid")]
+    return [p for p in items if p.get("source") == source and p.get("valid")]
 
 
 def _tok_sig(tok: str) -> tuple[int, int, bool]:
@@ -146,7 +144,7 @@ def _canonical(move) -> str:
 _PIECE_VALUE = {1: 100, 3: 100, 2: 300, 4: 300}  # man=100, king=300 (WHITE/BLACK man/king ids)
 
 
-def match_sequences(sequences: list[list[str]]) -> dict[str, dict]:
+def match_sequences(sequences: list[list[str]], source: str = "GOEDEMOED") -> dict[str, dict]:
     from game_engine import (
         fen_to_board, get_legal_moves, apply_move, game_result,
         WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
@@ -165,7 +163,7 @@ def match_sequences(sequences: list[list[str]]) -> dict[str, dict]:
             s += signed if mover == "white" else -signed
         return s
 
-    fens = _load_fens()
+    fens = _load_fens(source)
     # First-ply index: (frm, to, capture, turn) -> [(fen, id, turn)]
     index: dict[tuple, list] = defaultdict(list)
     for p in fens:
@@ -263,8 +261,8 @@ def _difficulty(plies: int) -> int:
     return 1 if plies <= 4 else 2 if plies <= 8 else 3
 
 
-def _rows_from_matched(matched: dict[str, dict]) -> list[dict]:
-    fens = {p["id"]: p for p in _load_fens()}
+def _rows_from_matched(matched: dict[str, dict], source: str = "GOEDEMOED") -> list[dict]:
+    fens = {p["id"]: p for p in _load_fens(source)}
     rows = []
     for did, info in sorted(matched.items()):
         p = fens.get(did)
@@ -275,9 +273,9 @@ def _rows_from_matched(matched: dict[str, dict]) -> list[dict]:
         kind = info["kind"]
         tail = "" if kind == "full" else " (début de la solution)"
         rows.append({
-            "name": f"GOEDEMOED — combinaison (p.{p['page']} #{p['number']})",
+            "name": f"{source} — combinaison (p.{p['page']} #{p['number']})",
             "description": (
-                f"GOEDEMOED — diagramme {p['number']} page {p['page']}. "
+                f"{source} — diagramme {p['number']} page {p['page']}. "
                 f"Les {side_fr} jouent et gagnent.{tail}"
             ),
             "initial_fen": p["fen"] if p["fen"].startswith(side[0].upper())
@@ -286,7 +284,7 @@ def _rows_from_matched(matched: dict[str, dict]) -> list[dict]:
             "difficulty": _difficulty(info["plies"]),
             "category": "combinaisons_manuels",
             "hint": "Cherchez la combinaison forcée.",
-            "source": "GOEDEMOED",
+            "source": source,
             "page": p["page"],
             "number": p["number"],
             "diagram_id": did,
@@ -297,37 +295,42 @@ def _rows_from_matched(matched: dict[str, dict]) -> list[dict]:
     return rows
 
 
-def merge(rows: list[dict]) -> None:
+def merge(rows: list[dict], source: str = "GOEDEMOED") -> None:
     data = json.loads(_EXERCISES.read_text())
-    kept = [e for e in data.get("exercises", []) if e.get("source") != "GOEDEMOED"]
+    kept = [e for e in data.get("exercises", []) if e.get("source") != source]
     merged = kept + rows
     data["exercises"] = merged
     data["n_exercises"] = len(merged)
     _EXERCISES.write_text(json.dumps(data, ensure_ascii=False, indent=1))
-    print(f"merged {len(rows)} GOEDEMOED rows -> {len(merged)} total exercises")
+    print(f"merged {len(rows)} {source} rows -> {len(merged)} total exercises")
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf", help="source PDF; if given, re-extract+match before merging")
+    ap.add_argument("--source", default="GOEDEMOED",
+                    help="library source key (e.g. GOEDEMOED, GOEDEMOED3)")
     args = ap.parse_args(argv)
+
+    source = args.source.upper()
+    verified = _HERE / "pages" / source.lower() / "solutions_verified.json"
 
     if args.pdf:
         sequences = _all_sequences(Path(args.pdf))
         print(f"extracted {len(sequences)} distinct solution sequences")
-        matched = match_sequences(sequences)
+        matched = match_sequences(sequences, source)
         full = sum(1 for v in matched.values() if v["kind"] == "full")
         pref = sum(1 for v in matched.values() if v["kind"] == "prefix")
-        print(f"verified matches: {len(matched)}/{len(_load_fens())} "
+        print(f"verified matches: {len(matched)}/{len(_load_fens(source))} "
               f"(full={full}, prefix={pref})")
-        _VERIFIED.write_text(json.dumps(matched, ensure_ascii=False, indent=1))
+        verified.write_text(json.dumps(matched, ensure_ascii=False, indent=1))
     else:
-        if not _VERIFIED.is_file():
-            sys.exit("no solutions_verified.json — run once with --pdf first")
-        matched = json.loads(_VERIFIED.read_text())
-        print(f"loaded {len(matched)} verified matches from {_VERIFIED.name}")
+        if not verified.is_file():
+            sys.exit(f"no {verified.name} for {source} — run once with --pdf first")
+        matched = json.loads(verified.read_text())
+        print(f"loaded {len(matched)} verified matches from {verified}")
 
-    merge(_rows_from_matched(matched))
+    merge(_rows_from_matched(matched, source), source)
 
 
 if __name__ == "__main__":
