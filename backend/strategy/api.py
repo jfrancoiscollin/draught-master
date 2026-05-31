@@ -456,7 +456,7 @@ def manual(
     # handful of passages. Each passage appears once, in its best-fit chapter.
     # Over-fetch generously because the prose filter below discards the many
     # move-score / game-citation paragraphs that carry no readable lesson.
-    from .prose_quality import has_prose  # noqa: PLC0415
+    from .prose_quality import has_prose, lead_excerpt  # noqa: PLC0415
 
     over_k = max(per_chapter * 6, 120)
     best: dict[str, tuple[float, str, object]] = {}  # passage_id -> (score, topic_key, passage)
@@ -488,7 +488,7 @@ def manual(
             {
                 "passage_id": p.passage_id,
                 "score": score,
-                "text": p.text,
+                "text": lead_excerpt(p.text),
                 "source": p.source,
                 "book": p.book,
                 "page": p.page,

@@ -34,3 +34,31 @@ def has_prose(text: str, min_run: int = 8) -> bool:
     """True when the passage carries at least one genuine sentence rather
     than being a move-score / game-citation dump."""
     return longest_word_run(text) >= min_run
+
+
+def lead_excerpt(text: str, min_run: int = 4) -> str:
+    """Return ``text`` trimmed to start at its first real sentence.
+
+    The PDF chunks often open with a move sequence, a diagram header or a game
+    citation before the explanation ("1.1) 35-30 … In order to prevent …").
+    We drop that leading noise so a manual card *leads* with prose. The first
+    run of ``min_run`` consecutive word-tokens marks the sentence start; if
+    none is found the text is returned unchanged (the caller already filtered
+    on :func:`has_prose`).
+    """
+    tokens = list(re.finditer(r"\S+", text))
+    run = 0
+    start: int | None = None
+    for i, tok in enumerate(tokens):
+        s = tok.group()
+        if s[:1].isdigit():
+            run = 0
+            start = None
+        elif _WORD.search(s):
+            if run == 0:
+                start = i
+            run += 1
+            if run >= min_run and start is not None:
+                return text[tokens[start].start():].strip()
+        # neutral tokens ("<24>", "—", "!") keep the current run going
+    return text.strip()

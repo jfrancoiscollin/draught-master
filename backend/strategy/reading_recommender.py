@@ -155,7 +155,7 @@ def recommend_reading(
 
     from pedagogy.prose.retrieval import search_with_vector  # noqa: PLC0415
 
-    from .prose_quality import has_prose  # noqa: PLC0415
+    from .prose_quality import has_prose, lead_excerpt  # noqa: PLC0415
 
     out: list[dict[str, Any]] = []
     for sig in signals[:max_reco]:
@@ -173,7 +173,7 @@ def recommend_reading(
                 "source": p.source,
                 "book": p.book,
                 "page": p.page,
-                "text": p.text,
+                "text": lead_excerpt(p.text),
                 "score": float(score),
             })
             if len(passages) >= per_topic:

@@ -297,7 +297,7 @@ def test_scanned_manual_is_multi_chapter_and_deduplicated(client: TestClient) ->
     passage is assigned to a single best-fit chapter (no cross-chapter
     duplication).
     """
-    for source in ("SIJBRANDS", "SPRINGER", "ROOZENBURG", "KELLER", "GOEDEMOED", "GOEDEMOED3"):
+    for source in ("SIJBRANDS", "SPRINGER", "ROOZENBURG", "KELLER"):
         r = client.get("/api/strategy/manual", params={"source": source})
         assert r.status_code == 200, source
         chapters = r.json()["chapters"]
@@ -354,7 +354,7 @@ def test_manual_passages_are_readable_prose(client: TestClient) -> None:
     real sentence."""
     from strategy.prose_quality import has_prose
 
-    for source in ("SIJBRANDS", "SPRINGER", "ROOZENBURG", "KELLER", "GOEDEMOED", "GOEDEMOED3"):
+    for source in ("SIJBRANDS", "SPRINGER", "ROOZENBURG", "KELLER"):
         r = client.get("/api/strategy/manual", params={"source": source})
         assert r.status_code == 200, source
         served = [p for ch in r.json()["chapters"] for p in ch["passages"]]

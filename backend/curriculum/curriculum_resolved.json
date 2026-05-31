@@ -7235,7 +7235,7 @@
       "order": 16,
       "title": "Les grands manuels stratégiques",
       "subtitle": "Lire les maîtres : systèmes, plans et méthode.",
-      "goal": "Parcourir en prose les six manuels exploités — systèmes d'ouverture, plans de milieu, finales, méthode de jugement — et y puiser les idées de fond, au-delà du calcul tactique.",
+      "goal": "Parcourir en prose les grands manuels de systèmes (Sijbrands, Roozenburg, Keller, Springer) — ouverture, plans de milieu, finales — et y puiser les idées de fond, au-delà du calcul tactique.",
       "prerequisites": [],
       "lessons": [
         {
@@ -7301,44 +7301,12 @@
           "n_exercises": 0,
           "n_positions": 0,
           "n_manuals": 1
-        },
-        {
-          "id": "int_manuel_goedemoed",
-          "title": "Cours Goedemoed — A Course in Draughts",
-          "intro": "Jugement de position et méthode : « comment penser » devant le damier. Le cours complet de Goedemoed, lu en six chapitres.",
-          "items": [
-            {
-              "kind": "manual",
-              "ref": "GOEDEMOED",
-              "source": "GOEDEMOED"
-            }
-          ],
-          "n_items": 1,
-          "n_exercises": 0,
-          "n_positions": 0,
-          "n_manuals": 1
-        },
-        {
-          "id": "int_manuel_goedemoed3",
-          "title": "Cours Goedemoed — volume avancé",
-          "intro": "Tactique, ouverture, processus de réflexion et finale : le troisième volume du cours de Goedemoed, pour aller plus loin.",
-          "items": [
-            {
-              "kind": "manual",
-              "ref": "GOEDEMOED3",
-              "source": "GOEDEMOED3"
-            }
-          ],
-          "n_items": 1,
-          "n_exercises": 0,
-          "n_positions": 0,
-          "n_manuals": 1
         }
       ],
-      "n_items": 6,
+      "n_items": 4,
       "n_exercises": 0,
       "n_positions": 0,
-      "n_manuals": 6
+      "n_manuals": 4
     }
   ]
 }
