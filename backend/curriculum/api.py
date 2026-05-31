@@ -10,6 +10,7 @@ solved.
 
 from __future__ import annotations
 
+import os
 from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException
@@ -17,6 +18,16 @@ from fastapi import APIRouter, HTTPException
 from . import loader
 
 router = APIRouter(prefix="/api/curriculum", tags=["curriculum"])
+
+
+def _unlock_all() -> bool:
+    """Staging escape hatch: when ``CURRICULUM_UNLOCK_ALL`` is truthy, every
+    module is reachable regardless of prerequisites, so the path can be tested
+    freely in any order. Off by default — production keeps the progression
+    gating. Set it only on the staging service."""
+    return os.environ.get("CURRICULUM_UNLOCK_ALL", "").strip().lower() in (
+        "1", "true", "yes", "on",
+    )
 
 
 @router.get("")
@@ -38,7 +49,7 @@ def get_curriculum() -> dict[str, Any]:
             "n_positions": m.get("n_positions", 0),
             "n_manuals": m.get("n_manuals", 0),
         })
-    return {"levels": loader.levels(), "modules": mods}
+    return {"levels": loader.levels(), "modules": mods, "unlock_all": _unlock_all()}
 
 
 @router.get("/module/{module_id}")
@@ -64,7 +75,7 @@ def _module_state(
     n_total = len(refs)
     n_solved = sum(1 for r in refs if r in solved)
     prereqs = module.get("prerequisites", [])
-    unlocked = all(p in done_modules for p in prereqs)
+    unlocked = _unlock_all() or all(p in done_modules for p in prereqs)
     if not unlocked:
         state = "locked"
     elif n_total and n_solved >= n_total:
