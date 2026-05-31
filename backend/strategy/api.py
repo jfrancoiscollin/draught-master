@@ -462,11 +462,14 @@ def manual(
 
     sections = _load_diagram_sections(source)
 
-    # Group consecutive prose passages under the section heading in scope.
-    # The heading is carried forward until a new one appears (sections is
-    # page-keyed; within a page we keep the running heading).
+    # Group consecutive prose passages under the printed section heading.
+    # The heading is carried forward across pages that have no section entry
+    # of their own (continuity), so we never spawn a generic "Lecture" chapter
+    # mid-book. Passages BEFORE the first real heading are front-matter (title
+    # page, table of contents, credits) — they carry no diagram and nothing to
+    # click, so we skip them entirely.
     chapters: list[dict] = []
-    current_key: str | None = None
+    current_heading: str | None = None
     cur: dict | None = None
     seq = 0
     for p in passages:
@@ -475,18 +478,23 @@ def manual(
         sec = sections.get(p.page)
         heading = (sec or {}).get("heading") or ""
         title = (sec or {}).get("title") or ""
-        # New chapter when the printed heading changes (or first passage).
-        if cur is None or heading != current_key:
-            seq += 1
-            current_key = heading
-            cur = {
-                "topic_key": f"section_{seq}",
-                "title_fr": heading or "Lecture",
-                "title_en": heading or "Reading",
-                "description_fr": title,
-                "passages": [],
-            }
-            chapters.append(cur)
+        if heading:
+            # A new printed heading starts a new chapter; the same heading (or
+            # a page with none) keeps appending to the current one.
+            if heading != current_heading:
+                seq += 1
+                current_heading = heading
+                cur = {
+                    "topic_key": f"section_{seq}",
+                    "title_fr": heading,
+                    "title_en": heading,
+                    "description_fr": title,
+                    "passages": [],
+                }
+                chapters.append(cur)
+        elif cur is None:
+            # No heading seen yet → still in the front-matter. Skip.
+            continue
         cur["passages"].append({
             "passage_id": p.passage_id,
             "score": 0.0,
