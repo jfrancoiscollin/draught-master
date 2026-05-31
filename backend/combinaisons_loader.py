@@ -14,6 +14,8 @@ in the deterministic order returned here (the source file order).
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 # Clear of manuel_debutant (2000+) and the strategy manuals (5000+), and
@@ -21,6 +23,33 @@ from typing import Any
 COMBINAISONS_ID_OFFSET = 7000
 
 BOOK_ID = "manuel_dubois_combinaisons"
+
+# Chapter prose lives in lessons.json keyed 1..41, but the lesson-prose
+# endpoint (/api/lessons/{chapter}) is shared with the Débutant chapters
+# (1..16), so we expose the combinaisons chapters under a dedicated range to
+# avoid that collision. Mirrors the "sens du jeu" convention (100+).
+#   Débutant       1..16
+#   sens du jeu    101..135
+#   combinaisons   201..241   (this loader)
+COMBINAISONS_CHAPTER_OFFSET = 200
+
+_LESSONS_PATH = Path(__file__).resolve().parent / "lessons.json"
+
+
+def combinaisons_chapters() -> dict[str, Any]:
+    """The chapter prose (title / text / category / diagrams), keyed by id.
+
+    Source ids 1..41 in ``lessons.json`` are re-keyed to
+    ``COMBINAISONS_CHAPTER_OFFSET + n`` so they never collide with the
+    Débutant chapters on the shared prose endpoint.
+    """
+    if not _LESSONS_PATH.is_file():
+        return {}
+    raw = json.loads(_LESSONS_PATH.read_text())
+    return {
+        str(COMBINAISONS_CHAPTER_OFFSET + int(ch)): lesson
+        for ch, lesson in raw.items()
+    }
 
 
 def all_combinaisons_exercises() -> list[dict[str, Any]]:

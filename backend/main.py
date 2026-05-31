@@ -1298,21 +1298,36 @@ async def mark_lesson_read_endpoint(
     return {"ok": True}
 
 
+def _prose_books() -> "Dict[str, Any]":
+    """All books that expose readable chapter prose, keyed by book_id.
+
+    Each value is the ``{chapter_id: {title, text, category, diagrams, ...}}``
+    mapping. Chapter id ranges are disjoint (Débutant 1-16, sens du jeu
+    101-135, combinaisons 201-241) so the per-chapter endpoint stays
+    unambiguous.
+    """
+    from manuels.prose_loader import load_debutant_chapters
+    from sens_du_jeu_loader import sens_du_jeu_chapters
+    from combinaisons_loader import combinaisons_chapters
+
+    return {
+        "manuel_debutant": load_debutant_chapters(),
+        "manuel_dubois_sens_du_jeu": sens_du_jeu_chapters(),
+        "manuel_dubois_combinaisons": combinaisons_chapters(),
+    }
+
+
 @app.get("/api/lessons")
 async def list_lessons(book: Optional[str] = Query(None)) -> Dict[str, Any]:
-    # The Dubois static lessons were retired (see PR #7). The manuel
-    # Débutant prose (`docs/manuels/debutant/manuel_debutant.md`) is now
-    # the source. `book` is accepted for compat with the existing client
-    # but only `manuel_debutant` has prose for now ; an empty mapping is
-    # returned for any other value.
-    from manuels.prose_loader import load_debutant_chapters
-    if book not in (None, "manuel_debutant"):
-        return {}
-    chapters = load_debutant_chapters()
+    # Lesson-prose titles for one book (or Débutant by default). Each book's
+    # chapters carry readable prose + illustrative diagrams; the per-chapter
+    # text is served by /api/lessons/{chapter}.
+    books = _prose_books()
+    chapters = books.get(book or "manuel_debutant", {})
     return {
         ch: {
             "title": v["title"],
-            "category": v["category"],
+            "category": v.get("category", ""),
             "motifs": v.get("motifs", []),
             "weaknesses": v.get("weaknesses", []),
         }
@@ -1358,6 +1373,10 @@ async def get_lesson(chapter: int) -> Dict[str, Any]:
         # which carry their own prose + illustrative diagrams.
         from sens_du_jeu_loader import sens_du_jeu_chapters
         lesson = sens_du_jeu_chapters().get(str(chapter))
+    if not lesson:
+        # And the Dubois "combinaisons" chapters (ids 201-241).
+        from combinaisons_loader import combinaisons_chapters
+        lesson = combinaisons_chapters().get(str(chapter))
     if not lesson:
         raise HTTPException(status_code=404, detail=f"No lesson for chapter {chapter}")
     return lesson
