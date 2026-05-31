@@ -130,8 +130,9 @@ BEG_CH02_001 = BeginnerPosition(
     ),
     concept=(
         "Un pion se déplace d'une case en diagonale, vers l'avant uniquement. "
-        "Le pion blanc 35 a deux mouvements possibles : 35-30 (diagonale "
-        "haut-gauche) ou 35-31 (diagonale haut-droite)."
+        "Le pion blanc 35 est sur le bord droit du damier : son seul "
+        "déplacement légal est 35-30 (diagonale haut-gauche). La diagonale "
+        "haut-droite est bloquée par le bord du plateau."
     ),
     explanation=(
         "Les blancs avancent vers les petites cases (1-5), les noirs vers les "
@@ -303,8 +304,8 @@ BEG_CH02_008 = BeginnerPosition(
     concept=(
         "Quand un pion blanc atteint la première rangée (cases 1-5), il "
         "est immédiatement promu en dame. Idem pour les noirs vers la "
-        "dernière rangée (46-50). Le pion blanc 6 a deux coups possibles : "
-        "6-1 ou 6-2, et dans les deux cas il devient dame."
+        "dernière rangée (46-50). Le pion blanc 6 (sur le bord gauche) "
+        "n'a qu'un seul coup légal : 6-1, qui le promeut en dame."
     ),
     explanation=(
         "La promotion se produit dès qu'un pion atteint sa rangée "
@@ -1754,7 +1755,7 @@ BEG_CH07_001 = BeginnerPosition(
         black_men=frozenset({3, 8, 13, 15, 16, 17, 18, 19, 24, 25}),
         turn="white",
     ),
-    concept="Les noirs viennent d'attaquer le pion 25. Les blancs disposent d'un temps de repos : ils peuvent jouer 2 coups d'affilée car le noir doit obligatoirement reprendre. Cette obligation se chaîne trois fois dans la combinaison.",
+    concept="Le pion noir 25 menace le pion blanc 30 (attaque noire). Les blancs disposent d'un temps de repos : ils peuvent jouer un coup utile car le noir devra obligatoirement capturer ensuite. Cette obligation se chaîne trois fois dans la combinaison.",
     published_notation='42-37 (25x34) 40x20 (15x24) 28-22 (17x28) 32x14',
     final_move=Move(
         path=(32, 23, 14),
@@ -1777,15 +1778,15 @@ BEG_CH07_002 = BeginnerPosition(
         black_men=frozenset({19, 6, 8, 25, 26, 12, 14}),
         turn="white",
     ),
-    concept='Combinaison en 3 phases utilisant les temps de repos pour (1) placer un pion en 19, (2) acheminer une pièce noire en 30 par envoi à dame, (3) exécuter la rafle finale 35x2.',
+    concept='Combinaison longue exploitant les temps de repos (envoi à dame). ⚠️ La published_notation présente des incohérences de déroulé (cf claude_notes) — solution à vérifier au moteur. La position de départ est correcte : le pion noir 19 menace le pion blanc 23.',
     published_notation='42-37 (19x28) 29-23 (28x19) 37-31 (26x37) 48-42 (37x48) 39-34 (48x30) 35x2',
     final_move=None,
-    explanation='Phase 1 (placer un pion en 19) : 42-37 (19x28) 29-23 (28x19). Phase 2 (envoi à dame puis collage de la dame) : 37-31 (26x37) 48-42 (37x48) 39-34 (48x30). Phase 3 (rafle) : 35x2.',
+    explanation='⚠️ Solution publiée incohérente, en attente de vérification moteur (A_VERIFIER_MOTEUR.md §1). Problèmes relevés : (a) on ne peut pas "placer un pion en 19" car un pion noir y est déjà au départ ; (b) le sacrifice 39-34 censé réaliser l\'envoi à dame en 30 est impossible si le pion blanc 39 a déjà été capturé en amont ; (c) la rafle finale 35x2 suppose des pièces qui ont déjà quitté le plateau. La position de départ (W{23,27,29,35,39,42,48} B{6,8,12,14,19,25,26}, trait blancs) reste valide.',
     source=SourceType.CORPUS,
     source_ref='dubois_apprent_combin_p26_intro2',
     crop_id='crops/page_026_d04.png',
-    confidence="high",
-    claude_notes='⚠️ Contient un envoi à dame du noir avec rafle subséquente. final_move=None. Cf RESOLUTIONS §R007.',
+    confidence="low",
+    claude_notes='⚠️ SOLUTION SUSPECTE — published_notation probablement corrompue (transcription PDF ou coquille Dubois). Le déroulé ne tient pas : envoi à dame impossible (pion 39 capturé avant son sacrifice 39-34), rafle finale 35x2 incohérente (pièces absentes au moment voulu). NON corrigé par Claude (§4.7 : ne pas inventer de variante). À élucider au moteur Scan — cf A_VERIFIER_MOTEUR.md §1. final_move=None.',
 )
 
 BEG_CH07_003 = BeginnerPosition(
@@ -2966,7 +2967,7 @@ BEG_CH11_005 = BeginnerPosition(
         black_men=frozenset({9, 11, 12, 13, 14, 16, 18, 24, 25, 26, 30}),
         turn="white",
     ),
-    concept="Rafle se terminant en 10. Le coup de Rappel permet d'amener un pion noir en 22.",
+    concept="Rafle se terminant en 10. Le coup de Rappel force un pion noir à revenir capturer sur la case 22 (le sacrifice 32-27 puis la reprise 31x22), ce qui le ramène sur la trajectoire de la rafle blanche finale 28x10.",
     published_notation='22-17 (11x31) 32-27 (31x22) 28x10',
     final_move=Move(
         path=(28, 17, 8, 19, 10),

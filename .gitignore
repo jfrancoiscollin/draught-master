@@ -7,3 +7,5 @@ __pycache__/
 node_modules/
 dist/
 .vite/
+backend/data/
+backend/strategy/pages/*/.render_cache/

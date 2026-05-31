@@ -119,6 +119,11 @@ interface BoardProps {
   // When provided, these squares can be selected even if not in legalMoves,
   // and any subsequent dark-square click triggers onMove (free-move mode).
   freeSelectSquares?: Set<number>
+  /** When set, EVERY dark-square click fires this callback and the move
+   *  logic (legalMoves matching, selectedSquare tracking) is bypassed
+   *  entirely. Used by the FEN annotator to let the operator cycle
+   *  pieces on any square — including currently empty ones. */
+  onSquareClick?: (sq: number) => void
   flipped?: boolean
   theme?: BoardTheme
 }
@@ -315,6 +320,7 @@ export default function Board({
   spokenSquares = [],
   arrows = [],
   freeSelectSquares,
+  onSquareClick,
   flipped = false,
   theme = 'classic',
 }: BoardProps) {
@@ -437,6 +443,12 @@ export default function Board({
 
   const handleCellClick = (sq: number) => {
     if (disabled) return
+    // Annotation mode short-circuit: every dark-square click cycles a
+    // piece, no need for legalMoves / selectedSquare machinery.
+    if (onSquareClick) {
+      onSquareClick(sq)
+      return
+    }
     const piece = board[sq]
     const targets = legalTargets()
     const froms = legalFromSquares()

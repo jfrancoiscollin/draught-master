@@ -1,0 +1,650 @@
+{
+  "6": {
+    "theme": "Tactique"
+  },
+  "7": {
+    "theme": "Tactique"
+  },
+  "8": {
+    "theme": "Tactique"
+  },
+  "9": {
+    "theme": "Tactique"
+  },
+  "10": {
+    "theme": "Tactique"
+  },
+  "11": {
+    "theme": "Tactique"
+  },
+  "12": {
+    "theme": "Tactique"
+  },
+  "13": {
+    "theme": "Tactique"
+  },
+  "14": {
+    "theme": "Tactique"
+  },
+  "15": {
+    "theme": "Tactique"
+  },
+  "16": {
+    "theme": "Tactique"
+  },
+  "17": {
+    "theme": "Tactique"
+  },
+  "18": {
+    "theme": "Tactique"
+  },
+  "19": {
+    "theme": "Tactique"
+  },
+  "20": {
+    "theme": "Tactique"
+  },
+  "21": {
+    "theme": "Tactique"
+  },
+  "22": {
+    "theme": "Tactique"
+  },
+  "23": {
+    "theme": "Tactique"
+  },
+  "25": {
+    "theme": "Tactique"
+  },
+  "27": {
+    "theme": "Tactique"
+  },
+  "29": {
+    "theme": "Tactique"
+  },
+  "32": {
+    "theme": "Ouverture"
+  },
+  "33": {
+    "theme": "Ouverture"
+  },
+  "34": {
+    "theme": "Ouverture"
+  },
+  "35": {
+    "theme": "Ouverture"
+  },
+  "36": {
+    "theme": "Ouverture"
+  },
+  "37": {
+    "theme": "Ouverture"
+  },
+  "38": {
+    "theme": "Ouverture"
+  },
+  "39": {
+    "theme": "Ouverture"
+  },
+  "40": {
+    "theme": "Ouverture"
+  },
+  "41": {
+    "theme": "Ouverture"
+  },
+  "48": {
+    "theme": "Ouverture"
+  },
+  "49": {
+    "theme": "Ouverture"
+  },
+  "50": {
+    "theme": "Ouverture"
+  },
+  "51": {
+    "theme": "Quel coup jouer ?"
+  },
+  "52": {
+    "theme": "Quel coup jouer ?"
+  },
+  "53": {
+    "theme": "Quel coup jouer ?"
+  },
+  "54": {
+    "theme": "Quel coup jouer ?"
+  },
+  "55": {
+    "theme": "Stratégie"
+  },
+  "56": {
+    "theme": "Stratégie"
+  },
+  "57": {
+    "theme": "Stratégie"
+  },
+  "58": {
+    "theme": "Attaque Roozenburg"
+  },
+  "59": {
+    "theme": "Attaque Roozenburg"
+  },
+  "60": {
+    "theme": "Attaque Roozenburg"
+  },
+  "61": {
+    "theme": "Stratégie"
+  },
+  "62": {
+    "theme": "Stratégie"
+  },
+  "63": {
+    "theme": "Stratégie"
+  },
+  "64": {
+    "theme": "Stratégie"
+  },
+  "65": {
+    "theme": "Stratégie"
+  },
+  "66": {
+    "theme": "Calcul"
+  },
+  "67": {
+    "theme": "Quel coup jouer ?"
+  },
+  "68": {
+    "theme": "Quel coup jouer ?"
+  },
+  "69": {
+    "theme": "Quel coup jouer ?"
+  },
+  "70": {
+    "theme": "Quel coup jouer ?"
+  },
+  "71": {
+    "theme": "Quel coup jouer ?"
+  },
+  "72": {
+    "theme": "Dérouler la partie"
+  },
+  "73": {
+    "theme": "Dérouler la partie"
+  },
+  "74": {
+    "theme": "Dérouler la partie"
+  },
+  "75": {
+    "theme": "Dérouler la partie"
+  },
+  "76": {
+    "theme": "Dérouler la partie"
+  },
+  "77": {
+    "theme": "Quel coup jouer ?"
+  },
+  "78": {
+    "theme": "Quel coup jouer ?"
+  },
+  "79": {
+    "theme": "Quel coup jouer ?"
+  },
+  "80": {
+    "theme": "Quel coup jouer ?"
+  },
+  "81": {
+    "theme": "Quel coup jouer ?"
+  },
+  "82": {
+    "theme": "Quel coup jouer ?"
+  },
+  "83": {
+    "theme": "Quel coup jouer ?"
+  },
+  "84": {
+    "theme": "Quel coup jouer ?"
+  },
+  "85": {
+    "theme": "Attaque Roozenburg"
+  },
+  "86": {
+    "theme": "Attaque Roozenburg"
+  },
+  "87": {
+    "theme": "Attaque Roozenburg"
+  },
+  "88": {
+    "theme": "Attaque Roozenburg"
+  },
+  "89": {
+    "theme": "Attaque Roozenburg"
+  },
+  "90": {
+    "theme": "Attaque Roozenburg"
+  },
+  "91": {
+    "theme": "Attaque Roozenburg"
+  },
+  "92": {
+    "theme": "Quel coup jouer ?"
+  },
+  "93": {
+    "theme": "Quel coup jouer ?"
+  },
+  "94": {
+    "theme": "Quel coup jouer ?"
+  },
+  "96": {
+    "theme": "Quel coup jouer ?"
+  },
+  "97": {
+    "theme": "Quel coup jouer ?"
+  },
+  "98": {
+    "theme": "Quel coup jouer ?"
+  },
+  "100": {
+    "theme": "Stratégie"
+  },
+  "101": {
+    "theme": "Stratégie"
+  },
+  "102": {
+    "theme": "Stratégie"
+  },
+  "104": {
+    "theme": "Stratégie"
+  },
+  "106": {
+    "theme": "Stratégie"
+  },
+  "107": {
+    "theme": "Stratégie"
+  },
+  "108": {
+    "theme": "Calcul"
+  },
+  "109": {
+    "theme": "Calcul"
+  },
+  "110": {
+    "theme": "Stratégie"
+  },
+  "112": {
+    "theme": "Stratégie"
+  },
+  "113": {
+    "theme": "Stratégie"
+  },
+  "114": {
+    "theme": "Coups forcés"
+  },
+  "115": {
+    "theme": "Coups forcés"
+  },
+  "116": {
+    "theme": "Coups forcés"
+  },
+  "117": {
+    "theme": "Coups forcés"
+  },
+  "118": {
+    "theme": "Coups forcés"
+  },
+  "119": {
+    "theme": "Coups forcés"
+  },
+  "120": {
+    "theme": "Coups forcés"
+  },
+  "121": {
+    "theme": "Coups forcés"
+  },
+  "122": {
+    "theme": "Coups forcés"
+  },
+  "123": {
+    "theme": "Coups forcés"
+  },
+  "124": {
+    "theme": "Coups forcés"
+  },
+  "125": {
+    "theme": "Coups forcés"
+  },
+  "126": {
+    "theme": "Coups forcés"
+  },
+  "127": {
+    "theme": "Coups forcés"
+  },
+  "128": {
+    "theme": "Coups forcés"
+  },
+  "129": {
+    "theme": "Coups forcés"
+  },
+  "130": {
+    "theme": "Stratégie"
+  },
+  "131": {
+    "theme": "Stratégie"
+  },
+  "132": {
+    "theme": "Stratégie"
+  },
+  "133": {
+    "theme": "Stratégie"
+  },
+  "134": {
+    "theme": "Stratégie"
+  },
+  "135": {
+    "theme": "Stratégie"
+  },
+  "137": {
+    "theme": "Processus de réflexion"
+  },
+  "138": {
+    "theme": "Processus de réflexion"
+  },
+  "139": {
+    "theme": "Processus de réflexion"
+  },
+  "140": {
+    "theme": "Processus de réflexion"
+  },
+  "141": {
+    "theme": "Processus de réflexion"
+  },
+  "142": {
+    "theme": "Processus de réflexion"
+  },
+  "143": {
+    "theme": "Processus de réflexion"
+  },
+  "144": {
+    "theme": "Processus de réflexion"
+  },
+  "145": {
+    "theme": "Processus de réflexion"
+  },
+  "146": {
+    "theme": "Processus de réflexion"
+  },
+  "147": {
+    "theme": "Processus de réflexion"
+  },
+  "148": {
+    "theme": "Processus de réflexion"
+  },
+  "149": {
+    "theme": "Processus de réflexion"
+  },
+  "155": {
+    "theme": "Processus de réflexion"
+  },
+  "158": {
+    "theme": "Processus de réflexion"
+  },
+  "159": {
+    "theme": "Processus de réflexion"
+  },
+  "160": {
+    "theme": "Processus de réflexion"
+  },
+  "161": {
+    "theme": "Processus de réflexion"
+  },
+  "163": {
+    "theme": "Processus de réflexion"
+  },
+  "166": {
+    "theme": "Finale"
+  },
+  "167": {
+    "theme": "Finale"
+  },
+  "168": {
+    "theme": "Finale"
+  },
+  "169": {
+    "theme": "Finale"
+  },
+  "170": {
+    "theme": "Finale"
+  },
+  "171": {
+    "theme": "Finale"
+  },
+  "172": {
+    "theme": "Finale"
+  },
+  "173": {
+    "theme": "Finale"
+  },
+  "174": {
+    "theme": "Finale"
+  },
+  "175": {
+    "theme": "Finale"
+  },
+  "176": {
+    "theme": "Finale"
+  },
+  "177": {
+    "theme": "Finale"
+  },
+  "178": {
+    "theme": "Finale"
+  },
+  "179": {
+    "theme": "Finale"
+  },
+  "180": {
+    "theme": "Finale"
+  },
+  "181": {
+    "theme": "Finale"
+  },
+  "182": {
+    "theme": "Finale"
+  },
+  "183": {
+    "theme": "Finale"
+  },
+  "184": {
+    "theme": "Finale"
+  },
+  "185": {
+    "theme": "Finale"
+  },
+  "186": {
+    "theme": "Finale"
+  },
+  "187": {
+    "theme": "Finale"
+  },
+  "188": {
+    "theme": "Finale"
+  },
+  "189": {
+    "theme": "Finale"
+  },
+  "190": {
+    "theme": "Finale"
+  },
+  "191": {
+    "theme": "Finale"
+  },
+  "192": {
+    "theme": "Finale"
+  },
+  "193": {
+    "theme": "Finale"
+  },
+  "194": {
+    "theme": "Finale"
+  },
+  "195": {
+    "theme": "Finale"
+  },
+  "196": {
+    "theme": "Finale"
+  },
+  "197": {
+    "theme": "Finale"
+  },
+  "198": {
+    "theme": "Finale"
+  },
+  "199": {
+    "theme": "Finale"
+  },
+  "200": {
+    "theme": "Finale"
+  },
+  "201": {
+    "theme": "Finale"
+  },
+  "202": {
+    "theme": "Finale"
+  },
+  "203": {
+    "theme": "Finale"
+  },
+  "204": {
+    "theme": "Finale"
+  },
+  "205": {
+    "theme": "Finale"
+  },
+  "206": {
+    "theme": "Finale"
+  },
+  "207": {
+    "theme": "Finale"
+  },
+  "209": {
+    "theme": "Finale"
+  },
+  "213": {
+    "theme": "Finale"
+  },
+  "214": {
+    "theme": "Finale"
+  },
+  "220": {
+    "theme": "Finale"
+  },
+  "222": {
+    "theme": "Finir la partie"
+  },
+  "223": {
+    "theme": "Finir la partie"
+  },
+  "224": {
+    "theme": "Finir la partie"
+  },
+  "225": {
+    "theme": "Finir la partie"
+  },
+  "226": {
+    "theme": "Finir la partie"
+  },
+  "227": {
+    "theme": "Finir la partie"
+  },
+  "228": {
+    "theme": "Finir la partie"
+  },
+  "229": {
+    "theme": "Finir la partie"
+  },
+  "230": {
+    "theme": "Finir la partie"
+  },
+  "231": {
+    "theme": "Finir la partie"
+  },
+  "232": {
+    "theme": "Finir la partie"
+  },
+  "233": {
+    "theme": "Finir la partie"
+  },
+  "234": {
+    "theme": "Finir la partie"
+  },
+  "235": {
+    "theme": "Finir la partie"
+  },
+  "236": {
+    "theme": "Finir la partie"
+  },
+  "237": {
+    "theme": "Finir la partie"
+  },
+  "238": {
+    "theme": "Finir la partie"
+  },
+  "239": {
+    "theme": "Finir la partie"
+  },
+  "240": {
+    "theme": "Finir la partie"
+  },
+  "249": {
+    "theme": "Compositions"
+  },
+  "250": {
+    "theme": "Compositions"
+  },
+  "251": {
+    "theme": "Compositions"
+  },
+  "252": {
+    "theme": "Compositions"
+  },
+  "253": {
+    "theme": "Compositions"
+  },
+  "254": {
+    "theme": "Compositions"
+  },
+  "255": {
+    "theme": "Compositions"
+  },
+  "256": {
+    "theme": "Compositions"
+  },
+  "257": {
+    "theme": "Compositions"
+  },
+  "258": {
+    "theme": "Compositions"
+  },
+  "259": {
+    "theme": "Compositions"
+  },
+  "260": {
+    "theme": "Compositions"
+  },
+  "261": {
+    "theme": "Compositions"
+  },
+  "262": {
+    "theme": "Compositions"
+  },
+  "263": {
+    "theme": "Compositions"
+  },
+  "264": {
+    "theme": "Compositions"
+  },
+  "265": {
+    "theme": "Compositions"
+  },
+  "266": {
+    "theme": "Compositions"
+  }
+}

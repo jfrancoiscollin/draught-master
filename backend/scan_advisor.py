@@ -211,8 +211,12 @@ def _select_book_tip(state: GameState, counts: dict, phase: str,
         else:
             if not any(c in feats for c in conds):
                 continue
-        # Return localised version
-        loc = tip.get(lang) or tip.get("fr") or {}
+        # Return localised version, augmented with a few illustrative
+        # positions mined from the manuals (see strategy/enrich_tips.py).
+        loc = dict(tip.get(lang) or tip.get("fr") or {})
+        examples = tip.get("example_positions", [])
+        if examples:
+            loc["example_positions"] = examples[:3]
         return loc
 
     return None
@@ -690,6 +694,17 @@ async def analyze_position(
         "best_moves": [best_move] if best_move else [],
         "key_squares": _key_squares(best_move),
         "strategic_advice": adv_text,
+        # Structured tip so the UI can render the concept + illustrative
+        # manual positions as boards, beyond the inline text above.
+        "book_tip": (
+            {
+                "concept": tip.get("concept", ""),
+                "source": tip.get("source", ""),
+                "example_positions": tip.get("example_positions", []),
+            }
+            if tip
+            else None
+        ),
     }
 
 

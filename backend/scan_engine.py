@@ -194,7 +194,7 @@ class ScanEngine:
         'go think' forces a real neural-network search unlike 'go analyze' which
         returns score=0 for book positions. The score comes from 'info' lines;
         the best move comes from the final 'done' line.
-        Returns {"score": float, "bestMove": str|None, "pv": list[str], "forced": bool}."""
+        Returns {"score": float, "bestMove": str|None, "pv": list[str], "forced": bool, "depth": int}."""
         with self._lock:
             while True:
                 try:
@@ -209,6 +209,7 @@ class ScanEngine:
             last_score: float = 0.0
             last_best: Optional[str] = None
             last_pv: list[str] = []
+            last_depth: int = 0
             had_info_score = False
             deadline = time.monotonic() + movetime_s + 10.0
             raw_lines: list[str] = []
@@ -223,9 +224,12 @@ class ScanEngine:
                     if line.startswith("info "):
                         s = re.search(r'\bscore=\s*([+-]?\d+(?:\.\d+)?)', line)
                         p = re.search(r'\bpv="([^"]*)"', line)
+                        d = re.search(r'\bdepth=(\d+)', line)
                         if s:
                             last_score = float(s.group(1))
                             had_info_score = True
+                        if d:
+                            last_depth = int(d.group(1))
                         if p:
                             words = p.group(1).strip().split()
                             if words:
@@ -248,8 +252,8 @@ class ScanEngine:
                         # forced=True when no info line had a score (Scan returned
                         # the move immediately without searching — forced capture)
                         forced = not had_info_score and score == 0.0
-                        logger.debug("evaluate_pos done: score=%.3f best=%s pv_len=%d forced=%s", score, best, len(last_pv), forced)
-                        return {"bestMove": best, "score": score, "pv": last_pv, "forced": forced}
+                        logger.debug("evaluate_pos done: score=%.3f best=%s pv_len=%d depth=%d forced=%s", score, best, len(last_pv), last_depth, forced)
+                        return {"bestMove": best, "score": score, "pv": last_pv, "forced": forced, "depth": last_depth}
                 except queue.Empty:
                     pass
 

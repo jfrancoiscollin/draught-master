@@ -3,10 +3,12 @@ import Board from './components/Board'
 import type { Arrow, BoardTheme } from './components/Board'
 import AnalysisPanel, { MoveAnnotationsTable } from './components/AnalysisPanel'
 import AnalysisText from './components/AnalysisText'
+import TipExamples from './components/TipExamples'
 import GameControls, { type PlayerSide } from './components/GameControls'
 import MoveList from './components/MoveList'
 import ExercisePanel from './components/ExercisePanel'
 import ExerciseLibraryPage from './components/ExerciseLibraryPage'
+import LearningPathPage from './components/LearningPathPage'
 import LessonPanel from './components/LessonPanel'
 import ImportGamePanel from './components/ImportGamePanel'
 import OpeningCacheBuilder from './components/OpeningCacheBuilder'
@@ -18,6 +20,8 @@ import PedagogyPanel from './components/PedagogyPanel'
 import LivePlayPanel from './components/LivePlayPanel'
 import LiveGameScreen from './components/LiveGameScreen'
 import ChallengeToast from './components/ChallengeToast'
+import StrategyPanel from './components/StrategyPanel'
+import StrategyManualPage from './components/StrategyManualPage'
 import type { LiveGameSessionState } from './api/client'
 import { useLiveWS } from './hooks/useLiveWS'
 import MotifDetailPage from './components/MotifDetailPage'
@@ -172,12 +176,18 @@ function fenToBoard(fen: string): number[] {
   return board
 }
 
-type Tab = 'home' | 'play' | 'live' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu' | 'my-games'
+type Tab = 'home' | 'play' | 'live' | 'learning-path' | 'exercise-library' | 'exercises' | 'import-game' | 'opening-builder' | 'game-history' | 'analyze-menu' | 'my-games' | 'strategy' | 'strategy-manual'
 
 export default function App() {
   const { t, language } = useLanguage()
   const { user, logout } = useAuth()
   const [tab, setTab] = useState<Tab>('home')
+  // Source code (SIJBRANDS / SPRINGER / ROOZENBURG / KELLER) when
+  // ``tab === 'strategy-manual'`` — the new long-form manual view in
+  // Apprendre.  One manual per source, structured into chapters by
+  // topic.
+  const [strategyManualSource, setStrategyManualSource] = useState<string>('SIJBRANDS')
+  const [strategyJumpSource, setStrategyJumpSource] = useState<string | undefined>(undefined)
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
   const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
   const [preloadedUserSide, setPreloadedUserSide] = useState<'white' | 'black' | null>(null)
@@ -243,6 +253,10 @@ export default function App() {
     fen: string
     exerciseId: number | null
   } | null>(null)
+  // When an exercise is opened by deep-link (e.g. from the Parcours screen),
+  // remember where to return so the back arrow goes there instead of the
+  // default chapter list.
+  const [exerciseOrigin, setExerciseOrigin] = useState<Tab | null>(null)
   const [exerciseLegalMoves, setExerciseLegalMoves] = useState<MoveData[]>([])
   const [exerciseSelectedSquare, setExerciseSelectedSquare] = useState<number | null>(null)
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseCheckResponse | null>(null)
@@ -292,6 +306,10 @@ export default function App() {
   const [pedagogyError, setPedagogyError] = useState<string | null>(null)
   // Motif drill — slug of the motif currently displayed, null = closed
   const [motifDetailSlug, setMotifDetailSlug] = useState<string | null>(null)
+  // Lesson opened from the narrative cards (GameNarrativeSummary).
+  // Renders as a full-area overlay over whichever tab is active so the
+  // user doesn't lose ImportGamePanel state when consulting a chapter.
+  const [narrativeLessonChapter, setNarrativeLessonChapter] = useState<number | null>(null)
 
   // Pre-load WASM engine on startup so it's ready before the user requests analysis
   useEffect(() => { getScanEngine() }, [])
@@ -338,6 +356,7 @@ export default function App() {
     setExerciseStep(0)
     setExerciseMovesLoading(false)
     setExerciseLastMove(null)
+    setExerciseOrigin(null)
     if (exerciseAutoMoveTimerRef.current) clearTimeout(exerciseAutoMoveTimerRef.current)
   }, [])
 
@@ -1133,6 +1152,22 @@ export default function App() {
       {/* Main content — mobile: no page scroll (each section scrolls itself); desktop: page scrolls */}
       <main className="flex-1 overflow-hidden lg:overflow-y-auto relative">
 
+        {/* Narrative-driven lesson overlay — opened from
+            <GameNarrativeSummary> chips (motifs / weaknesses / drills).
+            Floats over the active tab so closing returns the user
+            exactly where they were in their analysis. */}
+        {narrativeLessonChapter !== null && (
+          <div className="absolute inset-0 z-40 bg-gray-900">
+            <LessonPanel
+              chapter={narrativeLessonChapter}
+              exampleFen=""
+              onClose={() => setNarrativeLessonChapter(null)}
+              onLessonRead={handleLessonRead}
+              isRead={readChapters.has(narrativeLessonChapter)}
+            />
+          </div>
+        )}
+
         {/* HOME SCREEN */}
         {tab === 'home' && (
           <div className="h-full flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
@@ -1158,6 +1193,14 @@ export default function App() {
                   <span className="flex-1 text-lg font-bold text-white text-right">Jouer en ligne</span>
                 </button>
               )}
+              {/* Learning path (guided curriculum) */}
+              <button
+                onClick={() => setTab('learning-path')}
+                className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
+              >
+                <img src={iconLearnSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                <span className="flex-1 text-lg font-bold text-white text-right">{language === 'fr' ? 'Parcours' : 'Learning path'}</span>
+              </button>
               {/* Exercises */}
               <button
                 onClick={() => setTab('exercise-library')}
@@ -1220,6 +1263,7 @@ export default function App() {
             refreshKey={historyRefresh}
             onChanged={() => setHistoryRefresh(v => v + 1)}
             onMotifClick={setMotifDetailSlug}
+            onOpenLesson={(chapter) => setNarrativeLessonChapter(chapter)}
             onReplay={(detail) => {
               setPreloadedPdn(detail.pdn || '')
               setPreloadedGameId(detail.id)
@@ -1227,6 +1271,17 @@ export default function App() {
               setPreloadedUserSide(side === 'black' ? 'black' : 'white')
               setTab('import-game')
             }}
+          />
+        )}
+
+        {/* STRATEGY TAB — curated topic buttons + sourced passages from
+            dilf's prose corpus (Sijbrands / Roozenburg / Keller /
+            Springer). Backed by /api/strategy/*. */}
+        {tab === 'strategy' && (
+          <StrategyPanel
+            onClose={() => setTab('exercise-library')}
+            lang={language}
+            initialJumpSource={strategyJumpSource}
           />
         )}
 
@@ -1597,6 +1652,11 @@ export default function App() {
                     </div>
                     <AnalysisText text={analysis.analysis} onMoveClick={handleAnalysisMoveClick} className="text-gray-200 leading-relaxed text-sm whitespace-pre-wrap" />
                   </div>
+                  {analysis.book_tip && (
+                    <div className="panel mt-3">
+                      <TipExamples tip={analysis.book_tip} lang={language} />
+                    </div>
+                  )}
                   {analysis.move_annotations && analysis.move_annotations.length > 0 && (
                     <div className="panel mt-3">
                       <div className="text-xs text-gray-400 uppercase font-semibold mb-2">
@@ -1625,10 +1685,52 @@ export default function App() {
           </>
         )}
 
+        {/* LEARNING PATH TAB — guided curriculum (levels -> modules ->
+            lessons) with progression. Modules unlock as prerequisites are
+            completed; clicking an exercise deep-links into the solver. */}
+        {tab === 'learning-path' && (
+          <LearningPathPage
+            onClose={() => setTab('home')}
+            onOpenLesson={(chapter: number) => setNarrativeLessonChapter(chapter)}
+            onOpenExercise={async (exerciseId: number) => {
+              try {
+                resetExerciseState()
+                const ex = await getExercise(exerciseId)
+                setExerciseOrigin('learning-path')
+                setTab('exercises')
+                await handleExerciseLoad(ex.initial_fen, exerciseId)
+              } catch { /* ignore load failure */ }
+            }}
+          />
+        )}
+
         {/* EXERCISE LIBRARY TAB */}
         {tab === 'exercise-library' && (
           <ExerciseLibraryPage
             onSelectBook={(bookId: string) => { resetExerciseState(); setSelectedBookId(bookId); setTab('exercises') }}
+            onOpenStrategyManual={(source: string) => {
+              // Diagram-only sources (no prose passages) open the diagram
+              // annotation tool directly; prose sources open the manual.
+              if (source === 'GOEDEMOED' || source === 'GOEDEMOED3') {
+                setStrategyJumpSource(source)
+                setTab('strategy')
+              } else {
+                setStrategyManualSource(source)
+                setTab('strategy-manual')
+              }
+            }}
+          />
+        )}
+
+        {/* STRATEGY MANUAL TAB — long-form pedagogical manual for one
+            corpus source (Sijbrands / Springer / Roozenburg / Keller).
+            Sections grouped by topic centroid; each passage rendered
+            with its Board (FEN) and prose with clickable PDN moves. */}
+        {tab === 'strategy-manual' && (
+          <StrategyManualPage
+            source={strategyManualSource}
+            onClose={() => setTab('exercise-library')}
+            lang={language}
           />
         )}
 
@@ -1694,7 +1796,14 @@ export default function App() {
             {/* Below-board row: back arrow left, perspective center, loading right */}
             <div className="flex items-center w-full mt-2" style={{ maxWidth: '560px' }}>
               <button
-                onClick={resetExerciseState}
+                onClick={() => {
+                  resetExerciseState()
+                  if (exerciseOrigin) {
+                    const origin = exerciseOrigin
+                    setExerciseOrigin(null)
+                    setTab(origin)
+                  }
+                }}
                 className="text-gray-400 hover:text-amber-500 text-2xl w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors flex-shrink-0"
                 title={t('exercises')}
               >
@@ -1739,18 +1848,22 @@ export default function App() {
           <div className="h-full">
             <ImportGamePanel
               onClose={() => {
-                // If the panel was opened from the Profil > game list
-                // (preloadedGameId set), return there ; otherwise back to
-                // home.
-                const cameFromHistory = preloadedGameId !== null
+                // If the panel was opened from "Analyser mes parties"
+                // (preloadedGameId set), return there; otherwise back to
+                // home. Pre-refactor the destination was 'game-history'
+                // (the slim stats screen) — that route still exists but
+                // is no longer where the user came from.
+                const cameFromMyGames = preloadedGameId !== null
                 setPreloadedPdn(null)
                 setPreloadedGameId(null)
                 setPreloadedUserSide(null)
-                setTab(cameFromHistory ? 'game-history' : 'home')
+                setTab(cameFromMyGames ? 'my-games' : 'home')
               }}
               initialPdn={preloadedPdn}
               initialGameId={preloadedGameId}
               initialUserSide={preloadedUserSide}
+              onMotifClick={setMotifDetailSlug}
+              onOpenLesson={(chapter) => setNarrativeLessonChapter(chapter)}
             />
           </div>
         )}

@@ -30,6 +30,13 @@ interface ImportGamePanelProps {
   initialPdn?: string | null
   initialGameId?: string | null
   initialUserSide?: 'white' | 'black' | null
+  /** Open the MotifDetailPage drill view. Wired from App.tsx, used
+   *  by the recommended-drills chips of the narrative cards. */
+  onMotifClick?: (slug: string) => void
+  /** Open the manuel chapter `chapter` as a full-area overlay. Wired
+   *  from App.tsx (the lesson view is global so the user keeps their
+   *  ImportGamePanel state while reading). */
+  onOpenLesson?: (chapter: number) => void
 }
 
 type PanelMode = 'review' | 'learn'
@@ -161,7 +168,7 @@ type TabKey = 'position' | 'graphs' | 'tables'
 function PedagogyTabsPanel({
   gameId, analysis, userSide, lang, activeVerdict, hangingSquares,
   threatCount, showThreats, onToggleThreats, diagKey, onDiagKey,
-  currentHalfMove, onJumpTo, onWeaknessClick, onMotifJump,
+  currentHalfMove, onJumpTo, onWeaknessClick, onMotifJump, onMotifClick, onOpenLesson,
 }: {
   gameId: string
   analysis: PedagogyAnalysis
@@ -189,6 +196,12 @@ function PedagogyTabsPanel({
    *  narrative cards. Jumps the board to the first verdict that fired
    *  that motif. */
   onMotifJump?: (slug: string) => void
+  /** Open the MotifDetailPage drill view. Wired by App.tsx —
+   *  used by the recommended-drills chips ("À travailler"). */
+  onMotifClick?: (slug: string) => void
+  /** Open a manuel chapter as a global lesson overlay. Wired by
+   *  App.tsx; PedagogyTabsPanel just forwards it to the narrative. */
+  onOpenLesson?: (chapter: number) => void
 }) {
   const [tab, setTab] = useState<TabKey>('position')
   const { verdicts } = analysis
@@ -234,7 +247,9 @@ function PedagogyTabsPanel({
               lang={lang}
               onJumpTo={onJumpTo}
               onMotifJump={onMotifJump}
+              onMotifClick={onMotifClick}
               onWeaknessClick={onWeaknessClick}
+              onOpenLesson={onOpenLesson}
             />
 
             {activeVerdict ? (
@@ -366,6 +381,8 @@ export default function ImportGamePanel({
   initialPdn,
   initialGameId,
   initialUserSide,
+  onMotifClick,
+  onOpenLesson,
 }: ImportGamePanelProps) {
   const { language } = useLanguage()
 
@@ -1119,6 +1136,8 @@ export default function ImportGamePanel({
                 )
                 if (v) goTo(v.move_number, positions)
               }}
+              onMotifClick={onMotifClick}
+              onOpenLesson={onOpenLesson}
             />
           )}
 

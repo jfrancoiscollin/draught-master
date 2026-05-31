@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import type { AnalysisResponse, MoveAnnotationItem } from '../types'
 import { useLanguage } from '../i18n/LanguageContext'
 import AnalysisText from './AnalysisText'
+import TipExamples from './TipExamples'
 
 interface AnalysisPanelProps {
   gameId: string | null
@@ -361,6 +362,11 @@ export default function AnalysisPanel({
               <div className="text-xs text-gray-400 uppercase font-semibold mb-1">{t('strategicAdvice')}</div>
               <p className="text-gray-200 leading-relaxed">{analysis.strategic_advice}</p>
             </div>
+          )}
+
+          {/* Knowledge-base tip example positions from the manuals */}
+          {!expanded && analysis.book_tip && (
+            <TipExamples tip={analysis.book_tip} lang={language} />
           )}
 
           {/* Full analysis text — only shown here when NOT expanded (App.tsx renders it below) */}

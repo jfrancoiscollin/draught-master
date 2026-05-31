@@ -143,6 +143,12 @@ app.include_router(pedagogy_router)
 from live import router as live_router  # noqa: E402
 app.include_router(live_router)
 
+from strategy.api import router as strategy_router  # noqa: E402
+app.include_router(strategy_router)
+
+from curriculum.api import router as curriculum_router  # noqa: E402
+app.include_router(curriculum_router)
+
 # Shared BookRAG singleton — populated at startup if corpus is present.
 # `explain_verdict` degrades gracefully to template mode when None.
 shared_book_rag = None
@@ -153,6 +159,16 @@ game_store: Dict[str, Dict[str, Any]] = {}
 @app.on_event("startup")
 async def startup_event() -> None:
     await init_db()
+
+    # Log the dilf corpus version we're shipping. Single grep-friendly
+    # line so a deploy preview can confirm at a glance which revision
+    # of the manuel + fixtures is live. The manifest is updated by
+    # `scripts/sync_dilf_corpus.py`.
+    try:
+        from manuels import corpus_version_string
+        logging.info("startup: %s", corpus_version_string())
+    except Exception:
+        logging.exception("startup: corpus manifest read failed (non-fatal)")
 
     # Live PvP — every in-memory game session was lost when the server
     # restarted, so any games row still marked `in_progress` is now
@@ -1026,6 +1042,20 @@ async def auth_me_progress(current_user: Dict[str, Any] = Depends(_require_auth)
     return {"solved_exercise_ids": solved_ids}
 
 
+@app.get("/api/curriculum/progress")
+async def curriculum_progress(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
+    """Per-module learning progress for the authenticated user.
+
+    Derived from the existing solved-exercise tracking — module states
+    (locked / available / in_progress / done) and the recommended next
+    module. See curriculum/api.py::progress_payload.
+    """
+    from curriculum.api import progress_payload
+
+    solved_ids = await get_user_solved_exercise_ids(current_user["id"])
+    return progress_payload(solved_ids)
+
+
 @app.get("/api/auth/me/stats")
 async def auth_me_stats(current_user: Dict[str, Any] = Depends(_require_auth)) -> Dict[str, Any]:
     stats = await get_user_stats(current_user["id"])
@@ -1268,18 +1298,69 @@ async def mark_lesson_read_endpoint(
     return {"ok": True}
 
 
+def _prose_books() -> "Dict[str, Any]":
+    """All books that expose readable chapter prose, keyed by book_id.
+
+    Each value is the ``{chapter_id: {title, text, category, diagrams, ...}}``
+    mapping. Chapter id ranges are disjoint (Débutant 1-16, sens du jeu
+    101-135, combinaisons 201-241) so the per-chapter endpoint stays
+    unambiguous.
+    """
+    from manuels.prose_loader import load_debutant_chapters
+    from sens_du_jeu_loader import sens_du_jeu_chapters
+    from combinaisons_loader import combinaisons_chapters
+
+    return {
+        "manuel_debutant": load_debutant_chapters(),
+        "manuel_dubois_sens_du_jeu": sens_du_jeu_chapters(),
+        "manuel_dubois_combinaisons": combinaisons_chapters(),
+    }
+
+
 @app.get("/api/lessons")
 async def list_lessons(book: Optional[str] = Query(None)) -> Dict[str, Any]:
-    # The Dubois static lessons were retired (see PR #7). The manuel
-    # Débutant prose (`docs/manuels/debutant/manuel_debutant.md`) is now
-    # the source. `book` is accepted for compat with the existing client
-    # but only `manuel_debutant` has prose for now ; an empty mapping is
-    # returned for any other value.
-    from manuels.prose_loader import load_debutant_chapters
-    if book not in (None, "manuel_debutant"):
-        return {}
+    # Lesson-prose titles for one book (or Débutant by default). Each book's
+    # chapters carry readable prose + illustrative diagrams; the per-chapter
+    # text is served by /api/lessons/{chapter}.
+    books = _prose_books()
+    chapters = books.get(book or "manuel_debutant", {})
+    return {
+        ch: {
+            "title": v["title"],
+            "category": v.get("category", ""),
+            "motifs": v.get("motifs", []),
+            "weaknesses": v.get("weaknesses", []),
+        }
+        for ch, v in chapters.items()
+    }
+
+
+@app.get("/api/lessons/by-motif/{slug}")
+async def lessons_for_motif(slug: str) -> Dict[str, Any]:
+    """Chapters whose `<!-- pedagogy-motifs: ... -->` block lists `slug`."""
+    from manuels.prose_loader import lessons_by_motif, load_debutant_chapters
     chapters = load_debutant_chapters()
-    return {ch: {"title": v["title"], "category": v["category"]} for ch, v in chapters.items()}
+    nums = lessons_by_motif().get(slug, [])
+    return {
+        "matches": [
+            {"chapter": int(n), "title": chapters[n]["title"]}
+            for n in nums
+        ],
+    }
+
+
+@app.get("/api/lessons/by-weakness/{family}")
+async def lessons_for_weakness(family: str) -> Dict[str, Any]:
+    """Chapters whose `<!-- pedagogy-weaknesses: ... -->` block lists `family`."""
+    from manuels.prose_loader import lessons_by_weakness, load_debutant_chapters
+    chapters = load_debutant_chapters()
+    nums = lessons_by_weakness().get(family, [])
+    return {
+        "matches": [
+            {"chapter": int(n), "title": chapters[n]["title"]}
+            for n in nums
+        ],
+    }
 
 
 @app.get("/api/lessons/{chapter}")
@@ -1287,6 +1368,15 @@ async def get_lesson(chapter: int) -> Dict[str, Any]:
     from manuels.prose_loader import load_debutant_chapters
     chapters = load_debutant_chapters()
     lesson = chapters.get(str(chapter))
+    if not lesson:
+        # Fall back to the Dubois "sens du jeu" chapters (ids 101-135),
+        # which carry their own prose + illustrative diagrams.
+        from sens_du_jeu_loader import sens_du_jeu_chapters
+        lesson = sens_du_jeu_chapters().get(str(chapter))
+    if not lesson:
+        # And the Dubois "combinaisons" chapters (ids 201-241).
+        from combinaisons_loader import combinaisons_chapters
+        lesson = combinaisons_chapters().get(str(chapter))
     if not lesson:
         raise HTTPException(status_code=404, detail=f"No lesson for chapter {chapter}")
     return lesson

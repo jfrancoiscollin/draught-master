@@ -1,0 +1,23 @@
+{
+  "$comment": "Tracks which dilf revision the local corpus copy was synced from. Updated by scripts/sync_dilf_corpus.py. Read at backend startup to log the active corpus version. See backend/manuels/__init__.py.",
+  "source": "https://github.com/jfrancoiscollin/dilf",
+  "dilf_commit_sha": "df905f2c0b38c7bf42e5285fedd696df605fb954",
+  "synced_at": "2026-05-26",
+  "files": [
+    {
+      "local": "docs/manuels/debutant/manuel_debutant.md",
+      "dilf": "docs/pre_process_corpus/manuel_debutant.md",
+      "local_modifications": "pedagogy-motifs / pedagogy-weaknesses comment blocks under each chapter header (preserved on resync)"
+    },
+    {
+      "local": "backend/manuels/fixtures_debutant.py",
+      "dilf": "docs/pre_process_corpus/fixtures_debutant.py",
+      "local_modifications": null
+    },
+    {
+      "local": "docs/manuels/debutant/sources_debutant.md",
+      "dilf": "docs/pre_process_corpus/sources_debutant.md",
+      "local_modifications": null
+    }
+  ]
+}

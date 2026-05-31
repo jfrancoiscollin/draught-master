@@ -20,6 +20,7 @@ import type {
   PersistentWeakness,
   TurningPoint,
 } from '../api/client'
+import { useLessonCoverage } from '../hooks/useLessonCoverage'
 
 interface Props {
   gameId: string
@@ -41,14 +42,18 @@ interface Props {
   /** Click on a persistent-weakness row → highlight those squares on
    *  the board. Optional — when absent the row stays informational. */
   onWeaknessClick?: (squares: number[]) => void
+  /** Click on a 📖 leçon badge → open the matching manuel chapter
+   *  as a global overlay. Wired by App.tsx via PedagogyTabsPanel. */
+  onOpenLesson?: (chapter: number) => void
 }
 
 export default function GameNarrativeSummary({
-  gameId, lang = 'fr', onJumpTo, onMotifClick, onMotifJump, onWeaknessClick,
+  gameId, lang = 'fr', onJumpTo, onMotifClick, onMotifJump, onWeaknessClick, onOpenLesson,
 }: Props) {
   const [narrative, setNarrative] = useState<GameNarrative | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { coverage, openLessonForMotif, openLessonForWeakness } = useLessonCoverage(onOpenLesson)
 
   useEffect(() => {
     let cancelled = false
@@ -124,7 +129,12 @@ export default function GameNarrativeSummary({
           <p className="text-xs font-semibold text-gray-300 mb-1.5">Faiblesses persistantes</p>
           <div className="flex flex-col gap-1 text-xs">
             {narrative.persistent_weaknesses.map((w, i) => (
-              <WeaknessRow key={i} w={w} onClick={onWeaknessClick} />
+              <WeaknessRow
+                key={i}
+                w={w}
+                onClick={onWeaknessClick}
+                onOpenLesson={coverage.weaknesses.has(w.family) ? openLessonForWeakness : undefined}
+              />
             ))}
           </div>
         </div>
@@ -149,6 +159,8 @@ export default function GameNarrativeSummary({
               counts={narrative.motifs_played}
               colour="green"
               onClick={onMotifJump}
+              coveredSlugs={coverage.motifs}
+              onOpenLesson={openLessonForMotif}
             />
           )}
           {Object.keys(narrative.motifs_missed).length > 0 && (
@@ -157,6 +169,8 @@ export default function GameNarrativeSummary({
               counts={narrative.motifs_missed}
               colour="red"
               onClick={onMotifJump}
+              coveredSlugs={coverage.motifs}
+              onOpenLesson={openLessonForMotif}
             />
           )}
           {narrative.recommended_drills.length > 0 && (
@@ -166,14 +180,25 @@ export default function GameNarrativeSummary({
               </p>
               <div className="flex flex-wrap gap-1">
                 {narrative.recommended_drills.map(slug => (
-                  <button
-                    key={slug}
-                    onClick={() => onMotifClick?.(slug)}
-                    disabled={!onMotifClick}
-                    className="px-1.5 py-0.5 rounded text-xs bg-amber-700/30 text-amber-200 hover:bg-amber-700/50 disabled:opacity-50 cursor-pointer disabled:cursor-default"
-                  >
-                    {slug.replace(/_/g, ' ')} →
-                  </button>
+                  <span key={slug} className="inline-flex items-stretch rounded overflow-hidden">
+                    <button
+                      onClick={() => onMotifClick?.(slug)}
+                      disabled={!onMotifClick}
+                      className="px-1.5 py-0.5 text-xs bg-amber-700/30 text-amber-200 hover:bg-amber-700/50 disabled:opacity-50 cursor-pointer disabled:cursor-default"
+                      title="Ouvrir la page de drill"
+                    >
+                      {slug.replace(/_/g, ' ')} →
+                    </button>
+                    {coverage.motifs.has(slug) && onOpenLesson && (
+                      <button
+                        onClick={() => openLessonForMotif(slug)}
+                        className="px-1.5 py-0.5 text-xs bg-amber-700/50 text-amber-100 hover:bg-amber-700/70 cursor-pointer border-l border-amber-900/50"
+                        title="Ouvrir la leçon correspondante"
+                      >
+                        📖
+                      </button>
+                    )}
+                  </span>
                 ))}
               </div>
             </div>
@@ -212,47 +237,78 @@ function TurningPointRow({
 }
 
 function WeaknessRow({
-  w, onClick,
+  w, onClick, onOpenLesson,
 }: {
   w: PersistentWeakness
   onClick?: (squares: number[]) => void
+  onOpenLesson?: (family: string) => void
 }) {
   return (
-    <button
-      onClick={() => onClick?.([w.square])}
-      disabled={!onClick}
-      className="text-left text-xs px-2 py-1 rounded hover:bg-gray-700/60 disabled:cursor-default cursor-pointer text-gray-300"
-      title={onClick ? `Surligner la case ${w.square}` : undefined}
-    >
-      {w.summary}
-    </button>
+    <div className="flex items-stretch gap-1">
+      <button
+        onClick={() => onClick?.([w.square])}
+        disabled={!onClick}
+        className="flex-1 text-left text-xs px-2 py-1 rounded hover:bg-gray-700/60 disabled:cursor-default cursor-pointer text-gray-300"
+        title={onClick ? `Surligner la case ${w.square}` : undefined}
+      >
+        {w.summary}
+      </button>
+      {onOpenLesson && (
+        <button
+          onClick={() => onOpenLesson(w.family)}
+          className="px-1.5 rounded text-xs bg-gray-700/40 text-gray-200 hover:bg-gray-700/80 cursor-pointer flex-shrink-0"
+          title="Ouvrir la leçon correspondante"
+        >
+          📖
+        </button>
+      )}
+    </div>
   )
 }
 
 function MotifChipRow({
-  label, counts, colour, onClick,
+  label, counts, colour, onClick, coveredSlugs, onOpenLesson,
 }: {
   label: string
   counts: Record<string, number>
   colour: 'green' | 'red'
   onClick?: (slug: string) => void
+  /** Slugs for which a lesson exists; chips outside this set get no 📖 badge. */
+  coveredSlugs?: Set<string>
+  onOpenLesson?: (slug: string) => void
 }) {
   const bg = colour === 'green' ? 'bg-green-700/30 text-green-200 hover:bg-green-700/50'
                                  : 'bg-red-700/30 text-red-200 hover:bg-red-700/50'
+  const badgeBg = colour === 'green' ? 'bg-green-700/60 text-green-100 hover:bg-green-700/90 border-green-900/50'
+                                      : 'bg-red-700/60 text-red-100 hover:bg-red-700/90 border-red-900/50'
   return (
     <div>
       <p className="text-xs font-semibold text-gray-300 mb-1">{label}</p>
       <div className="flex flex-wrap gap-1">
-        {Object.entries(counts).map(([slug, n]) => (
-          <button
-            key={slug}
-            onClick={() => onClick?.(slug)}
-            disabled={!onClick}
-            className={`px-1.5 py-0.5 rounded text-xs ${bg} disabled:opacity-50 cursor-pointer disabled:cursor-default`}
-          >
-            {slug.replace(/_/g, ' ')} <span className="font-mono">×{n}</span>
-          </button>
-        ))}
+        {Object.entries(counts).map(([slug, n]) => {
+          const covered = coveredSlugs?.has(slug) && !!onOpenLesson
+          return (
+            <span key={slug} className="inline-flex items-stretch rounded overflow-hidden">
+              <button
+                onClick={() => onClick?.(slug)}
+                disabled={!onClick}
+                className={`px-1.5 py-0.5 text-xs ${bg} disabled:opacity-50 cursor-pointer disabled:cursor-default`}
+                title={onClick ? 'Aller à la position où ce motif a joué' : undefined}
+              >
+                {slug.replace(/_/g, ' ')} <span className="font-mono">×{n}</span>
+              </button>
+              {covered && (
+                <button
+                  onClick={() => onOpenLesson!(slug)}
+                  className={`px-1.5 py-0.5 text-xs ${badgeBg} cursor-pointer border-l`}
+                  title="Ouvrir la leçon correspondante"
+                >
+                  📖
+                </button>
+              )}
+            </span>
+          )
+        })}
       </div>
     </div>
   )

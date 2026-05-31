@@ -78,9 +78,23 @@ function ProgressBar({ value, color }: { value: number; color: string }) {
 
 interface ExerciseLibraryPageProps {
   onSelectBook: (bookId: string) => void
+  onOpenStrategyManual: (source: string) => void
 }
 
-export default function ExerciseLibraryPage({ onSelectBook }: ExerciseLibraryPageProps) {
+// One strategic manual per source — corresponds to the prose corpus
+// indexed in dilf (Sijbrands, Springer, Roozenburg, Keller).  Order
+// matches the historical canon: Sijbrands first (foundational), then
+// Springer (middlegame), Roozenburg (analytical), Keller (modern).
+const STRATEGY_MANUALS: Array<{ source: string; titleFr: string; titleEn: string; author: string; emoji: string }> = [
+  { source: 'SIJBRANDS', titleFr: 'Manuel Sijbrands',  titleEn: 'Sijbrands Manual',  author: 'Ton Sijbrands',  emoji: '♛' },
+  { source: 'SPRINGER',  titleFr: 'Manuel Springer',   titleEn: 'Springer Manual',   author: 'Springer',       emoji: '⚔️' },
+  { source: 'ROOZENBURG', titleFr: 'Manuel Roozenburg', titleEn: 'Roozenburg Manual', author: 'Piet Roozenburg', emoji: '🛡️' },
+  { source: 'KELLER',    titleFr: 'Manuel Keller',     titleEn: 'Keller Manual',     author: 'Keller',         emoji: '🎯' },
+  { source: 'GOEDEMOED', titleFr: 'Goedemoed — A Course in Draughts', titleEn: 'Goedemoed — A Course in Draughts', author: 'Tjalling Goedemoed', emoji: '📘' },
+  { source: 'GOEDEMOED3', titleFr: 'Goedemoed — Exercices (vol. 3)', titleEn: 'Goedemoed — Exercises (vol. 3)', author: 'Tjalling Goedemoed', emoji: '📗' },
+]
+
+export default function ExerciseLibraryPage({ onSelectBook, onOpenStrategyManual }: ExerciseLibraryPageProps) {
   const { t, language } = useLanguage()
   const { user } = useAuth()
   const [stats, setStats] = useState<Record<string, BookStats>>({})
@@ -239,6 +253,33 @@ export default function ExerciseLibraryPage({ onSelectBook }: ExerciseLibraryPag
             </div>
           )
         })}
+
+        {/* ── Manuels stratégiques : un par source du corpus prose dilf
+             (Sijbrands, Springer, Roozenburg, Keller). Chaque manuel
+             est rendu comme un document pédagogique avec chapitres,
+             passages illustrés (Board) et coups PDN cliquables. ──── */}
+        <div className="mb-8">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3 border-b border-gray-700 pb-1">
+            {language === 'en' ? 'Strategic manuals' : 'Manuels stratégiques'}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {STRATEGY_MANUALS.map(m => (
+              <button
+                key={m.source}
+                onClick={() => onOpenStrategyManual(m.source)}
+                className="group relative flex flex-col items-start gap-2 rounded-xl border bg-gray-800 border-gray-700 hover:border-amber-600 hover:bg-gray-750 cursor-pointer p-5 text-left transition-all duration-200"
+              >
+                <span className="text-3xl">{m.emoji}</span>
+                <div className="min-w-0 w-full">
+                  <p className="font-semibold text-sm leading-snug text-white group-hover:text-amber-400">
+                    {language === 'en' ? m.titleEn : m.titleFr}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{m.author}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* ── Motifs détectables par l'analyse pédagogique ────────── */}
         <MotifCatalogSection language={language} />

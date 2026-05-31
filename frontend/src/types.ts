@@ -76,12 +76,28 @@ export interface MoveAnnotationItem {
   book_tip: { concept: string; source: string } | null
 }
 
+export interface TipExamplePosition {
+  id: string
+  source: string
+  page: number
+  number: number
+  fen: string
+  kind: string
+}
+
+export interface BookTip {
+  concept: string
+  source: string
+  example_positions?: TipExamplePosition[]
+}
+
 export interface AnalysisResponse {
   analysis: string
   best_moves: string[]
   key_squares: number[]
   strategic_advice: string
   move_annotations?: MoveAnnotationItem[]
+  book_tip?: BookTip | null
 }
 
 export interface HistoryItem {
@@ -111,6 +127,66 @@ export interface GameDetailResponse {
   pdn: string
   fen_positions: string[]
   move_count: number
+}
+
+// ── Curriculum (structured learning path) ─────────────────────────────
+export interface CurriculumLevel {
+  id: string
+  title: string
+  subtitle?: string
+  order: number
+}
+
+export interface CurriculumModuleSummary {
+  id: string
+  level: string
+  order: number
+  title: string
+  subtitle?: string | null
+  goal?: string | null
+  prerequisites: string[]
+  n_lessons: number
+  n_items: number
+  n_exercises: number
+  n_positions: number
+}
+
+export interface CurriculumTree {
+  levels: CurriculumLevel[]
+  modules: CurriculumModuleSummary[]
+}
+
+export interface CurriculumItem {
+  kind: 'exercise' | 'position' | 'tip'
+  ref: number | string
+  name?: string
+  difficulty?: number
+  category?: string
+  fen?: string
+  theme?: string
+  concept?: string
+}
+
+export interface CurriculumLesson {
+  id: string
+  title: string
+  chapter?: number
+  intro?: string
+  items: CurriculumItem[]
+  n_items: number
+  n_exercises?: number
+  n_positions?: number
+}
+
+export interface CurriculumModule extends CurriculumModuleSummary {
+  lessons: CurriculumLesson[]
+}
+
+export type ModuleState = 'locked' | 'available' | 'in_progress' | 'done'
+
+export interface CurriculumProgress {
+  modules: { id: string; state: ModuleState; n_solved: number; n_total: number }[]
+  next_module: string | null
 }
 
 export function sqToRowCol(sq: number): [number, number] {
