@@ -41,8 +41,8 @@ import game_engine as ge
 _PAGES_DIR = Path(__file__).parent / "pages"
 _OUT_PATH = Path(__file__).parent / "position_library.json"
 
-# Order matters only for stable output. All four manuals scanned to date.
-SOURCES = ("SIJBRANDS", "SPRINGER", "ROOZENBURG", "KELLER")
+# Order matters only for stable output. Manuals scanned to date.
+SOURCES = ("SIJBRANDS", "SPRINGER", "ROOZENBURG", "KELLER", "GOEDEMOED")
 
 # A man or king of either colour, for piece counting.
 _WHITE = {ge.WHITE_MAN, ge.WHITE_KING}
