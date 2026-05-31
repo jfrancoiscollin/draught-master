@@ -310,3 +310,39 @@ def test_scanned_manual_is_multi_chapter_and_deduplicated(client: TestClient) ->
         for ch in chapters:
             scores = [p["score"] for p in ch["passages"]]
             assert scores == sorted(scores, reverse=True), f"{source}/{ch['topic_key']}"
+
+
+def test_section_titles_are_clean_not_body_text() -> None:
+    """Regression: the manual must never title a card with a stray body line.
+
+    The raw extraction recurs a heading (e.g. "Thème 8") on every page and
+    captured the following line as the title, so later pages inherited move
+    sequences / full sentences. _load_diagram_sections canonicalises each
+    heading to one clean title; assert every served title is title-ish and a
+    heading shows a single title across its pages.
+    """
+    from strategy.api import _is_titleish, _load_diagram_sections
+
+    for source in ("SPRINGER", "SIJBRANDS", "ROOZENBURG", "KELLER"):
+        sections = _load_diagram_sections(source)
+        per_heading: dict[str, set[str]] = {}
+        for entry in sections.values():
+            h, t = entry.get("heading"), entry.get("title", "")
+            assert h is not None
+            if t:  # non-empty titles must look like real titles
+                assert _is_titleish(t), f"{source}: junk title {t!r} under {h!r}"
+            per_heading.setdefault(h, set()).add(t)
+        # One canonical title per heading (no per-page drift).
+        for h, titles in per_heading.items():
+            assert len(titles) == 1, f"{source}: heading {h!r} has drifting titles {titles}"
+
+
+def test_springer_theme_8_canonical_title() -> None:
+    """The reported bug: Springer p.167 showed 'Thème 8 · Et ce logiciel…'.
+    It must now read the real theme title."""
+    from strategy.api import _load_diagram_sections
+
+    s = _load_diagram_sections("SPRINGER")
+    assert s.get(167, {}).get("heading") == "Thème 8"
+    assert "ouverture" in s[167]["title"].lower()
+    assert "logiciel" not in s[167]["title"].lower()
