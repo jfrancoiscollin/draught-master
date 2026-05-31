@@ -297,7 +297,7 @@ def test_scanned_manual_is_multi_chapter_and_deduplicated(client: TestClient) ->
     passage is assigned to a single best-fit chapter (no cross-chapter
     duplication).
     """
-    for source in ("SIJBRANDS", "SPRINGER", "ROOZENBURG", "KELLER"):
+    for source in ("SIJBRANDS", "SPRINGER", "ROOZENBURG", "KELLER", "GOEDEMOED"):
         r = client.get("/api/strategy/manual", params={"source": source})
         assert r.status_code == 200, source
         chapters = r.json()["chapters"]
