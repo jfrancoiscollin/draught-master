@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Board from './Board'
 import { fenToBoard } from '../utils/fen'
-import { PDN_MOVE_RE, replayPdnSequence } from '../utils/pdn'
+import { PDN_MOVE_RE, replayPdnSequence, legalPrefixLength } from '../utils/pdn'
 import { type StrategyPassage } from '../api/client'
 
 // Backend ``/manual`` enriches each passage with the section heading
@@ -241,11 +241,24 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
   }, [passage.text])
 
   const baseBoard = fen ? fenToBoard(fen) : null
+  // Highest move index that legally replays from THIS diagram's FEN.
+  // -1 when even the first move doesn't apply — the sequence then belongs to
+  // a different position (often the moves that *led to* this diagram rather
+  // than continuing from it), so we show the moves as plain text instead of
+  // a misleading interactive replay that would render an impossible board.
+  const whiteToMove = (fen ?? '').trim().toUpperCase().startsWith('W')
+  const maxApplicable = useMemo(
+    () => (baseBoard && moves.length ? legalPrefixLength(baseBoard, moves, whiteToMove) - 1 : -1),
+    [baseBoard, moves, whiteToMove],
+  )
+  const replayable = maxApplicable >= 0
   const displayedBoard = useMemo(() => {
     if (!baseBoard) return null
     if (replayMoveIndex === null) return baseBoard
-    return replayPdnSequence(baseBoard, moves.slice(0, replayMoveIndex + 1)).board
-  }, [baseBoard, moves, replayMoveIndex])
+    const upTo = Math.min(replayMoveIndex, maxApplicable)
+    if (upTo < 0) return baseBoard
+    return replayPdnSequence(baseBoard, moves.slice(0, upTo + 1)).board
+  }, [baseBoard, moves, replayMoveIndex, maxApplicable])
 
   // Title preference:
   //   1. PDF-extracted section ("Thème 4 — Libérer le chemin")
@@ -303,7 +316,7 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
             onSelectSquare={() => {}}
             disabled
           />
-          {moves.length > 0 && (
+          {replayable && (
             <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
               <button
                 onClick={() => setReplayMoveIndex(idx => idx === null || idx <= 0 ? null : idx - 1)}
@@ -316,12 +329,12 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
               </button>
               <span className="text-[10px] tabular-nums">
                 {replayMoveIndex === null
-                  ? `0 / ${moves.length}`
-                  : `${replayMoveIndex + 1} / ${moves.length}`}
+                  ? `0 / ${maxApplicable + 1}`
+                  : `${replayMoveIndex + 1} / ${maxApplicable + 1}`}
               </span>
               <button
-                onClick={() => setReplayMoveIndex(idx => idx === null ? 0 : Math.min(idx + 1, moves.length - 1))}
-                disabled={replayMoveIndex !== null && replayMoveIndex >= moves.length - 1}
+                onClick={() => setReplayMoveIndex(idx => idx === null ? 0 : Math.min(idx + 1, maxApplicable))}
+                disabled={replayMoveIndex !== null && replayMoveIndex >= maxApplicable}
                 className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:hover:bg-gray-700"
                 aria-label={lang === 'fr' ? 'Coup suivant' : 'Next move'}
                 title="→"
@@ -339,7 +352,10 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
       )}
       <div className="text-sm text-gray-200 leading-relaxed">
         {tokens.map((t, i) =>
-          t.kind === 'text' ? (
+          // A move is interactive only when it legally replays from this
+          // diagram's FEN; otherwise it stays plain text (the sequence
+          // doesn't start from the shown position).
+          t.kind === 'text' || t.index > maxApplicable ? (
             <span key={i}>{t.text}</span>
           ) : (
             <button
