@@ -84,6 +84,13 @@ TOPICS: Tuple[Topic, ...] = (
         source_filter=("GOEDEMOED",),
     ),
     Topic(
+        key="goedemoed3",
+        label_fr="Goedemoed — Cours avancé",
+        label_en="Goedemoed advanced course",
+        description_fr="« A Course in Draughts » vol. 3 : tactique, ouverture, finale, méthode de réflexion.",
+        source_filter=("GOEDEMOED3",),
+    ),
+    Topic(
         key="finales",
         label_fr="Finales stratégiques",
         label_en="Endgame strategy",
