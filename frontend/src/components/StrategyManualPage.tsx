@@ -156,6 +156,17 @@ const ChapterSection: React.FC<{ chapter: Chapter; index: number; lang: 'fr' | '
 // case-insensitive.  Used to fetch the position FEN for the Board.
 const DIAGRAM_REF_RE = /\bdiagramme\s+(\d+)/i
 
+// A FEN with no men on either side (e.g. "W:W:B") — the detector found a
+// blank board, which is the printed form of a "position in figures" the
+// reader composes themselves. We then show neither board nor image.
+function isEmptyFen(fen: string | null | undefined): boolean {
+  if (!fen) return false
+  const m = fen.match(/W:W([^:]*):B(.*)$/i)
+  if (!m) return false
+  const hasPiece = (s: string) => /\d/.test(s)
+  return !hasPiece(m[1]) && !hasPiece(m[2])
+}
+
 const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' | 'en' }> = ({
   passage,
   index,
@@ -191,6 +202,10 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
           // Skip boards the engine flagged invalid (bad auto FEN) so a
           // broken position never renders next to the prose.
           if (j?.fen && j.valid !== false) setFen(j.fen)
+          // An empty-board FEN ("W:W:B", no pieces) means this is a
+          // "position in figures" the reader sets up themselves — there is
+          // no real printed diagram, so drop the (blank) image too.
+          else if (isEmptyFen(j?.fen)) setImgSrc(null)
         })
         .catch(() => {})
       return
@@ -209,6 +224,7 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
               // Skip boards the engine flagged invalid (bad auto FEN) so a
           // broken position never renders next to the prose.
           if (j?.fen && j.valid !== false) setFen(j.fen)
+          else if (isEmptyFen(j?.fen)) setImgSrc(null)
             })
         }
       })
