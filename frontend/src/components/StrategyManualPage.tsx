@@ -163,6 +163,9 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
 }) => {
   const [fen, setFen] = useState<string | null>(null)
   const [replayMoveIndex, setReplayMoveIndex] = useState<number | null>(null)
+  // When no engine FEN is available but the prose cites a diagram, we fall
+  // back to the printed image: the extracted crop first, then the whole page.
+  const [imgSrc, setImgSrc] = useState<string | null>(null)
 
   // Derive the diagram number from the prose ("Diagramme N") or fall
   // back to the first diagram on the passage's page (Roozenburg/Keller
@@ -173,6 +176,13 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
   useEffect(() => {
     setFen(null)
     setReplayMoveIndex(null)
+    // Show the printed crop while we try for a live board; if a valid FEN
+    // arrives it takes over, otherwise the image stays as the illustration.
+    setImgSrc(
+      explicitNumber !== null
+        ? `/api/strategy/diagram?source=${encodeURIComponent(passage.source)}&page=${passage.page}&number=${explicitNumber}`
+        : null,
+    )
     if (explicitNumber !== null) {
       const qs = `source=${encodeURIComponent(passage.source)}&page=${passage.page}&number=${explicitNumber}`
       fetch(`/api/strategy/diagram-fen?${qs}`)
@@ -191,6 +201,7 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
       .then((idx: Record<string, number[]>) => {
         const nums = idx[String(passage.page)]
         if (nums && nums.length > 0) {
+          setImgSrc(`/api/strategy/diagram?source=${encodeURIComponent(passage.source)}&page=${passage.page}&number=${nums[0]}`)
           const qs = `source=${encodeURIComponent(passage.source)}&page=${passage.page}&number=${nums[0]}`
           return fetch(`/api/strategy/diagram-fen?${qs}`)
             .then(r => (r.ok ? r.json() : null))
@@ -345,10 +356,30 @@ const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' 
           )}
         </div>
       )}
-      {!displayedBoard && (
-        <p className="text-[11px] text-gray-500 italic mb-3">
-          {lang === 'fr' ? 'Position indisponible.' : 'Position unavailable.'}
-        </p>
+      {/* No live board: fall back to the printed diagram image when the
+          prose cites one. The crop is tried first; on error we swap to the
+          whole page. When the passage cites no diagram at all (a "position
+          in figures" the reader sets up themselves), we show nothing rather
+          than a misleading "unavailable" notice. */}
+      {!displayedBoard && imgSrc && (
+        <div className="mb-3">
+          <img
+            src={imgSrc}
+            alt={lang === 'fr' ? 'Diagramme du livre' : 'Book diagram'}
+            loading="lazy"
+            className="w-full rounded-lg border border-gray-700 bg-white"
+            onError={(e) => {
+              // Crop missing → fall back to the full page image once.
+              const img = e.currentTarget
+              const pageUrl = `/api/strategy/page-image?source=${encodeURIComponent(passage.source)}&page=${passage.page}`
+              if (!img.src.includes('/page-image')) {
+                img.src = pageUrl
+              } else {
+                img.style.display = 'none'
+              }
+            }}
+          />
+        </div>
       )}
       <div className="text-sm text-gray-200 leading-relaxed">
         {tokens.map((t, i) =>
