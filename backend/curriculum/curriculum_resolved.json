@@ -66,12 +66,14 @@
           ],
           "n_items": 4,
           "n_exercises": 4,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 4,
       "n_exercises": 4,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "deb_gagner_materiel",
@@ -245,7 +247,8 @@
           ],
           "n_items": 19,
           "n_exercises": 19,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "deb_gagner_materiel_l2",
@@ -336,7 +339,8 @@
           ],
           "n_items": 10,
           "n_exercises": 10,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "deb_gagner_materiel_l3",
@@ -427,12 +431,14 @@
           ],
           "n_items": 10,
           "n_exercises": 10,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 39,
       "n_exercises": 39,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "deb_tempo",
@@ -502,7 +508,8 @@
           ],
           "n_items": 6,
           "n_exercises": 6,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "deb_tempo_l2",
@@ -665,12 +672,14 @@
           ],
           "n_items": 19,
           "n_exercises": 19,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 25,
       "n_exercises": 25,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "deb_coups_nommes_1",
@@ -772,7 +781,8 @@
           ],
           "n_items": 10,
           "n_exercises": 10,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "deb_coups_nommes_1_l2",
@@ -871,12 +881,14 @@
           ],
           "n_items": 11,
           "n_exercises": 11,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 21,
       "n_exercises": 21,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "deb_coups_nommes_2",
@@ -978,7 +990,8 @@
           ],
           "n_items": 10,
           "n_exercises": 10,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "deb_coups_nommes_2_l2",
@@ -1077,12 +1090,14 @@
           ],
           "n_items": 11,
           "n_exercises": 11,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 21,
       "n_exercises": 21,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "deb_coups_nommes_3",
@@ -1200,7 +1215,8 @@
           ],
           "n_items": 12,
           "n_exercises": 12,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "deb_coups_nommes_3_l2",
@@ -1283,12 +1299,14 @@
           ],
           "n_items": 9,
           "n_exercises": 9,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 21,
       "n_exercises": 21,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "deb_coups_nommes_4",
@@ -1398,7 +1416,8 @@
           ],
           "n_items": 11,
           "n_exercises": 11,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "deb_coups_nommes_4_l2",
@@ -1481,12 +1500,14 @@
           ],
           "n_items": 9,
           "n_exercises": 9,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 20,
       "n_exercises": 20,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "int_comb_2",
@@ -2305,12 +2326,14 @@
           ],
           "n_items": 100,
           "n_exercises": 100,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 100,
       "n_exercises": 100,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "int_comb_3",
@@ -3131,12 +3154,14 @@
           ],
           "n_items": 100,
           "n_exercises": 100,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 100,
       "n_exercises": 100,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "int_comb_4",
@@ -3957,12 +3982,14 @@
           ],
           "n_items": 100,
           "n_exercises": 100,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 100,
       "n_exercises": 100,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "int_comb_5_6",
@@ -4847,12 +4874,14 @@
           ],
           "n_items": 108,
           "n_exercises": 108,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 108,
       "n_exercises": 108,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "int_structure_bande_centre",
@@ -5043,12 +5072,14 @@
           ],
           "n_items": 23,
           "n_exercises": 17,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         }
       ],
       "n_items": 23,
       "n_exercises": 17,
-      "n_positions": 6
+      "n_positions": 6,
+      "n_manuals": 0
     },
     {
       "id": "int_blocage",
@@ -5177,7 +5208,8 @@
           ],
           "n_items": 15,
           "n_exercises": 9,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         },
         {
           "id": "int_blocage_l2",
@@ -5263,12 +5295,14 @@
           ],
           "n_items": 11,
           "n_exercises": 5,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         }
       ],
       "n_items": 26,
       "n_exercises": 14,
-      "n_positions": 12
+      "n_positions": 12,
+      "n_manuals": 0
     },
     {
       "id": "int_grande_diagonale",
@@ -5437,7 +5471,8 @@
           ],
           "n_items": 20,
           "n_exercises": 14,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         },
         {
           "id": "int_grande_diagonale_l2",
@@ -5499,12 +5534,14 @@
           ],
           "n_items": 8,
           "n_exercises": 2,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         }
       ],
       "n_items": 28,
       "n_exercises": 16,
-      "n_positions": 12
+      "n_positions": 12,
+      "n_manuals": 0
     },
     {
       "id": "int_promotion",
@@ -5617,7 +5654,8 @@
           ],
           "n_items": 13,
           "n_exercises": 7,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         },
         {
           "id": "int_promotion_l2",
@@ -5695,12 +5733,14 @@
           ],
           "n_items": 10,
           "n_exercises": 4,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         }
       ],
       "n_items": 23,
       "n_exercises": 11,
-      "n_positions": 12
+      "n_positions": 12,
+      "n_manuals": 0
     },
     {
       "id": "int_finales",
@@ -5797,7 +5837,8 @@
           ],
           "n_items": 11,
           "n_exercises": 5,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         },
         {
           "id": "int_finales_l2",
@@ -5891,12 +5932,14 @@
           ],
           "n_items": 12,
           "n_exercises": 6,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         }
       ],
       "n_items": 23,
       "n_exercises": 11,
-      "n_positions": 12
+      "n_positions": 12,
+      "n_manuals": 0
     },
     {
       "id": "int_coups_avances",
@@ -6001,7 +6044,8 @@
           ],
           "n_items": 12,
           "n_exercises": 6,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         },
         {
           "id": "int_coups_avances_l2",
@@ -6079,12 +6123,14 @@
           ],
           "n_items": 10,
           "n_exercises": 4,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         }
       ],
       "n_items": 22,
       "n_exercises": 10,
-      "n_positions": 12
+      "n_positions": 12,
+      "n_manuals": 0
     },
     {
       "id": "int_combinaisons",
@@ -6285,7 +6331,8 @@
           ],
           "n_items": 24,
           "n_exercises": 18,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         },
         {
           "id": "int_combinaisons_l2",
@@ -6363,12 +6410,14 @@
           ],
           "n_items": 10,
           "n_exercises": 4,
-          "n_positions": 6
+          "n_positions": 6,
+          "n_manuals": 0
         }
       ],
       "n_items": 34,
       "n_exercises": 22,
-      "n_positions": 12
+      "n_positions": 12,
+      "n_manuals": 0
     },
     {
       "id": "int_sdj_fondamentaux",
@@ -6436,7 +6485,8 @@
           ],
           "n_items": 6,
           "n_exercises": 6,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l103",
@@ -6495,7 +6545,8 @@
           ],
           "n_items": 6,
           "n_exercises": 6,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l104",
@@ -6554,12 +6605,14 @@
           ],
           "n_items": 6,
           "n_exercises": 6,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 18,
       "n_exercises": 18,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "int_sdj_pion_46",
@@ -6613,7 +6666,8 @@
           ],
           "n_items": 4,
           "n_exercises": 4,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l109",
@@ -6664,7 +6718,8 @@
           ],
           "n_items": 5,
           "n_exercises": 5,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l110",
@@ -6707,12 +6762,14 @@
           ],
           "n_items": 4,
           "n_exercises": 4,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 13,
       "n_exercises": 13,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "int_sdj_pions_cles",
@@ -6782,7 +6839,8 @@
           ],
           "n_items": 6,
           "n_exercises": 6,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l116",
@@ -6841,7 +6899,8 @@
           ],
           "n_items": 6,
           "n_exercises": 6,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l117",
@@ -6892,12 +6951,14 @@
           ],
           "n_items": 5,
           "n_exercises": 5,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 17,
       "n_exercises": 17,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
     },
     {
       "id": "int_sdj_formations",
@@ -6951,7 +7012,8 @@
           ],
           "n_items": 4,
           "n_exercises": 4,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l121",
@@ -6994,7 +7056,8 @@
           ],
           "n_items": 4,
           "n_exercises": 4,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l130",
@@ -7037,7 +7100,8 @@
           ],
           "n_items": 4,
           "n_exercises": 4,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l131",
@@ -7096,7 +7160,8 @@
           ],
           "n_items": 6,
           "n_exercises": 6,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         },
         {
           "id": "int_sdj_l132",
@@ -7155,12 +7220,125 @@
           ],
           "n_items": 6,
           "n_exercises": 6,
-          "n_positions": 0
+          "n_positions": 0,
+          "n_manuals": 0
         }
       ],
       "n_items": 24,
       "n_exercises": 24,
-      "n_positions": 0
+      "n_positions": 0,
+      "n_manuals": 0
+    },
+    {
+      "id": "int_manuels_strategiques",
+      "level": "intermediaire",
+      "order": 16,
+      "title": "Les grands manuels stratégiques",
+      "subtitle": "Lire les maîtres : systèmes, plans et méthode.",
+      "goal": "Parcourir en prose les six manuels exploités — systèmes d'ouverture, plans de milieu, finales, méthode de jugement — et y puiser les idées de fond, au-delà du calcul tactique.",
+      "prerequisites": [],
+      "lessons": [
+        {
+          "id": "int_manuel_sijbrands",
+          "title": "Le système classique (Sijbrands)",
+          "intro": "Le socle du jeu positionnel : centre, ailes et équilibre, expliqués par Ton Sijbrands. Lisez le manuel chapitre par chapitre, chaque idée illustrée par sa position.",
+          "items": [
+            {
+              "kind": "manual",
+              "ref": "SIJBRANDS",
+              "source": "SIJBRANDS"
+            }
+          ],
+          "n_items": 1,
+          "n_exercises": 0,
+          "n_positions": 0,
+          "n_manuals": 1
+        },
+        {
+          "id": "int_manuel_roozenburg",
+          "title": "Le système Roozenburg",
+          "intro": "Position de tour, contrôle du centre et attaque : le système qui porte le nom du champion du monde Piet Roozenburg.",
+          "items": [
+            {
+              "kind": "manual",
+              "ref": "ROOZENBURG",
+              "source": "ROOZENBURG"
+            }
+          ],
+          "n_items": 1,
+          "n_exercises": 0,
+          "n_positions": 0,
+          "n_manuals": 1
+        },
+        {
+          "id": "int_manuel_keller",
+          "title": "Le système Keller",
+          "intro": "Le pion 2, le contre-jeu et la structure typique du système Keller. Un répertoire complet en prose.",
+          "items": [
+            {
+              "kind": "manual",
+              "ref": "KELLER",
+              "source": "KELLER"
+            }
+          ],
+          "n_items": 1,
+          "n_exercises": 0,
+          "n_positions": 0,
+          "n_manuals": 1
+        },
+        {
+          "id": "int_manuel_springer",
+          "title": "Plans de milieu de partie (Springer)",
+          "intro": "Manœuvres, plans types et idées générales du milieu de partie. Le manuel de référence pour structurer sa réflexion.",
+          "items": [
+            {
+              "kind": "manual",
+              "ref": "SPRINGER",
+              "source": "SPRINGER"
+            }
+          ],
+          "n_items": 1,
+          "n_exercises": 0,
+          "n_positions": 0,
+          "n_manuals": 1
+        },
+        {
+          "id": "int_manuel_goedemoed",
+          "title": "Cours Goedemoed — A Course in Draughts",
+          "intro": "Jugement de position et méthode : « comment penser » devant le damier. Le cours complet de Goedemoed, lu en six chapitres.",
+          "items": [
+            {
+              "kind": "manual",
+              "ref": "GOEDEMOED",
+              "source": "GOEDEMOED"
+            }
+          ],
+          "n_items": 1,
+          "n_exercises": 0,
+          "n_positions": 0,
+          "n_manuals": 1
+        },
+        {
+          "id": "int_manuel_goedemoed3",
+          "title": "Cours Goedemoed — volume avancé",
+          "intro": "Tactique, ouverture, processus de réflexion et finale : le troisième volume du cours de Goedemoed, pour aller plus loin.",
+          "items": [
+            {
+              "kind": "manual",
+              "ref": "GOEDEMOED3",
+              "source": "GOEDEMOED3"
+            }
+          ],
+          "n_items": 1,
+          "n_exercises": 0,
+          "n_positions": 0,
+          "n_manuals": 1
+        }
+      ],
+      "n_items": 6,
+      "n_exercises": 0,
+      "n_positions": 0,
+      "n_manuals": 6
     }
   ]
 }

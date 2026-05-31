@@ -1010,6 +1010,77 @@
           }
         }
       ]
+    },
+    {
+      "id": "int_manuels_strategiques",
+      "level": "intermediaire",
+      "order": 16,
+      "title": "Les grands manuels stratégiques",
+      "subtitle": "Lire les maîtres : systèmes, plans et méthode.",
+      "goal": "Parcourir en prose les six manuels exploités — systèmes d'ouverture, plans de milieu, finales, méthode de jugement — et y puiser les idées de fond, au-delà du calcul tactique.",
+      "prerequisites": [],
+      "lessons": [
+        {
+          "id": "int_manuel_sijbrands",
+          "title": "Le système classique (Sijbrands)",
+          "intro": "Le socle du jeu positionnel : centre, ailes et équilibre, expliqués par Ton Sijbrands. Lisez le manuel chapitre par chapitre, chaque idée illustrée par sa position.",
+          "attach": {
+            "manual": {
+              "source": "SIJBRANDS"
+            }
+          }
+        },
+        {
+          "id": "int_manuel_roozenburg",
+          "title": "Le système Roozenburg",
+          "intro": "Position de tour, contrôle du centre et attaque : le système qui porte le nom du champion du monde Piet Roozenburg.",
+          "attach": {
+            "manual": {
+              "source": "ROOZENBURG"
+            }
+          }
+        },
+        {
+          "id": "int_manuel_keller",
+          "title": "Le système Keller",
+          "intro": "Le pion 2, le contre-jeu et la structure typique du système Keller. Un répertoire complet en prose.",
+          "attach": {
+            "manual": {
+              "source": "KELLER"
+            }
+          }
+        },
+        {
+          "id": "int_manuel_springer",
+          "title": "Plans de milieu de partie (Springer)",
+          "intro": "Manœuvres, plans types et idées générales du milieu de partie. Le manuel de référence pour structurer sa réflexion.",
+          "attach": {
+            "manual": {
+              "source": "SPRINGER"
+            }
+          }
+        },
+        {
+          "id": "int_manuel_goedemoed",
+          "title": "Cours Goedemoed — A Course in Draughts",
+          "intro": "Jugement de position et méthode : « comment penser » devant le damier. Le cours complet de Goedemoed, lu en six chapitres.",
+          "attach": {
+            "manual": {
+              "source": "GOEDEMOED"
+            }
+          }
+        },
+        {
+          "id": "int_manuel_goedemoed3",
+          "title": "Cours Goedemoed — volume avancé",
+          "intro": "Tactique, ouverture, processus de réflexion et finale : le troisième volume du cours de Goedemoed, pour aller plus loin.",
+          "attach": {
+            "manual": {
+              "source": "GOEDEMOED3"
+            }
+          }
+        }
+      ]
     }
   ]
 }

@@ -36,6 +36,7 @@ def get_curriculum() -> dict[str, Any]:
             "n_items": m.get("n_items", 0),
             "n_exercises": m.get("n_exercises", 0),
             "n_positions": m.get("n_positions", 0),
+            "n_manuals": m.get("n_manuals", 0),
         })
     return {"levels": loader.levels(), "modules": mods}
 

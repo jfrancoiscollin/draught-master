@@ -211,6 +211,35 @@ def _resolve_positions(spec: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
+def _strategy_sources() -> set[str]:
+    """Source codes that have an exploitable strategy corpus (and a vectorial
+    prose manual). Derived from the consolidated position library so a typo in
+    ``attach.manual`` is caught at build time."""
+    from strategy import position_library as lib
+
+    return {p["source"] for p in lib.valid_positions()}
+
+
+def _resolve_manual(spec: dict[str, Any]) -> list[dict[str, Any]]:
+    """Resolve an ``attach.manual`` block to a single strategic-manual reading
+    reference.
+
+    The frontend opens the long-form vectorial manual view for that source
+    (``/api/strategy/manual?source=…``) — chapters grouped by topic centroid,
+    each passage rendered with its diagram and prose. The item's ``ref`` is the
+    source code so the learning path deep-links straight into the manual.
+
+    Filter: ``source`` (required, e.g. ``KELLER``).
+    """
+    src = spec["source"]
+    if src not in _strategy_sources():
+        raise ValueError(f"unknown source in attach.manual: {src!r}")
+    item: dict[str, Any] = {"kind": "manual", "ref": src, "source": src}
+    if spec.get("title"):
+        item["title"] = spec["title"]
+    return [item]
+
+
 def _resolve_tips(spec: dict[str, Any]) -> list[dict[str, Any]]:
     """Resolve an ``attach.tips`` block to knowledge-base tip refs.
 
@@ -247,6 +276,8 @@ def _valid_chapter_ids() -> set[int]:
 def _resolve_lesson(lesson: dict[str, Any]) -> list[dict[str, Any]]:
     attach = lesson.get("attach", {})
     items: list[dict[str, Any]] = []
+    if "manual" in attach:
+        items += _resolve_manual(attach["manual"])
     if "exercises" in attach:
         items += _resolve_exercises(attach["exercises"])
     if "positions" in attach:
@@ -295,6 +326,7 @@ def _validate_and_resolve(spine: dict[str, Any]) -> dict[str, Any]:
                 "n_items": len(items),
                 "n_exercises": sum(1 for it in items if it["kind"] == "exercise"),
                 "n_positions": sum(1 for it in items if it["kind"] == "position"),
+                "n_manuals": sum(1 for it in items if it["kind"] == "manual"),
             })
         resolved_modules.append({
             **m,
@@ -302,6 +334,7 @@ def _validate_and_resolve(spine: dict[str, Any]) -> dict[str, Any]:
             "n_items": sum(l["n_items"] for l in resolved_lessons),
             "n_exercises": sum(l["n_exercises"] for l in resolved_lessons),
             "n_positions": sum(l["n_positions"] for l in resolved_lessons),
+            "n_manuals": sum(l["n_manuals"] for l in resolved_lessons),
         })
 
     # prerequisites resolve + acyclic

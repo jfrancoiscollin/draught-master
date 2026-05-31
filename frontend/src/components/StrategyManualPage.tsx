@@ -37,6 +37,8 @@ const SOURCE_LABEL: Record<string, { fr: string; en: string; author?: string }> 
   SPRINGER: { fr: 'Manuel Springer', en: 'Springer Manual', author: 'Springer' },
   ROOZENBURG: { fr: 'Manuel Roozenburg', en: 'Roozenburg Manual', author: 'Piet Roozenburg' },
   KELLER: { fr: 'Manuel Keller', en: 'Keller Manual', author: 'Keller' },
+  GOEDEMOED: { fr: 'Cours Goedemoed', en: 'Goedemoed Course', author: 'A Course in Draughts' },
+  GOEDEMOED3: { fr: 'Cours Goedemoed — volume avancé', en: 'Goedemoed Course — advanced', author: 'A Course in Draughts, vol. 3' },
 }
 
 /**

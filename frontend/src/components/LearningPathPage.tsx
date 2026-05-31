@@ -21,6 +21,8 @@ interface Props {
   onOpenExercise: (exerciseId: number) => void
   // Open a manual chapter's lesson prose (reuses the rich LessonPanel overlay).
   onOpenLesson: (chapter: number) => void
+  // Open a strategic manual's long-form reading view for a source (e.g. KELLER).
+  onOpenManual: (source: string) => void
 }
 
 const STATE_STYLE: Record<ModuleState, { ring: string; badge: string; label: string; labelEn: string }> = {
@@ -40,7 +42,7 @@ const ProgressBar: React.FC<{ value: number; total: number; state: ModuleState }
   )
 }
 
-const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLesson }) => {
+const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLesson, onOpenManual }) => {
   const { language } = useLanguage()
   const { user } = useAuth()
   const isLoggedIn = !!user
@@ -118,6 +120,7 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLess
           {openModule.lessons.map((les, i) => {
             const positions = les.items.filter(it => it.kind === 'position')
             const exercises = les.items.filter(it => it.kind === 'exercise')
+            const manuals = les.items.filter(it => it.kind === 'manual')
             return (
             <div key={les.id} className="rounded-xl border border-gray-700 bg-gray-800 p-4">
               <div className="flex items-baseline gap-2">
@@ -135,6 +138,18 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLess
                   📖 {fr ? 'Lire la leçon' : 'Read the lesson'}
                 </button>
               )}
+
+              {/* Strategic manual reading — opens the long-form vectorial
+                  manual view for the source (chapters grouped by theme). */}
+              {manuals.map(it => (
+                <button
+                  key={String(it.ref)}
+                  onClick={() => onOpenManual(String(it.source ?? it.ref))}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-amber-700 bg-amber-900/20 px-3 py-2 text-sm font-semibold text-amber-200 hover:bg-amber-800/30 transition-colors"
+                >
+                  📖 {fr ? 'Lire le manuel' : 'Read the manual'}
+                </button>
+              ))}
 
               {/* Illustrative positions — the visual lesson for strategy
                   concepts that have no manual prose. Static diagrams. */}
@@ -256,7 +271,11 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLess
                       <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                         <span>{m.n_lessons} {fr ? 'leçons' : 'lessons'}</span>
                         <span>·</span>
-                        <span>{m.n_exercises} {fr ? 'exercices' : 'exercises'}</span>
+                        {(m.n_manuals ?? 0) > 0 && m.n_exercises === 0 ? (
+                          <span>{m.n_manuals} {fr ? 'manuels à lire' : 'manuals to read'}</span>
+                        ) : (
+                          <span>{m.n_exercises} {fr ? 'exercices' : 'exercises'}</span>
+                        )}
                         {prog && prog.n_total > 0 && (
                           <span className="ml-auto">{prog.n_solved}/{prog.n_total}</span>
                         )}

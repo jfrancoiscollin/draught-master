@@ -267,6 +267,52 @@ def test_lesson_chapter_refs_are_valid():
                 assert les["chapter"] in valid, (les["id"], les["chapter"])
 
 
+def test_strategy_reading_module_links_every_manual():
+    """The 'grands manuels stratégiques' module turns each exploited corpus
+    into a prose reading lesson: one ``manual`` item per source, whose ref is
+    a real strategy source so the learning path deep-links into the manual
+    view."""
+    from curriculum.build_curriculum import _strategy_sources
+
+    known = _strategy_sources()
+    resolved = cur.build()
+    mod = next(
+        (m for m in resolved["modules"] if m["id"] == "int_manuels_strategiques"),
+        None,
+    )
+    assert mod is not None, "strategy reading module missing"
+    assert mod["n_manuals"] == len(mod["lessons"]) >= 6
+    seen_sources = set()
+    for les in mod["lessons"]:
+        manuals = [it for it in les["items"] if it["kind"] == "manual"]
+        assert len(manuals) == 1, les["id"]
+        src = manuals[0]["source"]
+        assert src in known, src
+        assert manuals[0]["ref"] == src
+        seen_sources.add(src)
+    # All six exploited corpora are surfaced as reading lessons.
+    assert {"SIJBRANDS", "ROOZENBURG", "KELLER", "SPRINGER", "GOEDEMOED", "GOEDEMOED3"} <= seen_sources
+
+
+def test_unknown_manual_source_is_rejected():
+    spine = {
+        "version": 1,
+        "levels": [{"id": "x", "title": "X", "order": 1}],
+        "modules": [{
+            "id": "a", "level": "x", "order": 1, "prerequisites": [],
+            "lessons": [{
+                "id": "a_l1", "title": "L",
+                "attach": {"manual": {"source": "NOT_A_SOURCE"}},
+            }],
+        }],
+    }
+    # Resolution-time guard (like an unknown exercises book_id): raises a
+    # plain ValueError with a clear message rather than the aggregated
+    # CurriculumError used for spine-level validation.
+    with pytest.raises(ValueError, match="unknown source in attach.manual"):
+        cur._validate_and_resolve(spine)
+
+
 def test_unknown_chapter_is_rejected():
     spine = {
         "version": 1,
