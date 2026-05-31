@@ -41,6 +41,7 @@ class Topic:
     source_filter: Tuple[str, ...] = field(default_factory=tuple)
     phase_filter: Optional[str] = None
     systems_filter: Tuple[str, ...] = field(default_factory=tuple)
+    nature_filter: Tuple[str, ...] = field(default_factory=tuple)
 
 
 # Order matches the rendering order in the frontend. Keep it short:
@@ -81,6 +82,40 @@ TOPICS: Tuple[Topic, ...] = (
         label_en="Endgame strategy",
         description_fr="Phase finale tous corpus (opposition, percée).",
         phase_filter="finale",
+    ),
+    # ---- Transversal reading chapters (all sources) ----
+    # These build their centroid from the annotated prose (nature/phase) so
+    # every scanned manual surfaces several themed chapters, not just its one
+    # system chapter. Each source's manual view then shows the passages it has
+    # closest to each theme — turning the "best extracts" view into a fuller,
+    # multi-chapter read.
+    Topic(
+        key="ouverture",
+        label_fr="L'ouverture",
+        label_en="The opening",
+        description_fr="Débuts de partie : plans d'approche et choix d'ouverture.",
+        phase_filter="ouverture",
+    ),
+    Topic(
+        key="plans",
+        label_fr="Plans et manœuvres",
+        label_en="Plans and manoeuvres",
+        description_fr="Plans typiques de milieu de partie tirés des analyses.",
+        nature_filter=("plan",),
+    ),
+    Topic(
+        key="principes",
+        label_fr="Principes stratégiques",
+        label_en="Strategic principles",
+        description_fr="Les règles de fond énoncées par les maîtres.",
+        nature_filter=("principe",),
+    ),
+    Topic(
+        key="pieges",
+        label_fr="Pièges et avertissements",
+        label_en="Pitfalls and warnings",
+        description_fr="Erreurs fréquentes et coups à éviter.",
+        nature_filter=("avertissement",),
     ),
 )
 
@@ -126,6 +161,8 @@ def topic_centroid(key: str) -> Optional[np.ndarray]:
             if topic.systems_filter and not any(
                 s in passage.systems for s in topic.systems_filter
             ):
+                continue
+            if topic.nature_filter and passage.nature not in topic.nature_filter:
                 continue
             matching_rows.append(shard.matrix[idx])
 

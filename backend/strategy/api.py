@@ -370,26 +370,45 @@ def manual(
     structured pedagogically instead of as a search result list.
     """
     src_upper = source.upper()
-    chapters: list[dict] = []
-    for spec in TOPICS:
-        # Match the topic when no source filter (cross-source) or when
-        # the source filter explicitly mentions the requested source.
-        if spec.source_filter and src_upper not in spec.source_filter:
-            continue
+    from pedagogy.prose.retrieval import search_with_vector  # noqa: PLC0415
+
+    specs = [
+        s for s in TOPICS
+        if (not s.source_filter) or src_upper in s.source_filter
+    ]
+
+    # Over-fetch per topic, then assign each passage to the single topic it
+    # scores highest on. This keeps the chapters distinct: on a small manual
+    # (e.g. Keller) several transversal centroids otherwise return the same
+    # handful of passages. Each passage appears once, in its best-fit chapter.
+    over_k = max(per_chapter * 3, per_chapter + 20)
+    best: dict[str, tuple[float, str, object]] = {}  # passage_id -> (score, topic_key, passage)
+    centroids = {}
+    for spec in specs:
         centroid = topic_centroid(spec.key)
         if centroid is None:
             continue
-        from pedagogy.prose.retrieval import search_with_vector  # noqa: PLC0415
+        centroids[spec.key] = centroid
+        for score, p in search_with_vector(centroid, k=over_k, sources=(src_upper,)):
+            prev = best.get(p.passage_id)
+            if prev is None or score > prev[0]:
+                best[p.passage_id] = (float(score), spec.key, p)
 
-        # Always restrict to the requested source — even for the
-        # cross-source "finales" topic, we want only the slice that
-        # belongs to this manual.
-        results = search_with_vector(centroid, k=per_chapter, sources=(src_upper,))
-        sections = _load_diagram_sections(source)
+    by_topic: dict[str, list[tuple[float, object]]] = {}
+    for score, topic_key, p in best.values():
+        by_topic.setdefault(topic_key, []).append((score, p))
+
+    sections = _load_diagram_sections(source)
+    chapters: list[dict] = []
+    for spec in specs:
+        rows = by_topic.get(spec.key)
+        if not rows:
+            continue
+        rows.sort(key=lambda r: -r[0])
         passages = [
             {
                 "passage_id": p.passage_id,
-                "score": float(score),
+                "score": score,
                 "text": p.text,
                 "source": p.source,
                 "book": p.book,
@@ -402,10 +421,8 @@ def manual(
                 # each passage card pedagogically.
                 "section": sections.get(p.page),
             }
-            for score, p in results
+            for score, p in rows[:per_chapter]
         ]
-        if not passages:
-            continue
         chapters.append({
             "topic_key": spec.key,
             "title_fr": spec.label_fr,
