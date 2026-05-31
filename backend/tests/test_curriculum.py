@@ -120,6 +120,24 @@ def test_progress_unlocks_in_order():
         assert by_id[d["id"]]["state"] != "locked"
 
 
+def test_unlock_all_env_opens_every_module(monkeypatch):
+    """With CURRICULUM_UNLOCK_ALL set, no module is ``locked`` even with
+    unsolved prerequisites — the staging free-test escape hatch."""
+    from curriculum import api as cur_api
+
+    # Sanity: without the flag, a module with prerequisites is locked when
+    # nothing is solved.
+    monkeypatch.delenv("CURRICULUM_UNLOCK_ALL", raising=False)
+    gated = cur_api.progress_payload([])
+    assert any(s["state"] == "locked" for s in gated["modules"])
+    assert cur_api.get_curriculum()["unlock_all"] is False
+
+    monkeypatch.setenv("CURRICULUM_UNLOCK_ALL", "1")
+    opened = cur_api.progress_payload([])
+    assert all(s["state"] != "locked" for s in opened["modules"])
+    assert cur_api.get_curriculum()["unlock_all"] is True
+
+
 def test_debutant_level_covers_all_exercises():
     """The Débutant level is meant to be complete: every manuel_debutant
     exercise must be reachable from some lesson, so none is orphaned."""
