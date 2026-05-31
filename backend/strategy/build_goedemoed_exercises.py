@@ -143,8 +143,27 @@ def _canonical(move) -> str:
     return sep.join(str(p) for p in move.path)
 
 
+_PIECE_VALUE = {1: 100, 3: 100, 2: 300, 4: 300}  # man=100, king=300 (WHITE/BLACK man/king ids)
+
+
 def match_sequences(sequences: list[list[str]]) -> dict[str, dict]:
-    from game_engine import fen_to_board, get_legal_moves, apply_move
+    from game_engine import (
+        fen_to_board, get_legal_moves, apply_move, game_result,
+        WHITE_MAN, WHITE_KING, BLACK_MAN, BLACK_KING,
+    )
+
+    val = {WHITE_MAN: 100, WHITE_KING: 300, BLACK_MAN: 100, BLACK_KING: 300}
+    white_pieces = {WHITE_MAN, WHITE_KING}
+
+    def net_material(state, mover: str) -> int:
+        s = 0
+        for sq in range(1, 51):
+            pc = state.board[sq]
+            if pc not in val:
+                continue
+            signed = val[pc] if pc in white_pieces else -val[pc]
+            s += signed if mover == "white" else -signed
+        return s
 
     fens = _load_fens()
     # First-ply index: (frm, to, capture, turn) -> [(fen, id, turn)]
@@ -165,9 +184,17 @@ def match_sequences(sequences: list[list[str]]) -> dict[str, dict]:
         return None
 
     def replay(fen, turn, toks):
-        """Return (n_legal_plies, canonical_moves[:n])."""
+        """Replay the line; return (n_legal_plies, canonical_moves, outcome).
+
+        ``outcome`` is computed on the legal prefix actually played:
+          - "win"      the line ends in a terminal win for the mover, or
+          - "material" the mover nets >= 2 men (200) by the end, else
+          - ""         the line replays legally but is not decisive.
+        """
         st = fen_to_board(fen)
         st.turn = turn
+        mover = st.turn
+        start = net_material(st, mover)
         canon: list[str] = []
         for tok in toks:
             m = tok_match(st, tok)
@@ -175,7 +202,13 @@ def match_sequences(sequences: list[list[str]]) -> dict[str, dict]:
                 break
             canon.append(_canonical(m))
             st = apply_move(st, m)
-        return len(canon), canon
+        if (game_result(st) or "") == mover:
+            outcome = "win"
+        elif net_material(st, mover) - start >= 200:
+            outcome = "material"
+        else:
+            outcome = ""
+        return len(canon), canon, outcome
 
     matched: dict[str, dict] = {}
     for toks in sequences:
@@ -186,32 +219,39 @@ def match_sequences(sequences: list[list[str]]) -> dict[str, dict]:
             if (did, turn) in seen:
                 continue
             seen.add((did, turn))
-            n, canon = replay(fen, turn, toks)
+            n, canon, outcome = replay(fen, turn, toks)
             if n > 0:
-                results.append((n, did, turn, canon))
+                results.append((n, did, turn, canon, outcome))
         if not results:
             continue
-        full = [(d, t, c) for n, d, t, c in results if n == len(toks)]
+        full = [(d, t, c, o) for n, d, t, c, o in results if n == len(toks)]
         if full:
-            dids = {d for d, _, _ in full}
+            dids = {d for d, _, _, _ in full}
             if len(dids) != 1:
                 continue
             did = next(iter(dids))
-            _, turn, canon = next(r for r in full if r[0] == did)
+            _, turn, canon, outcome = next(r for r in full if r[0] == did)
             kind, plies = "full", len(canon)
         else:
-            maxn = max(n for n, _, _, _ in results)
+            maxn = max(n for n, _, _, _, _ in results)
             if maxn < _MIN_PREFIX:
                 continue
-            best = [(d, t, c) for n, d, t, c in results if n == maxn]
-            dids = {d for d, _, _ in best}
+            best = [(d, t, c, o) for n, d, t, c, o in results if n == maxn]
+            dids = {d for d, _, _, _ in best}
             if len(dids) != 1:
                 continue
             did = next(iter(dids))
-            _, turn, canon = next(r for r in best if r[0] == did)
+            _, turn, canon, outcome = next(r for r in best if r[0] == did)
             kind, plies = "prefix", maxn
+        # Legality pins the FEN + side to move uniquely, but a line is only an
+        # *exercise* if it is actually decisive. Keep the proven-winning ones.
+        if not outcome:
+            continue
         if did not in matched or matched[did]["plies"] < plies:
-            matched[did] = {"moves": canon, "side": turn, "plies": plies, "kind": kind}
+            matched[did] = {
+                "moves": canon, "side": turn, "plies": plies,
+                "kind": kind, "outcome": outcome,
+            }
     return matched
 
 
@@ -219,7 +259,8 @@ def match_sequences(sequences: list[list[str]]) -> dict[str, dict]:
 # 3. Emit exercise rows and merge into strategy_exercises.json
 # ----------------------------------------------------------------------------
 def _difficulty(plies: int) -> int:
-    return 2 if plies <= 4 else 3 if plies <= 8 else 4
+    # App difficulty scale is 1-3.
+    return 1 if plies <= 4 else 2 if plies <= 8 else 3
 
 
 def _rows_from_matched(matched: dict[str, dict]) -> list[dict]:
@@ -249,8 +290,8 @@ def _rows_from_matched(matched: dict[str, dict]) -> list[dict]:
             "page": p["page"],
             "number": p["number"],
             "diagram_id": did,
-            "fen_kind": "auto_verified",   # auto FEN, proven by a full legal line
-            "outcome": "win",
+            "fen_kind": "auto_verified",   # auto FEN, proven by a decisive legal line
+            "outcome": info["outcome"],    # "win" (terminal) or "material" (>= 2 men)
             "solution_kind": kind,
         })
     return rows

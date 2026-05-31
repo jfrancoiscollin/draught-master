@@ -27,13 +27,28 @@ def _raw() -> list[dict[str, Any]]:
     return json.loads(_PATH.read_text()).get("exercises", [])
 
 
+# Sources seeded before GOEDEMOED was added. Their IDs are assigned by the
+# enumerate order in db/schema.py and are referenced by curriculum_resolved.json
+# and by users' saved progress, so their relative order must never change.
+# New sources are appended *after* these to keep existing IDs stable.
+_LEGACY_SOURCES = ("KELLER", "SIJBRANDS", "SPRINGER")
+
+
+def _sort_key(ex: dict[str, Any]) -> tuple:
+    # Legacy sources keep their original (diagram_id-sorted) positions; any new
+    # source sorts strictly after them, so it only ever occupies fresh IDs.
+    is_new = ex["source"].upper() not in _LEGACY_SOURCES
+    return (is_new, ex["diagram_id"])
+
+
 def all_strategy_exercises() -> list[dict[str, Any]]:
     """Exercise rows ready for ``INSERT INTO exercises (...)``.
 
-    Sorted by diagram id for stable, deterministic ID assignment.
+    Legacy sources are emitted first in their original diagram-id order so their
+    seeded IDs stay fixed; newer sources are appended afterwards.
     """
     rows: list[dict[str, Any]] = []
-    for ex in sorted(_raw(), key=lambda e: e["diagram_id"]):
+    for ex in sorted(_raw(), key=_sort_key):
         rows.append(
             {
                 "name": ex["name"],
