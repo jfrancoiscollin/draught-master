@@ -1,0 +1,521 @@
+{
+  "2": {
+    "theme": "Combinaisons"
+  },
+  "3": {
+    "theme": "Combinaisons"
+  },
+  "4": {
+    "theme": "Calcul"
+  },
+  "5": {
+    "theme": "Calcul"
+  },
+  "6": {
+    "theme": "Calcul"
+  },
+  "7": {
+    "theme": "Calcul"
+  },
+  "8": {
+    "theme": "Bon ou pas ?"
+  },
+  "9": {
+    "theme": "Quel coup jouer ?"
+  },
+  "10": {
+    "theme": "Quel coup jouer ?"
+  },
+  "11": {
+    "theme": "Combinaisons"
+  },
+  "12": {
+    "theme": "Quel coup jouer ?"
+  },
+  "13": {
+    "theme": "Quel coup jouer ?"
+  },
+  "14": {
+    "theme": "Quel coup jouer ?"
+  },
+  "15": {
+    "theme": "Juger la position"
+  },
+  "16": {
+    "theme": "Juger la position"
+  },
+  "17": {
+    "theme": "Juger la position"
+  },
+  "18": {
+    "theme": "Juger la position"
+  },
+  "19": {
+    "theme": "Juger la position"
+  },
+  "20": {
+    "theme": "Calcul"
+  },
+  "23": {
+    "theme": "Calcul"
+  },
+  "24": {
+    "theme": "Juger la position"
+  },
+  "25": {
+    "theme": "Juger la position"
+  },
+  "26": {
+    "theme": "Juger la position"
+  },
+  "27": {
+    "theme": "Juger la position"
+  },
+  "28": {
+    "theme": "Juger la position"
+  },
+  "29": {
+    "theme": "Juger la position"
+  },
+  "31": {
+    "theme": "Combinaisons"
+  },
+  "32": {
+    "theme": "Combinaisons"
+  },
+  "33": {
+    "theme": "Coups forcés"
+  },
+  "34": {
+    "theme": "Calcul"
+  },
+  "35": {
+    "theme": "Calcul"
+  },
+  "36": {
+    "theme": "Juger la position"
+  },
+  "37": {
+    "theme": "Quel coup jouer ?"
+  },
+  "38": {
+    "theme": "Analyser la position"
+  },
+  "39": {
+    "theme": "Composer un coup"
+  },
+  "40": {
+    "theme": "Calcul"
+  },
+  "41": {
+    "theme": "Stratégie"
+  },
+  "42": {
+    "theme": "Stratégie"
+  },
+  "43": {
+    "theme": "Stratégie"
+  },
+  "44": {
+    "theme": "Stratégie"
+  },
+  "45": {
+    "theme": "Stratégie"
+  },
+  "46": {
+    "theme": "Stratégie"
+  },
+  "47": {
+    "theme": "Stratégie"
+  },
+  "48": {
+    "theme": "Coups forcés"
+  },
+  "50": {
+    "theme": "Juger la position"
+  },
+  "53": {
+    "theme": "Analyser la position"
+  },
+  "54": {
+    "theme": "Analyser la position"
+  },
+  "55": {
+    "theme": "Analyser la position"
+  },
+  "56": {
+    "theme": "Analyser la position"
+  },
+  "57": {
+    "theme": "Analyser la position"
+  },
+  "58": {
+    "theme": "Jolis coups"
+  },
+  "61": {
+    "theme": "Combinaisons"
+  },
+  "62": {
+    "theme": "Combinaisons"
+  },
+  "63": {
+    "theme": "Coups forcés"
+  },
+  "64": {
+    "theme": "Calcul"
+  },
+  "65": {
+    "theme": "Calcul"
+  },
+  "66": {
+    "theme": "Combinaisons"
+  },
+  "67": {
+    "theme": "Coups forcés"
+  },
+  "68": {
+    "theme": "Calcul"
+  },
+  "69": {
+    "theme": "Composer un coup"
+  },
+  "70": {
+    "theme": "Bon ou pas ?"
+  },
+  "71": {
+    "theme": "Juger la position"
+  },
+  "72": {
+    "theme": "Quel coup jouer ?"
+  },
+  "73": {
+    "theme": "Calcul"
+  },
+  "74": {
+    "theme": "Quel coup jouer ?"
+  },
+  "75": {
+    "theme": "Quel coup jouer ?"
+  },
+  "76": {
+    "theme": "Quel coup jouer ?"
+  },
+  "77": {
+    "theme": "Stratégie"
+  },
+  "78": {
+    "theme": "Analyser la position"
+  },
+  "79": {
+    "theme": "Stratégie"
+  },
+  "80": {
+    "theme": "Stratégie"
+  },
+  "82": {
+    "theme": "Combinaisons"
+  },
+  "83": {
+    "theme": "Coups forcés"
+  },
+  "84": {
+    "theme": "Bon ou pas ?"
+  },
+  "86": {
+    "theme": "Calcul"
+  },
+  "87": {
+    "theme": "Stratégie"
+  },
+  "88": {
+    "theme": "Stratégie"
+  },
+  "89": {
+    "theme": "Stratégie"
+  },
+  "90": {
+    "theme": "Stratégie"
+  },
+  "91": {
+    "theme": "Stratégie"
+  },
+  "92": {
+    "theme": "Jolis coups"
+  },
+  "93": {
+    "theme": "Jolis coups"
+  },
+  "94": {
+    "theme": "Coups forcés"
+  },
+  "95": {
+    "theme": "Coups forcés"
+  },
+  "99": {
+    "theme": "Combinaisons"
+  },
+  "100": {
+    "theme": "Combinaisons"
+  },
+  "101": {
+    "theme": "Combinaisons"
+  },
+  "102": {
+    "theme": "Coups forcés"
+  },
+  "103": {
+    "theme": "Bon ou pas ?"
+  },
+  "104": {
+    "theme": "Combinaisons"
+  },
+  "105": {
+    "theme": "Combinaisons"
+  },
+  "106": {
+    "theme": "Calcul"
+  },
+  "107": {
+    "theme": "Quel coup jouer ?"
+  },
+  "108": {
+    "theme": "Quel coup jouer ?"
+  },
+  "109": {
+    "theme": "Calcul"
+  },
+  "110": {
+    "theme": "Calcul"
+  },
+  "111": {
+    "theme": "Calcul"
+  },
+  "112": {
+    "theme": "Calcul"
+  },
+  "113": {
+    "theme": "Stratégie"
+  },
+  "114": {
+    "theme": "Juger la position"
+  },
+  "115": {
+    "theme": "Dérouler la partie"
+  },
+  "116": {
+    "theme": "Dérouler la partie"
+  },
+  "117": {
+    "theme": "Dérouler la partie"
+  },
+  "118": {
+    "theme": "Dérouler la partie"
+  },
+  "119": {
+    "theme": "Dérouler la partie"
+  },
+  "121": {
+    "theme": "Calcul"
+  },
+  "122": {
+    "theme": "Calcul"
+  },
+  "124": {
+    "theme": "Calcul"
+  },
+  "125": {
+    "theme": "Calcul"
+  },
+  "129": {
+    "theme": "Calcul"
+  },
+  "133": {
+    "theme": "Combinaisons"
+  },
+  "134": {
+    "theme": "Attaque au centre"
+  },
+  "135": {
+    "theme": "Attaque Highland"
+  },
+  "136": {
+    "theme": "Quel coup jouer ?"
+  },
+  "137": {
+    "theme": "Bon ou pas ?"
+  },
+  "138": {
+    "theme": "Calcul"
+  },
+  "139": {
+    "theme": "Calcul"
+  },
+  "140": {
+    "theme": "Juger la position"
+  },
+  "141": {
+    "theme": "Attaque classique"
+  },
+  "142": {
+    "theme": "Quel coup jouer ?"
+  },
+  "143": {
+    "theme": "Attaque Roozenburg"
+  },
+  "144": {
+    "theme": "Quel coup jouer ?"
+  },
+  "145": {
+    "theme": "Calcul"
+  },
+  "146": {
+    "theme": "Calcul"
+  },
+  "147": {
+    "theme": "Analyser la position"
+  },
+  "148": {
+    "theme": "Analyser la position"
+  },
+  "149": {
+    "theme": "Attaque au centre"
+  },
+  "150": {
+    "theme": "Attaque au centre"
+  },
+  "151": {
+    "theme": "Quel coup jouer ?"
+  },
+  "152": {
+    "theme": "Stratégie"
+  },
+  "153": {
+    "theme": "Coups forcés"
+  },
+  "154": {
+    "theme": "Coups forcés"
+  },
+  "155": {
+    "theme": "Coups forcés"
+  },
+  "156": {
+    "theme": "Combinaisons"
+  },
+  "157": {
+    "theme": "Dérouler la partie"
+  },
+  "158": {
+    "theme": "Dérouler la partie"
+  },
+  "161": {
+    "theme": "Juger la position"
+  },
+  "164": {
+    "theme": "Juger la position"
+  },
+  "165": {
+    "theme": "Juger la position"
+  },
+  "167": {
+    "theme": "Juger la position"
+  },
+  "168": {
+    "theme": "Stratégie"
+  },
+  "169": {
+    "theme": "Stratégie"
+  },
+  "171": {
+    "theme": "Combinaisons"
+  },
+  "172": {
+    "theme": "Combinaisons"
+  },
+  "173": {
+    "theme": "Combinaisons"
+  },
+  "174": {
+    "theme": "Coups forcés"
+  },
+  "175": {
+    "theme": "Calcul"
+  },
+  "176": {
+    "theme": "Calcul"
+  },
+  "177": {
+    "theme": "Calcul"
+  },
+  "178": {
+    "theme": "Combinaisons"
+  },
+  "179": {
+    "theme": "Coups forcés"
+  },
+  "180": {
+    "theme": "Bon ou pas ?"
+  },
+  "181": {
+    "theme": "Analyser la position"
+  },
+  "182": {
+    "theme": "Quel coup jouer ?"
+  },
+  "183": {
+    "theme": "Quel coup jouer ?"
+  },
+  "184": {
+    "theme": "Stratégie"
+  },
+  "185": {
+    "theme": "Dérouler la partie"
+  },
+  "186": {
+    "theme": "Dérouler la partie"
+  },
+  "187": {
+    "theme": "Dérouler la partie"
+  },
+  "188": {
+    "theme": "Dérouler la partie"
+  },
+  "189": {
+    "theme": "Quel coup jouer ?"
+  },
+  "190": {
+    "theme": "Jolis coups"
+  },
+  "191": {
+    "theme": "Jolis coups"
+  },
+  "192": {
+    "theme": "Coups forcés"
+  },
+  "193": {
+    "theme": "Coups forcés"
+  },
+  "195": {
+    "theme": "Calcul"
+  },
+  "196": {
+    "theme": "Calcul"
+  },
+  "198": {
+    "theme": "Stratégie"
+  },
+  "199": {
+    "theme": "Coups forcés"
+  },
+  "200": {
+    "theme": "Dérouler la partie"
+  },
+  "201": {
+    "theme": "Dérouler la partie"
+  },
+  "202": {
+    "theme": "Attaque au centre"
+  },
+  "203": {
+    "theme": "Jolis coups"
+  }
+}

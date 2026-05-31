@@ -205,6 +205,14 @@ def build_source(source: str) -> list[dict[str, Any]]:
 
         heading = _clean_heading(sections.get(page, {}))
         theme = theme_titles.get(heading) if heading else None
+        # Some sources (e.g. Goedemoed) declare a direct French section theme
+        # per page instead of a numbered "Leçon N" heading. Honour it when the
+        # generic lesson-heading resolver found nothing.
+        if theme is None:
+            direct = (sections.get(page, {}).get("theme") or "").strip()
+            if direct:
+                theme = direct
+                heading = heading or direct
         entry: dict[str, Any] = {
             "id": f"{source}_p{page:04d}_d{number}",
             "source": source,
