@@ -14,10 +14,11 @@
  */
 
 import { useEffect, useState } from 'react'
-import { getGameNarrative } from '../api/client'
+import { getGameNarrative, getRecommendedReading } from '../api/client'
 import type {
   GameNarrative,
   PersistentWeakness,
+  ReadingRecommendation,
   TurningPoint,
 } from '../api/client'
 import { useLessonCoverage } from '../hooks/useLessonCoverage'
@@ -45,15 +46,20 @@ interface Props {
   /** Click on a 📖 leçon badge → open the matching manuel chapter
    *  as a global overlay. Wired by App.tsx via PedagogyTabsPanel. */
   onOpenLesson?: (chapter: number) => void
+  /** Click on a "Lecture recommandée" card → open that source's
+   *  long-form strategic manual. Wired by App.tsx. */
+  onOpenManual?: (source: string) => void
 }
 
 export default function GameNarrativeSummary({
-  gameId, lang = 'fr', onJumpTo, onMotifClick, onMotifJump, onWeaknessClick, onOpenLesson,
+  gameId, lang = 'fr', onJumpTo, onMotifClick, onMotifJump, onWeaknessClick, onOpenLesson, onOpenManual,
 }: Props) {
   const [narrative, setNarrative] = useState<GameNarrative | null>(null)
+  const [reading, setReading] = useState<ReadingRecommendation[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { coverage, openLessonForMotif, openLessonForWeakness } = useLessonCoverage(onOpenLesson)
+  const fr = lang !== 'en'
 
   useEffect(() => {
     let cancelled = false
@@ -73,6 +79,16 @@ export default function GameNarrativeSummary({
         }
       })
       .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [gameId, lang])
+
+  // Reading recommendations are a soft enrichment: fetched alongside the
+  // narrative, failures (incl. 404) just hide the card.
+  useEffect(() => {
+    let cancelled = false
+    getRecommendedReading(gameId, lang)
+      .then(r => { if (!cancelled) setReading(r) })
+      .catch(() => { if (!cancelled) setReading([]) })
     return () => { cancelled = true }
   }, [gameId, lang])
 
@@ -203,6 +219,42 @@ export default function GameNarrativeSummary({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* 6. Lecture recommandée — strategic prose this game points to. */}
+      {reading.length > 0 && (
+        <div className="bg-gray-800/40 border border-amber-700/40 rounded-xl px-3 py-2 flex flex-col gap-2">
+          <p className="text-xs font-semibold text-amber-300">
+            {fr ? '📚 Lecture recommandée' : '📚 Recommended reading'}
+          </p>
+          {reading.map(rec => {
+            const top = rec.passages[0]
+            return (
+              <div key={rec.topic_key} className="rounded-lg border border-gray-700 bg-gray-900/40 px-2.5 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-gray-100">
+                    {fr ? rec.label_fr : rec.label_en}
+                  </span>
+                  {top && onOpenManual && (
+                    <button
+                      onClick={() => onOpenManual(top.source)}
+                      className="shrink-0 px-1.5 py-0.5 text-xs rounded bg-amber-700/40 text-amber-100 hover:bg-amber-700/60 cursor-pointer"
+                      title={fr ? 'Ouvrir le manuel' : 'Open the manual'}
+                    >
+                      {fr ? 'Lire' : 'Read'} →
+                    </button>
+                  )}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-0.5">{rec.reason}</p>
+                {top && (
+                  <p className="text-[11px] text-gray-500 mt-1 line-clamp-2 italic">
+                    « {top.text.slice(0, 160).trim()}… » — {top.source}
+                  </p>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
