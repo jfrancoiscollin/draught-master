@@ -118,17 +118,16 @@ const StrategyManualPage: React.FC<Props> = ({ source, onClose, lang = 'fr' }) =
               : 'No passage indexed for this manual.'}
           </p>
         )}
-        {manual?.chapters.map((chapter, ci) => (
-          <ChapterSection key={chapter.topic_key} chapter={chapter} index={ci + 1} lang={lang} />
+        {manual?.chapters.map((chapter) => (
+          <ChapterSection key={chapter.topic_key} chapter={chapter} lang={lang} />
         ))}
       </div>
     </div>
   )
 }
 
-const ChapterSection: React.FC<{ chapter: Chapter; index: number; lang: 'fr' | 'en' }> = ({
+const ChapterSection: React.FC<{ chapter: Chapter; lang: 'fr' | 'en' }> = ({
   chapter,
-  index,
   lang,
 }) => {
   return (
@@ -136,12 +135,9 @@ const ChapterSection: React.FC<{ chapter: Chapter; index: number; lang: 'fr' | '
       <h2 className="text-base font-bold text-white border-l-4 border-amber-500 pl-3 mb-1">
         {lang === 'en' ? chapter.title_en : chapter.title_fr}
       </h2>
-      <p className="text-xs text-gray-500 mb-4">
-        {lang === 'en' ? `Chapter ${index}` : `Chapitre ${index}`}
-        {chapter.description_fr && lang === 'fr' && (
-          <> · {chapter.description_fr}</>
-        )}
-      </p>
+      {chapter.description_fr && (
+        <p className="text-xs text-gray-500 mb-4">{chapter.description_fr}</p>
+      )}
       <div className="space-y-6">
         {chapter.passages.map((p, pi) => (
           <PassageCard key={p.passage_id} passage={p} index={pi + 1} lang={lang} />
