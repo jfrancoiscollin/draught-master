@@ -287,3 +287,26 @@ def test_dormant_topic_returns_503(monkeypatch) -> None:
     )
     assert r.status_code == 503
     assert "no embedded passages" in r.json()["detail"]
+
+
+def test_scanned_manual_is_multi_chapter_and_deduplicated(client: TestClient) -> None:
+    """Each scanned manual reads as several distinct chapters.
+
+    The transversal reading topics (ouverture / plans / principes / pièges,
+    plus finales) turn the old 2-chapter view into a fuller read, and each
+    passage is assigned to a single best-fit chapter (no cross-chapter
+    duplication).
+    """
+    for source in ("SIJBRANDS", "SPRINGER", "ROOZENBURG", "KELLER"):
+        r = client.get("/api/strategy/manual", params={"source": source})
+        assert r.status_code == 200, source
+        chapters = r.json()["chapters"]
+        assert len(chapters) >= 4, f"{source}: only {len(chapters)} chapters"
+
+        ids = [p["passage_id"] for ch in chapters for p in ch["passages"]]
+        assert len(ids) == len(set(ids)), f"{source}: a passage appears in two chapters"
+
+        # Scores are descending within each chapter and meaningfully similar.
+        for ch in chapters:
+            scores = [p["score"] for p in ch["passages"]]
+            assert scores == sorted(scores, reverse=True), f"{source}/{ch['topic_key']}"
