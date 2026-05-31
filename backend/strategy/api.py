@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
@@ -345,13 +346,85 @@ def _load_diagram_sections(source: str) -> dict[int, dict[str, str]]:
     title each passage card with its parent chapter ("Thème 4 — Libérer
     le chemin") instead of the generic "Diagramme N · page X".  Returns
     {} if the source has no metadata bundled.
+
+    The raw extraction is noisy: a heading like "Thème 8" recurs as a
+    running page header, and each occurrence captured whatever body line
+    followed it — so later pages inherited move sequences or full
+    sentences as their "title". We clean that here at load time
+    (:func:`_canonical_sections`) so a theme shows ONE stable title.
     """
     p = _PAGES_DIR / source.lower() / "diagram_sections.json"
     if not p.is_file():
         return {}
     with p.open() as f:
         data = json.load(f)
-    return {int(k): v for k, v in data.items()}
+    return _canonical_sections({int(k): v for k, v in data.items()})
+
+
+# A real section heading marker (Thème/Leçon/Partie/Chapitre/Problème N, or
+# the "3 - LE JEU DES NOIRS" numbered form). Anything else (all-caps body
+# exclamations the extractor mistook for a heading) is dropped.
+_HEADING_OK = re.compile(
+    r"^(?:Leçon|Thème|Partie|Chapitre|Problème)\s+n?°?\s*\d+|^\d+\s*[-–]\s*\S",
+    re.IGNORECASE,
+)
+
+
+def _is_titleish(title: str) -> bool:
+    """True when ``title`` reads like a real section title (a short noun
+    phrase) rather than a stray body line, move sequence, diagram ref or
+    game citation that the extractor latched onto."""
+    t = (title or "").strip()
+    if not t or len(t) > 55 or len(t.split()) > 6:
+        return False
+    if not t[0].isalpha() or not t[0].isupper():
+        return False
+    if t[-1] in ".:!?":                                  # sentence-like
+        return False
+    if re.search(r"\d+\s*[-x×]\s*\d+", t):               # move / coords
+        return False
+    if re.search(r"\b(?:19|20)\d{2}\b", t):              # year -> game citation
+        return False
+    if t.upper().startswith(
+        ("DIAGRAMME", "EXERCICE", "PROBLÈME", "FRAGMENT", "VISUALISATION")
+    ):
+        return False
+    if "," in t or " – " in t or " — " in t:             # list / player vs player
+        return False
+    return True
+
+
+def _canonical_sections(raw: dict[int, dict[str, str]]) -> dict[int, dict[str, str]]:
+    """Collapse each heading to a single clean title and drop junk headings.
+
+    For every distinct heading, the canonical title is the first (lowest
+    page) candidate that passes :func:`_is_titleish`; that title is then
+    applied to every page of the heading. Headings with no clean candidate
+    keep an empty title (the card shows just "Thème N"). Entries without a
+    ``heading`` (e.g. Goedemoed's ``{"theme": ...}`` shape) pass through
+    untouched.
+    """
+    from collections import defaultdict  # noqa: PLC0415
+
+    titles_by_heading: dict[str, list[str]] = defaultdict(list)
+    for page in sorted(raw):
+        h = raw[page].get("heading")
+        if h:
+            titles_by_heading[h].append(raw[page].get("title", ""))
+    canonical = {
+        h: next((t for t in titles if _is_titleish(t)), "")
+        for h, titles in titles_by_heading.items()
+    }
+
+    out: dict[int, dict[str, str]] = {}
+    for page, entry in raw.items():
+        h = entry.get("heading")
+        if h is None:
+            out[page] = entry                       # theme-style: leave as-is
+        elif _HEADING_OK.match(h):
+            out[page] = {"heading": h, "title": canonical.get(h, "")}
+        # else: junk heading -> omit, card falls back to "Diagramme N · page X"
+    return out
 
 
 @router.get("/manual")
