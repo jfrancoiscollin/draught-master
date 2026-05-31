@@ -187,6 +187,9 @@ export default function App() {
   // Apprendre.  One manual per source, structured into chapters by
   // topic.
   const [strategyManualSource, setStrategyManualSource] = useState<string>('SIJBRANDS')
+  // Where to return when the manual view closes (e.g. the learning path when
+  // opened from a strategy reading lesson, else the exercise library).
+  const [strategyManualOrigin, setStrategyManualOrigin] = useState<Tab>('exercise-library')
   const [strategyJumpSource, setStrategyJumpSource] = useState<string | undefined>(undefined)
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
   const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
@@ -1692,6 +1695,11 @@ export default function App() {
           <LearningPathPage
             onClose={() => setTab('home')}
             onOpenLesson={(chapter: number) => setNarrativeLessonChapter(chapter)}
+            onOpenManual={(source: string) => {
+              setStrategyManualSource(source)
+              setStrategyManualOrigin('learning-path')
+              setTab('strategy-manual')
+            }}
             onOpenExercise={async (exerciseId: number) => {
               try {
                 resetExerciseState()
@@ -1716,6 +1724,7 @@ export default function App() {
                 setTab('strategy')
               } else {
                 setStrategyManualSource(source)
+                setStrategyManualOrigin('exercise-library')
                 setTab('strategy-manual')
               }
             }}
@@ -1729,7 +1738,7 @@ export default function App() {
         {tab === 'strategy-manual' && (
           <StrategyManualPage
             source={strategyManualSource}
-            onClose={() => setTab('exercise-library')}
+            onClose={() => setTab(strategyManualOrigin)}
             lang={language}
           />
         )}
