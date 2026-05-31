@@ -447,12 +447,51 @@ def manual(
     (live board when a valid FEN exists, else the printed image).
     """
     src_upper = source.upper()
+    from .prose_quality import lead_excerpt  # noqa: PLC0415
+
+    groups = _book_chapters(source)
+    chapters: list[dict] = []
+    for g in groups:
+        chapters.append({
+            "topic_key": g["topic_key"],
+            "title_fr": g["heading"],
+            "title_en": g["heading"],
+            "description_fr": g["title"],
+            "passages": [
+                {
+                    "passage_id": p.passage_id,
+                    "score": 0.0,
+                    "text": lead_excerpt(p.text),
+                    "source": p.source,
+                    "book": p.book,
+                    "page": p.page,
+                    "systems": list(p.systems),
+                    "phase": p.phase,
+                    "nature": p.nature,
+                    "section": _load_diagram_sections(source).get(p.page),
+                }
+                for p in g["passages"]
+            ],
+        })
+    return {"source": source, "chapters": chapters}
+
+
+def _book_chapters(source: str) -> list[dict]:
+    """Group a source's prose passages into book-order chapters.
+
+    Returns ``[{topic_key, heading, title, passages: [ProsePassage, …]}]`` in
+    document order. Passages are walked in (page, char_offset) order and
+    grouped under their printed section heading (``Leçon 7`` / ``Thème 3`` …);
+    a page with no section keeps the running heading. Front-matter before the
+    first real heading (title page, table of contents, credits) is skipped,
+    and move-score dumps with no readable sentence are dropped (``has_prose``).
+    Shared by the manual view and the lesson-format endpoints.
+    """
+    src_upper = source.upper()
     from pedagogy.prose.retrieval import _discover_shards  # noqa: PLC0415
 
-    from .prose_quality import has_prose, lead_excerpt  # noqa: PLC0415
+    from .prose_quality import has_prose  # noqa: PLC0415
 
-    # Gather this source's passages in document order (shard order already
-    # follows page + char_offset; sort defensively to be explicit).
     passages = []
     for shard in _discover_shards():
         if shard.source != src_upper:
@@ -462,13 +501,7 @@ def manual(
 
     sections = _load_diagram_sections(source)
 
-    # Group consecutive prose passages under the printed section heading.
-    # The heading is carried forward across pages that have no section entry
-    # of their own (continuity), so we never spawn a generic "Lecture" chapter
-    # mid-book. Passages BEFORE the first real heading are front-matter (title
-    # page, table of contents, credits) — they carry no diagram and nothing to
-    # click, so we skip them entirely.
-    chapters: list[dict] = []
+    groups: list[dict] = []
     current_heading: str | None = None
     cur: dict | None = None
     seq = 0
@@ -479,38 +512,125 @@ def manual(
         heading = (sec or {}).get("heading") or ""
         title = (sec or {}).get("title") or ""
         if heading:
-            # A new printed heading starts a new chapter; the same heading (or
-            # a page with none) keeps appending to the current one.
             if heading != current_heading:
                 seq += 1
                 current_heading = heading
                 cur = {
                     "topic_key": f"section_{seq}",
-                    "title_fr": heading,
-                    "title_en": heading,
-                    "description_fr": title,
+                    "heading": heading,
+                    "title": title,
                     "passages": [],
                 }
-                chapters.append(cur)
+                groups.append(cur)
         elif cur is None:
-            # No heading seen yet → still in the front-matter. Skip.
-            continue
-        cur["passages"].append({
-            "passage_id": p.passage_id,
-            "score": 0.0,
-            "text": lead_excerpt(p.text),
-            "source": p.source,
-            "book": p.book,
-            "page": p.page,
-            "systems": list(p.systems),
-            "phase": p.phase,
-            "nature": p.nature,
-            "section": sec,
-        })
+            continue  # still in front-matter
+        cur["passages"].append(p)
+    return [g for g in groups if g["passages"]]
 
-    # Drop empty chapters (defensive) and return in book order.
-    chapters = [c for c in chapters if c["passages"]]
-    return {"source": source, "chapters": chapters}
+
+# Diagram reference inside the prose: "DIAGRAMME 6" / "diagramme 6".
+_PROSE_DIAGRAM_RE = re.compile(r"\bdiagramme\s+(\d+)", re.IGNORECASE)
+
+
+def _fen_for(source: str, page: int, number: int) -> Optional[str]:
+    """Best FEN for a (page, number) diagram, or None when it can't render a
+    real board (missing, or an empty 'position in figures'). Human file wins
+    over auto; the consolidated library's ``valid`` flag gates auto FENs."""
+    fen = _load_diagram_fens(source).get((page, number))
+    if fen is None:
+        fen = _load_diagram_fens_auto(source).get((page, number))
+    if not fen:
+        return None
+    # Reject blank boards (e.g. "W:W:B"): no men on either side.
+    body = fen.upper().replace("W:", "").replace("B:", "")
+    if not any(ch.isdigit() for ch in body):
+        return None
+    from .position_library import get_position  # noqa: PLC0415
+
+    entry = get_position(source, page, number)
+    if entry and not entry.get("valid"):
+        return None
+    return fen
+
+
+@router.get("/manual-chapters")
+def manual_chapters(
+    source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
+) -> dict:
+    """List a strategic manual's chapters in book order (for the table of
+    contents). Each entry: ``{index, title, n_passages}``."""
+    groups = _book_chapters(source)
+    return {
+        "source": source.upper(),
+        "chapters": [
+            {
+                "index": i,
+                "title": g["title"] and f"{g['heading']} — {g['title']}" or g["heading"],
+                "n_passages": len(g["passages"]),
+            }
+            for i, g in enumerate(groups)
+        ],
+    }
+
+
+@router.get("/manual-lesson")
+def manual_lesson(
+    source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
+    chapter: int = Query(..., ge=0, description="Chapter index from /manual-chapters"),
+) -> dict:
+    """One chapter of a strategic manual in the *lesson* shape consumed by the
+    Débutant ``LessonPanel`` — ``{title, text, diagrams[]}``.
+
+    The chapter's passages are concatenated into one prose blob; each printed
+    ``DIAGRAMME N`` reference is rewritten to the Débutant-style ``diag. K``
+    (renumbered 1..M within the chapter) and paired with its FEN in
+    ``diagrams`` (same row order). Diagrams that can't render a real board
+    (missing / empty / invalid FEN) keep their reference as plain text so no
+    dead link appears. This makes a scanned manual render identically to the
+    Débutant manual: board on top, prose below, clickable diagram links.
+    """
+    from .prose_quality import lead_excerpt  # noqa: PLC0415
+
+    groups = _book_chapters(source)
+    if chapter < 0 or chapter >= len(groups):
+        raise HTTPException(404, f"chapter {chapter} out of range for {source!r}")
+    g = groups[chapter]
+
+    diagrams: list[dict] = []
+    ref_by_number: dict[int, int] = {}  # printed number -> diag.K (1-based)
+
+    def _diag_key(page: int, number: int) -> Optional[int]:
+        """Register the (page, number) diagram, returning its 1-based chapter
+        index, or None if it has no renderable board."""
+        if number in ref_by_number:
+            return ref_by_number[number]
+        fen = _fen_for(source, page, number)
+        if fen is None:
+            return None
+        k = len(diagrams) + 1
+        diagrams.append({"ref": f"{source.upper()}_p{page}_d{number}",
+                         "fen": fen, "label": f"diag. {k}"})
+        ref_by_number[number] = k
+        return k
+
+    blocks: list[str] = []
+    for p in g["passages"]:
+        text = lead_excerpt(p.text)
+
+        def _sub(m: "re.Match[str]") -> str:
+            number = int(m.group(1))
+            k = _diag_key(p.page, number)
+            return f"diag. {k}" if k is not None else m.group(0)
+
+        blocks.append(_PROSE_DIAGRAM_RE.sub(_sub, text))
+
+    title = g["title"] and f"{g['heading']} — {g['title']}" or g["heading"]
+    return {
+        "title": title,
+        "text": "\n\n".join(blocks),
+        "diagrams": diagrams,
+        "category": f"strategy_{source.lower()}_ch{chapter}",
+    }
 
 
 @router.get("/diagram-fen")

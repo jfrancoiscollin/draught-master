@@ -361,3 +361,44 @@ def test_manual_passages_are_readable_prose(client: TestClient) -> None:
         assert served, f"{source}: manual is empty"
         for p in served:
             assert has_prose(p["text"]), f"{source}: non-prose passage {p['passage_id']}"
+
+
+def test_manual_chapters_and_lesson_shape(client: TestClient) -> None:
+    """The strategic manual exposes a book-order chapter list and renders each
+    chapter in the Débutant lesson shape (title/text/diagrams) so LessonPanel
+    can display it identically."""
+    import re
+
+    toc = client.get("/api/strategy/manual-chapters", params={"source": "SIJBRANDS"})
+    assert toc.status_code == 200
+    chapters = toc.json()["chapters"]
+    assert len(chapters) > 5
+    # Indices are contiguous from 0 and every chapter has a title.
+    assert [c["index"] for c in chapters] == list(range(len(chapters)))
+    assert all(c["title"].strip() for c in chapters)
+
+    # Find a chapter that actually carries diagrams and check the lesson shape.
+    saw_diagram_ref = False
+    for c in chapters[:12]:
+        L = client.get(
+            "/api/strategy/manual-lesson",
+            params={"source": "SIJBRANDS", "chapter": c["index"]},
+        ).json()
+        assert L["title"].strip()
+        assert isinstance(L["text"], str) and L["text"].strip()
+        for d in L["diagrams"]:
+            assert d["fen"].startswith(("W:", "B:"))
+            assert d["label"].startswith("diag.")
+        if L["diagrams"]:
+            saw_diagram_ref = True
+            # Every diag. K used in the text has a backing diagram entry.
+            used = {int(m) for m in re.findall(r"diag\.\s*(\d+)", L["text"])}
+            assert used and max(used) <= len(L["diagrams"])
+    assert saw_diagram_ref, "no chapter exposed a diagram"
+
+
+def test_manual_lesson_out_of_range_404(client: TestClient) -> None:
+    r = client.get(
+        "/api/strategy/manual-lesson", params={"source": "SIJBRANDS", "chapter": 99999}
+    )
+    assert r.status_code == 404
