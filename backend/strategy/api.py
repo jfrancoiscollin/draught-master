@@ -430,85 +430,78 @@ def _canonical_sections(raw: dict[int, dict[str, str]]) -> dict[int, dict[str, s
 @router.get("/manual")
 def manual(
     source: str = Query(..., description="Source code, e.g. 'SIJBRANDS'"),
-    per_chapter: int = Query(20, ge=1, le=50, description="Max passages per chapter"),
+    per_chapter: int = Query(20, ge=1, le=50, description="(unused) kept for API compat"),
 ) -> dict:
-    """Return a structured "manual" view of one source's strategy corpus.
+    """Return the source's manual as a *linear, book-faithful* read.
 
-    Groups passages into chapters by topic: each topic whose
-    ``source_filter`` includes the requested source (or is empty for
-    "finales", which spans all sources) becomes a chapter, populated
-    with the topic's top-K most representative passages filtered to
-    that source.  Used by the new in-app manual view (one per source)
-    that replaces the old topic-button modal — same passage data,
-    structured pedagogically instead of as a search result list.
+    Walks the prose corpus in document order (page, then position on the
+    page) and groups consecutive passages under their printed section
+    heading (``Leçon 7``, ``Exercice 1``, ``Thème 3`` …). Each chapter is
+    one such section; its passages keep the book order so the reader sees
+    "Exercise X → Diagram N + its text → Diagram N+1 …" exactly as printed,
+    instead of the old topic-centroid regrouping.
+
+    Move-score / game-citation dumps with no readable sentence are dropped
+    (``has_prose``); each passage's text leads with its sentence
+    (``lead_excerpt``). The frontend pairs each passage with its diagram
+    (live board when a valid FEN exists, else the printed image).
     """
     src_upper = source.upper()
-    from pedagogy.prose.retrieval import search_with_vector  # noqa: PLC0415
+    from pedagogy.prose.retrieval import _discover_shards  # noqa: PLC0415
 
-    specs = [
-        s for s in TOPICS
-        if (not s.source_filter) or src_upper in s.source_filter
-    ]
-
-    # Over-fetch per topic, then assign each passage to the single topic it
-    # scores highest on. This keeps the chapters distinct: on a small manual
-    # (e.g. Keller) several transversal centroids otherwise return the same
-    # handful of passages. Each passage appears once, in its best-fit chapter.
-    # Over-fetch generously because the prose filter below discards the many
-    # move-score / game-citation paragraphs that carry no readable lesson.
     from .prose_quality import has_prose, lead_excerpt  # noqa: PLC0415
 
-    over_k = max(per_chapter * 6, 120)
-    best: dict[str, tuple[float, str, object]] = {}  # passage_id -> (score, topic_key, passage)
-    centroids = {}
-    for spec in specs:
-        centroid = topic_centroid(spec.key)
-        if centroid is None:
+    # Gather this source's passages in document order (shard order already
+    # follows page + char_offset; sort defensively to be explicit).
+    passages = []
+    for shard in _discover_shards():
+        if shard.source != src_upper:
             continue
-        centroids[spec.key] = centroid
-        for score, p in search_with_vector(centroid, k=over_k, sources=(src_upper,)):
-            if not has_prose(p.text):
-                continue  # skip pure move-score dumps — unreadable as a lesson
-            prev = best.get(p.passage_id)
-            if prev is None or score > prev[0]:
-                best[p.passage_id] = (float(score), spec.key, p)
-
-    by_topic: dict[str, list[tuple[float, object]]] = {}
-    for score, topic_key, p in best.values():
-        by_topic.setdefault(topic_key, []).append((score, p))
+        passages.extend(shard.passages)
+    passages.sort(key=lambda p: (p.page, getattr(p, "char_offset", 0)))
 
     sections = _load_diagram_sections(source)
+
+    # Group consecutive prose passages under the section heading in scope.
+    # The heading is carried forward until a new one appears (sections is
+    # page-keyed; within a page we keep the running heading).
     chapters: list[dict] = []
-    for spec in specs:
-        rows = by_topic.get(spec.key)
-        if not rows:
+    current_key: str | None = None
+    cur: dict | None = None
+    seq = 0
+    for p in passages:
+        if not has_prose(p.text):
             continue
-        rows.sort(key=lambda r: -r[0])
-        passages = [
-            {
-                "passage_id": p.passage_id,
-                "score": score,
-                "text": lead_excerpt(p.text),
-                "source": p.source,
-                "book": p.book,
-                "page": p.page,
-                "systems": list(p.systems),
-                "phase": p.phase,
-                "nature": p.nature,
-                # Section heading + title from the source PDF, when
-                # available.  Keyed by page; frontend uses it to title
-                # each passage card pedagogically.
-                "section": sections.get(p.page),
+        sec = sections.get(p.page)
+        heading = (sec or {}).get("heading") or ""
+        title = (sec or {}).get("title") or ""
+        # New chapter when the printed heading changes (or first passage).
+        if cur is None or heading != current_key:
+            seq += 1
+            current_key = heading
+            cur = {
+                "topic_key": f"section_{seq}",
+                "title_fr": heading or "Lecture",
+                "title_en": heading or "Reading",
+                "description_fr": title,
+                "passages": [],
             }
-            for score, p in rows[:per_chapter]
-        ]
-        chapters.append({
-            "topic_key": spec.key,
-            "title_fr": spec.label_fr,
-            "title_en": spec.label_en,
-            "description_fr": spec.description_fr,
-            "passages": passages,
+            chapters.append(cur)
+        cur["passages"].append({
+            "passage_id": p.passage_id,
+            "score": 0.0,
+            "text": lead_excerpt(p.text),
+            "source": p.source,
+            "book": p.book,
+            "page": p.page,
+            "systems": list(p.systems),
+            "phase": p.phase,
+            "nature": p.nature,
+            "section": sec,
         })
+
+    # Drop empty chapters (defensive) and return in book order.
+    chapters = [c for c in chapters if c["passages"]]
     return {"source": source, "chapters": chapters}
 
 
