@@ -85,6 +85,8 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLess
 
   const stateFor = (m: CurriculumModuleSummary): ModuleState => {
     if (stateById[m.id]) return stateById[m.id].state
+    // Staging unlock (or logged-out on an unlocked instance): everything open.
+    if (tree?.unlock_all) return 'available'
     // Logged-out fallback: first-in-order with no prereqs is available.
     return m.prerequisites.length === 0 ? 'available' : 'locked'
   }

@@ -155,6 +155,8 @@ export interface CurriculumModuleSummary {
 export interface CurriculumTree {
   levels: CurriculumLevel[]
   modules: CurriculumModuleSummary[]
+  // Staging flag (CURRICULUM_UNLOCK_ALL): every module reachable in any order.
+  unlock_all?: boolean
 }
 
 export interface CurriculumItem {
