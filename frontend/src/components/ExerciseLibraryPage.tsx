@@ -79,6 +79,9 @@ function ProgressBar({ value, color }: { value: number; color: string }) {
 interface ExerciseLibraryPageProps {
   onSelectBook: (bookId: string) => void
   onOpenStrategyManual: (source: string) => void
+  /** Back to the learning path — the library is now a sub-view of the
+   *  Parcours (the single educational entry point). */
+  onBack?: () => void
 }
 
 // One strategic manual per source — corresponds to the prose corpus
@@ -94,7 +97,7 @@ const STRATEGY_MANUALS: Array<{ source: string; titleFr: string; titleEn: string
   { source: 'GOEDEMOED3', titleFr: 'Goedemoed — Exercices (vol. 3)', titleEn: 'Goedemoed — Exercises (vol. 3)', author: 'Tjalling Goedemoed', emoji: '📗' },
 ]
 
-export default function ExerciseLibraryPage({ onSelectBook, onOpenStrategyManual }: ExerciseLibraryPageProps) {
+export default function ExerciseLibraryPage({ onSelectBook, onOpenStrategyManual, onBack }: ExerciseLibraryPageProps) {
   const { t, language } = useLanguage()
   const { user } = useAuth()
   const [stats, setStats] = useState<Record<string, BookStats>>({})
@@ -178,6 +181,14 @@ export default function ExerciseLibraryPage({ onSelectBook, onOpenStrategyManual
   return (
     <div className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="text-amber-400 hover:text-amber-300 mb-4 flex items-center gap-1"
+          >
+            ← {language === 'fr' ? 'Retour au parcours' : 'Back to the path'}
+          </button>
+        )}
         <h2 className="text-xl font-bold text-amber-500 mb-1">{t('tabExercises')}</h2>
         <p className="text-gray-400 text-sm mb-8">{t('chooseBook')}</p>
 
