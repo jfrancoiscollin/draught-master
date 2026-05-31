@@ -1873,6 +1873,11 @@ export default function App() {
               initialUserSide={preloadedUserSide}
               onMotifClick={setMotifDetailSlug}
               onOpenLesson={(chapter) => setNarrativeLessonChapter(chapter)}
+              onOpenManual={(source) => {
+                setStrategyManualSource(source)
+                setStrategyManualOrigin('import-game')
+                setTab('strategy-manual')
+              }}
             />
           </div>
         )}

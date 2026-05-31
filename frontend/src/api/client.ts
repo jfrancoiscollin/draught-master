@@ -836,6 +836,36 @@ export async function getGameNarrative(
   return res.data
 }
 
+// Strategic reading suggested by a game's own weaknesses — a deterministic
+// map from the analysis (phase cost, structural weaknesses, missed tactics)
+// to the transversal strategy topics, each with its top prose passages.
+export interface ReadingRecoPassage {
+  passage_id: string
+  source: string
+  book: string
+  page: number
+  text: string
+  score: number
+}
+
+export interface ReadingRecommendation {
+  topic_key: string
+  label_fr: string
+  label_en: string
+  reason: string
+  passages: ReadingRecoPassage[]
+}
+
+export async function getRecommendedReading(
+  gameId: string, lang: string = 'fr',
+): Promise<ReadingRecommendation[]> {
+  const res = await api.get<{ recommendations: ReadingRecommendation[] }>(
+    `/pedagogy/game/${encodeURIComponent(gameId)}/recommended-reading`,
+    { params: { lang } },
+  )
+  return res.data.recommendations
+}
+
 // Strategy RAG (/api/strategy/*) — curated topic buttons that surface
 // the most representative passages of each system in dilf's prose
 // corpus. See backend/strategy/topics.py and CADRAGE_STRATEGIE.md §8.

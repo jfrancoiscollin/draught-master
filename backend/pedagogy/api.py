@@ -574,6 +574,42 @@ async def get_game_narrative(
 
 
 # ---------------------------------------------------------------------------
+# GET /api/pedagogy/game/{game_id}/recommended-reading
+# ---------------------------------------------------------------------------
+
+
+@router.get("/game/{game_id}/recommended-reading")
+async def get_recommended_reading(
+    game_id: str,
+    lang: str = "fr",
+    user: Any = Depends(current_user),
+) -> dict[str, Any]:
+    """Strategic reading suggested by *this* game's weaknesses.
+
+    Aggregates the persisted verdicts for the user's side (cost per phase,
+    structural weaknesses, missed/suffered tactics) and maps them to the
+    transversal strategy topics, returning each topic's most representative
+    prose passages. Pure read + aggregation — no Scan, engine or LLM, and no
+    embedding at query time (topic centroids are precomputed). 404 if the game
+    was never analysed; an empty ``recommendations`` list for a clean game.
+    """
+    from strategy.reading_recommender import recommend_reading  # noqa: PLC0415
+
+    async with aiosqlite.connect(_db_path()) as conn:
+        verdicts = await storage._fetch_verdicts_for_game(conn, game_id)
+        cur = await conn.execute(
+            "SELECT user_side FROM games WHERE id = ?", (game_id,),
+        )
+        row = await cur.fetchone()
+    if not verdicts:
+        raise HTTPException(404, f"Aucune analyse pour la partie {game_id!r}")
+
+    user_side = (row[0] if row else None) or "white"
+    recos = recommend_reading(verdicts, user_side=user_side, lang=lang)
+    return {"game_id": game_id, "recommendations": recos}
+
+
+# ---------------------------------------------------------------------------
 # POST /api/pedagogy/explain-move
 # ---------------------------------------------------------------------------
 
