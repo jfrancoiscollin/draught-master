@@ -10,4 +10,4 @@ requests>=2.31.0
 sentry-sdk[fastapi]>=2.0.0
 numpy>=1.26
 Pillow>=10.0
-https://github.com/jfrancoiscollin/dilf/archive/de8fc953ee48eb0b84bc89f99804af4d6425f4a2.tar.gz
+https://github.com/jfrancoiscollin/dilf/archive/87fdb4c02453d5bb3482e1616d585df5b7e8d14a.tar.gz

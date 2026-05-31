@@ -187,6 +187,9 @@ export default function App() {
   // Apprendre.  One manual per source, structured into chapters by
   // topic.
   const [strategyManualSource, setStrategyManualSource] = useState<string>('SIJBRANDS')
+  // Where to return when the manual view closes (e.g. the learning path when
+  // opened from a strategy reading lesson, else the exercise library).
+  const [strategyManualOrigin, setStrategyManualOrigin] = useState<Tab>('exercise-library')
   const [strategyJumpSource, setStrategyJumpSource] = useState<string | undefined>(undefined)
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
   const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
@@ -1201,14 +1204,9 @@ export default function App() {
                 <img src={iconLearnSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
                 <span className="flex-1 text-lg font-bold text-white text-right">{language === 'fr' ? 'Parcours' : 'Learning path'}</span>
               </button>
-              {/* Exercises */}
-              <button
-                onClick={() => setTab('exercise-library')}
-                className="group flex flex-row items-center gap-4 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-600 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer"
-              >
-                <img src={iconLearnSrc} alt="" className="flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ width: 64, height: 64, objectFit: 'contain' }} />
-                <span className="flex-1 text-lg font-bold text-white text-right">{t('tabExercises')}</span>
-              </button>
+              {/* The exercise library is no longer a separate home entry:
+                  the Parcours is the single educational doorway and links
+                  into the library from inside. */}
               {/* Analyze menu (Import PDN + Play both sides) */}
               <button
                 onClick={() => setTab('analyze-menu')}
@@ -1691,7 +1689,13 @@ export default function App() {
         {tab === 'learning-path' && (
           <LearningPathPage
             onClose={() => setTab('home')}
+            onOpenLibrary={() => setTab('exercise-library')}
             onOpenLesson={(chapter: number) => setNarrativeLessonChapter(chapter)}
+            onOpenManual={(source: string) => {
+              setStrategyManualSource(source)
+              setStrategyManualOrigin('learning-path')
+              setTab('strategy-manual')
+            }}
             onOpenExercise={async (exerciseId: number) => {
               try {
                 resetExerciseState()
@@ -1707,6 +1711,7 @@ export default function App() {
         {/* EXERCISE LIBRARY TAB */}
         {tab === 'exercise-library' && (
           <ExerciseLibraryPage
+            onBack={() => setTab('learning-path')}
             onSelectBook={(bookId: string) => { resetExerciseState(); setSelectedBookId(bookId); setTab('exercises') }}
             onOpenStrategyManual={(source: string) => {
               // Diagram-only sources (no prose passages) open the diagram
@@ -1716,6 +1721,7 @@ export default function App() {
                 setTab('strategy')
               } else {
                 setStrategyManualSource(source)
+                setStrategyManualOrigin('exercise-library')
                 setTab('strategy-manual')
               }
             }}
@@ -1729,7 +1735,7 @@ export default function App() {
         {tab === 'strategy-manual' && (
           <StrategyManualPage
             source={strategyManualSource}
-            onClose={() => setTab('exercise-library')}
+            onClose={() => setTab(strategyManualOrigin)}
             lang={language}
           />
         )}
@@ -1864,6 +1870,11 @@ export default function App() {
               initialUserSide={preloadedUserSide}
               onMotifClick={setMotifDetailSlug}
               onOpenLesson={(chapter) => setNarrativeLessonChapter(chapter)}
+              onOpenManual={(source) => {
+                setStrategyManualSource(source)
+                setStrategyManualOrigin('import-game')
+                setTab('strategy-manual')
+              }}
             />
           </div>
         )}

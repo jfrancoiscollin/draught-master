@@ -204,6 +204,23 @@ Items we've identified but with no commitment on timing.
 - [ ] **dilf as a published PyPI package** instead of a git-URL pin.
       Simplifies `backend/requirements.txt` and removes the
       tarball-of-SHA pattern.
+- [ ] **Reading-lesson "lu" tracking**. The strategy reading lessons
+      (curriculum module `int_manuels_strategiques`, PR #145) have no
+      completion state — a manual-only module is always `available`,
+      never `done`. Add a per-source/per-chapter "read" flag (mirror the
+      existing `readChapters` / `POST /me/lessons/{chapter}/read` plumbing
+      used by the Débutant prose) so reading progresses the parcours and
+      unlocks dependents. Needs a `manual` item progress signal in
+      `curriculum/api.py:_module_state` (today it only counts solved
+      exercises). (M)
+- [ ] **Cross-game "plan de lecture personnalisé"**. The reading
+      recommender (PR #146) maps a *single* game's weaknesses to strategy
+      topics. Aggregate the signal across a user's *analysed games*
+      (reuse the weakness-heatmap aggregation in `pedagogy/profile.py`)
+      to produce a standing, ranked reading plan on the profile — "your
+      recurring weakness is endgames; here is a 5-chapter path". Pure
+      read over `move_verdicts`; same deterministic topic mapping, no
+      encoder at runtime. (M)
 
 ## Out of scope
 

@@ -149,6 +149,7 @@ export interface CurriculumModuleSummary {
   n_items: number
   n_exercises: number
   n_positions: number
+  n_manuals?: number
 }
 
 export interface CurriculumTree {
@@ -157,7 +158,7 @@ export interface CurriculumTree {
 }
 
 export interface CurriculumItem {
-  kind: 'exercise' | 'position' | 'tip'
+  kind: 'exercise' | 'position' | 'tip' | 'manual'
   ref: number | string
   name?: string
   difficulty?: number
@@ -165,6 +166,10 @@ export interface CurriculumItem {
   fen?: string
   theme?: string
   concept?: string
+  // For kind === 'manual': the strategy source code (e.g. 'KELLER') the
+  // reading lesson opens in the long-form manual view.
+  source?: string
+  title?: string
 }
 
 export interface CurriculumLesson {
@@ -176,6 +181,7 @@ export interface CurriculumLesson {
   n_items: number
   n_exercises?: number
   n_positions?: number
+  n_manuals?: number
 }
 
 export interface CurriculumModule extends CurriculumModuleSummary {

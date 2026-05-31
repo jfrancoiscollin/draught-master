@@ -37,6 +37,9 @@ interface ImportGamePanelProps {
    *  from App.tsx (the lesson view is global so the user keeps their
    *  ImportGamePanel state while reading). */
   onOpenLesson?: (chapter: number) => void
+  /** Open a strategic manual (by source) — used by the narrative's
+   *  "Lecture recommandée" cards. Wired from App.tsx. */
+  onOpenManual?: (source: string) => void
 }
 
 type PanelMode = 'review' | 'learn'
@@ -168,7 +171,7 @@ type TabKey = 'position' | 'graphs' | 'tables'
 function PedagogyTabsPanel({
   gameId, analysis, userSide, lang, activeVerdict, hangingSquares,
   threatCount, showThreats, onToggleThreats, diagKey, onDiagKey,
-  currentHalfMove, onJumpTo, onWeaknessClick, onMotifJump, onMotifClick, onOpenLesson,
+  currentHalfMove, onJumpTo, onWeaknessClick, onMotifJump, onMotifClick, onOpenLesson, onOpenManual,
 }: {
   gameId: string
   analysis: PedagogyAnalysis
@@ -202,6 +205,9 @@ function PedagogyTabsPanel({
   /** Open a manuel chapter as a global lesson overlay. Wired by
    *  App.tsx; PedagogyTabsPanel just forwards it to the narrative. */
   onOpenLesson?: (chapter: number) => void
+  /** Open a strategic manual by source — forwarded to the narrative's
+   *  "Lecture recommandée" cards. */
+  onOpenManual?: (source: string) => void
 }) {
   const [tab, setTab] = useState<TabKey>('position')
   const { verdicts } = analysis
@@ -250,6 +256,7 @@ function PedagogyTabsPanel({
               onMotifClick={onMotifClick}
               onWeaknessClick={onWeaknessClick}
               onOpenLesson={onOpenLesson}
+              onOpenManual={onOpenManual}
             />
 
             {activeVerdict ? (
@@ -383,6 +390,7 @@ export default function ImportGamePanel({
   initialUserSide,
   onMotifClick,
   onOpenLesson,
+  onOpenManual,
 }: ImportGamePanelProps) {
   const { language } = useLanguage()
 
@@ -1138,6 +1146,7 @@ export default function ImportGamePanel({
               }}
               onMotifClick={onMotifClick}
               onOpenLesson={onOpenLesson}
+              onOpenManual={onOpenManual}
             />
           )}
 
