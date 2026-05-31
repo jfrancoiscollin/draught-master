@@ -30,12 +30,25 @@ import subprocess
 from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
-_OUT = _HERE / "pages" / "goedemoed"
 
 # Section cues printed in the volume → canonical French study theme. Order
 # matters: the first cue found in a heading line wins, so put the more
-# specific attack variants before the generic "Combinations"/"Forcings".
+# specific cues (S-part numbers, attack variants) before the generic ones.
+#
+# Exercise_2 (GOEDEMOED) labels each page with a fine section title
+# ("Judging positions", "Which move do you play?", …). Exercise_3
+# (GOEDEMOED3) labels pages with their part heading ("S5. The endgame", …),
+# so both vocabularies are covered here.
 _CUES: list[tuple[str, str]] = [
+    # Exercise_3 part headings (most reliable, present on every page).
+    ("using tactics", "Tactique"),
+    ("opening of the game", "Ouverture"),
+    ("thinking process", "Processus de réflexion"),
+    ("the endgame", "Finale"),
+    ("finishing of the game", "Finir la partie"),
+    ("finishing off the game", "Finir la partie"),
+    ("composition", "Compositions"),
+    # Exercise_2 fine section titles.
     ("which move", "Quel coup jouer ?"),
     ("good or not", "Bon ou pas ?"),
     ("judging position", "Juger la position"),
@@ -84,8 +97,8 @@ def _heading_on(pdf: Path, page: int) -> str | None:
     return None
 
 
-def build(pdf: Path) -> dict[str, dict[str, str]]:
-    manifest = json.loads((_OUT / "diagrams_manifest.json").read_text())
+def build(pdf: Path, out_dir: Path) -> dict[str, dict[str, str]]:
+    manifest = json.loads((out_dir / "diagrams_manifest.json").read_text())
     pages = sorted({e["page"] for e in manifest["entries"]})
 
     # Forward-fill: a page with no heading of its own continues the previous
@@ -104,10 +117,13 @@ def build(pdf: Path) -> dict[str, dict[str, str]]:
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf", required=True)
+    ap.add_argument("--source", default="GOEDEMOED",
+                    help="library source key; reads/writes pages/<source.lower()>")
     args = ap.parse_args(argv)
 
-    sections = build(Path(args.pdf))
-    (_OUT / "diagram_sections.json").write_text(
+    out_dir = _HERE / "pages" / args.source.lower()
+    sections = build(Path(args.pdf), out_dir)
+    (out_dir / "diagram_sections.json").write_text(
         json.dumps(sections, indent=2, ensure_ascii=False))
 
     from collections import Counter

@@ -34,7 +34,7 @@ from PIL import Image
 
 from strategy.fen_detector import config_for_source, detect_fen
 
-_OUT = Path(__file__).resolve().parent / "pages" / "goedemoed"
+_PAGES = Path(__file__).resolve().parent / "pages"
 MIN_BOARD_AREA = 100_000
 CROP_PX = 440
 
@@ -72,17 +72,21 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf", required=True)
     ap.add_argument("--pages", required=True, help="e.g. 2-203")
+    ap.add_argument("--source", default="GOEDEMOED",
+                    help="library source key; output dir is pages/<source.lower()>")
     ap.add_argument("--cache", default="/tmp/goed_scan/pages")
     ap.add_argument("--dpi", type=int, default=300)
     args = ap.parse_args(argv)
 
+    source = args.source.upper()
+    out = _PAGES / source.lower()
     pdf = Path(args.pdf)
     lo, hi = (int(x) for x in args.pages.split("-"))
     cache = Path(args.cache)
-    crops_dir = _OUT / "diagrams"
+    crops_dir = out / "diagrams"
     crops_dir.mkdir(parents=True, exist_ok=True)
 
-    cfg = config_for_source("GOEDEMOED")
+    cfg = config_for_source(source)
     manifest_entries = []
     auto_entries = []
     seq = 0
@@ -106,11 +110,11 @@ def main(argv=None):
             auto_entries.append({"page": page, "number": number, "fen": fen, "_auto": True})
         print(f"page {page}: {len(boards)} diagrams")
 
-    (_OUT / "diagrams_manifest.json").write_text(
+    (out / "diagrams_manifest.json").write_text(
         json.dumps({"entries": manifest_entries}, indent=2, ensure_ascii=False))
-    (_OUT / "diagrams_fens_auto.json").write_text(
-        json.dumps({"source": "GOEDEMOED", "entries": auto_entries}, indent=2, ensure_ascii=False))
-    print(f"\n{seq} diagrams across {len({e['page'] for e in manifest_entries})} pages -> {_OUT}")
+    (out / "diagrams_fens_auto.json").write_text(
+        json.dumps({"source": source, "entries": auto_entries}, indent=2, ensure_ascii=False))
+    print(f"\n{seq} diagrams across {len({e['page'] for e in manifest_entries})} pages -> {out}")
 
 
 if __name__ == "__main__":

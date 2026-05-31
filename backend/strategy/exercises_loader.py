@@ -27,18 +27,20 @@ def _raw() -> list[dict[str, Any]]:
     return json.loads(_PATH.read_text()).get("exercises", [])
 
 
-# Sources seeded before GOEDEMOED was added. Their IDs are assigned by the
-# enumerate order in db/schema.py and are referenced by curriculum_resolved.json
-# and by users' saved progress, so their relative order must never change.
-# New sources are appended *after* these to keep existing IDs stable.
-_LEGACY_SOURCES = ("KELLER", "SIJBRANDS", "SPRINGER")
+# Strategy-exercise IDs are assigned by the enumerate order in db/schema.py and
+# are referenced by curriculum_resolved.json and by users' saved progress, so a
+# source's IDs must never shift once it has been seeded. We therefore freeze the
+# *order in which sources were introduced*: each new manual is appended strictly
+# after every earlier one, so it only ever occupies fresh IDs. Within a source,
+# entries stay diagram-id-sorted. Append new sources to the END of this tuple.
+_SOURCE_ORDER = ("KELLER", "SIJBRANDS", "SPRINGER", "GOEDEMOED", "GOEDEMOED3")
 
 
 def _sort_key(ex: dict[str, Any]) -> tuple:
-    # Legacy sources keep their original (diagram_id-sorted) positions; any new
-    # source sorts strictly after them, so it only ever occupies fresh IDs.
-    is_new = ex["source"].upper() not in _LEGACY_SOURCES
-    return (is_new, ex["diagram_id"])
+    src = ex["source"].upper()
+    # Unknown (future) sources sort after all known ones, still deterministically.
+    rank = _SOURCE_ORDER.index(src) if src in _SOURCE_ORDER else len(_SOURCE_ORDER)
+    return (rank, ex["diagram_id"])
 
 
 def all_strategy_exercises() -> list[dict[str, Any]]:
