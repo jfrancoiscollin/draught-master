@@ -59,39 +59,65 @@ def _matches(tip: dict, feats: set[str], phase: str) -> bool:
 
 
 def _pick(matched: list[dict]) -> list[dict]:
-    """Human-verified first, de-duplicated by FEN, spread across sources."""
-    seen: set[str] = set()
-    ranked = sorted(
+    """Human-verified first, de-duplicated by FEN, spread across sources.
+
+    The examples illustrate a tip, so variety matters: rather than fill the
+    cap from the alphabetically-first sources, we round-robin across sources
+    (human-verified positions taking priority within each), so every source
+    that matches the tip gets a chance to appear.
+    """
+    from collections import OrderedDict
+
+    by_source: "OrderedDict[str, list[dict]]" = OrderedDict()
+    for p in sorted(
         matched,
         key=lambda p: (0 if p["kind"] == "human" else 1, p["source"], p["page"], p["number"]),
-    )
+    ):
+        by_source.setdefault(p["source"], []).append(p)
+
+    seen: set[str] = set()
     out: list[dict] = []
-    for p in ranked:
-        if p["fen"] in seen:
-            continue
-        seen.add(p["fen"])
-        out.append({k: p.get(k) for k in _EXAMPLE_FIELDS})
-        if len(out) >= _MAX_EXAMPLES:
-            break
+    # One pass per round; each round takes the next position from each source.
+    while len(out) < _MAX_EXAMPLES and any(by_source.values()):
+        for queue in by_source.values():
+            while queue:
+                p = queue.pop(0)
+                if p["fen"] in seen:
+                    continue
+                seen.add(p["fen"])
+                out.append({k: p.get(k) for k in _EXAMPLE_FIELDS})
+                break
+            if len(out) >= _MAX_EXAMPLES:
+                break
     return out
 
 
-def enrich(dry_run: bool = False) -> dict[str, int]:
+def compute_enriched() -> list[dict]:
+    """Return the tips list with freshly-computed ``example_positions``.
+
+    Pure (no file write), so a freshness test can compare it against the
+    committed ``knowledge_base.json`` and catch a stale artefact whenever the
+    position library changes (e.g. a new manual is scanned in).
+    """
     tips = json.loads(_KB_PATH.read_text())["tips"]
     positions = lib.valid_positions()
     # Precompute features once per position.
     precomputed = [(p, *_features_for(p)) for p in positions]
 
-    report: dict[str, int] = {}
     for tip in tips:
         matched = [p for (p, feats, phase) in precomputed if _matches(tip, feats, phase)]
         examples = _pick(matched)
         if examples:
             tip["example_positions"] = examples
-            report[tip["id"]] = len(examples)
         else:
             # Idempotent: drop any stale examples when nothing matches now.
             tip.pop("example_positions", None)
+    return tips
+
+
+def enrich(dry_run: bool = False) -> dict[str, int]:
+    tips = compute_enriched()
+    report = {t["id"]: len(t["example_positions"]) for t in tips if t.get("example_positions")}
 
     if not dry_run:
         payload = {"tips": tips}

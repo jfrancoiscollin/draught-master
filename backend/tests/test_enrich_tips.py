@@ -25,6 +25,20 @@ def test_some_tips_have_examples():
     assert len(enriched) > 20
 
 
+def test_committed_kb_is_fresh():
+    """knowledge_base.json must match a fresh enrichment of the library.
+
+    Guards against the artefact going stale when the position library
+    changes (e.g. a new manual is scanned in) without re-running
+    ``python -m strategy.enrich_tips``.
+    """
+    committed = _tips()
+    fresh = et.compute_enriched()
+    assert committed == fresh, (
+        "knowledge_base.json is stale — re-run `python -m strategy.enrich_tips`"
+    )
+
+
 def test_every_example_actually_matches_its_tip():
     """Each attached position must genuinely satisfy the tip's pattern —
     same feature rules the in-game advisor uses to surface the tip."""
