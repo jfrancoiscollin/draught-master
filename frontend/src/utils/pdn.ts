@@ -75,6 +75,52 @@ export function replayPdnSequence(
   return { board, appliedUpTo: pdns.length - 1 }
 }
 
+const WHITE_PIECES = new Set([WHITE_MAN, WHITE_KING])
+const BLACK_PIECES = new Set([BLACK_MAN, BLACK_KING])
+
+/**
+ * How many leading PDN moves *legally* apply from `initialBoard`.
+ *
+ * Unlike replayPdnSequence (which validates notation only and would happily
+ * "move" an empty square), this checks that each move's from-square holds a
+ * piece of the side to move, that a simple move lands on an empty square, and
+ * that a capture actually jumps enemy pieces. The point is to reject prose
+ * move-lists that don't start from the shown diagram (e.g. the moves that
+ * *led to* it), so the manual never renders an impossible position.
+ *
+ * Not a full rules engine (no capture-obligation or man-direction checks) —
+ * just enough legality to gate the interactive replay honestly.
+ */
+export function legalPrefixLength(
+  initialBoard: number[],
+  pdns: string[],
+  whiteToMove: boolean,
+): number {
+  let board = [...initialBoard]
+  let white = whiteToMove
+  for (let i = 0; i < pdns.length; i++) {
+    const md = pdnToMoveData(pdns[i], board)
+    if (!md) return i
+    const from = md.path[0]
+    const dest = md.path[md.path.length - 1]
+    const piece = board[from]
+    const own = white ? WHITE_PIECES : BLACK_PIECES
+    const enemy = white ? BLACK_PIECES : WHITE_PIECES
+    if (!own.has(piece)) return i                       // no own piece to move
+    if (dest !== from && board[dest] !== EMPTY) return i // landing square busy
+    const isCapture = pdns[i].includes('x')
+    if (isCapture) {
+      // Every jumped square the parser found must hold an enemy piece, and
+      // there must be one jump per leg.
+      if (md.captures.length < md.path.length - 1) return i
+      if (!md.captures.every((sq: number) => enemy.has(board[sq]))) return i
+    }
+    board = applyMoveLocally(board, md)
+    white = !white
+  }
+  return pdns.length
+}
+
 // Detects PDN move tokens like "33-29", "18x29", "20x31x42" in prose.
 // Anchored on word boundaries to avoid matching parts of numbers or
 // section markers ("1.", "2.", "4.").  The 1-2 digit / 1-2 digit

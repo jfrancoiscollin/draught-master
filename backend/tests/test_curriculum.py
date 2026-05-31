@@ -299,7 +299,7 @@ def test_strategy_reading_module_links_every_manual():
         None,
     )
     assert mod is not None, "strategy reading module missing"
-    assert mod["n_manuals"] == len(mod["lessons"]) >= 6
+    assert mod["n_manuals"] == len(mod["lessons"]) >= 4
     seen_sources = set()
     for les in mod["lessons"]:
         manuals = [it for it in les["items"] if it["kind"] == "manual"]
@@ -308,8 +308,10 @@ def test_strategy_reading_module_links_every_manual():
         assert src in known, src
         assert manuals[0]["ref"] == src
         seen_sources.add(src)
-    # All six exploited corpora are surfaced as reading lessons.
-    assert {"SIJBRANDS", "ROOZENBURG", "KELLER", "SPRINGER", "GOEDEMOED", "GOEDEMOED3"} <= seen_sources
+    # The prose-rich system manuals are surfaced as reading lessons. Goedemoed
+    # / Goedemoed3 are exercise collections (too little prose) and deliberately
+    # excluded from the reading track.
+    assert seen_sources == {"SIJBRANDS", "ROOZENBURG", "KELLER", "SPRINGER"}
 
 
 def test_unknown_manual_source_is_rejected():
