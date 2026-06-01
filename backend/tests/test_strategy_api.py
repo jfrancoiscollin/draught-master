@@ -321,9 +321,12 @@ def test_section_titles_are_clean_not_body_text() -> None:
     heading to one clean title; assert every served title is title-ish and a
     heading shows a single title across its pages.
     """
-    from strategy.api import _is_titleish, _load_diagram_sections
+    from strategy.api import _CURATED_SECTION_SOURCES, _is_titleish, _load_diagram_sections
 
-    for source in ("SPRINGER", "SIJBRANDS", "ROOZENBURG", "KELLER"):
+    # Noisy page-scan sources keep the heuristic filter. Curated sources
+    # (rebuilt from the book's table of contents) carry reliable titles that
+    # may be long phrases, so the heuristic doesn't apply to them.
+    for source in ("SPRINGER", "ROOZENBURG", "KELLER"):
         sections = _load_diagram_sections(source)
         per_heading: dict[str, set[str]] = {}
         for entry in sections.values():
@@ -333,6 +336,15 @@ def test_section_titles_are_clean_not_body_text() -> None:
                 assert _is_titleish(t), f"{source}: junk title {t!r} under {h!r}"
             per_heading.setdefault(h, set()).add(t)
         # One canonical title per heading (no per-page drift).
+        for h, titles in per_heading.items():
+            assert len(titles) == 1, f"{source}: heading {h!r} has drifting titles {titles}"
+
+    # Curated sources: still one title per heading (no drift), titles non-empty.
+    for source in _CURATED_SECTION_SOURCES:
+        sections = _load_diagram_sections(source)
+        per_heading = {}
+        for entry in sections.values():
+            per_heading.setdefault(entry["heading"], set()).add(entry.get("title", ""))
         for h, titles in per_heading.items():
             assert len(titles) == 1, f"{source}: heading {h!r} has drifting titles {titles}"
 
