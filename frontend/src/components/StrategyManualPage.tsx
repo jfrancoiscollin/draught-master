@@ -1,30 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import Board from './Board'
-import { fenToBoard } from '../utils/fen'
-import { PDN_MOVE_RE, replayPdnSequence, legalPrefixLength } from '../utils/pdn'
-import { type StrategyPassage } from '../api/client'
-
-// Backend ``/manual`` enriches each passage with the section heading
-// pulled from the source PDF (``Thème 4 — Libérer le chemin``).  Keep
-// the wire type loose: ``section`` is ``null`` when no metadata is
-// bundled for the source or no heading was in scope for the passage's
-// page.
-interface ManualPassage extends StrategyPassage {
-  section?: { heading: string; title: string } | null
-}
-
-interface Chapter {
-  topic_key: string
-  title_fr: string
-  title_en: string
-  description_fr: string
-  passages: ManualPassage[]
-}
-
-interface ManualResponse {
-  source: string
-  chapters: Chapter[]
-}
+import React, { useEffect, useState } from 'react'
+import LessonPanel from './LessonPanel'
+import { getManualChapters, type ManualChapterSummary } from '../api/client'
 
 interface Props {
   source: string
@@ -37,52 +13,50 @@ const SOURCE_LABEL: Record<string, { fr: string; en: string; author?: string }> 
   SPRINGER: { fr: 'Manuel Springer', en: 'Springer Manual', author: 'Springer' },
   ROOZENBURG: { fr: 'Manuel Roozenburg', en: 'Roozenburg Manual', author: 'Piet Roozenburg' },
   KELLER: { fr: 'Manuel Keller', en: 'Keller Manual', author: 'Keller' },
-  GOEDEMOED: { fr: 'Cours Goedemoed', en: 'Goedemoed Course', author: 'A Course in Draughts' },
-  GOEDEMOED3: { fr: 'Cours Goedemoed — volume avancé', en: 'Goedemoed Course — advanced', author: 'A Course in Draughts, vol. 3' },
 }
 
 /**
- * Strategic manual rendered as a long-form pedagogical document.
+ * Strategic manual — rendered with the SAME view as the Débutant manual.
  *
- * One manual per source (Sijbrands / Springer / Roozenburg / Keller).
- * The corpus is grouped into chapters by topic centroid match and
- * rendered top-down: chapter title, chapter description, then each
- * passage as a section card with the diagram's Board on top and the
- * prose below.  Every PDN move in the prose is a button — clicking
- * replays the sequence from the diagram's FEN and shows the resulting
- * position on that section's Board (per-section state so each passage
- * has its own independent move cursor).
+ * A table of contents lists the book's chapters in order; clicking one opens
+ * the shared ``LessonPanel`` (board on top, prose below, clickable ``diag. N``
+ * references and clickable square numbers) fed by ``/strategy/manual-lesson``.
+ * ‹ Précédent / Suivant › step through the chapters without returning to the
+ * list.
  */
 const StrategyManualPage: React.FC<Props> = ({ source, onClose, lang = 'fr' }) => {
-  const [manual, setManual] = useState<ManualResponse | null>(null)
+  const [chapters, setChapters] = useState<ManualChapterSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [openChapter, setOpenChapter] = useState<number | null>(null)
+  const label = SOURCE_LABEL[source] ?? { fr: source, en: source }
+  const fr = lang !== 'en'
 
   useEffect(() => {
-    setManual(null)
+    setChapters(null)
     setError(null)
-    const ctrl = new AbortController()
-    fetch(`/api/strategy/manual?source=${encodeURIComponent(source)}`, {
-      signal: ctrl.signal,
-    })
-      .then(r => {
-        if (!r.ok) throw new Error(`${r.status}`)
-        return r.json()
-      })
-      .then(setManual)
-      .catch(e => {
-        if (e?.name !== 'AbortError') {
-          setError(
-            lang === 'fr'
-              ? `Impossible de charger le manuel : ${e?.message ?? e}`
-              : `Failed to load manual: ${e?.message ?? e}`,
-          )
-        }
-      })
-    return () => ctrl.abort()
-  }, [source, lang])
+    setOpenChapter(null)
+    getManualChapters(source)
+      .then(setChapters)
+      .catch(e => setError(String(e?.message ?? e)))
+  }, [source])
 
-  const label = SOURCE_LABEL[source] ?? { fr: source, en: source }
+  // ── Chapter detail (reuses the Débutant LessonPanel) ──
+  if (openChapter !== null && chapters) {
+    return (
+      <LessonPanel
+        key={openChapter}
+        chapter={openChapter}
+        exampleFen=""
+        manualSource={source}
+        onClose={() => setOpenChapter(null)}
+        onPrev={openChapter > 0 ? () => setOpenChapter(openChapter - 1) : undefined}
+        onNext={openChapter < chapters.length - 1 ? () => setOpenChapter(openChapter + 1) : undefined}
+        navLabel={`${openChapter + 1} / ${chapters.length}`}
+      />
+    )
+  }
 
+  // ── Table of contents ──
   return (
     <div className="h-full overflow-y-auto bg-gray-900 text-gray-100">
       <header className="sticky top-0 z-10 bg-gray-900 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
@@ -90,337 +64,43 @@ const StrategyManualPage: React.FC<Props> = ({ source, onClose, lang = 'fr' }) =
           <h1 className="text-lg font-bold text-amber-500">
             {lang === 'en' ? label.en : label.fr}
           </h1>
-          {label.author && (
-            <p className="text-xs text-gray-500">{label.author}</p>
-          )}
+          {label.author && <p className="text-xs text-gray-500">{label.author}</p>}
         </div>
         <button
           onClick={onClose}
           className="text-gray-400 hover:text-white"
-          aria-label={lang === 'fr' ? 'Fermer' : 'Close'}
+          aria-label={fr ? 'Fermer' : 'Close'}
         >
           ✕
         </button>
       </header>
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-10">
-        {error && (
-          <p className="text-sm text-red-400">{error}</p>
+
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        {error && <p className="text-sm text-red-400">{error}</p>}
+        {!error && !chapters && (
+          <p className="text-sm text-gray-500">{fr ? 'Chargement…' : 'Loading…'}</p>
         )}
-        {!error && !manual && (
-          <p className="text-sm text-gray-500">
-            {lang === 'fr' ? 'Chargement…' : 'Loading…'}
-          </p>
-        )}
-        {manual?.chapters.length === 0 && (
+        {chapters && chapters.length === 0 && (
           <p className="text-sm text-gray-500 italic">
-            {lang === 'fr'
-              ? 'Aucun passage indexé pour ce manuel.'
-              : 'No passage indexed for this manual.'}
+            {fr ? 'Aucun chapitre indexé pour ce manuel.' : 'No chapter indexed for this manual.'}
           </p>
         )}
-        {manual?.chapters.map((chapter) => (
-          <ChapterSection key={chapter.topic_key} chapter={chapter} lang={lang} />
-        ))}
+        <ol className="space-y-2">
+          {chapters?.map(ch => (
+            <li key={ch.index}>
+              <button
+                onClick={() => setOpenChapter(ch.index)}
+                className="group w-full flex items-center gap-3 rounded-xl border border-gray-700 bg-gray-800 hover:border-amber-600 hover:bg-gray-750 px-4 py-3 text-left transition-all duration-200 cursor-pointer"
+              >
+                <span className="text-gray-500 text-sm font-mono w-7 shrink-0">{ch.index + 1}.</span>
+                <span className="flex-1 min-w-0 font-semibold text-gray-100">{ch.title}</span>
+                <span className="ml-auto text-gray-500 group-hover:text-amber-400">→</span>
+              </button>
+            </li>
+          ))}
+        </ol>
       </div>
     </div>
-  )
-}
-
-const ChapterSection: React.FC<{ chapter: Chapter; lang: 'fr' | 'en' }> = ({
-  chapter,
-  lang,
-}) => {
-  return (
-    <section>
-      <h2 className="text-base font-bold text-white border-l-4 border-amber-500 pl-3 mb-1">
-        {lang === 'en' ? chapter.title_en : chapter.title_fr}
-      </h2>
-      {chapter.description_fr && (
-        <p className="text-xs text-gray-500 mb-4">{chapter.description_fr}</p>
-      )}
-      <div className="space-y-6">
-        {chapter.passages.map((p, pi) => (
-          <PassageCard key={p.passage_id} passage={p} index={pi + 1} lang={lang} />
-        ))}
-      </div>
-    </section>
-  )
-}
-
-// Captures explicit diagram references in the passage text — same
-// regex as the StrategyPanel modal.  ``DIAGRAMME 6`` / ``diagramme 6``
-// case-insensitive.  Used to fetch the position FEN for the Board.
-const DIAGRAM_REF_RE = /\bdiagramme\s+(\d+)/i
-
-// A FEN with no men on either side (e.g. "W:W:B") — the detector found a
-// blank board, which is the printed form of a "position in figures" the
-// reader composes themselves. We then show neither board nor image.
-function isEmptyFen(fen: string | null | undefined): boolean {
-  if (!fen) return false
-  const m = fen.match(/W:W([^:]*):B(.*)$/i)
-  if (!m) return false
-  const hasPiece = (s: string) => /\d/.test(s)
-  return !hasPiece(m[1]) && !hasPiece(m[2])
-}
-
-const PassageCard: React.FC<{ passage: ManualPassage; index: number; lang: 'fr' | 'en' }> = ({
-  passage,
-  index,
-  lang,
-}) => {
-  const [fen, setFen] = useState<string | null>(null)
-  const [replayMoveIndex, setReplayMoveIndex] = useState<number | null>(null)
-  // When no engine FEN is available but the prose cites a diagram, we fall
-  // back to the printed image: the extracted crop first, then the whole page.
-  const [imgSrc, setImgSrc] = useState<string | null>(null)
-
-  // Derive the diagram number from the prose ("Diagramme N") or fall
-  // back to the first diagram on the passage's page (Roozenburg/Keller
-  // style — passages cite move sequences, not diagram numbers).
-  const diagramMatch = passage.text.match(DIAGRAM_REF_RE)
-  const explicitNumber = diagramMatch ? parseInt(diagramMatch[1], 10) : null
-
-  useEffect(() => {
-    setFen(null)
-    setReplayMoveIndex(null)
-    // Show the printed crop while we try for a live board; if a valid FEN
-    // arrives it takes over, otherwise the image stays as the illustration.
-    setImgSrc(
-      explicitNumber !== null
-        ? `/api/strategy/diagram?source=${encodeURIComponent(passage.source)}&page=${passage.page}&number=${explicitNumber}`
-        : null,
-    )
-    if (explicitNumber !== null) {
-      const qs = `source=${encodeURIComponent(passage.source)}&page=${passage.page}&number=${explicitNumber}`
-      fetch(`/api/strategy/diagram-fen?${qs}`)
-        .then(r => (r.ok ? r.json() : null))
-        .then(j => {
-          // Skip boards the engine flagged invalid (bad auto FEN) so a
-          // broken position never renders next to the prose.
-          if (j?.fen && j.valid !== false) setFen(j.fen)
-          // An empty-board FEN ("W:W:B", no pieces) means this is a
-          // "position in figures" the reader sets up themselves — there is
-          // no real printed diagram, so drop the (blank) image too.
-          else if (isEmptyFen(j?.fen)) setImgSrc(null)
-        })
-        .catch(() => {})
-      return
-    }
-    // Fallback: ask the diagram-index for the first diagram on this page
-    fetch(`/api/strategy/diagram-index?source=${encodeURIComponent(passage.source)}`)
-      .then(r => (r.ok ? r.json() : {}))
-      .then((idx: Record<string, number[]>) => {
-        const nums = idx[String(passage.page)]
-        if (nums && nums.length > 0) {
-          setImgSrc(`/api/strategy/diagram?source=${encodeURIComponent(passage.source)}&page=${passage.page}&number=${nums[0]}`)
-          const qs = `source=${encodeURIComponent(passage.source)}&page=${passage.page}&number=${nums[0]}`
-          return fetch(`/api/strategy/diagram-fen?${qs}`)
-            .then(r => (r.ok ? r.json() : null))
-            .then(j => {
-              // Skip boards the engine flagged invalid (bad auto FEN) so a
-          // broken position never renders next to the prose.
-          if (j?.fen && j.valid !== false) setFen(j.fen)
-          else if (isEmptyFen(j?.fen)) setImgSrc(null)
-            })
-        }
-      })
-      .catch(() => {})
-  }, [passage.passage_id, explicitNumber, passage.source, passage.page])
-
-  const { tokens, moves } = useMemo(() => {
-    const cleaned = passage.text
-      // "Mettez la position [du DIAGRAMME N | du diagramme N.M | initiale]
-      // sur le damier [si ...]." — printed-book instruction now made
-      // redundant by the live Board above each card.
-      .replace(
-        /\s*Mettez la position(?:\s+(?:du DIAGRAMME\s+\d+|du diagramme\s+[\d.]+|initiale))?\s+sur le damier(?:\s+si[^.]*)?\.?\s*/gi,
-        ' ',
-      )
-      // Column-header lines that are only "DIAGRAMME N" tokens
-      // separated by spacing (PDF layout artefact).
-      .replace(/^[ \t]*(?:DIAGRAMME\s+\d+[ \t]*)+$/gm, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
-    type Tok =
-      | { kind: 'text'; text: string }
-      | { kind: 'move'; text: string; index: number }
-    const t: Tok[] = []
-    const m: string[] = []
-    PDN_MOVE_RE.lastIndex = 0
-    let cursor = 0
-    let match: RegExpExecArray | null
-    while ((match = PDN_MOVE_RE.exec(cleaned)) !== null) {
-      if (match.index > cursor) {
-        t.push({ kind: 'text', text: cleaned.slice(cursor, match.index) })
-      }
-      t.push({ kind: 'move', text: match[0], index: m.length })
-      m.push(match[0])
-      cursor = match.index + match[0].length
-    }
-    if (cursor < cleaned.length) {
-      t.push({ kind: 'text', text: cleaned.slice(cursor) })
-    }
-    return { tokens: t, moves: m }
-  }, [passage.text])
-
-  const baseBoard = fen ? fenToBoard(fen) : null
-  // Highest move index that legally replays from THIS diagram's FEN.
-  // -1 when even the first move doesn't apply — the sequence then belongs to
-  // a different position (often the moves that *led to* this diagram rather
-  // than continuing from it), so we show the moves as plain text instead of
-  // a misleading interactive replay that would render an impossible board.
-  const whiteToMove = (fen ?? '').trim().toUpperCase().startsWith('W')
-  const maxApplicable = useMemo(
-    () => (baseBoard && moves.length ? legalPrefixLength(baseBoard, moves, whiteToMove) - 1 : -1),
-    [baseBoard, moves, whiteToMove],
-  )
-  const replayable = maxApplicable >= 0
-  const displayedBoard = useMemo(() => {
-    if (!baseBoard) return null
-    if (replayMoveIndex === null) return baseBoard
-    const upTo = Math.min(replayMoveIndex, maxApplicable)
-    if (upTo < 0) return baseBoard
-    return replayPdnSequence(baseBoard, moves.slice(0, upTo + 1)).board
-  }, [baseBoard, moves, replayMoveIndex, maxApplicable])
-
-  // Title preference:
-  //   1. PDF-extracted section ("Thème 4 — Libérer le chemin")
-  //      with the source's page reference as subtitle.
-  //   2. Fallback to "Diagramme N · page X" when no section metadata
-  //      was bundled for this page.
-  const sectionMeta = passage.section
-  const fallbackTitle = explicitNumber !== null
-    ? `${lang === 'fr' ? 'Diagramme' : 'Diagram'} ${explicitNumber} · ${lang === 'fr' ? 'page' : 'page'} ${passage.page}`
-    : `${lang === 'fr' ? 'Section' : 'Section'} ${index} · ${lang === 'fr' ? 'page' : 'page'} ${passage.page}`
-
-  return (
-    <article className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-4">
-      {sectionMeta ? (
-        <header className="mb-3">
-          <h3 className="text-sm font-bold text-amber-400 leading-tight">
-            {sectionMeta.heading}
-            {sectionMeta.title && (
-              <> · <span className="font-semibold text-amber-300">{sectionMeta.title}</span></>
-            )}
-          </h3>
-          <p className="text-[10px] uppercase tracking-wide text-gray-500 mt-0.5">
-            {explicitNumber !== null
-              ? `${lang === 'fr' ? 'Diagramme' : 'Diagram'} ${explicitNumber} · page ${passage.page}`
-              : `${lang === 'fr' ? 'page' : 'page'} ${passage.page}`}
-          </p>
-        </header>
-      ) : (
-        <h3 className="text-sm font-semibold text-amber-400 mb-3">
-          {fallbackTitle}
-        </h3>
-      )}
-      {displayedBoard && (
-        <div className="mb-3">
-          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wide text-gray-500 mb-1">
-            <span>
-              {replayMoveIndex !== null
-                ? <>{lang === 'fr' ? 'Après' : 'After'} <span className="text-amber-400">{moves[replayMoveIndex]}</span></>
-                : (lang === 'fr' ? 'Position initiale' : 'Initial position')}
-            </span>
-            {replayMoveIndex !== null && (
-              <button
-                onClick={() => setReplayMoveIndex(null)}
-                className="text-amber-400 hover:text-amber-300 text-[10px] underline normal-case tracking-normal"
-              >
-                {lang === 'fr' ? '↺ initial' : '↺ initial'}
-              </button>
-            )}
-          </div>
-          <Board
-            board={displayedBoard}
-            legalMoves={[]}
-            onMove={() => {}}
-            selectedSquare={null}
-            onSelectSquare={() => {}}
-            disabled
-          />
-          {replayable && (
-            <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
-              <button
-                onClick={() => setReplayMoveIndex(idx => idx === null || idx <= 0 ? null : idx - 1)}
-                disabled={replayMoveIndex === null}
-                className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:hover:bg-gray-700"
-                aria-label={lang === 'fr' ? 'Coup précédent' : 'Previous move'}
-                title="←"
-              >
-                ←
-              </button>
-              <span className="text-[10px] tabular-nums">
-                {replayMoveIndex === null
-                  ? `0 / ${maxApplicable + 1}`
-                  : `${replayMoveIndex + 1} / ${maxApplicable + 1}`}
-              </span>
-              <button
-                onClick={() => setReplayMoveIndex(idx => idx === null ? 0 : Math.min(idx + 1, maxApplicable))}
-                disabled={replayMoveIndex !== null && replayMoveIndex >= maxApplicable}
-                className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:hover:bg-gray-700"
-                aria-label={lang === 'fr' ? 'Coup suivant' : 'Next move'}
-                title="→"
-              >
-                →
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-      {/* No live board: fall back to the printed diagram image when the
-          prose cites one. The crop is tried first; on error we swap to the
-          whole page. When the passage cites no diagram at all (a "position
-          in figures" the reader sets up themselves), we show nothing rather
-          than a misleading "unavailable" notice. */}
-      {!displayedBoard && imgSrc && (
-        <div className="mb-3">
-          <img
-            src={imgSrc}
-            alt={lang === 'fr' ? 'Diagramme du livre' : 'Book diagram'}
-            loading="lazy"
-            className="w-full rounded-lg border border-gray-700 bg-white"
-            onError={(e) => {
-              // Crop missing → fall back to the full page image once.
-              const img = e.currentTarget
-              const pageUrl = `/api/strategy/page-image?source=${encodeURIComponent(passage.source)}&page=${passage.page}`
-              if (!img.src.includes('/page-image')) {
-                img.src = pageUrl
-              } else {
-                img.style.display = 'none'
-              }
-            }}
-          />
-        </div>
-      )}
-      <div className="text-sm text-gray-200 leading-relaxed">
-        {tokens.map((t, i) =>
-          // A move is interactive only when it legally replays from this
-          // diagram's FEN; otherwise it stays plain text (the sequence
-          // doesn't start from the shown position).
-          t.kind === 'text' || t.index > maxApplicable ? (
-            <span key={i}>{t.text}</span>
-          ) : (
-            <button
-              key={i}
-              onClick={() => setReplayMoveIndex(t.index)}
-              className={`mx-0.5 px-1 rounded font-medium ${
-                replayMoveIndex === t.index
-                  ? 'bg-amber-600 text-white'
-                  : 'text-amber-400 hover:bg-amber-900/40'
-              }`}
-              title={
-                lang === 'fr'
-                  ? 'Voir la position après ce coup'
-                  : 'Show position after this move'
-              }
-            >
-              {t.text}
-            </button>
-          ),
-        )}
-      </div>
-    </article>
   )
 }
 
