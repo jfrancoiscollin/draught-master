@@ -62,3 +62,18 @@ def lead_excerpt(text: str, min_run: int = 4) -> str:
                 return text[tokens[start].start():].strip()
         # neutral tokens ("<24>", "—", "!") keep the current run going
     return text.strip()
+
+
+def normalize_whitespace(text: str) -> str:
+    """Flatten PDF line-wrap artefacts into clean flowing prose.
+
+    Extracted text keeps the book's column layout: hard newlines mid-sentence
+    and long runs of leading spaces (indentation). Rendered as-is in the
+    browser that yields ragged, half-centred lines. We collapse every run of
+    whitespace (including single newlines) to one space, but keep a real
+    paragraph break where the source had a blank line.
+    """
+    # Normalise newlines, then split on blank lines (≥1 empty line) = paragraphs.
+    paragraphs = re.split(r"\n[ \t]*\n", text.replace("\r\n", "\n"))
+    cleaned = [re.sub(r"\s+", " ", p).strip() for p in paragraphs]
+    return "\n\n".join(p for p in cleaned if p)
