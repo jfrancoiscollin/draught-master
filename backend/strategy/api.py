@@ -358,7 +358,15 @@ def _load_diagram_sections(source: str) -> dict[int, dict[str, str]]:
         return {}
     with p.open() as f:
         data = json.load(f)
-    return _canonical_sections({int(k): v for k, v in data.items()})
+    return _canonical_sections(
+        {int(k): v for k, v in data.items()}, trust_titles=source.upper() in _CURATED_SECTION_SOURCES
+    )
+
+
+# Sources whose diagram_sections.json was rebuilt from the book's real table
+# of contents (one reliable title per heading) — trust those titles verbatim
+# instead of re-filtering them with the noisy-data heuristic.
+_CURATED_SECTION_SOURCES = {"SIJBRANDS"}
 
 
 # A real section heading marker (Thème/Leçon/Partie/Chapitre/Problème N, or
@@ -394,7 +402,9 @@ def _is_titleish(title: str) -> bool:
     return True
 
 
-def _canonical_sections(raw: dict[int, dict[str, str]]) -> dict[int, dict[str, str]]:
+def _canonical_sections(
+    raw: dict[int, dict[str, str]], trust_titles: bool = False
+) -> dict[int, dict[str, str]]:
     """Collapse each heading to a single clean title and drop junk headings.
 
     For every distinct heading, the canonical title is the first (lowest
@@ -403,6 +413,11 @@ def _canonical_sections(raw: dict[int, dict[str, str]]) -> dict[int, dict[str, s
     keep an empty title (the card shows just "Thème N"). Entries without a
     ``heading`` (e.g. Goedemoed's ``{"theme": ...}`` shape) pass through
     untouched.
+
+    ``trust_titles`` (curated sources, rebuilt from the book's table of
+    contents): take the heading's title verbatim — it's reliable and may be a
+    long phrase the heuristic would wrongly reject. Noisy page-scan sources
+    keep the heuristic filter.
     """
     from collections import defaultdict  # noqa: PLC0415
 
@@ -411,10 +426,13 @@ def _canonical_sections(raw: dict[int, dict[str, str]]) -> dict[int, dict[str, s
         h = raw[page].get("heading")
         if h:
             titles_by_heading[h].append(raw[page].get("title", ""))
-    canonical = {
-        h: next((t for t in titles if _is_titleish(t)), "")
-        for h, titles in titles_by_heading.items()
-    }
+
+    def _pick(titles: list[str]) -> str:
+        if trust_titles:
+            return next((t for t in titles if t and t.strip()), "")
+        return next((t for t in titles if _is_titleish(t)), "")
+
+    canonical = {h: _pick(titles) for h, titles in titles_by_heading.items()}
 
     out: dict[int, dict[str, str]] = {}
     for page, entry in raw.items():
