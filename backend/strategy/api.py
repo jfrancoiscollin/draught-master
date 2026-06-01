@@ -607,7 +607,7 @@ def manual_lesson(
     dead link appears. This makes a scanned manual render identically to the
     Débutant manual: board on top, prose below, clickable diagram links.
     """
-    from .prose_quality import lead_excerpt  # noqa: PLC0415
+    from .prose_quality import lead_excerpt, normalize_whitespace  # noqa: PLC0415
 
     groups = _book_chapters(source)
     if chapter < 0 or chapter >= len(groups):
@@ -633,7 +633,7 @@ def manual_lesson(
 
     blocks: list[str] = []
     for p in g["passages"]:
-        text = lead_excerpt(p.text)
+        text = normalize_whitespace(lead_excerpt(p.text))
 
         def _sub(m: "re.Match[str]") -> str:
             number = int(m.group(1))
