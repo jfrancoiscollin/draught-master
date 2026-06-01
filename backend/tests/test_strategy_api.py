@@ -326,7 +326,9 @@ def test_section_titles_are_clean_not_body_text() -> None:
     # Noisy page-scan sources keep the heuristic filter. Curated sources
     # (rebuilt from the book's table of contents) carry reliable titles that
     # may be long phrases, so the heuristic doesn't apply to them.
-    for source in ("SPRINGER", "ROOZENBURG"):
+    noisy = [s for s in ("SPRINGER", "ROOZENBURG", "KELLER")
+             if s not in _CURATED_SECTION_SOURCES]
+    for source in noisy:
         sections = _load_diagram_sections(source)
         per_heading: dict[str, set[str]] = {}
         for entry in sections.values():
