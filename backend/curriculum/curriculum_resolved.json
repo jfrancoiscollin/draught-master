@@ -5032,53 +5032,17 @@
               "difficulty": 1,
               "category": "combinaisons_manuels",
               "theme": "Un pion à la bande et un pion dans le centre"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0090_d10",
-              "fen": "W:W48:B3",
-              "theme": "Un pion à la bande et un pion dans le centre"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0090_d11",
-              "fen": "W:W48:B12",
-              "theme": "Un pion à la bande et un pion dans le centre"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0096_d6",
-              "fen": "W:WK38:B16,28",
-              "theme": "Un pion à la bande et un pion dans le centre"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0100_d6",
-              "fen": "W:WK5,33:B27,31,36",
-              "theme": "Un pion à la bande et un pion dans le centre"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0100_d8",
-              "fen": "W:WK5,43:B21,31,36",
-              "theme": "Un pion à la bande et un pion dans le centre"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0101_d11",
-              "fen": "W:W7,22:B21,34",
-              "theme": "Un pion à la bande et un pion dans le centre"
             }
           ],
-          "n_items": 23,
+          "n_items": 17,
           "n_exercises": 17,
-          "n_positions": 6,
+          "n_positions": 0,
           "n_manuals": 0
         }
       ],
-      "n_items": 23,
+      "n_items": 17,
       "n_exercises": 17,
-      "n_positions": 6,
+      "n_positions": 0,
       "n_manuals": 0
     },
     {
@@ -5431,47 +5395,11 @@
               "difficulty": 3,
               "category": "combinaisons_manuels",
               "theme": "Capturer la dame sur la grande diagonale."
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0112_d4",
-              "fen": "W:WK3,K16,K32:BK2",
-              "theme": "Capturer la dame sur la grande diagonale."
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0112_d5",
-              "fen": "W:WK5,K16,K26:BK30",
-              "theme": "Capturer la dame sur la grande diagonale."
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0112_d6",
-              "fen": "W:WK25,K48,K49:BK12",
-              "theme": "Capturer la dame sur la grande diagonale."
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0112_d7",
-              "fen": "W:WK16,K27,K48:BK2",
-              "theme": "Capturer la dame sur la grande diagonale."
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0113_d10",
-              "fen": "W:WK7,K35,K37:BK43",
-              "theme": "Capturer la dame sur la grande diagonale."
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0113_d11",
-              "fen": "W:WK11,K34,K45:BK49",
-              "theme": "Capturer la dame sur la grande diagonale."
             }
           ],
-          "n_items": 20,
+          "n_items": 14,
           "n_exercises": 14,
-          "n_positions": 6,
+          "n_positions": 0,
           "n_manuals": 0
         },
         {
@@ -5503,32 +5431,32 @@
             },
             {
               "kind": "position",
-              "ref": "SIJBRANDS_p0099_d1",
-              "fen": "W:W7:B13,26",
+              "ref": "SIJBRANDS_p0100_d6",
+              "fen": "W:WK5,33:B27,31,36",
               "theme": "La lutte pour la grande diagonale"
             },
             {
               "kind": "position",
-              "ref": "SIJBRANDS_p0099_d3",
-              "fen": "W:W14,37,41:B26,31",
+              "ref": "SIJBRANDS_p0100_d8",
+              "fen": "W:WK5,43:B21,31,36",
               "theme": "La lutte pour la grande diagonale"
             },
             {
               "kind": "position",
-              "ref": "SIJBRANDS_p0099_d5",
-              "fen": "W:WK28:B4,8,16",
+              "ref": "SIJBRANDS_p0101_d11",
+              "fen": "W:W7,22:B21,34",
               "theme": "La lutte pour la grande diagonale"
             },
             {
               "kind": "position",
-              "ref": "SIJBRANDS_p0181_d17",
-              "fen": "W:WK23:B27,31,36",
+              "ref": "SIJBRANDS_p0101_d12",
+              "fen": "W:WK4,17:B2,33",
               "theme": "La lutte pour la grande diagonale"
             },
             {
               "kind": "position",
-              "ref": "SIJBRANDS_p0181_d18",
-              "fen": "W:WK32:B26,31,36",
+              "ref": "SIJBRANDS_p0101_d13",
+              "fen": "W:WK23,30:B15,25,36",
               "theme": "La lutte pour la grande diagonale"
             }
           ],
@@ -5538,9 +5466,9 @@
           "n_manuals": 0
         }
       ],
-      "n_items": 28,
+      "n_items": 22,
       "n_exercises": 16,
-      "n_positions": 12,
+      "n_positions": 6,
       "n_manuals": 0
     },
     {
@@ -5806,6 +5734,18 @@
             },
             {
               "kind": "position",
+              "ref": "SIJBRANDS_p0090_d10",
+              "fen": "W:W48:B3",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0090_d11",
+              "fen": "W:W48:B12",
+              "theme": "L’opposition"
+            },
+            {
+              "kind": "position",
               "ref": "SIJBRANDS_p0088_d1",
               "fen": "W:W42,43,47:B34",
               "theme": "L’opposition"
@@ -5820,18 +5760,6 @@
               "kind": "position",
               "ref": "SIJBRANDS_p0089_d4",
               "fen": "W:W46,48:B31,38",
-              "theme": "L’opposition"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0089_d5",
-              "fen": "W:W29,33,48:B32",
-              "theme": "L’opposition"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0089_d6",
-              "fen": "W:W39,43,44:B24,30",
               "theme": "L’opposition"
             }
           ],
@@ -5913,6 +5841,12 @@
             },
             {
               "kind": "position",
+              "ref": "SIJBRANDS_p0096_d6",
+              "fen": "W:WK38:B16,28",
+              "theme": "Une dame contre des pions"
+            },
+            {
+              "kind": "position",
               "ref": "ROOZENBURG_p0008_d1",
               "fen": "W:W29,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,49:B2,4,6,7,8,9,10,11,12,13,14,15,16,17,18,20,22,23",
               "theme": "La fin de partie"
@@ -5922,12 +5856,6 @@
               "ref": "ROOZENBURG_p0008_d2",
               "fen": "W:W27,29,30,32,33,34,35,37,38,39,41,42,43,44,45,47,49:B2,4,6,7,8,9,11,12,13,14,15,16,17,18,19,23,25",
               "theme": "La fin de partie"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0095_d4",
-              "fen": "W:W8:B10,16",
-              "theme": "Une dame contre des pions"
             }
           ],
           "n_items": 12,
@@ -6007,6 +5935,12 @@
             },
             {
               "kind": "position",
+              "ref": "SIJBRANDS_p0034_d8",
+              "fen": "W:W27,28,32,33,35,37,38,39,44,45:B6,11,12,13,14,16,18,19,23,24",
+              "theme": "Le coup royal"
+            },
+            {
+              "kind": "position",
               "ref": "SIJBRANDS_p0033_d1",
               "fen": "W:W27,28,32,33,35,37,38,39,40,45:B6,11,12,13,14,18,19,23,24",
               "theme": "Le coup royal"
@@ -6033,12 +5967,6 @@
               "kind": "position",
               "ref": "SIJBRANDS_p0033_d5",
               "fen": "W:W27,28,31,32,33,36,38,39,40,45:B3,11,12,13,14,16,18,19,23,24",
-              "theme": "Le coup royal"
-            },
-            {
-              "kind": "position",
-              "ref": "SIJBRANDS_p0033_d6",
-              "fen": "W:W27,28,32,33,37,38,39,40,45,48:B7,12,13,14,17,18,19,23,24,26",
               "theme": "Le coup royal"
             }
           ],
@@ -6379,12 +6307,6 @@
             },
             {
               "kind": "position",
-              "ref": "SIJBRANDS_p0034_d8",
-              "fen": "W:W27,28,32,33,35,37,38,39,44,45:B6,11,12,13,14,16,18,19,23,24",
-              "theme": "Mettre l’autre en prise"
-            },
-            {
-              "kind": "position",
               "ref": "SIJBRANDS_p0012_d2",
               "fen": "W:W25,27,28,30,32,33,35,37,38:B3,9,11,12,13,16,19,23,24",
               "theme": "De la magie"
@@ -6405,6 +6327,12 @@
               "kind": "position",
               "ref": "SIJBRANDS_p0013_d3",
               "fen": "W:W26,27,32,33,38:B10,16,17,18,19,23",
+              "theme": "De la magie"
+            },
+            {
+              "kind": "position",
+              "ref": "SIJBRANDS_p0013_d4",
+              "fen": "W:W24,26,31,33,36,43:B4,7,17,22,23,27",
               "theme": "De la magie"
             }
           ],
