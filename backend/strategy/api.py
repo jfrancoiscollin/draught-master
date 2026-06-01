@@ -366,7 +366,7 @@ def _load_diagram_sections(source: str) -> dict[int, dict[str, str]]:
 # Sources whose diagram_sections.json was rebuilt from the book's real table
 # of contents (one reliable title per heading) — trust those titles verbatim
 # instead of re-filtering them with the noisy-data heuristic.
-_CURATED_SECTION_SOURCES = {"SIJBRANDS"}
+_CURATED_SECTION_SOURCES = {"SIJBRANDS", "KELLER"}
 
 
 # A real section heading marker (Thème/Leçon/Partie/Chapitre/Problème N, or
