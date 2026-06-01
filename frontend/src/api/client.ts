@@ -163,6 +163,24 @@ export async function getLesson(chapter: number): Promise<{ title: string; text:
   return res.data
 }
 
+// A strategic-manual chapter rendered in the Débutant lesson shape
+// ({title, text, diagrams[]}) so LessonPanel can display it identically.
+export interface ManualChapterSummary { index: number; title: string; n_passages: number }
+
+export async function getManualChapters(source: string): Promise<ManualChapterSummary[]> {
+  const res = await api.get<{ chapters: ManualChapterSummary[] }>(
+    '/strategy/manual-chapters', { params: { source } },
+  )
+  return res.data.chapters
+}
+
+export async function getManualLesson(
+  source: string, chapter: number,
+): Promise<{ title: string; text: string; diagrams: Array<{ ref: string; fen: string; label: string }>; category: string }> {
+  const res = await api.get('/strategy/manual-lesson', { params: { source, chapter } })
+  return res.data
+}
+
 export interface LessonMatch {
   chapter: number
   title: string

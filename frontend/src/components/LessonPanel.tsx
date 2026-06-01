@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import Board from './Board'
-import { getLesson, getExercises, markLessonRead, getPositionLegalMoves, applyPositionMove } from '../api/client'
+import { getLesson, getExercises, markLessonRead, getPositionLegalMoves, applyPositionMove, getManualLesson } from '../api/client'
 import { fenToBoard } from '../utils/fen'
 import { useAuth } from '../contexts/AuthContext'
 import type { MoveData, ExerciseResponse } from '../types'
@@ -13,6 +13,15 @@ interface LessonPanelProps {
   onClose: () => void
   onLessonRead?: (chapter: number) => void
   isRead?: boolean
+  // When set, the lesson content comes from a strategic manual
+  // (/strategy/manual-lesson?source=…&chapter=…) instead of the Débutant
+  // /lessons/{chapter} endpoint. The view is otherwise identical.
+  manualSource?: string
+  // Optional chapter navigation (strategic manuals): the chapter list passes
+  // these to wire ‹ Précédent / Suivant ›.
+  onPrev?: () => void
+  onNext?: () => void
+  navLabel?: string
 }
 
 type Token =
@@ -176,7 +185,7 @@ function LessonText({
   )
 }
 
-export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead, isRead: isReadProp }: LessonPanelProps) {
+export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead, isRead: isReadProp, manualSource, onPrev, onNext, navLabel }: LessonPanelProps) {
   const { user } = useAuth()
   type LessonDiagram = string | { fen: string; label: string; ref?: string }
   const [lesson, setLesson] = useState<{ title: string; text: string; diagrams?: LessonDiagram[] } | null>(null)
@@ -204,6 +213,14 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
     setError(null)
     setHighlighted([])
     setActiveDiagram(0)
+    if (manualSource) {
+      // Strategic manual: lesson-shaped content, no per-chapter exercises.
+      getManualLesson(manualSource, chapter)
+        .then(data => { setLesson(data as typeof lesson); setExercises([]) })
+        .catch(() => setError('Leçon introuvable'))
+        .finally(() => setLoading(false))
+      return
+    }
     Promise.all([getLesson(chapter), getExercises()])
       .then(([lessonData, allExercises]) => {
         setLesson(lessonData as typeof lesson)
@@ -212,7 +229,7 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
       })
       .catch(() => setError('Leçon introuvable'))
       .finally(() => setLoading(false))
-  }, [chapter])
+  }, [chapter, manualSource])
 
   const lessonDiagrams = lesson?.diagrams ?? []
   const diagrams: Array<{ label: string; fen: string; ref?: string }> = lessonDiagrams.length > 0
@@ -411,23 +428,44 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
               }) : undefined}
               activeRef={hasRefs ? (diagrams[activeDiagram]?.ref ?? null) : null}
             />
-            <div className="mt-6 mb-2 flex justify-center">
-              {user && (
-                isRead ? (
-                  <span className="flex items-center gap-2 text-green-400 font-semibold text-sm px-4 py-2 rounded-lg bg-green-900/30 border border-green-700">
-                    <span className="text-base">✓</span> Leçon lue
-                  </span>
-                ) : (
-                  <button
-                    onClick={handleMarkRead}
-                    disabled={marking}
-                    className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg border border-amber-600 text-amber-400 hover:bg-amber-900/40 transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    {marking ? '...' : '✓ Marquer comme lue'}
-                  </button>
-                )
-              )}
-            </div>
+            {!manualSource && (
+              <div className="mt-6 mb-2 flex justify-center">
+                {user && (
+                  isRead ? (
+                    <span className="flex items-center gap-2 text-green-400 font-semibold text-sm px-4 py-2 rounded-lg bg-green-900/30 border border-green-700">
+                      <span className="text-base">✓</span> Leçon lue
+                    </span>
+                  ) : (
+                    <button
+                      onClick={handleMarkRead}
+                      disabled={marking}
+                      className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg border border-amber-600 text-amber-400 hover:bg-amber-900/40 transition-colors disabled:opacity-50 cursor-pointer"
+                    >
+                      {marking ? '...' : '✓ Marquer comme lue'}
+                    </button>
+                  )
+                )}
+              </div>
+            )}
+            {manualSource && (onPrev || onNext) && (
+              <div className="mt-6 mb-2 flex items-center justify-between gap-3">
+                <button
+                  onClick={onPrev}
+                  disabled={!onPrev}
+                  className="px-3 py-2 rounded-lg text-sm border border-gray-600 text-gray-300 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-default cursor-pointer"
+                >
+                  ‹ Précédent
+                </button>
+                {navLabel && <span className="text-xs text-gray-500">{navLabel}</span>}
+                <button
+                  onClick={onNext}
+                  disabled={!onNext}
+                  className="px-3 py-2 rounded-lg text-sm border border-gray-600 text-gray-300 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-default cursor-pointer"
+                >
+                  Suivant ›
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
