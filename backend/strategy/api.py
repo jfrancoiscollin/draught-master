@@ -615,32 +615,58 @@ def manual_lesson(
     g = groups[chapter]
 
     diagrams: list[dict] = []
-    ref_by_number: dict[int, int] = {}  # printed number -> diag.K (1-based)
+    ref_by_key: dict[tuple[int, int], int] = {}  # (page, number) -> diag.K (1-based)
 
     def _diag_key(page: int, number: int) -> Optional[int]:
         """Register the (page, number) diagram, returning its 1-based chapter
-        index, or None if it has no renderable board."""
-        if number in ref_by_number:
-            return ref_by_number[number]
+        index, or None if it has no renderable board. Keyed by (page, number)
+        because diagram numbers restart per page."""
+        if (page, number) in ref_by_key:
+            return ref_by_key[(page, number)]
         fen = _fen_for(source, page, number)
         if fen is None:
             return None
         k = len(diagrams) + 1
         diagrams.append({"ref": f"{source.upper()}_p{page}_d{number}",
                          "fen": fen, "label": f"diag. {k}"})
-        ref_by_number[number] = k
+        ref_by_key[(page, number)] = k
         return k
+
+    manifest = _load_diagram_manifest(source)
+    page_numbers: dict[int, list[int]] = {}
+    for (pg, num) in manifest:
+        page_numbers.setdefault(pg, []).append(num)
+    for nums in page_numbers.values():
+        nums.sort()
 
     blocks: list[str] = []
     for p in g["passages"]:
         text = normalize_whitespace(lead_excerpt(p.text))
 
+        cited: list[int] = []
+
         def _sub(m: "re.Match[str]") -> str:
             number = int(m.group(1))
             k = _diag_key(p.page, number)
-            return f"diag. {k}" if k is not None else m.group(0)
+            if k is not None:
+                cited.append(k)
+                return f"diag. {k}"
+            return m.group(0)
 
-        blocks.append(_PROSE_DIAGRAM_RE.sub(_sub, text))
+        text = _PROSE_DIAGRAM_RE.sub(_sub, text)
+
+        # Roozenburg/Keller describe positions in prose without an explicit
+        # "DIAGRAMME N". When a passage cites none, attach the first renderable
+        # diagram on its page and prepend a clickable reference, so the board
+        # shows the position the prose is talking about.
+        if not cited:
+            for number in page_numbers.get(p.page, []):
+                k = _diag_key(p.page, number)
+                if k is not None:
+                    text = f"(diag. {k}) {text}"
+                    break
+
+        blocks.append(text)
 
     title = g["title"] and f"{g['heading']} — {g['title']}" or g["heading"]
     return {
