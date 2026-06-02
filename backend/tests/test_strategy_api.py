@@ -436,3 +436,19 @@ def test_decolumnize_uninterleaves_two_column_text() -> None:
 
     single = "Une phrase simple\nsur deux lignes.\n\nSecond paragraphe."
     assert normalize_whitespace(single) == "Une phrase simple sur deux lignes.\n\nSecond paragraphe."
+
+
+def test_manual_lesson_attaches_page_diagram_without_explicit_ref(client: TestClient) -> None:
+    """Roozenburg/Keller describe positions in prose without "DIAGRAMME N".
+    Each passage with a diagram on its page must still surface a board, via a
+    prepended "(diag. N)" reference — otherwise the lesson can't be followed."""
+    import re
+
+    L = client.get(
+        "/api/strategy/manual-lesson", params={"source": "ROOZENBURG", "chapter": 0}
+    ).json()
+    assert L["diagrams"], "Roozenburg chapter exposes no diagram"
+    refs = {int(n) for n in re.findall(r"diag\.\s*(\d+)", L["text"])}
+    assert refs, "no clickable diagram reference in the prose"
+    # Every referenced diag. N points to a real diagram entry.
+    assert max(refs) <= len(L["diagrams"])
