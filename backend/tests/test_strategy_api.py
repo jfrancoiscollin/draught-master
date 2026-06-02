@@ -416,3 +416,23 @@ def test_manual_lesson_out_of_range_404(client: TestClient) -> None:
         "/api/strategy/manual-lesson", params={"source": "SIJBRANDS", "chapter": 99999}
     )
     assert r.status_code == 404
+
+
+def test_decolumnize_uninterleaves_two_column_text() -> None:
+    """Two-column PDF blocks (read line-by-line across the gutter) are
+    rejoined column-by-column, and single-column text passes through."""
+    from strategy.prose_quality import normalize_whitespace
+
+    two_col = (
+        "Le Français Dionis,        Dans le passé, Van Dijk\n"
+        "conducteur des blancs,     et Kouperman se sont\n"
+        "joue le classique.         affrontés au sommet.\n"
+    )
+    out = normalize_whitespace(two_col)
+    # Left column reads contiguously, then the right column — not interleaved.
+    assert "Le Français Dionis, conducteur des blancs, joue le classique." in out
+    assert "Dans le passé, Van Dijk et Kouperman se sont affrontés au sommet." in out
+    assert "Dionis, Dans le passé" not in out  # the old interleaving symptom
+
+    single = "Une phrase simple\nsur deux lignes.\n\nSecond paragraphe."
+    assert normalize_whitespace(single) == "Une phrase simple sur deux lignes.\n\nSecond paragraphe."
