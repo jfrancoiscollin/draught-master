@@ -579,6 +579,63 @@ def _theme_chapters(source: str) -> Optional[list[dict]]:
     ]
 
 
+_EXERCISES_PATH = Path(__file__).resolve().parent / "strategy_exercises.json"
+
+
+@lru_cache(maxsize=8)
+def _solution_index(source: str) -> dict:
+    """``(page, number) -> {moves, fens, prompt}`` for every exercise whose
+    forced solution was mined and verified (see ``build_goedemoed_exercises``).
+
+    Goedemoed is a *recueil d'exercices*: each diagram is a position to solve.
+    Here the proven solution line is replayed through the engine so ``fens``
+    holds the board after each ply (``fens[0]`` is the start). The reader can
+    then step the winning line without re-running the engine per click.
+    Diagrams with no proven solution are simply absent from the index.
+    """
+    try:
+        data = json.loads(_EXERCISES_PATH.read_text())
+    except (FileNotFoundError, ValueError):
+        return {}
+    rows = [r for r in data.get("exercises", []) if r.get("source") == source.upper()]
+    if not rows:
+        return {}
+
+    from game_engine import (  # noqa: PLC0415
+        apply_move, board_to_fen, fen_to_board, get_legal_moves,
+    )
+
+    out: dict[tuple[int, int], dict] = {}
+    for r in rows:
+        start = r.get("initial_fen")
+        pdn_moves = r.get("solution_moves") or []
+        page, number = r.get("page"), r.get("number")
+        if not start or not pdn_moves or page is None or number is None:
+            continue
+        try:
+            state = fen_to_board(start)
+        except Exception:  # noqa: BLE0001 — a malformed FEN just yields no solution
+            continue
+        fens, played = [start], []
+        for pdn in pdn_moves:
+            path = [int(x) for x in re.split(r"[-x]", pdn) if x]
+            move = next((m for m in get_legal_moves(state) if m.path == path), None)
+            if move is None:  # line diverges from this board — stop, keep prefix
+                break
+            state = apply_move(state, move)
+            fens.append(board_to_fen(state))
+            played.append(pdn)
+        if not played:
+            continue
+        side_fr = "blancs" if start[:1].upper() == "W" else "noirs"
+        out[(page, number)] = {
+            "moves": played,
+            "fens": fens,
+            "prompt": f"Les {side_fr} jouent et gagnent.",
+        }
+    return out
+
+
 # Diagram reference inside the prose: "DIAGRAMME 6" / "diagramme 6".
 _PROSE_DIAGRAM_RE = re.compile(r"\bdiagramme\s+(\d+)", re.IGNORECASE)
 
@@ -658,21 +715,35 @@ def manual_lesson(
         if chapter < 0 or chapter >= len(themed):
             raise HTTPException(404, f"chapter {chapter} out of range for {source!r}")
         c = themed[chapter]
-        diagrams = [
-            {"ref": f"{source.upper()}_p{pg}_d{num}",
-             "fen": _fen_for(source, pg, num),
-             "label": f"diag. {k}"}
-            for k, (pg, num) in enumerate(c["diagrams"], start=1)
-        ]
+        sols = _solution_index(source)
+        diagrams = []
+        for k, (pg, num) in enumerate(c["diagrams"], start=1):
+            sol = sols.get((pg, num))
+            # When the solution is known, start from its (side-to-move correct)
+            # FEN so the winning line replays cleanly on the board.
+            fen = sol["fens"][0] if sol else _fen_for(source, pg, num)
+            entry = {
+                "ref": f"{source.upper()}_p{pg}_d{num}",
+                "fen": fen,
+                "label": f"diag. {k}",
+            }
+            if sol:
+                entry["solution"] = {
+                    "moves": sol["moves"],
+                    "fens": sol["fens"],
+                    "prompt": sol["prompt"],
+                }
+            diagrams.append(entry)
         # Only "diag. N" tokens are clickable; a bare 1-50 anywhere else in the
         # text would be read as a board square, so the prose carries no plain
         # numbers (no count, no page) — the active chip shows the SOURCE_pP_dN
         # reference, which holds the page.
         refs = "  ·  ".join(f"diag. {k}" for k in range(1, len(diagrams) + 1))
         text = (
-            f"« {c['theme']} » — positions à l'étude. "
-            "Cliquez une référence pour afficher la position sur le damier.\n\n"
-            f"{refs}"
+            f"« {c['theme']} » — recueil d'exercices : à vous de trouver le "
+            "meilleur coup. Cliquez une référence pour afficher la position ; "
+            "« Voir la solution » dévoile les coups gagnants lorsqu'ils sont "
+            f"connus.\n\n{refs}"
         )
         return {
             "title": c["theme"],

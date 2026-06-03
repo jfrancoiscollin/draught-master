@@ -494,3 +494,22 @@ def test_diagram_only_book_renders_as_thematic_manual(client: TestClient) -> Non
     # Each diagram is reachable from a clickable "diag. N" token, numbered 1..M.
     refs = {int(n) for n in re.findall(r"diag\.\s*(\d+)", L["text"])}
     assert refs == set(range(1, len(L["diagrams"]) + 1)), "diagram index incomplete"
+
+
+def test_exercise_book_attaches_replayable_solutions(client: TestClient) -> None:
+    """Goedemoed is a *recueil d'exercices*: diagrams whose forced win was
+    mined+verified must carry a solution the reader can step through — the
+    move list plus one FEN per ply (start + each move), replayed by the
+    engine so it lands on the board cleanly."""
+    L = client.get(
+        "/api/strategy/manual-lesson", params={"source": "GOEDEMOED", "chapter": 0}
+    ).json()
+    solved = [d for d in L["diagrams"] if "solution" in d]
+    assert solved, "no diagram in Combinaisons carries a solution"
+    s = solved[0]["solution"]
+    assert s["moves"], "solution has no moves"
+    # fens = start + one board after each replayed ply.
+    assert len(s["fens"]) == len(s["moves"]) + 1, (len(s["fens"]), len(s["moves"]))
+    # The diagram's displayed FEN is the solution's starting position.
+    assert solved[0]["fen"] == s["fens"][0]
+    assert s["prompt"]
