@@ -190,7 +190,9 @@ export default function App() {
   // Where to return when the manual view closes (e.g. the learning path when
   // opened from a strategy reading lesson, else the exercise library).
   const [strategyManualOrigin, setStrategyManualOrigin] = useState<Tab>('exercise-library')
-  const [strategyJumpSource, setStrategyJumpSource] = useState<string | undefined>(undefined)
+  // The strategy panel's "jump to source" deep-link entry point; the library
+  // now opens Goedemoed in the manual reader, so nothing sets this at present.
+  const [strategyJumpSource] = useState<string | undefined>(undefined)
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
   const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
   const [preloadedUserSide, setPreloadedUserSide] = useState<'white' | 'black' | null>(null)
@@ -1714,16 +1716,12 @@ export default function App() {
             onBack={() => setTab('learning-path')}
             onSelectBook={(bookId: string) => { resetExerciseState(); setSelectedBookId(bookId); setTab('exercises') }}
             onOpenStrategyManual={(source: string) => {
-              // Diagram-only sources (no prose passages) open the diagram
-              // annotation tool directly; prose sources open the manual.
-              if (source === 'GOEDEMOED' || source === 'GOEDEMOED3') {
-                setStrategyJumpSource(source)
-                setTab('strategy')
-              } else {
-                setStrategyManualSource(source)
-                setStrategyManualOrigin('exercise-library')
-                setTab('strategy-manual')
-              }
+              // Every corpus source opens the manual reader. Prose books
+              // (Sijbrands…) render chapters of text + diagrams; diagram-only
+              // exercise books (Goedemoed) render one chapter per study theme.
+              setStrategyManualSource(source)
+              setStrategyManualOrigin('exercise-library')
+              setTab('strategy-manual')
             }}
           />
         )}

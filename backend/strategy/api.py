@@ -546,6 +546,39 @@ def _book_chapters(source: str) -> list[dict]:
     return [g for g in groups if g["passages"]]
 
 
+def _theme_chapters(source: str) -> Optional[list[dict]]:
+    """Manual-style chapters for a diagram-only *exercise* book.
+
+    Goedemoed's pages carry a study ``theme`` ("Combinaisons", "Calcul",
+    "Juger la position"…) instead of a prose ``heading``/``title``, and the
+    book has no course text. There is nothing for :func:`_book_chapters` to
+    group, so it returns nothing and the manual view is empty.
+
+    Here we synthesise a thematic table of contents instead: every renderable
+    diagram is gathered under its theme (themes ordered by first appearance in
+    the book), so each theme reads as one chapter — a sequence of study
+    positions on the board. Returns ``None`` for ordinary prose sources so
+    they keep the heading-based grouping.
+    """
+    sections = _load_diagram_sections(source)
+    if not sections or not any("theme" in (v or {}) for v in sections.values()):
+        return None
+
+    by_theme: dict[str, list[tuple[int, int]]] = {}
+    first_seen: dict[str, int] = {}
+    for (page, number) in sorted(_load_diagram_manifest(source)):
+        theme = (sections.get(page) or {}).get("theme")
+        if not theme or _fen_for(source, page, number) is None:
+            continue
+        by_theme.setdefault(theme, []).append((page, number))
+        first_seen.setdefault(theme, page)
+
+    return [
+        {"theme": theme, "diagrams": by_theme[theme]}
+        for theme in sorted(by_theme, key=lambda t: first_seen[t])
+    ]
+
+
 # Diagram reference inside the prose: "DIAGRAMME 6" / "diagramme 6".
 _PROSE_DIAGRAM_RE = re.compile(r"\bdiagramme\s+(\d+)", re.IGNORECASE)
 
@@ -577,6 +610,15 @@ def manual_chapters(
 ) -> dict:
     """List a strategic manual's chapters in book order (for the table of
     contents). Each entry: ``{index, title, n_passages}``."""
+    themed = _theme_chapters(source)
+    if themed is not None:
+        return {
+            "source": source.upper(),
+            "chapters": [
+                {"index": i, "title": c["theme"], "n_passages": len(c["diagrams"])}
+                for i, c in enumerate(themed)
+            ],
+        }
     groups = _book_chapters(source)
     return {
         "source": source.upper(),
@@ -608,6 +650,36 @@ def manual_lesson(
     Débutant manual: board on top, prose below, clickable diagram links.
     """
     from .prose_quality import lead_excerpt, normalize_whitespace  # noqa: PLC0415
+
+    # Diagram-only exercise books (Goedemoed): a chapter is a study theme, not
+    # prose — return its positions as a clickable list of boards.
+    themed = _theme_chapters(source)
+    if themed is not None:
+        if chapter < 0 or chapter >= len(themed):
+            raise HTTPException(404, f"chapter {chapter} out of range for {source!r}")
+        c = themed[chapter]
+        diagrams = [
+            {"ref": f"{source.upper()}_p{pg}_d{num}",
+             "fen": _fen_for(source, pg, num),
+             "label": f"diag. {k}"}
+            for k, (pg, num) in enumerate(c["diagrams"], start=1)
+        ]
+        # Only "diag. N" tokens are clickable; a bare 1-50 anywhere else in the
+        # text would be read as a board square, so the prose carries no plain
+        # numbers (no count, no page) — the active chip shows the SOURCE_pP_dN
+        # reference, which holds the page.
+        refs = "  ·  ".join(f"diag. {k}" for k in range(1, len(diagrams) + 1))
+        text = (
+            f"« {c['theme']} » — positions à l'étude. "
+            "Cliquez une référence pour afficher la position sur le damier.\n\n"
+            f"{refs}"
+        )
+        return {
+            "title": c["theme"],
+            "text": text,
+            "diagrams": diagrams,
+            "category": f"strategy_{source.lower()}_theme{chapter}",
+        }
 
     groups = _book_chapters(source)
     if chapter < 0 or chapter >= len(groups):

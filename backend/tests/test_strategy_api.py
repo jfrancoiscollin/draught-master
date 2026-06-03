@@ -470,3 +470,27 @@ def test_manual_lesson_walks_through_a_pages_diagrams(client: TestClient) -> Non
     # The prose cites more than one distinct diagram (it no longer freezes on 1).
     prefixes = {int(n) for n in re.findall(r"\(diag\.\s*(\d+)\)", L["text"])}
     assert len(prefixes) >= 2, prefixes
+
+
+def test_diagram_only_book_renders_as_thematic_manual(client: TestClient) -> None:
+    """Goedemoed is an exercise book (diagrams only, no course prose). It must
+    still open in the manual reader: one chapter per study theme, each a
+    clickable list of renderable board positions."""
+    import re
+
+    chapters = client.get(
+        "/api/strategy/manual-chapters", params={"source": "GOEDEMOED"}
+    ).json()["chapters"]
+    assert chapters, "Goedemoed exposes no thematic chapter"
+    titles = [c["title"] for c in chapters]
+    assert "Combinaisons" in titles, titles
+
+    L = client.get(
+        "/api/strategy/manual-lesson", params={"source": "GOEDEMOED", "chapter": 0}
+    ).json()
+    assert L["diagrams"], "thematic chapter has no diagram"
+    # Every listed diagram renders a real board (filtered to renderable FENs).
+    assert all(d["fen"] for d in L["diagrams"]), "a thematic diagram has no FEN"
+    # Each diagram is reachable from a clickable "diag. N" token, numbered 1..M.
+    refs = {int(n) for n in re.findall(r"diag\.\s*(\d+)", L["text"])}
+    assert refs == set(range(1, len(L["diagrams"]) + 1)), "diagram index incomplete"
