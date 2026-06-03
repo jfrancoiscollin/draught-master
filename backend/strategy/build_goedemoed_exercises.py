@@ -241,9 +241,19 @@ def match_sequences(sequences: list[list[str]], source: str = "GOEDEMOED") -> di
             did = next(iter(dids))
             _, turn, canon, outcome = next(r for r in best if r[0] == did)
             kind, plies = "prefix", maxn
-        # Legality pins the FEN + side to move uniquely, but a line is only an
-        # *exercise* if it is actually decisive. Keep the proven-winning ones.
-        if not outcome:
+        # Legality pins the FEN + side to move uniquely. Acceptance rule:
+        #   - a *full* line replayed legally on exactly one board is self-
+        #     proving (a wrong FEN can't admit the whole line), so it is a
+        #     valid exercise whatever its material outcome — this is what
+        #     surfaces the non-combination exercises (best move / maneuver /
+        #     calcul). A very short full line could fit a wrong board by luck,
+        #     so a non-decisive full line still needs >= _MIN_PREFIX plies.
+        #   - a *prefix*-only match diverged from the printed line, so the FEN
+        #     is only partly corroborated; keep requiring it to be decisive.
+        if kind == "full":
+            if not outcome and plies < _MIN_PREFIX:
+                continue
+        elif not outcome:
             continue
         if did not in matched or matched[did]["plies"] < plies:
             matched[did] = {
@@ -271,19 +281,25 @@ def _rows_from_matched(matched: dict[str, dict], source: str = "GOEDEMOED") -> l
         side = info["side"]
         side_fr = "blancs" if side == "white" else "noirs"
         kind = info["kind"]
+        decisive = bool(info["outcome"])
         tail = "" if kind == "full" else " (début de la solution)"
+        # A proven material/terminal win reads "jouent et gagnent"; a non-
+        # decisive (positional / best-move) exercise reads simply "jouent".
+        goal = "jouent et gagnent" if decisive else "jouent"
+        kind_label = "combinaison" if decisive else "exercice"
         rows.append({
-            "name": f"{source} — combinaison (p.{p['page']} #{p['number']})",
+            "name": f"{source} — {kind_label} (p.{p['page']} #{p['number']})",
             "description": (
                 f"{source} — diagramme {p['number']} page {p['page']}. "
-                f"Les {side_fr} jouent et gagnent.{tail}"
+                f"Les {side_fr} {goal}.{tail}"
             ),
             "initial_fen": p["fen"] if p["fen"].startswith(side[0].upper())
                            else f"{side[0].upper()}:{p['fen'].split(':', 1)[1]}",
             "solution_moves": info["moves"],
             "difficulty": _difficulty(info["plies"]),
-            "category": "combinaisons_manuels",
-            "hint": "Cherchez la combinaison forcée.",
+            "category": "combinaisons_manuels" if decisive else "exercices_manuels",
+            "hint": "Cherchez la combinaison forcée." if decisive
+                    else "Trouvez la meilleure suite.",
             "source": source,
             "page": p["page"],
             "number": p["number"],

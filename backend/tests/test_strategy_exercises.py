@@ -1,8 +1,11 @@
-"""Tests for the mined manual combinations.
+"""Tests for the mined manual exercises.
 
-The strong guarantee: replaying each exercise's solution line is fully
-legal and ends in a win (annihilation) for the side that started — so a
-shipped combination is correct by the rules, not by engine opinion.
+The strong guarantee: replaying each exercise's solution line is fully legal
+from its diagram FEN. Decisive lines (``outcome`` win/endgame/material) end in
+an annihilation or a >= 2-man material swing for the side that started.
+Positional exercises (``outcome`` == "") carry no material claim — their
+correctness rests on the full printed line replaying legally on exactly one
+diagram (the unique-full-line match in ``build_goedemoed_exercises``).
 """
 
 from __future__ import annotations
@@ -57,26 +60,29 @@ def test_loader_rows_well_formed():
         assert r["solution_moves"]
         assert r["initial_fen"].startswith(("W:", "B:"))
         assert r["difficulty"] in (1, 2, 3)
-        assert r["category"] == "combinaisons_manuels"
+        assert r["category"] in ("combinaisons_manuels", "exercices_manuels")
         assert r["book_id"].startswith("manuel_")
 
 
-def test_every_solution_is_legal_and_winning():
+def test_every_solution_is_legal_and_consistent():
     import json
 
     data = json.loads(_OUT_PATH.read_text())["exercises"]
     assert data, "no exercises generated"
     for ex in data:
         legal, result, gain = _replay(ex["initial_fen"], ex["solution_moves"])
+        # Every shipped line must replay legally, whatever its outcome.
         assert legal, ex["diagram_id"]
         mover = "white" if ex["initial_fen"].startswith("W:") else "black"
         if ex["outcome"] in ("win", "endgame"):
             # Forced win by the rules (annihilation, or endgame technique).
             assert result == mover, ex["diagram_id"]
-        else:
+        elif ex["outcome"] == "material":
             # Decisive material: mover nets at least two men by the end.
-            assert ex["outcome"] == "material"
             assert gain >= 200, (ex["diagram_id"], gain)
+        else:
+            # Positional exercise: no material claim, legality is the proof.
+            assert ex["outcome"] == "", (ex["diagram_id"], ex["outcome"])
 
 
 def test_id_range_disjoint_and_order_deterministic():
