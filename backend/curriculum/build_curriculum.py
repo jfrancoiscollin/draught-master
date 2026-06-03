@@ -263,13 +263,17 @@ def _resolve_tips(spec: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _valid_chapter_ids() -> set[int]:
-    """Chapter ids that have manual prose a lesson may link to: the débutant
-    chapters (1-16) plus the Dubois 'sens du jeu' chapters (101-135)."""
+    """Chapter ids that have manual prose a lesson may link to: the Dubois
+    'combinaisons' chapters (201-241), the Dubois 'sens du jeu' chapters
+    (101-135), plus the legacy débutant chapters (1-16) still kept for the
+    motif→lesson mapping."""
+    from combinaisons_loader import combinaisons_chapters
     from manuels.prose_loader import load_debutant_chapters
     from sens_du_jeu_loader import sens_du_jeu_chapters
 
     ids = {int(k) for k in load_debutant_chapters().keys()}
     ids |= {int(k) for k in sens_du_jeu_chapters().keys()}
+    ids |= {int(k) for k in combinaisons_chapters().keys()}
     return ids
 
 
@@ -318,7 +322,9 @@ def _validate_and_resolve(spine: dict[str, Any]) -> dict[str, Any]:
                     f"lesson {les['id']} references unknown manual chapter {les['chapter']}"
                 )
             items = _resolve_lesson(les)
-            if not items:
+            # A lesson that links a real prose chapter is itself content
+            # (a reading lesson), so it needn't also attach exercises.
+            if not items and "chapter" not in les:
                 errors.append(f"lesson {les['id']} resolves to 0 content items")
             resolved_lessons.append({
                 **{k: v for k, v in les.items() if k != "attach"},

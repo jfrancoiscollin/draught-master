@@ -18,11 +18,12 @@ from curriculum import build_curriculum as cur
 def test_spine_validates_and_resolves():
     resolved = cur.build()
     assert resolved["modules"]
-    # Every lesson resolves to at least one content item (else build raises).
+    # Every lesson is either a reading lesson (links a prose chapter) or
+    # resolves to at least one content item (exercise/position/manual).
     for m in resolved["modules"]:
         assert m["lessons"]
         for les in m["lessons"]:
-            assert les["n_items"] >= 1, les["id"]
+            assert les["n_items"] >= 1 or "chapter" in les, les["id"]
 
 
 def test_ids_unique_and_prerequisites_resolve():
@@ -108,11 +109,14 @@ def test_progress_unlocks_in_order():
         assert by_id[m["id"]]["state"] in ("available", "in_progress")
     assert empty["next_module"] is not None
 
-    # Solve every exercise of the first root module -> it becomes done and
-    # unlocks its dependents.
+    # Complete the first root module -> it becomes done and unlocks its
+    # dependents. An exercise module completes by solving its exercises; a
+    # reading module (Débutant Dubois track) by reading its chapters.
     root = roots[0]
     refs = loader.module_exercise_refs(root["id"])
-    after = progress_payload(refs)
+    read = [les["chapter"] for les in (loader.get_module(root["id"]) or {}).get("lessons", [])
+            if "chapter" in les]
+    after = progress_payload(refs, read)
     by_id = {s["id"]: s for s in after["modules"]}
     assert by_id[root["id"]]["state"] == "done"
     dependents = [m for m in loader.modules() if root["id"] in m.get("prerequisites", [])]
@@ -138,24 +142,25 @@ def test_unlock_all_env_opens_every_module(monkeypatch):
     assert cur_api.get_curriculum()["unlock_all"] is True
 
 
-def test_debutant_level_covers_all_exercises():
-    """The Débutant level is meant to be complete: every manuel_debutant
-    exercise must be reachable from some lesson, so none is orphaned."""
-    from manuels.loader import DEBUTANT_ID_OFFSET, all_debutant_exercises
+def test_debutant_level_reads_the_dubois_combinations_book():
+    """The Débutant level is a reading track over the Dubois 'Apprentissage
+    des combinaisons' book: every lesson links a real combinaisons chapter
+    (ids 201-241), in book order, and all 41 chapters are covered."""
+    from combinaisons_loader import combinaisons_chapters
 
-    all_ids = {
-        DEBUTANT_ID_OFFSET + 1 + i for i in range(len(all_debutant_exercises()))
-    }
+    chapter_ids = {int(k) for k in combinaisons_chapters()}
     resolved = cur.build()
-    referenced = {
-        item["ref"]
+    linked = [
+        les["chapter"]
         for m in resolved["modules"]
         if m["level"] == "debutant"
         for les in m["lessons"]
-        for item in les["items"]
-        if item["kind"] == "exercise"
-    }
-    assert all_ids <= referenced, f"orphaned exercises: {sorted(all_ids - referenced)}"
+    ]
+    assert linked, "no débutant reading lessons"
+    assert all(c in chapter_ids for c in linked), linked
+    # The whole book is exposed, in ascending order.
+    assert set(linked) == chapter_ids
+    assert linked == sorted(linked)
 
 
 def test_intermediate_attaches_strategy_exercises_by_theme():
@@ -271,13 +276,15 @@ def test_intermediate_lessons_carry_illustrative_positions():
 
 def test_lesson_chapter_refs_are_valid():
     """Every lesson that links to a manual chapter links to one that exists,
-    so the 'Read the lesson' button always resolves to real prose (débutant
-    chapters 1-16 or Dubois 'sens du jeu' chapters 101-135)."""
+    so the 'Read the lesson' button always resolves to real prose (Dubois
+    combinaisons 201-241, Dubois 'sens du jeu' 101-135, legacy débutant 1-16)."""
+    from combinaisons_loader import combinaisons_chapters
     from manuels.prose_loader import load_debutant_chapters
     from sens_du_jeu_loader import sens_du_jeu_chapters
 
     valid = {int(k) for k in load_debutant_chapters().keys()}
     valid |= {int(k) for k in sens_du_jeu_chapters().keys()}
+    valid |= {int(k) for k in combinaisons_chapters().keys()}
     resolved = cur.build()
     for m in resolved["modules"]:
         for les in m["lessons"]:

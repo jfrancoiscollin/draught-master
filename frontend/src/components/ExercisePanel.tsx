@@ -33,6 +33,15 @@ function shortName(name: string): string {
   return name
 }
 
+// Some books re-key their lesson prose to a dedicated id range to avoid
+// colliding with other books on the shared /api/lessons/{chapter} endpoint
+// (the exercise's parsed chapter stays 1..N, but the prose lives at offset+N).
+// Mirrors backend combinaisons_loader.COMBINAISONS_CHAPTER_OFFSET / sens-du-jeu.
+const LESSON_ID_OFFSET: Record<string, number> = {
+  manuel_dubois_combinaisons: 200,
+  manuel_dubois_sens_du_jeu: 100,
+}
+
 export default function ExercisePanel({
   onExerciseLoad,
   onLessonOpen,
@@ -44,6 +53,8 @@ export default function ExercisePanel({
 }: ExercisePanelProps) {
   const { t } = useLanguage()
   const { user } = useAuth()
+  // Map an exercise's chapter number to the id its prose lesson is keyed under.
+  const lessonId = (ch: number): number => ch + (LESSON_ID_OFFSET[bookId] ?? 0)
 
   const [allExercises, setAllExercises] = useState<ExerciseResponse[]>([])
   const [lessonTitles, setLessonTitles] = useState<Record<string, { title: string }>>({})
@@ -103,13 +114,16 @@ export default function ExercisePanel({
       if (!map.has(ch)) map.set(ch, [])
       map.get(ch)!.push(ex)
     }
-    // Also include chapters that have a lesson but no exercises (lesson-only chapters)
+    // Also include chapters that have a lesson but no exercises (lesson-only
+    // chapters). Lesson ids may be offset (e.g. 201..241) — map them back to
+    // the exercise-chapter space so they align with the rows above.
+    const offset = LESSON_ID_OFFSET[bookId] ?? 0
     for (const chStr of Object.keys(lessonTitles)) {
-      const ch = Number(chStr)
-      if (!map.has(ch)) map.set(ch, [])
+      const ch = Number(chStr) - offset
+      if (ch > 0 && !map.has(ch)) map.set(ch, [])
     }
     return Array.from(map.entries()).sort(([a], [b]) => a - b)
-  }, [allExercises, lessonTitles])
+  }, [allExercises, lessonTitles, bookId])
 
   const toggleChapter = (ch: number) => {
     setOpenChapters(prev => {
@@ -134,10 +148,10 @@ export default function ExercisePanel({
           >
             {chapters.map(([ch, exercises]) => {
               const isOpen = openChapters.has(ch)
-              const lessonTitle = lessonTitles[String(ch)]?.title ?? `Chapitre ${ch}`
+              const lessonTitle = lessonTitles[String(lessonId(ch))]?.title ?? `Chapitre ${ch}`
               const firstEx = exercises[0]
               const solvedCount = exercises.filter(e => solvedIds.has(e.id)).length
-              const isLessonRead = readChapters.has(ch)
+              const isLessonRead = readChapters.has(lessonId(ch))
               const lessonOnly = exercises.length === 0
 
               return (
@@ -170,7 +184,7 @@ export default function ExercisePanel({
                     </button>
                     {onLessonOpen && Object.keys(lessonTitles).length > 0 && (
                       <button
-                        onClick={() => onLessonOpen(ch, firstEx?.initial_fen ?? '')}
+                        onClick={() => onLessonOpen(lessonId(ch), firstEx?.initial_fen ?? '')}
                         className="flex-shrink-0 w-10 flex items-center justify-center bg-gray-700 hover:bg-amber-900 border-0 border-l border-gray-600 cursor-pointer text-base"
                         title={`Leçon – ${lessonTitle}`}
                       >

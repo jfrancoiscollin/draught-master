@@ -65,6 +65,7 @@ def _module_state(
     module: dict[str, Any],
     solved: set[int],
     done_modules: set[str],
+    read_chapters: set[int] = frozenset(),  # type: ignore[assignment]
 ) -> dict[str, Any]:
     refs = [
         item["ref"]
@@ -76,34 +77,48 @@ def _module_state(
     n_solved = sum(1 for r in refs if r in solved)
     prereqs = module.get("prerequisites", [])
     unlocked = _unlock_all() or all(p in done_modules for p in prereqs)
+
+    if n_total:
+        # Exercise module: progress = solved share.
+        n_progress, n_target = n_solved, n_total
+    else:
+        # Reading module (no exercises): progress = chapters read.
+        chapters = [les["chapter"] for les in module["lessons"] if "chapter" in les]
+        n_target = len(chapters)
+        n_progress = sum(1 for c in chapters if c in read_chapters)
+
     if not unlocked:
         state = "locked"
-    elif n_total and n_solved >= n_total:
+    elif n_target and n_progress >= n_target:
         state = "done"
-    elif n_solved > 0:
+    elif n_progress > 0:
         state = "in_progress"
     else:
         state = "available"
     return {
         "id": module["id"],
         "state": state,
-        "n_solved": n_solved,
-        "n_total": n_total,
+        "n_solved": n_progress,
+        "n_total": n_target,
     }
 
 
-def progress_payload(solved_ids: list[int]) -> dict[str, Any]:
+def progress_payload(
+    solved_ids: list[int], read_chapters: Optional[list[int]] = None
+) -> dict[str, Any]:
     """Pure function (testable without a DB): module states + next step.
 
-    A module counts as ``done`` for unlocking purposes when all its
-    attached exercises are solved. Iterates in declared order so a module's
+    An exercise module counts as ``done`` when all its attached exercises are
+    solved; a reading module (no exercises, e.g. the Débutant Dubois track)
+    when all its chapters are read. Iterates in declared order so a module's
     done-state is known before its dependents are evaluated.
     """
     solved = set(solved_ids)
+    read = set(read_chapters or [])
     done_modules: set[str] = set()
     states: list[dict[str, Any]] = []
     for m in loader.modules():
-        st = _module_state(m, solved, done_modules)
+        st = _module_state(m, solved, done_modules, read)
         if st["state"] == "done":
             done_modules.add(m["id"])
         states.append(st)

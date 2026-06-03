@@ -17,10 +17,10 @@ interface Book {
 // Voir `dilf/docs/MANUELS_PIPELINE.md` et `backend/manuels/`.
 const BOOKS: Book[] = [
   {
-    id: 'manuel_debutant',
-    title: 'Manuel Débutant',
-    titleEn: 'Beginner Manual',
-    author: 'Draught Master',
+    id: 'manuel_dubois_combinaisons',
+    title: 'Apprentissage des combinaisons',
+    titleEn: 'Learning combinations',
+    author: 'Jean-Pierre Dubois',
     category: 'manuel',
     emoji: '🌱',
     hasExercises: true,

@@ -452,3 +452,21 @@ def test_manual_lesson_attaches_page_diagram_without_explicit_ref(client: TestCl
     assert refs, "no clickable diagram reference in the prose"
     # Every referenced diag. N points to a real diagram entry.
     assert max(refs) <= len(L["diagrams"])
+
+
+def test_manual_lesson_walks_through_a_pages_diagrams(client: TestClient) -> None:
+    """When a page holds several diagrams and its passages cite none explicitly,
+    successive passages must reveal successive diagrams (not all repeat the
+    page's first one), so the board follows the prose. Keller chapter 0 has two
+    renderable diagrams on page 6 and two on page 8."""
+    import re
+
+    L = client.get(
+        "/api/strategy/manual-lesson", params={"source": "KELLER", "chapter": 0}
+    ).json()
+    refs = [r.split("_p")[1] for r in (d["ref"] for d in L["diagrams"])]
+    # Both diagrams of a multi-diagram page are surfaced, not just d1.
+    assert "6_d1" in refs and "6_d2" in refs, refs
+    # The prose cites more than one distinct diagram (it no longer freezes on 1).
+    prefixes = {int(n) for n in re.findall(r"\(diag\.\s*(\d+)\)", L["text"])}
+    assert len(prefixes) >= 2, prefixes
