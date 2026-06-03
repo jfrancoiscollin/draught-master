@@ -628,10 +628,13 @@ def _solution_index(source: str) -> dict:
         if not played:
             continue
         side_fr = "blancs" if start[:1].upper() == "W" else "noirs"
+        # Decisive lines (proven material/terminal win) read "jouent et
+        # gagnent"; positional / best-move exercises read simply "jouent".
+        goal = "jouent et gagnent" if r.get("outcome") else "jouent"
         out[(page, number)] = {
             "moves": played,
             "fens": fens,
-            "prompt": f"Les {side_fr} jouent et gagnent.",
+            "prompt": f"Les {side_fr} {goal}.",
         }
     return out
 
