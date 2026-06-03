@@ -17,294 +17,298 @@
   ],
   "modules": [
     {
-      "id": "deb_notation_regles",
+      "id": "deb_combi_base",
       "level": "debutant",
       "order": 1,
-      "title": "Lire le damier et les règles",
-      "subtitle": "La numérotation des cases et les règles de prise.",
-      "goal": "Savoir nommer chaque case (1-50), comprendre la prise obligatoire, la rafle et la règle de prise maximale.",
+      "title": "Combinaisons : les fondamentaux",
+      "subtitle": "Identifier la rafle, l'envoi à dame, les points de contact et les temps de repos.",
+      "goal": "Comprendre les mécanismes de base de la combinaison (rafle, envoi à dame, collage, points de contact, temps de repos).",
       "prerequisites": [],
       "lessons": [
         {
-          "id": "deb_notation_regles_l1",
-          "title": "La notation et les règles de capture",
-          "chapter": 2,
-          "intro": "Avant de combiner, il faut parler la langue du jeu : les 50 cases jouables et comment une prise s'enchaîne. Ces exercices vous font appliquer la prise obligatoire, la rafle et la règle de prise maximale.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "regle_capture",
-                "regle_rafle",
-                "regle_prise_maximale"
-              ]
-            }
-          }
+          "id": "deb_combi_base_l201",
+          "title": "Présentation",
+          "chapter": 201,
+          "intro": "Pour comprendre comment s’articulent les combinaisons, nous allons commencer notre tour d’horizon avec les combinaisons en 2 temps. 1 – AU JEU DE DAMES, ON NE V…"
+        },
+        {
+          "id": "deb_combi_base_l202",
+          "title": "Méthode d’identification de la rafle et des points d’appuis",
+          "chapter": 202,
+          "intro": "Les combinaisons en 3 temps se distinguent de celles en 2 temps. Les combinaisons en 2 temps sont basées sur deux principes, à savoir la prise majoritaire et le…"
+        },
+        {
+          "id": "deb_combi_base_l203",
+          "title": "Les cases de départ et d’arrivée",
+          "chapter": 203,
+          "intro": "Nous avons vu précédemment qu’il est important de rationaliser la solution en commençant par concevoir la rafle. Les rafles ont toujours un point de départ et u…"
+        },
+        {
+          "id": "deb_combi_base_l204",
+          "title": "L’envoi a dame",
+          "chapter": 204,
+          "intro": "Nous avons vu que l’une des manières de trouver les solutions consiste à rechercher en premier lieu la rafle plausible, et ce n’est qu’ensuite que l’on recherch…"
+        },
+        {
+          "id": "deb_combi_base_l205",
+          "title": "La méthode des points de contact",
+          "chapter": 205,
+          "intro": "Nous avons vu précédemment qu’il était recommandé de commencer par chercher la rafle, avec les tenants et les aboutissants. Cette manière de procéder présente l…"
+        },
+        {
+          "id": "deb_combi_base_l206",
+          "title": "Le déplacement des points d’appui par collage",
+          "chapter": 206,
+          "intro": "Les points d’appui servant de départ pour la rafle, ne sont pas toujours évidents à déterminer. C’est notamment le cas lorsque ces points d’appui reposent sur d…"
+        },
+        {
+          "id": "deb_combi_base_l207",
+          "title": "L’association envoi a dame et collage",
+          "chapter": 207,
+          "intro": "Nous avons vu que les points d’appui pour une rafle peuvent s’obtenir grâce aux collages. Ce genre de situation se crée assez fréquemment en associant le collag…"
+        },
+        {
+          "id": "deb_combi_base_l208",
+          "title": "Les temps de repos créés par une attaque",
+          "chapter": 208,
+          "intro": "Faisons le point sur ce que nous avons vu précédemment : • • • •  Concevoir la rafle finale est bien utile pour trouver les combinaisons Visualiser mentalement…"
+        },
+        {
+          "id": "deb_combi_base_l209",
+          "title": "La création des temps de repos",
+          "chapter": 209,
+          "intro": "Nous avons abordé la fois précédente les combinaisons avec temps de repos. Nous avons vu que l’attaque d’un pion par l’adversaire crée naturellement un temps de…"
+        },
+        {
+          "id": "deb_combi_base_l210",
+          "title": "Les mécanismes de mémorisation du cerveau",
+          "chapter": 210,
+          "intro": "Nous allons à présent nous intéresser au fonctionnement du cerveau. Pour quelles raisons éprouvons-nous des difficultés à résoudre les problèmes au jeu de dames…"
+        },
+        {
+          "id": "deb_combi_base_l211",
+          "title": "Récapitulatif",
+          "chapter": 211,
+          "intro": "C’est le moment de faire un récapitulatif avant d’attaquer progressivement les combinaisons en 4 temps. Nous avons vu jusqu’à présent de nombreux mécanismes éla…"
         }
       ]
     },
     {
-      "id": "deb_gagner_materiel",
+      "id": "deb_coups_nommes",
       "level": "debutant",
       "order": 2,
-      "title": "Gagner du matériel",
-      "subtitle": "Prise majoritaire, collage et envoi à dame.",
-      "goal": "Reconnaître et exécuter les gains de matériel élémentaires : forcer une prise favorable, coller un pion, conduire un pion à dame.",
+      "title": "Les coups nommés",
+      "subtitle": "Express, ricochet, rappel, renversé, Napoléon, trappe, talon, Philippe.",
+      "goal": "Reconnaître et exécuter les coups nommés classiques.",
       "prerequisites": [
-        "deb_notation_regles"
+        "deb_combi_base"
       ],
       "lessons": [
         {
-          "id": "deb_gagner_materiel_l1",
-          "title": "La prise majoritaire",
-          "chapter": 3,
-          "intro": "Le sacrifice qui rapporte : offrir un pion pour en reprendre deux. Le mécanisme de base de presque toutes les combinaisons.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "prise_majoritaire",
-                "coup_de_mazette"
-              ]
-            }
-          }
+          "id": "deb_coups_nommes_l212",
+          "title": "La transition vers les combinaisons en 4 temps",
+          "chapter": 212,
+          "intro": "Le passage des combinaisons en 3 temps à celles en 4, ne constitue pas vraiment une étape. La manière de chercher les solutions demeure inchangée et les mécanis…"
         },
         {
-          "id": "deb_gagner_materiel_l2",
-          "title": "Le collage",
-          "chapter": 4,
-          "intro": "Immobiliser un pion adverse contre la bande ou un de ses propres pions, pour le gagner au coup suivant.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "collage",
-                "gambit"
-              ]
-            }
-          }
+          "id": "deb_coups_nommes_l213",
+          "title": "Le coup de l’express",
+          "chapter": 213,
+          "intro": "Nous avons déjà rencontré les principaux mécanismes de base qui permettent d’effectuer les combinaisons. Pour rappel, il s’agit de la prise majoritaire, du coll…"
         },
         {
-          "id": "deb_gagner_materiel_l3",
-          "title": "L'envoi à dame",
-          "chapter": 5,
-          "intro": "Conduire un pion jusqu'à la dernière rangée par un sacrifice forcé. Le but ultime du pion.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "envoi_a_dame",
-                "coup_royal"
-              ]
-            }
-          }
+          "id": "deb_coups_nommes_l214",
+          "title": "Le coup de ricochet",
+          "chapter": 214,
+          "intro": "Nous allons à présent poursuivre notre investigation avec le mécanisme du coup de ricochet.  Le schéma de base est présenté dans les deux premiers diagrammes. D…"
+        },
+        {
+          "id": "deb_coups_nommes_l215",
+          "title": "Le coup de rappel",
+          "chapter": 215,
+          "intro": "Le mécanisme suivant est connu sous le nom de coup de rappel. Il se présente fréquemment en partie et les formes les plus usuelles se retrouvent dans les trois…"
+        },
+        {
+          "id": "deb_coups_nommes_l216",
+          "title": "Le coup renversé",
+          "chapter": 216,
+          "intro": "A présent, un mécanisme moins courant, mais utile à connaître car il se marie facilement avec des coups de mazette, coups philippe, et même des coups de ricoche…"
+        },
+        {
+          "id": "deb_coups_nommes_l217",
+          "title": "Le coup Napoléon",
+          "chapter": 217,
+          "intro": "Le type de combinaison que je vous propose à présent, est connu sous le nom de coup Napoléon. On le trouve sous différentes formes :  Les Blancs jouent 26-21  L…"
+        },
+        {
+          "id": "deb_coups_nommes_l218",
+          "title": "Le coup de la trappe",
+          "chapter": 218,
+          "intro": "Les combinaisons sont bien souvent inattendues. Même les mécanismes les plus usuels peuvent échapper à notre vigilance. Ainsi, le coup de la trappe figure parmi…"
+        },
+        {
+          "id": "deb_coups_nommes_l219",
+          "title": "Le coup de talon",
+          "chapter": 219,
+          "intro": "Le mécanisme que je vous propose de découvrir à présent est également surprenant. Il s’agit du coup de talon. En fait, ce mécanisme ne dévoile le point d’appui…"
+        },
+        {
+          "id": "deb_coups_nommes_l220",
+          "title": "Le coup Philippe",
+          "chapter": 220,
+          "intro": "Nous avons vu précédemment les mécanismes les plus originaux et les plus compliqués. Le mécanisme que je vais vous présenter est beaucoup plus simple et bien mi…"
+        },
+        {
+          "id": "deb_coups_nommes_l221",
+          "title": "Récapitulatif",
+          "chapter": 221,
+          "intro": "Avant de passer aux combinaisons en 5 temps, je vous propose de faire à nouveau un bilan de ce que nous avons vu. Je commence par rappeler une évidence. Notre c…"
         }
       ]
     },
     {
-      "id": "deb_tempo",
+      "id": "deb_coups_avances",
       "level": "debutant",
       "order": 3,
-      "title": "Le tempo et les points de contact",
-      "subtitle": "Méthode des points de contact, temps de repos.",
-      "goal": "Compter les temps, créer et exploiter un temps de repos, utiliser la méthode des points de contact pour trouver une combinaison.",
+      "title": "Coups avancés et structures",
+      "subtitle": "Méthode D-P-A, coups de la bombe, Springer, Avid, croc, fourchette.",
+      "goal": "Aborder les combinaisons en 4-5 temps et les structures de pions associées.",
       "prerequisites": [
-        "deb_gagner_materiel"
+        "deb_coups_nommes"
       ],
       "lessons": [
         {
-          "id": "deb_tempo_l1",
-          "title": "Les points de contact",
-          "chapter": 6,
-          "intro": "Une méthode systématique : repérer les cases où vos pions touchent l'adversaire, ce sont les amorces de combinaison.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "points_de_contact"
-              ]
-            }
-          }
+          "id": "deb_coups_avances_l222",
+          "title": "La méthode D-P-A (DéblaiementPositionnement-Acheminement)",
+          "chapter": 222,
+          "intro": "Le passage des combinaisons en 4 temps à celles en 5, constitue normalement une véritable étape. Les limites de la mémoire de travail sont théoriquement atteint…"
         },
         {
-          "id": "deb_tempo_l2",
-          "title": "Les temps de repos",
-          "chapter": 7,
-          "intro": "Un coup d'attente qui force l'adversaire à se découvrir. Savoir le créer et l'exploiter change tout.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "temps_de_repos",
-                "creation_temps_de_repos"
-              ]
-            }
-          }
+          "id": "deb_coups_avances_l223",
+          "title": "Le coup de la bombe",
+          "chapter": 223,
+          "intro": "Le coup de la bombe est une combinaison qui comprend assez souvent 5 temps, et quelquefois plus. Le mécanisme de la rafle est assez singulier car il se déroule…"
+        },
+        {
+          "id": "deb_coups_avances_l224",
+          "title": "Le coup Springer",
+          "chapter": 224,
+          "intro": "Le coup SPRINGER est une combinaison en 5 temps qui se rencontre en fin de milieu de partie classique. Bénédictus SPRINGER avait effectué cette combinaison lors…"
+        },
+        {
+          "id": "deb_coups_avances_l225",
+          "title": "Le coup Avid",
+          "chapter": 225,
+          "intro": "Le coup AVID est une combinaison en 5 temps ou plus qui se rencontre en fin de milieu de partie classique. Son mécanisme repose sur un coup de talon. Le déroule…"
+        },
+        {
+          "id": "deb_coups_avances_l226",
+          "title": "Le coup de croc",
+          "chapter": 226,
+          "intro": "Le coup de croc est une combinaison en 4 ou 5 temps avec choix de prises multiples. Cette combinaison gagne un pion, quelle que soit la prise. Ce coup s’apparen…"
+        },
+        {
+          "id": "deb_coups_avances_l227",
+          "title": "Le coup Philippe avec prises multiples",
+          "chapter": 227,
+          "intro": "Le coup Philippe est une combinaison bien connue. Sa présence, en cas de prises multiples, est moins familière. En voici un exemple caractéristique :  Sur l’att…"
+        },
+        {
+          "id": "deb_coups_avances_l228",
+          "title": "La fourchette",
+          "chapter": 228,
+          "intro": "Les combinaisons dans lesquelles on offre le choix entre 2 prises sont toujours surprenantes. Le thème rappelle celui de la « fourchette » aux échecs. Les rafle…"
+        },
+        {
+          "id": "deb_coups_avances_l229",
+          "title": "Les structures de pions associées au coup Philippe",
+          "chapter": 229,
+          "intro": "Il est intéressant d’identifier les formations de pions qui peuvent être à l’origine de certaines combinaisons. Par exemple, le coup Philippe est souvent associ…"
         }
       ]
     },
     {
-      "id": "deb_coups_nommes_1",
+      "id": "deb_combi_profondes",
       "level": "debutant",
       "order": 4,
-      "title": "Les coups nommés (1) — Express et Ricochet",
-      "subtitle": "Vos deux premiers coups du répertoire classique.",
-      "goal": "Reconnaître et jouer le coup de l'Express et le coup de Ricochet, deux combinaisons nommées fondamentales.",
+      "title": "Combinaisons profondes",
+      "subtitle": "Enchaînements longs : Raichenbach, Raphaël, Marne, van Bergen…",
+      "goal": "Calculer des combinaisons profondes (5-6 temps) et leurs mécanismes.",
       "prerequisites": [
-        "deb_tempo"
+        "deb_coups_avances"
       ],
       "lessons": [
         {
-          "id": "deb_coups_nommes_1_l1",
-          "title": "Le coup de l'Express",
-          "chapter": 9,
-          "intro": "Une rafle express qui traverse le damier. Le premier coup nommé à maîtriser.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "coup_express"
-              ]
-            }
-          }
+          "id": "deb_combi_profondes_l230",
+          "title": "Une structure de pions associée à une rafle 49x…",
+          "chapter": 230,
+          "intro": "Il est intéressant d’identifier les formations de pions qui peuvent être à l’origine de certaines combinaisons.  Le dispositif, un peu lourd sur l’aile droite,…"
         },
         {
-          "id": "deb_coups_nommes_1_l2",
-          "title": "Le coup de Ricochet",
-          "chapter": 10,
-          "intro": "La prise rebondit d'une direction à l'autre. Un classique qui surprend souvent l'adversaire.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "coup_ricochet"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "deb_coups_nommes_2",
-      "level": "debutant",
-      "order": 5,
-      "title": "Les coups nommés (2) — Napoléon et Rappel",
-      "subtitle": "Deux combinaisons de rappel du pion adverse.",
-      "goal": "Reconnaître et jouer le coup Napoléon et le coup de Rappel, qui ramènent un pion adverse vers une case fatale.",
-      "prerequisites": [
-        "deb_coups_nommes_1"
-      ],
-      "lessons": [
-        {
-          "id": "deb_coups_nommes_2_l1",
-          "title": "Le coup Napoléon",
-          "chapter": 13,
-          "intro": "Un sacrifice qui rappelle un pion adverse pour le faire tomber dans une rafle décisive.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "coup_napoleon"
-              ]
-            }
-          }
+          "id": "deb_combi_profondes_l231",
+          "title": "L’enchainement Weiss",
+          "chapter": 231,
+          "intro": "Les positions avec un enchaînement sur l’aile droite sont propices aux combinaisons. Pour obtenir le maximum d’efficacité, il est important d’occuper le centre…"
         },
         {
-          "id": "deb_coups_nommes_2_l2",
-          "title": "Le coup de Rappel",
-          "chapter": 11,
-          "intro": "On force l'adversaire à reprendre vers l'arrière, ouvrant la voie à une combinaison gagnante.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "coup_rappel"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "deb_coups_nommes_3",
-      "level": "debutant",
-      "order": 6,
-      "title": "Les coups nommés (3) — Trappe et Renversé",
-      "subtitle": "Piéger un pion et inverser le sens de la prise.",
-      "goal": "Reconnaître et jouer le coup de la Trappe et le coup Renversé, deux pièges fréquents en partie.",
-      "prerequisites": [
-        "deb_coups_nommes_2"
-      ],
-      "lessons": [
-        {
-          "id": "deb_coups_nommes_3_l1",
-          "title": "Le coup de la Trappe",
-          "chapter": 14,
-          "intro": "On laisse une case ouverte comme un appât : l'adversaire s'y engage et tombe dans le piège.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "coup_de_trappe"
-              ]
-            }
-          }
+          "id": "deb_combi_profondes_l232",
+          "title": "Le coup Raichenbach",
+          "chapter": 232,
+          "intro": "En système classique, on rencontre parfois une combinaison connue sous le nom de « coup RAICHENBACH », du nom du champion du monde français qui le plaça en part…"
         },
         {
-          "id": "deb_coups_nommes_3_l2",
-          "title": "Le coup Renversé",
-          "chapter": 12,
-          "intro": "La prise part dans le sens inverse de celui attendu. À connaître pour ne pas se faire surprendre — et pour surprendre.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "coup_renverse",
-                "coup_parallele"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "deb_coups_nommes_4",
-      "level": "debutant",
-      "order": 7,
-      "title": "Les coups nommés (4) — Talon et Philippe",
-      "subtitle": "Les deux derniers coups nommés du répertoire débutant.",
-      "goal": "Reconnaître et jouer le coup de Talon et le coup Philippe, et avoir fait le tour des combinaisons nommées de base.",
-      "prerequisites": [
-        "deb_coups_nommes_3"
-      ],
-      "lessons": [
-        {
-          "id": "deb_coups_nommes_4_l1",
-          "title": "Le coup de Talon",
-          "chapter": 15,
-          "intro": "La prise revient sur ses pas, comme un talon, pour cueillir un pion resté en arrière.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "coup_de_talon"
-              ]
-            }
-          }
+          "id": "deb_combi_profondes_l233",
+          "title": "Le coup de l’Espagnol",
+          "chapter": 233,
+          "intro": "En système classique, on rencontre fréquemment une combinaison connue sous le nom de « coup de l’Espagnol ». Le diagramme suivant en présente un exemple caracté…"
         },
         {
-          "id": "deb_coups_nommes_4_l2",
-          "title": "Le coup Philippe",
-          "chapter": 16,
-          "intro": "Une combinaison élégante qui clôt le tour des coups nommés. Maîtrisez-la et le niveau Débutant est complet.",
-          "attach": {
-            "exercises": {
-              "book_id": "manuel_debutant",
-              "categories": [
-                "coup_philippe"
-              ]
-            }
-          }
+          "id": "deb_combi_profondes_l234",
+          "title": "Le coup Raphaël",
+          "chapter": 234,
+          "intro": "En système classique, on peut rencontrer une magnifique combinaison connue sous le nom de « coup Raphaël », du nom du champion marseillais qui fut le premier à…"
+        },
+        {
+          "id": "deb_combi_profondes_l235",
+          "title": "Le pion 35 et le mécanisme de la trappe",
+          "chapter": 235,
+          "intro": "On cherche toujours à tirer profit des faiblesses adverses. Le pion 35 est reconnu comme une faiblesse positionnelle dans bien des cas. Mais comment exploiter c…"
+        },
+        {
+          "id": "deb_combi_profondes_l236",
+          "title": "Le coup Marne",
+          "chapter": 236,
+          "intro": "Le coup Marne est une jolie combinaison, plutôt spectaculaire, qui se présente en système semi classique.  La rafle finale 25x5 est inattendue. Le mécanisme est…"
+        },
+        {
+          "id": "deb_combi_profondes_l237",
+          "title": "Le coup van Bergen",
+          "chapter": 237,
+          "intro": "Le coup VAN BERGEN se présente dans certains débuts de partie. Il s’agit d’une combinaison assez cachée, surprenante, qui se présente notamment dans une variant…"
+        },
+        {
+          "id": "deb_combi_profondes_l238",
+          "title": "Quelques combinaisons contre le faux marchand de bois",
+          "chapter": 238,
+          "intro": "Pour contrer la formation du faux Marchand de Bois, il existe quelques combinaisons qui se présentent assez fréquemment. En voici les principales : 1 – Sur le t…"
+        },
+        {
+          "id": "deb_combi_profondes_l239",
+          "title": "Combinaisons 34x3 ou 34x5",
+          "chapter": 239,
+          "intro": "Les coups de dame avec rafle 34x3 ou 34x5 se présentent couramment en partie classique. Les mécanismes utilisés ont pour but d’éliminer le pion noir 23 et d’ach…"
+        },
+        {
+          "id": "deb_combi_profondes_l240",
+          "title": "Combinaisons 31x22x11x2",
+          "chapter": 240,
+          "intro": "Les coups de dame aboutissant sur la case 2 sont assez fréquents. Ceux dont la rafle se termine par 31x22x11x2 méritent un traitement particulier car ils échapp…"
+        },
+        {
+          "id": "deb_combi_profondes_l241",
+          "title": "Synthèse",
+          "chapter": 241,
+          "intro": "Cette première partie est à présent terminée. Les 440 combinaisons entre 2 et 6 temps que vous venez d’exécuter, vous ont permis d’acquérir les connaissances ta…"
         }
       ]
     },

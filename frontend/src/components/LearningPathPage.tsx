@@ -297,6 +297,8 @@ const LearningPathPage: React.FC<Props> = ({ onClose, onOpenExercise, onOpenLess
                         <span>·</span>
                         {(m.n_manuals ?? 0) > 0 && m.n_exercises === 0 ? (
                           <span>{m.n_manuals} {fr ? 'manuels à lire' : 'manuals to read'}</span>
+                        ) : m.n_exercises === 0 ? (
+                          <span>{fr ? 'chapitres à lire' : 'chapters to read'}</span>
                         ) : (
                           <span>{m.n_exercises} {fr ? 'exercices' : 'exercises'}</span>
                         )}
