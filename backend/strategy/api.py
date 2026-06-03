@@ -639,6 +639,12 @@ def manual_lesson(
     for nums in page_numbers.values():
         nums.sort()
 
+    # How far we've walked through each page's diagrams, and the last one we
+    # actually showed there — so successive uncited passages on a page reveal
+    # successive positions instead of all repeating its first diagram.
+    page_cursor: dict[int, int] = {}
+    page_last_k: dict[int, int] = {}
+
     blocks: list[str] = []
     for p in g["passages"]:
         text = normalize_whitespace(lead_excerpt(p.text))
@@ -656,15 +662,28 @@ def manual_lesson(
         text = _PROSE_DIAGRAM_RE.sub(_sub, text)
 
         # Roozenburg/Keller describe positions in prose without an explicit
-        # "DIAGRAMME N". When a passage cites none, attach the first renderable
-        # diagram on its page and prepend a clickable reference, so the board
-        # shows the position the prose is talking about.
+        # "DIAGRAMME N". When a passage cites none, attach the next renderable
+        # diagram on its page (advancing a per-page cursor, reusing the last
+        # once exhausted) and prepend a clickable reference, so the board walks
+        # through the page's positions as the prose does rather than freezing
+        # on its first diagram.
         if not cited:
-            for number in page_numbers.get(p.page, []):
-                k = _diag_key(p.page, number)
+            nums = page_numbers.get(p.page, [])
+            idx = page_cursor.get(p.page, 0)
+            chosen: Optional[int] = None
+            while idx < len(nums):
+                k = _diag_key(p.page, nums[idx])
+                idx += 1
                 if k is not None:
-                    text = f"(diag. {k}) {text}"
+                    chosen = k
                     break
+            page_cursor[p.page] = idx
+            if chosen is None:
+                chosen = page_last_k.get(p.page)
+            else:
+                page_last_k[p.page] = chosen
+            if chosen is not None:
+                text = f"(diag. {chosen}) {text}"
 
         blocks.append(text)
 
