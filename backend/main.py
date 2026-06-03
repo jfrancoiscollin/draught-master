@@ -1053,7 +1053,8 @@ async def curriculum_progress(current_user: Dict[str, Any] = Depends(_require_au
     from curriculum.api import progress_payload
 
     solved_ids = await get_user_solved_exercise_ids(current_user["id"])
-    return progress_payload(solved_ids)
+    read_chapters = await get_user_read_lesson_chapters(current_user["id"])
+    return progress_payload(solved_ids, read_chapters)
 
 
 @app.get("/api/auth/me/stats")
