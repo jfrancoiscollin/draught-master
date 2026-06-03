@@ -187,13 +187,17 @@ function LessonText({
 
 export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead, isRead: isReadProp, manualSource, onPrev, onNext, navLabel }: LessonPanelProps) {
   const { user } = useAuth()
-  type LessonDiagram = string | { fen: string; label: string; ref?: string }
+  type LessonSolution = { moves: string[]; fens: string[]; prompt?: string }
+  type LessonDiagram = string | { fen: string; label: string; ref?: string; solution?: LessonSolution }
   const [lesson, setLesson] = useState<{ title: string; text: string; diagrams?: LessonDiagram[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [exercises, setExercises] = useState<ExerciseResponse[]>([])
   const [activeDiagram, setActiveDiagram] = useState(0)
   const [highlighted, setHighlighted] = useState<number[]>([])
+  // Exercise-book solution playback (Goedemoed): reveal + step the winning line.
+  const [showSolution, setShowSolution] = useState(false)
+  const [solutionPly, setSolutionPly] = useState(0)
   const [isRead, setIsRead] = useState(isReadProp ?? false)
   const [marking, setMarking] = useState(false)
 
@@ -232,11 +236,11 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
   }, [chapter, manualSource])
 
   const lessonDiagrams = lesson?.diagrams ?? []
-  const diagrams: Array<{ label: string; fen: string; ref?: string }> = lessonDiagrams.length > 0
+  const diagrams: Array<{ label: string; fen: string; ref?: string; solution?: LessonSolution }> = lessonDiagrams.length > 0
     ? lessonDiagrams.map((d, i) =>
         typeof d === 'string'
           ? { label: `Diag. ${i + 1}`, fen: d }
-          : { label: d.label, fen: d.fen, ref: d.ref }
+          : { label: d.label, fen: d.fen, ref: d.ref, solution: d.solution }
       )
     : exercises.map((ex, i) => ({ label: `D${i + 1}`, fen: ex.initial_fen }))
 
@@ -271,12 +275,25 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
     loadLegalMoves(fen)
   }, [loadLegalMoves])
 
-  // When active diagram changes, reset board
+  // When active diagram changes, reset board (and hide any revealed solution)
   useEffect(() => {
     const fen = diagrams[activeDiagram]?.fen ?? exampleFen
     resetToInitial(fen)
     setHighlighted([])
+    setShowSolution(false)
+    setSolutionPly(0)
   }, [activeDiagram, diagrams.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Jump the board to a given ply of the active diagram's solution line.
+  const activeSolution = diagrams[activeDiagram]?.solution
+  const goToSolutionPly = useCallback((ply: number) => {
+    const sol = diagrams[activeDiagram]?.solution
+    if (!sol) return
+    const p = Math.max(0, Math.min(ply, sol.fens.length - 1))
+    setSolutionPly(p)
+    setHighlighted([])
+    resetToInitial(sol.fens[p])
+  }, [diagrams, activeDiagram, resetToInitial])
 
   const board = fenToBoard(currentFen || initialFen)
   // Fix orientation based on the initial diagram FEN — never flip mid-exploration
@@ -379,6 +396,67 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
                 </button>
               )
             })}
+          </div>
+        )}
+
+        {/* Exercise solution — reveal + step the proven winning line. */}
+        {activeSolution && (
+          <div className="mt-2 px-2">
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <span className="text-xs text-amber-300 font-semibold">
+                ⚑ {activeSolution.prompt ?? 'À vous de jouer'}
+              </span>
+              <button
+                onClick={() => {
+                  if (showSolution) { setShowSolution(false); goToSolutionPly(0) }
+                  else { setShowSolution(true) }
+                }}
+                className="px-2 py-0.5 text-xs rounded border border-emerald-600 text-emerald-300 hover:bg-emerald-900/40 cursor-pointer"
+              >
+                {showSolution ? 'Masquer la solution' : 'Voir la solution'}
+              </button>
+            </div>
+            {showSolution && (
+              <div className="mt-2">
+                <div className="flex items-center justify-center gap-2 mb-1.5">
+                  <button
+                    disabled={solutionPly <= 0}
+                    onClick={() => goToSolutionPly(solutionPly - 1)}
+                    className="px-2 py-0.5 text-xs rounded border border-gray-600 text-gray-300 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-default cursor-pointer"
+                  >
+                    ‹
+                  </button>
+                  <span className="text-xs text-gray-400 font-mono">
+                    {solutionPly} / {activeSolution.fens.length - 1}
+                  </span>
+                  <button
+                    disabled={solutionPly >= activeSolution.fens.length - 1}
+                    onClick={() => goToSolutionPly(solutionPly + 1)}
+                    className="px-2 py-0.5 text-xs rounded border border-gray-600 text-gray-300 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-default cursor-pointer"
+                  >
+                    ›
+                  </button>
+                </div>
+                <div className="flex flex-wrap justify-center gap-1">
+                  {activeSolution.moves.map((mv, i) => {
+                    const isActive = solutionPly === i + 1
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => goToSolutionPly(i + 1)}
+                        className={`px-2 py-0.5 text-xs rounded border font-mono cursor-pointer ${
+                          isActive
+                            ? 'bg-emerald-700 border-emerald-500 text-white font-bold'
+                            : 'bg-gray-800 border-gray-600 text-gray-300 hover:text-white'
+                        }`}
+                      >
+                        {i + 1}. {mv}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
