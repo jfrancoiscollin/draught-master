@@ -6,6 +6,9 @@ interface Props {
   source: string
   onClose: () => void
   lang?: 'fr' | 'en'
+  // Opens the shared diagram annotator on a specific (source, page, number)
+  // so a mis-detected position can be corrected and its JSON entry copied.
+  onAnnotateDiagram?: (source: string, page: number, number: number) => void
 }
 
 const SOURCE_LABEL: Record<string, { fr: string; en: string; author?: string }> = {
@@ -26,7 +29,7 @@ const SOURCE_LABEL: Record<string, { fr: string; en: string; author?: string }> 
  * ‹ Précédent / Suivant › step through the chapters without returning to the
  * list.
  */
-const StrategyManualPage: React.FC<Props> = ({ source, onClose, lang = 'fr' }) => {
+const StrategyManualPage: React.FC<Props> = ({ source, onClose, lang = 'fr', onAnnotateDiagram }) => {
   const [chapters, setChapters] = useState<ManualChapterSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [openChapter, setOpenChapter] = useState<number | null>(null)
@@ -54,6 +57,7 @@ const StrategyManualPage: React.FC<Props> = ({ source, onClose, lang = 'fr' }) =
         onPrev={openChapter > 0 ? () => setOpenChapter(openChapter - 1) : undefined}
         onNext={openChapter < chapters.length - 1 ? () => setOpenChapter(openChapter + 1) : undefined}
         navLabel={`${openChapter + 1} / ${chapters.length}`}
+        onAnnotateDiagram={onAnnotateDiagram}
       />
     )
   }
