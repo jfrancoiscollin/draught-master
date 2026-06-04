@@ -193,6 +193,12 @@ export default function App() {
   // The strategy panel's "jump to source" deep-link entry point; the library
   // now opens Goedemoed in the manual reader, so nothing sets this at present.
   const [strategyJumpSource] = useState<string | undefined>(undefined)
+  // Deep-link target for the diagram annotator: set by the manual reader's
+  // "✎ Corriger la position" button so the strategy panel opens straight on
+  // that diagram's crop + editable board (crop + annotate → copy JSON entry).
+  const [strategyJumpTarget, setStrategyJumpTarget] = useState<
+    { source: string; page: number; number: number } | undefined
+  >(undefined)
   const [preloadedPdn, setPreloadedPdn] = useState<string | null>(null)
   const [preloadedGameId, setPreloadedGameId] = useState<string | null>(null)
   const [preloadedUserSide, setPreloadedUserSide] = useState<'white' | 'black' | null>(null)
@@ -1282,6 +1288,7 @@ export default function App() {
             onClose={() => setTab('exercise-library')}
             lang={language}
             initialJumpSource={strategyJumpSource}
+            initialJump={strategyJumpTarget}
           />
         )}
 
@@ -1735,6 +1742,13 @@ export default function App() {
             source={strategyManualSource}
             onClose={() => setTab(strategyManualOrigin)}
             lang={language}
+            onAnnotateDiagram={(source, page, number) => {
+              // Open the shared diagram annotator on this exact position so
+              // the operator can fix a mis-detected FEN and copy the JSON
+              // entry into diagrams_fens.json (reviewed via PR).
+              setStrategyJumpTarget({ source, page, number })
+              setTab('strategy')
+            }}
           />
         )}
 

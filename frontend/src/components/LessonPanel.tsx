@@ -22,6 +22,9 @@ interface LessonPanelProps {
   onPrev?: () => void
   onNext?: () => void
   navLabel?: string
+  // Opens the diagram annotator on the active diagram (exercise books): lets
+  // the operator correct a mis-detected position and copy the JSON entry.
+  onAnnotateDiagram?: (source: string, page: number, number: number) => void
 }
 
 type Token =
@@ -185,7 +188,7 @@ function LessonText({
   )
 }
 
-export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead, isRead: isReadProp, manualSource, onPrev, onNext, navLabel }: LessonPanelProps) {
+export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead, isRead: isReadProp, manualSource, onPrev, onNext, navLabel, onAnnotateDiagram }: LessonPanelProps) {
   const { user } = useAuth()
   type LessonSolution = { moves: string[]; fens: string[]; prompt?: string }
   type LessonDiagram = string | { fen: string; label: string; ref?: string; solution?: LessonSolution }
@@ -482,6 +485,20 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
               Déplace les pions · <span className="text-cyan-600">diag.</span> → damier
             </p>
           )}
+          {onAnnotateDiagram && (() => {
+            // Active diagram ref is "SOURCE_pP_dN" — offer to correct it.
+            const m = /^(.+)_p(\d+)_d(\d+)$/.exec(diagrams[activeDiagram]?.ref ?? '')
+            if (!m) return null
+            return (
+              <button
+                onClick={() => onAnnotateDiagram(m[1], parseInt(m[2], 10), parseInt(m[3], 10))}
+                className="text-xs text-emerald-500 hover:text-emerald-300 underline cursor-pointer"
+                title="Corriger la position détectée et copier l'entrée JSON"
+              >
+                ✎ Corriger la position
+              </button>
+            )
+          })()}
         </div>
       </div>
 
