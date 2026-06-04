@@ -40,6 +40,8 @@ function shortName(name: string): string {
 const LESSON_ID_OFFSET: Record<string, number> = {
   manuel_dubois_combinaisons: 200,
   manuel_dubois_sens_du_jeu: 100,
+  manuel_goedemoed: 300,
+  manuel_goedemoed3: 400,
 }
 
 export default function ExercisePanel({

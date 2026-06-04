@@ -272,12 +272,29 @@ def _difficulty(plies: int) -> int:
 
 
 def _rows_from_matched(matched: dict[str, dict], source: str = "GOEDEMOED") -> list[dict]:
+    from .goedemoed_lessons import theme_index  # noqa: PLC0415
+
     fens = {p["id"]: p for p in _load_fens(source)}
-    rows = []
-    for did, info in sorted(matched.items()):
+    themes = theme_index(source)  # (page, number) -> (chapter_no, theme)
+
+    # Gather solved diagrams with their chapter, then order by (chapter, page,
+    # number) so each chapter numbers its exercises D1..Dk in book order.
+    items = []
+    for did, info in matched.items():
         p = fens.get(did)
         if not p:
             continue
+        ch = themes.get((p["page"], p["number"]))
+        if ch is None:
+            continue  # diagram with no study theme — not an exercise chapter
+        items.append((ch[0], ch[1], p["page"], p["number"], did, info, p))
+    items.sort(key=lambda t: (t[0], t[2], t[3]))
+
+    rows = []
+    d_counter: dict[int, int] = {}
+    for chapter_no, theme, _pg, _num, did, info, p in items:
+        d_counter[chapter_no] = d_counter.get(chapter_no, 0) + 1
+        label = f"D{d_counter[chapter_no]}"
         side = info["side"]
         side_fr = "blancs" if side == "white" else "noirs"
         kind = info["kind"]
@@ -286,12 +303,13 @@ def _rows_from_matched(matched: dict[str, dict], source: str = "GOEDEMOED") -> l
         # A proven material/terminal win reads "jouent et gagnent"; a non-
         # decisive (positional / best-move) exercise reads simply "jouent".
         goal = "jouent et gagnent" if decisive else "jouent"
-        kind_label = "combinaison" if decisive else "exercice"
         rows.append({
-            "name": f"{source} — {kind_label} (p.{p['page']} #{p['number']})",
+            # "<theme> – Dk": the exercise list strips the prefix to show "Dk",
+            # and "Chapitre N" in the description groups it under its theme.
+            "name": f"{theme} – {label}",
             "description": (
-                f"{source} — diagramme {p['number']} page {p['page']}. "
-                f"Les {side_fr} {goal}.{tail}"
+                f"Chapitre {chapter_no} — {theme}. Diagramme {p['number']} "
+                f"page {p['page']}. Les {side_fr} {goal}.{tail}"
             ),
             "initial_fen": p["fen"] if p["fen"].startswith(side[0].upper())
                            else f"{side[0].upper()}:{p['fen'].split(':', 1)[1]}",
