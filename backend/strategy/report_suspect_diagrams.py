@@ -37,12 +37,18 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-from game_engine import apply_move, fen_to_board, get_legal_moves
+from game_engine import apply_move, board_to_fen, fen_to_board, get_legal_moves
 
 from .api import _load_diagram_fens
 from .build_goedemoed_exercises import _all_sequences, _load_fens, _tok_sig
 
 _MIN_PREFIX = 4  # shortest legal prefix that still pins a unique diagram
+
+# Piece codes for the single-square repair search.
+_EMPTY, _WM, _WK, _BM, _BK = 0, 1, 2, 3, 4
+_STATES = (_EMPTY, _WM, _WK, _BM, _BK)
+_PIECE_FR = {_EMPTY: "vide", _WM: "pion blanc", _WK: "dame blanche",
+             _BM: "pion noir", _BK: "dame noire"}
 
 
 def _tok_move(state, tok):
@@ -66,7 +72,46 @@ def _prefix_len(fen: str, turn: str, toks: list[str]) -> int:
     return n
 
 
-def suspects(source: str, pdf: Path) -> list[dict]:
+def _full_legal(fen: str, turn: str, toks: list[str]) -> bool:
+    st = fen_to_board(fen)
+    st.turn = turn
+    for tok in toks:
+        m = _tok_move(st, tok)
+        if m is None:
+            return False
+        st = apply_move(st, m)
+    return True
+
+
+def _single_square_fix(fen: str, turn: str, toks: list[str]):
+    """If exactly one single-square edit makes the *whole* line replay, return
+    ``(square, old_piece_fr, new_piece_fr)``; else None.
+
+    A long forced line going fully legal from one piece change is near-certain
+    proof of a localised detection error — and gives the operator the precise
+    correction to confirm against the crop. Diagrams needing >=2 edits (or none)
+    are left as mere *candidates*: those include solution-extraction artifacts
+    (an un-stripped variation desyncs a long line), which are NOT FEN errors.
+    """
+    base = fen_to_board(fen)
+    fixes = set()
+    for sq in range(1, 51):
+        orig = base.board[sq]
+        for st in _STATES:
+            if st == orig:
+                continue
+            base.board[sq] = st
+            ok = _full_legal(board_to_fen(base), turn, toks)
+            base.board[sq] = orig
+            if ok:
+                fixes.add((sq, orig, st))
+    if len({(sq, st) for sq, _, st in fixes}) != 1:
+        return None
+    sq, orig, st = next(iter(fixes))
+    return sq, _PIECE_FR[orig], _PIECE_FR[st]
+
+
+def suspects(source: str, pdf: Path, verify_fixes: bool = False) -> list[dict]:
     """Ranked suspect diagrams for one source (most confident first)."""
     seqs = _all_sequences(pdf)
     fens = _load_fens(source)
@@ -110,25 +155,53 @@ def suspects(source: str, pdf: Path) -> list[dict]:
         row = {
             "page": pn[0], "number": pn[1], "side": "B" if turn == "black" else "W",
             "prefix": maxn, "len": len(toks), "breaks_at": brk, "suspect_squares": sq[:2],
+            "fen": lib[did]["fen"], "turn": turn, "toks": toks, "fix": None,
         }
         if pn not in found or found[pn]["prefix"] < maxn:
             found[pn] = row
-    return sorted(found.values(), key=lambda c: (-c["prefix"], c["page"], c["number"]))
+
+    rows = list(found.values())
+    if verify_fixes:
+        for r in rows:
+            r["fix"] = _single_square_fix(r["fen"], r["turn"], r["toks"])
+    for r in rows:  # drop bulky internals before returning
+        r.pop("fen", None); r.pop("turn", None); r.pop("toks", None)
+    return sorted(rows, key=lambda c: (-c["prefix"], c["page"], c["number"]))
 
 
 def _render_md(by_source: dict[str, list[dict]]) -> str:
     out = ["# Diagrammes suspects (FEN auto probablement faux)", ""]
     out.append(
         "Diagrammes épinglés de façon unique par une solution imprimée mais dont "
-        "la ligne casse → le FEN est faux. Corriger via « ✎ Corriger la position » "
-        "(coller le JSON dans `diagrams_fens.json`). Plus le préfixe est long, plus "
-        "l'erreur est petite : commencer par le haut."
+        "la ligne ne se rejoue pas entièrement. Corriger via « ✎ Corriger la "
+        "position » (coller le JSON dans `diagrams_fens.json`).\n\n"
+        "**Attention** : un *long* préfixe n'implique PAS une petite erreur — une "
+        "ligne longue qui casse tard est souvent un artefact d'extraction "
+        "(variante non retirée), pas un FEN faux. Le signal fiable est la section "
+        "« corrections confirmées » : une retouche d'**une seule case** y rend la "
+        "solution *entière* légale (preuve quasi-certaine), avec la case exacte à "
+        "vérifier sur le crop. Les autres sont de simples candidats."
     )
     for source, rows in by_source.items():
-        out += ["", f"## {source} — {len(rows)} diagrammes", "",
+        confirmed = [r for r in rows if r.get("fix")]
+        candidates = [r for r in rows if not r.get("fix")]
+        out += ["", f"## {source}", "",
+                f"### ✅ Corrections confirmées (1 case) — {len(confirmed)}", ""]
+        if confirmed:
+            out += ["| page | # | trait | ligne | case | correction |",
+                    "|---:|---:|:--:|:--:|---:|:--|"]
+            for c in sorted(confirmed, key=lambda c: (c["page"], c["number"])):
+                sq, old, new = c["fix"]
+                out.append(
+                    f"| {c['page']} | {c['number']} | {c['side']} | "
+                    f"{c['len']} coups | {sq} | {old} → {new} |"
+                )
+        else:
+            out.append("_(aucune — relancer avec `--verify-fixes`)_")
+        out += ["", f"### ❓ Candidats (à vérifier, peut contenir des artefacts) — {len(candidates)}", "",
                 "| page | # | trait | préfixe légal | casse au coup | cases à inspecter |",
                 "|---:|---:|:--:|:--:|:--:|:--|"]
-        for c in rows:
+        for c in candidates:
             out.append(
                 f"| {c['page']} | {c['number']} | {c['side']} | "
                 f"{c['prefix']}/{c['len']} | {c['breaks_at']} | {c['suspect_squares']} |"
@@ -141,6 +214,8 @@ def main(argv=None) -> None:
     ap.add_argument("--pdf2", default="/home/user/dilf/docs/corpus/Exercise_2.pdf")
     ap.add_argument("--pdf3", default="/home/user/dilf/docs/corpus/Exercise_3.pdf")
     ap.add_argument("--out", default="strategy/SUSPECT_DIAGRAMS.md")
+    ap.add_argument("--verify-fixes", action="store_true",
+                    help="search a unique single-square fix per suspect (slower)")
     args = ap.parse_args(argv)
 
     by_source = {}
@@ -149,9 +224,10 @@ def main(argv=None) -> None:
         if not p.is_file():
             print(f"skip {source}: {pdf} not found")
             continue
-        rows = suspects(source, p)
+        rows = suspects(source, p, verify_fixes=args.verify_fixes)
         by_source[source] = rows
-        print(f"{source}: {len(rows)} suspect diagrams")
+        n_fix = sum(1 for r in rows if r.get("fix"))
+        print(f"{source}: {len(rows)} suspects, {n_fix} with a confirmed 1-square fix")
 
     Path(args.out).write_text(_render_md(by_source), encoding="utf-8")
     print(f"wrote {args.out}")
