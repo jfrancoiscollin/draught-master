@@ -201,6 +201,13 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
   // Exercise-book solution playback (Goedemoed): reveal + step the winning line.
   const [showSolution, setShowSolution] = useState(false)
   const [solutionPly, setSolutionPly] = useState(0)
+  // Exercise SOLVE mode: the user plays the winning move(s); we validate each
+  // against the proven line and auto-reply for the opponent. ``solveStep`` is
+  // the number of plies already played (points at the next move expected from
+  // the user); ``solveStatus`` drives the feedback line.
+  const [solveStep, setSolveStep] = useState(0)
+  const [solveStatus, setSolveStatus] = useState<'playing' | 'wrong' | 'solved'>('playing')
+  const solveTimerRef = useRef<number | null>(null)
   const [isRead, setIsRead] = useState(isReadProp ?? false)
   const [marking, setMarking] = useState(false)
 
@@ -285,7 +292,15 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
     setHighlighted([])
     setShowSolution(false)
     setSolutionPly(0)
+    setSolveStep(0)
+    setSolveStatus('playing')
+    if (solveTimerRef.current) { window.clearTimeout(solveTimerRef.current); solveTimerRef.current = null }
   }, [activeDiagram, diagrams.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clear any pending opponent-reply timer when the panel unmounts.
+  useEffect(() => () => {
+    if (solveTimerRef.current) window.clearTimeout(solveTimerRef.current)
+  }, [])
 
   // Jump the board to a given ply of the active diagram's solution line.
   const activeSolution = diagrams[activeDiagram]?.solution
@@ -302,8 +317,50 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
   // Fix orientation based on the initial diagram FEN — never flip mid-exploration
   const flipped = initialFen.startsWith('B:')
 
+  // Restart the current exercise from its starting position.
+  const restartSolve = useCallback(() => {
+    const sol = diagrams[activeDiagram]?.solution
+    if (solveTimerRef.current) { window.clearTimeout(solveTimerRef.current); solveTimerRef.current = null }
+    setSolveStep(0)
+    setSolveStatus('playing')
+    setHighlighted([])
+    if (sol) resetToInitial(sol.fens[0])
+  }, [diagrams, activeDiagram, resetToInitial])
+
   const handleMove = useCallback(async (move: MoveData) => {
     setSelectedSquare(null)
+    const sol = diagrams[activeDiagram]?.solution
+    // ── Exercise solve mode: validate the move against the proven line ──
+    if (sol && !showSolution && solveStatus !== 'solved') {
+      const expected = sol.moves[solveStep]
+      const expPath = expected.split(/[-x]/).filter(Boolean).map(Number)
+      const correct = move.path.length === expPath.length
+        && move.path.every((v, i) => v === expPath[i])
+      if (!correct) {
+        setSolveStatus('wrong')
+        loadLegalMoves(sol.fens[solveStep]) // stay on the position, let them retry
+        return
+      }
+      // Correct move from the user → show the resulting position.
+      const afterUser = solveStep + 1
+      setCurrentFen(sol.fens[afterUser])
+      setHighlighted([])
+      if (afterUser >= sol.moves.length) {
+        setSolveStep(afterUser); setSolveStatus('solved'); setLegalMoves([]); return
+      }
+      // Opponent's reply is forced — play it after a short beat.
+      setSolveStep(afterUser); setSolveStatus('playing'); setLegalMoves([])
+      solveTimerRef.current = window.setTimeout(() => {
+        solveTimerRef.current = null
+        const afterReply = afterUser + 1
+        setCurrentFen(sol.fens[afterReply])
+        setSolveStep(afterReply)
+        if (afterReply >= sol.moves.length) { setSolveStatus('solved'); setLegalMoves([]) }
+        else { setSolveStatus('playing'); loadLegalMoves(sol.fens[afterReply]) }
+      }, 550)
+      return
+    }
+    // ── Free exploration (non-exercise diagrams / Débutant lessons) ──
     try {
       const result = await applyPositionMove(currentFen, move.path)
       setCurrentFen(result.fen)
@@ -313,7 +370,7 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
       // Reload legal moves on error
       loadLegalMoves(currentFen)
     }
-  }, [currentFen, loadLegalMoves])
+  }, [diagrams, activeDiagram, showSolution, solveStatus, solveStep, currentFen, loadLegalMoves])
 
   const handleSquareClick = useCallback((sq: number) => {
     setHighlighted(prev => prev.includes(sq) ? prev.filter(s => s !== sq) : [...prev, sq])
@@ -402,21 +459,42 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
           </div>
         )}
 
-        {/* Exercise solution — reveal + step the proven winning line. */}
+        {/* Exercise — solve mode: play the move, get feedback; reveal as help. */}
         {activeSolution && (
           <div className="mt-2 px-2">
+            <div className="text-center text-xs font-semibold mb-1">
+              <span className="text-amber-300">⚑ {activeSolution.prompt ?? 'À vous de jouer'}</span>
+            </div>
+            {!showSolution && (
+              <div className="text-center text-xs mb-1.5">
+                {solveStatus === 'solved' ? (
+                  <span className="text-emerald-400 font-bold">🎉 Bien joué ! Combinaison trouvée.</span>
+                ) : solveStatus === 'wrong' ? (
+                  <span className="text-red-400">✗ Ce n'est pas le meilleur coup — réessayez.</span>
+                ) : solveStep > 0 ? (
+                  <span className="text-emerald-400">✓ Bon coup ! Continuez…</span>
+                ) : (
+                  <span className="text-gray-400">Jouez le meilleur coup sur le damier.</span>
+                )}
+              </div>
+            )}
             <div className="flex items-center justify-center gap-2 flex-wrap">
-              <span className="text-xs text-amber-300 font-semibold">
-                ⚑ {activeSolution.prompt ?? 'À vous de jouer'}
-              </span>
+              {!showSolution && (solveStep > 0 || solveStatus !== 'playing') && (
+                <button
+                  onClick={restartSolve}
+                  className="px-2 py-0.5 text-xs rounded border border-gray-600 text-gray-300 hover:bg-gray-700 cursor-pointer"
+                >
+                  ↺ Recommencer
+                </button>
+              )}
               <button
                 onClick={() => {
-                  if (showSolution) { setShowSolution(false); goToSolutionPly(0) }
+                  if (showSolution) { setShowSolution(false); restartSolve() }
                   else { setShowSolution(true) }
                 }}
                 className="px-2 py-0.5 text-xs rounded border border-emerald-600 text-emerald-300 hover:bg-emerald-900/40 cursor-pointer"
               >
-                {showSolution ? 'Masquer la solution' : 'Voir la solution'}
+                {showSolution ? 'Cacher la solution' : 'Voir la solution'}
               </button>
             </div>
             {showSolution && (
@@ -480,7 +558,7 @@ export default function LessonPanel({ chapter, exampleFen, onClose, onLessonRead
               Effacer sélection
             </button>
           )}
-          {!isDirty && highlighted.length === 0 && (
+          {!isDirty && highlighted.length === 0 && !activeSolution && (
             <p className="text-xs text-gray-600">
               Déplace les pions · <span className="text-cyan-600">diag.</span> → damier
             </p>
