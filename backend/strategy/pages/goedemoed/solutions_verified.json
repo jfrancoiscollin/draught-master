@@ -2368,6 +2368,21 @@
   "kind": "full",
   "outcome": ""
  },
+ "GOEDEMOED_p0074_d2": {
+  "moves": [
+   "27-21",
+   "7-12",
+   "43-38",
+   "18-22",
+   "30-24",
+   "22x33",
+   "21-16"
+  ],
+  "side": "white",
+  "plies": 7,
+  "kind": "full",
+  "outcome": ""
+ },
  "GOEDEMOED_p0075_d1": {
   "moves": [
    "30-24",
@@ -3214,6 +3229,32 @@
   "kind": "full",
   "outcome": ""
  },
+ "GOEDEMOED_p0106_d4": {
+  "moves": [
+   "44-40",
+   "11-17",
+   "37-32",
+   "17-21",
+   "16x27",
+   "18-23",
+   "29x18",
+   "20x29",
+   "34x23",
+   "13x22",
+   "27x18",
+   "25-30",
+   "35x24",
+   "15-20",
+   "24x15",
+   "4-10",
+   "15x4x13",
+   "8x19x28x37x46"
+  ],
+  "side": "white",
+  "plies": 18,
+  "kind": "full",
+  "outcome": ""
+ },
  "GOEDEMOED_p0106_d5": {
   "moves": [
    "36-31",
@@ -3629,6 +3670,23 @@
   "kind": "full",
   "outcome": "material"
  },
+ "GOEDEMOED_p0117_d5": {
+  "moves": [
+   "34-29",
+   "23x34",
+   "43-39",
+   "34x43x32",
+   "33-29",
+   "24x33",
+   "42-38",
+   "32x43",
+   "48x39x28x17x8x19x10"
+  ],
+  "side": "white",
+  "plies": 9,
+  "kind": "full",
+  "outcome": ""
+ },
  "GOEDEMOED_p0117_d6": {
   "moves": [
    "28x17",
@@ -3644,12 +3702,20 @@
    "24x15",
    "5-10",
    "15x4",
-   "8-12"
+   "8-12",
+   "4x18",
+   "12x23x34x43x32x41",
+   "42-37",
+   "41x32",
+   "48-42",
+   "32-37",
+   "42x31",
+   "36x27x18"
   ],
   "side": "white",
-  "plies": 14,
-  "kind": "prefix",
-  "outcome": "material"
+  "plies": 22,
+  "kind": "full",
+  "outcome": ""
  },
  "GOEDEMOED_p0117_d7": {
   "moves": [
@@ -4282,12 +4348,18 @@
    "35x24x33x22",
    "23-29",
    "34x23",
-   "26-31"
+   "26-31",
+   "37x26x17",
+   "16-21",
+   "17x26",
+   "13-18",
+   "22x13",
+   "8x19x28x37x46"
   ],
   "side": "white",
-  "plies": 8,
-  "kind": "prefix",
-  "outcome": "material"
+  "plies": 14,
+  "kind": "full",
+  "outcome": ""
  },
  "GOEDEMOED_p0140_d6": {
   "moves": [
@@ -5708,6 +5780,31 @@
   "plies": 15,
   "kind": "full",
   "outcome": "material"
+ },
+ "GOEDEMOED_p0190_d2": {
+  "moves": [
+   "27-22",
+   "18x27",
+   "36-31",
+   "27x36",
+   "46-41",
+   "36x47",
+   "37-31",
+   "26x37",
+   "32x41",
+   "23x32x43",
+   "41-37",
+   "47x29",
+   "34x23x14x3",
+   "43x34",
+   "40x29x20",
+   "25x14",
+   "3x17x26"
+  ],
+  "side": "white",
+  "plies": 17,
+  "kind": "full",
+  "outcome": ""
  },
  "GOEDEMOED_p0190_d3": {
   "moves": [

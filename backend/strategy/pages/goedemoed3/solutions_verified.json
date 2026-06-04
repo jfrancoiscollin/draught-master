@@ -1020,6 +1020,20 @@
   "kind": "full",
   "outcome": ""
  },
+ "GOEDEMOED3_p0264_d1": {
+  "moves": [
+   "23-29",
+   "30-25",
+   "19x30",
+   "25x34x23",
+   "15x24",
+   "23-19"
+  ],
+  "side": "black",
+  "plies": 6,
+  "kind": "full",
+  "outcome": ""
+ },
  "GOEDEMOED3_p0137_d7": {
   "moves": [
    "37-32",
@@ -1228,6 +1242,20 @@
   ],
   "side": "white",
   "plies": 8,
+  "kind": "full",
+  "outcome": ""
+ },
+ "GOEDEMOED3_p0160_d4": {
+  "moves": [
+   "37-31",
+   "26x37",
+   "32x41",
+   "3-8",
+   "41-37",
+   "8-13"
+  ],
+  "side": "white",
+  "plies": 6,
   "kind": "full",
   "outcome": ""
  },

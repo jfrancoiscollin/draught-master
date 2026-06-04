@@ -1,8 +1,16 @@
 # Diagrammes suspects (FEN auto probablement faux)
 
-Diagrammes épinglés de façon unique par une solution imprimée mais dont la ligne casse → le FEN est faux. Corriger via « ✎ Corriger la position » (coller le JSON dans `diagrams_fens.json`). Plus le préfixe est long, plus l'erreur est petite : commencer par le haut.
+Diagrammes épinglés de façon unique par une solution imprimée mais dont la ligne ne se rejoue pas entièrement. Corriger via « ✎ Corriger la position » (coller le JSON dans `diagrams_fens.json`).
 
-## GOEDEMOED — 156 diagrammes
+**Attention** : un *long* préfixe n'implique PAS une petite erreur — une ligne longue qui casse tard est souvent un artefact d'extraction (variante non retirée), pas un FEN faux. Le signal fiable est la section « corrections confirmées » : une retouche d'**une seule case** y rend la solution *entière* légale (preuve quasi-certaine), avec la case exacte à vérifier sur le crop. Les autres sont de simples candidats.
+
+## GOEDEMOED
+
+### ✅ Corrections confirmées (1 case) — 0
+
+_(aucune — relancer avec `--verify-fixes`)_
+
+### ❓ Candidats (à vérifier, peut contenir des artefacts) — 150
 
 | page | # | trait | préfixe légal | casse au coup | cases à inspecter |
 |---:|---:|:--:|:--:|:--:|:--|
@@ -21,7 +29,6 @@ Diagrammes épinglés de façon unique par une solution imprimée mais dont la l
 | 140 | 4 | W | 15/86 | 42x31 | [42, 31] |
 | 36 | 7 | W | 14/92 | 33x2 | [33, 2] |
 | 77 | 2 | W | 14/35 | 29x40 | [29, 40] |
-| 117 | 6 | W | 14/22 | 4x18 | [4, 18] |
 | 63 | 3 | W | 13/14 | 17x28 | [17, 28] |
 | 179 | 7 | W | 13/19 | 27-21 | [27, 21] |
 | 16 | 1 | W | 12/59 | 7-12 | [7, 12] |
@@ -29,7 +36,6 @@ Diagrammes épinglés de façon unique par une solution imprimée mais dont la l
 | 141 | 5 | W | 12/14 | 8x19 | [8, 19] |
 | 151 | 1 | W | 12/14 | 37x28 | [37, 28] |
 | 176 | 1 | W | 12/14 | 6x30 | [6, 30] |
-| 190 | 2 | W | 12/17 | 34x3 | [34, 3] |
 | 193 | 8 | W | 12/19 | 45x23 | [45, 23] |
 | 35 | 6 | W | 11/19 | 27x16 | [27, 16] |
 | 39 | 6 | W | 11/13 | 13-19 | [13, 19] |
@@ -53,7 +59,6 @@ Diagrammes épinglés de façon unique par une solution imprimée mais dont la l
 | 99 | 5 | W | 8/9 | 43x1 | [43, 1] |
 | 103 | 2 | W | 8/9 | 3x6 | [3, 6] |
 | 114 | 4 | W | 8/40 | 28-23 | [28, 23] |
-| 139 | 6 | W | 8/14 | 37x17 | [37, 17] |
 | 183 | 5 | W | 8/21 | 17-21 | [17, 21] |
 | 10 | 2 | W | 7/9 | 34-30 | [34, 30] |
 | 36 | 3 | W | 7/31 | 40-34 | [40, 34] |
@@ -68,7 +73,6 @@ Diagrammes épinglés de façon unique par une solution imprimée mais dont la l
 | 63 | 7 | W | 6/18 | 9x38 | [9, 38] |
 | 63 | 8 | W | 6/9 | 43-39 | [43, 39] |
 | 101 | 7 | W | 6/15 | 38x7 | [38, 7] |
-| 106 | 4 | W | 6/18 | 29x18 | [29, 18] |
 | 108 | 6 | W | 6/7 | 43x5 | [43, 5] |
 | 138 | 1 | W | 6/10 | 2x27 | [2, 27] |
 | 155 | 5 | B | 6/8 | 27x30 | [27, 30] |
@@ -91,7 +95,6 @@ Diagrammes épinglés de façon unique par une solution imprimée mais dont la l
 | 67 | 8 | W | 5/6 | 29x20 | [29, 20] |
 | 68 | 1 | W | 5/13 | 26-21 | [26, 21] |
 | 68 | 4 | W | 5/14 | 23x32 | [23, 32] |
-| 74 | 2 | W | 5/7 | 22x33 | [22, 33] |
 | 74 | 3 | B | 5/8 | 34x14 | [34, 14] |
 | 86 | 2 | W | 5/10 | 9-14 | [9, 14] |
 | 92 | 4 | W | 5/10 | 30-24 | [30, 24] |
@@ -102,7 +105,6 @@ Diagrammes épinglés de façon unique par une solution imprimée mais dont la l
 | 106 | 2 | W | 5/12 | 34x25 | [34, 25] |
 | 106 | 3 | W | 5/16 | 38x20 | [38, 20] |
 | 117 | 2 | W | 5/11 | 12x2 | [12, 2] |
-| 117 | 5 | W | 5/9 | 24x33 | [24, 33] |
 | 125 | 1 | W | 5/8 | 9x18 | [9, 18] |
 | 133 | 2 | W | 5/11 | 25x23 | [25, 23] |
 | 133 | 3 | W | 5/11 | 21x32 | [21, 32] |
@@ -163,7 +165,13 @@ Diagrammes épinglés de façon unique par une solution imprimée mais dont la l
 | 171 | 5 | W | 4/6 | 25x34 | [25, 34] |
 | 171 | 6 | W | 4/11 | 18x27 | [18, 27] |
 
-## GOEDEMOED3 — 95 diagrammes
+## GOEDEMOED3
+
+### ✅ Corrections confirmées (1 case) — 0
+
+_(aucune — relancer avec `--verify-fixes`)_
+
+### ❓ Candidats (à vérifier, peut contenir des artefacts) — 93
 
 | page | # | trait | préfixe légal | casse au coup | cases à inspecter |
 |---:|---:|:--:|:--:|:--:|:--|
@@ -244,7 +252,6 @@ Diagrammes épinglés de façon unique par une solution imprimée mais dont la l
 | 119 | 6 | W | 5/7 | 23x34 | [23, 34] |
 | 137 | 1 | B | 5/8 | 34-39 | [34, 39] |
 | 139 | 2 | W | 5/11 | 28-23 | [28, 23] |
-| 160 | 4 | W | 5/6 | 8-13 | [8, 13] |
 | 167 | 4 | W | 5/10 | 2-11 | [2, 11] |
 | 9 | 3 | W | 4/9 | 26x17 | [26, 17] |
 | 29 | 2 | W | 4/20 | 24x13 | [24, 13] |
@@ -261,4 +268,3 @@ Diagrammes épinglés de façon unique par une solution imprimée mais dont la l
 | 142 | 6 | B | 4/21 | 48-43 | [48, 43] |
 | 148 | 3 | W | 4/11 | 17-22 | [17, 22] |
 | 183 | 4 | W | 4/9 | 24-19 | [24, 19] |
-| 264 | 1 | B | 4/6 | 15x24 | [15, 24] |
