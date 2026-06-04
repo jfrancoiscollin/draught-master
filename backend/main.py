@@ -1310,11 +1310,14 @@ def _prose_books() -> "Dict[str, Any]":
     from manuels.prose_loader import load_debutant_chapters
     from sens_du_jeu_loader import sens_du_jeu_chapters
     from combinaisons_loader import combinaisons_chapters
+    from strategy.goedemoed_lessons import goedemoed_chapters
 
     return {
         "manuel_debutant": load_debutant_chapters(),
         "manuel_dubois_sens_du_jeu": sens_du_jeu_chapters(),
         "manuel_dubois_combinaisons": combinaisons_chapters(),
+        "manuel_goedemoed": goedemoed_chapters("GOEDEMOED"),
+        "manuel_goedemoed3": goedemoed_chapters("GOEDEMOED3"),
     }
 
 
@@ -1378,6 +1381,11 @@ async def get_lesson(chapter: int) -> Dict[str, Any]:
         # And the Dubois "combinaisons" chapters (ids 201-241).
         from combinaisons_loader import combinaisons_chapters
         lesson = combinaisons_chapters().get(str(chapter))
+    if not lesson:
+        # Goedemoed exercise books (ids 300+ vol.2, 400+ vol.3).
+        from strategy.goedemoed_lessons import goedemoed_chapters
+        src = "GOEDEMOED" if chapter < 400 else "GOEDEMOED3"
+        lesson = goedemoed_chapters(src).get(str(chapter))
     if not lesson:
         raise HTTPException(status_code=404, detail=f"No lesson for chapter {chapter}")
     return lesson
