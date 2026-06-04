@@ -496,6 +496,26 @@ def test_diagram_only_book_renders_as_thematic_manual(client: TestClient) -> Non
     assert refs == set(range(1, len(L["diagrams"]) + 1)), "diagram index incomplete"
 
 
+def test_human_verified_fen_bypasses_validity_gate(monkeypatch) -> None:
+    """A hand-annotated FEN (diagrams_fens.json) must render even when the
+    auto-detector marked the position invalid — that's the whole point of the
+    in-app annotator: correcting a board the detector got wrong. Auto FENs stay
+    gated by the library's ``valid`` flag."""
+    from strategy import api
+
+    # p4 #2 is marked valid=False in the library, so auto yields nothing.
+    api._load_diagram_fens.cache_clear()
+    assert api._fen_for("GOEDEMOED", 4, 2) is None
+
+    orig = api._load_diagram_fens
+    monkeypatch.setattr(
+        api, "_load_diagram_fens",
+        lambda src: {**orig(src), (4, 2): "W:W31,32,33:B18,19,20"} if src == "GOEDEMOED" else orig(src),
+    )
+    # Same invalid position now renders, because a human verified it.
+    assert api._fen_for("GOEDEMOED", 4, 2) == "W:W31,32,33:B18,19,20"
+
+
 def test_exercise_book_attaches_replayable_solutions(client: TestClient) -> None:
     """Goedemoed is a *recueil d'exercices*: diagrams whose forced win was
     mined+verified must carry a solution the reader can step through — the

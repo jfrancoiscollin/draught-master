@@ -645,16 +645,26 @@ _PROSE_DIAGRAM_RE = re.compile(r"\bdiagramme\s+(\d+)", re.IGNORECASE)
 
 def _fen_for(source: str, page: int, number: int) -> Optional[str]:
     """Best FEN for a (page, number) diagram, or None when it can't render a
-    real board (missing, or an empty 'position in figures'). Human file wins
-    over auto; the consolidated library's ``valid`` flag gates auto FENs."""
-    fen = _load_diagram_fens(source).get((page, number))
-    if fen is None:
-        fen = _load_diagram_fens_auto(source).get((page, number))
-    if not fen:
-        return None
-    # Reject blank boards (e.g. "W:W:B"): no men on either side.
-    body = fen.upper().replace("W:", "").replace("B:", "")
-    if not any(ch.isdigit() for ch in body):
+    real board (missing, or an empty 'position in figures').
+
+    The human-verified file (``diagrams_fens.json``) wins over auto and is
+    *trusted*: the operator looked at the crop, so it bypasses the consolidated
+    library's ``valid`` flag (that flag only screens the rules-based auto
+    detector). This is what lets the in-app annotator fix a mis-detected board
+    — including the ~120 positions the auto detector marked invalid. Auto FENs
+    are still gated by ``valid``.
+    """
+    def _has_men(f: str) -> bool:
+        # Reject blank boards (e.g. "W:W:B"): no men on either side.
+        body = f.upper().replace("W:", "").replace("B:", "")
+        return any(ch.isdigit() for ch in body)
+
+    human = _load_diagram_fens(source).get((page, number))
+    if human:
+        return human if _has_men(human) else None
+
+    fen = _load_diagram_fens_auto(source).get((page, number))
+    if not fen or not _has_men(fen):
         return None
     from .position_library import get_position  # noqa: PLC0415
 

@@ -18,6 +18,11 @@ interface Props {
   // source (used for diagram-only sources like Goedemoed that have no prose
   // passages — the jump form is the in-app annotation entry point).
   initialJumpSource?: string
+  // When set, the panel opens the diagram modal directly on this exact
+  // (source, page, number) — used by the manual reader's "✎ Corriger la
+  // position" button so the operator lands on the crop + editable board for
+  // the diagram they were viewing, ready to annotate and copy the JSON entry.
+  initialJump?: { source: string; page: number; number: number }
 }
 
 // Sources for which we ship rendered PDF page JPGs.  When a passage from
@@ -45,7 +50,7 @@ const DIAGRAM_REF_RE = /\bdiagramme\s+(\d+)/i
  * displayed verbatim so the reader can cross-reference the original
  * PDF (cf. CADRAGE_STRATEGIE.md §4.S1 — no synthesis without citation).
  */
-const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr', initialJumpSource }) => {
+const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr', initialJumpSource, initialJump }) => {
   const [topics, setTopics] = useState<StrategyTopic[]>([])
   const [activeTopic, setActiveTopic] = useState<string | null>(null)
   const [passages, setPassages] = useState<StrategyPassage[]>([])
@@ -188,6 +193,29 @@ const StrategyPanel: React.FC<Props> = ({ onClose, lang = 'fr', initialJumpSourc
     })
     setModalIndex(null)
   }, [jumpSource, jumpPage, jumpNumber])
+
+  // Deep-link: open the diagram modal straight on ``initialJump`` (from the
+  // manual reader's "Corriger la position"). Re-runs when the target changes,
+  // so picking another diagram to fix re-opens the modal on it. The operator
+  // then clicks "✎ annoter" to edit and copy the JSON entry.
+  useEffect(() => {
+    if (!initialJump) return
+    setJumpSource(initialJump.source)
+    setJumpPage(String(initialJump.page))
+    setJumpNumber(String(initialJump.number))
+    setJumpPassage({
+      passage_id: `jump:${initialJump.source}:${initialJump.page}:${initialJump.number}`,
+      score: 0,
+      text: `Diagramme ${initialJump.number}`,
+      source: initialJump.source,
+      book: initialJump.source,
+      page: initialJump.page,
+      systems: [],
+      phase: null,
+      nature: null,
+    })
+    setModalIndex(null)
+  }, [initialJump?.source, initialJump?.page, initialJump?.number]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Single fetch — ``/diagram-fen`` now serves both human-verified
   // (``kind: "human"``) and auto-detected (``kind: "auto"``) FENs,
