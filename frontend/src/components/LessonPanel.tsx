@@ -31,10 +31,14 @@ type Token =
   | { kind: 'text'; value: string }
   | { kind: 'square'; sq: number; value: string }
   | { kind: 'diag'; n: number; value: string }
+  | { kind: 'movenum'; value: string }
 
 function tokenize(text: string): Token[] {
   const tokens: Token[] = []
-  const re = /\(diag\.\s*(\d+)\)|diag\.\s*(\d+)|\b([1-4]?\d|50)\b/g
+  // Order matters: "(diag. N)" / "diag. N" first, then a move number ("12.")
+  // — a digit run followed by a dot and whitespace/end, so each numbered move
+  // can start on its own line — then a bare playable square (1-50).
+  const re = /\(diag\.\s*(\d+)\)|diag\.\s*(\d+)|\b(\d{1,3})\.(?=\s|$)|\b([1-4]?\d|50)\b/g
   let last = 0
   let m: RegExpExecArray | null
   while ((m = re.exec(text)) !== null) {
@@ -43,8 +47,10 @@ function tokenize(text: string): Token[] {
       tokens.push({ kind: 'diag', n: parseInt(m[1]), value: m[0] })
     } else if (m[2] !== undefined) {
       tokens.push({ kind: 'diag', n: parseInt(m[2]), value: m[0] })
+    } else if (m[3] !== undefined) {
+      tokens.push({ kind: 'movenum', value: m[0] })
     } else {
-      const sq = parseInt(m[3])
+      const sq = parseInt(m[4])
       if (sq >= 1 && sq <= 50) tokens.push({ kind: 'square', sq, value: m[0] })
       else tokens.push({ kind: 'text', value: m[0] })
     }
@@ -141,6 +147,16 @@ function LessonText({
   return (
     <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.75, fontSize: '0.92rem' }}>
       {tokens.map((tok, i) => {
+        if (tok.kind === 'movenum') {
+          // Start each numbered move on its own line so a long score reads as a
+          // column (1. … / 2. … / 3. …) instead of one inline block.
+          return (
+            <React.Fragment key={i}>
+              {i > 0 ? '\n' : ''}
+              <span style={{ fontWeight: 700, color: '#fcd34d' }}>{tok.value}</span>
+            </React.Fragment>
+          )
+        }
         if (tok.kind === 'square') {
           const isHl = highlighted.includes(tok.sq)
           return (
